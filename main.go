@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
@@ -13,6 +14,8 @@ func main() {
 
 	// to import ent, write the following code at go.mod
 	// require github.com/facebook/ent v0.5.0
+
+	e.Use(middleware.CORS())
 
 	// new echo handler for / path
 	e.GET("/", func(c echo.Context) error {
