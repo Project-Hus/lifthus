@@ -1,42 +1,77 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
+// @title Project-Hus auth server
+// @version 0.0.0
+// @description This is Project-Hus's root authentication server containing each user's UUID, which is unique for all hus services.
+// @termsOfService http://swagger.io/terms/
+// @contact.name API Support
+// @contact.url lifthus531@gmail.com
+// @contact.email lifthus531@gmail.com
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @host lifthus.com
+// @BasePath /auth
 func main() {
-	// new echo instance
-	e := echo.New()
+	// set .env
+	err := godotenv.Load() // now you can use os.Getenv("VAR_NAME")
+	if err != nil {
+		log.Fatalf("[F] loading .env file failed : %s", err)
+	}
 
-	// to import ent, write the following code at go.mod
-	// require github.com/facebook/ent v0.5.0
-
-	e.Use(middleware.CORS())
-
-	// new echo handler for / path
-	e.GET("/", func(c echo.Context) error {
-
-		//set allow access control origin header
-		c.Response().Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
-		c.Response().Header().Set("Access-Control-Allow-Credentials", "true")
-		// Access-Control-Allow-Methodsand Access-Control-Allow-Headersshould contain the same value
-		//as requested in Access-Control-request-Methodsand Access-Control-request-Headersrespectively.
-		c.Response().Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Response().Header().Set("Access-Control-Allow-Headers", "Content-Type, *")
-
-		// get whole set-cookie from echo context
-		cookies := c.Cookies()
-		for _, cookie := range cookies {
-			fmt.Println(cookie.Name + cookie.Value)
+	// connecting to hus_auth_db with ent
+	/*
+		client, err := db.ConnectToHusAuth()
+		if err != nil {
+			log.Fatal("%w", err)
 		}
+		defer client.Close()
 
-		return c.NoContent(http.StatusOK)
+		// Run the auto migration tool.
+		if err := client.Schema.Create(context.Background()); err != nil {
+			log.Fatalf("[F] creating schema resources failed : %v", err)
+		}
+	*/
+
+	// subdomains
+	hosts := map[string]*Host{}
+
+	//  Create echo web server instance and set CORS headers
+	e := echo.New()
+	//e.Use(middleware.SetHusCorsHeaders)
+
+	// authApi, which controls auth all over the services
+	//authApi := auth.NewAuthApiController(client)
+	//hosts["localhost:9090"] = &Host{Echo: authApi} // gonna use auth.cloudhus.com later
+
+	// get requset and process by its subdomain
+	e.Any("/*", func(c echo.Context) (err error) {
+		req, res := c.Request(), c.Response()
+		host, ok := hosts[req.Host] // if the host is not registered, it will be nil.
+		if !ok {
+			return c.NoContent(http.StatusNotFound)
+		} else {
+			host.Echo.ServeHTTP(res, req)
+		}
+		return err
 	})
 
-	// start echo server
-	e.Logger.Fatal(e.Start(":9091"))
+	// provide api docs with swagger 2.0
+	//e.GET("/swagger/*", echoSwagger.WrapHandler)
+
+	// Run the server
+	e.Logger.Fatal(e.Start(":9090"))
+}
+
+type Host struct {
+	Echo *echo.Echo
 }
