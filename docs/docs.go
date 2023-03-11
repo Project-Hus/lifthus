@@ -35,7 +35,7 @@ const docTemplate = `{
                     "201": {
                         "description": "returns session id with session token in cookie"
                     },
-                    "501": {
+                    "500": {
                         "description": "failed to create new session"
                     }
                 }
@@ -48,10 +48,10 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "0.0.0",
 	Host:             "lifthus.com",
-	BasePath:         "/auth",
+	BasePath:         "/user",
 	Schemes:          []string{},
-	Title:            "Project-Hus auth server",
-	Description:      "This is Project-Hus's root authentication server containing each user's UUID, which is unique for all hus services.",
+	Title:            "Lifthus user server",
+	Description:      "This is Project-Hus's subservice Lifthus's user management server.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }
