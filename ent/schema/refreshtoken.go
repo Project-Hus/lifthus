@@ -10,12 +10,12 @@ import (
 )
 
 // LifthusToken holds the schema definition for the LifthusToken entity.
-type LifthusToken struct {
+type RefreshToken struct {
 	ent.Schema
 }
 
 // Fields of the LifthusToken.
-func (LifthusToken) Fields() []ent.Field {
+func (RefreshToken) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).StructTag(`json:tid,omitempty`).Default(uuid.New),
 		field.UUID("uid", uuid.UUID{}), // User ID
@@ -26,7 +26,7 @@ func (LifthusToken) Fields() []ent.Field {
 }
 
 // Edges of the LifthusToken.
-func (LifthusToken) Edges() []ent.Edge {
+func (RefreshToken) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("user", User.Type).Ref("lifthus_tokens").Unique().Field("uid").Required(),
 	}

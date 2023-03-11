@@ -726,24 +726,24 @@ func UpdatedAtLTE(v time.Time) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
-// HasLifthusSessions applies the HasEdge predicate on the "lifthus_sessions" edge.
-func HasLifthusSessions() predicate.User {
+// HasSessions applies the HasEdge predicate on the "sessions" edge.
+func HasSessions() predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, LifthusSessionsTable, LifthusSessionsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, SessionsTable, SessionsColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasLifthusSessionsWith applies the HasEdge predicate on the "lifthus_sessions" edge with a given conditions (other predicates).
-func HasLifthusSessionsWith(preds ...predicate.LifthusSession) predicate.User {
+// HasSessionsWith applies the HasEdge predicate on the "sessions" edge with a given conditions (other predicates).
+func HasSessionsWith(preds ...predicate.Session) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(LifthusSessionsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, LifthusSessionsTable, LifthusSessionsColumn),
+			sqlgraph.To(SessionsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, SessionsTable, SessionsColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -765,7 +765,7 @@ func HasLifthusTokens() predicate.User {
 }
 
 // HasLifthusTokensWith applies the HasEdge predicate on the "lifthus_tokens" edge with a given conditions (other predicates).
-func HasLifthusTokensWith(preds ...predicate.LifthusToken) predicate.User {
+func HasLifthusTokensWith(preds ...predicate.RefreshToken) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),

@@ -6,9 +6,9 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
-	"lifthus-auth/ent/lifthussession"
-	"lifthus-auth/ent/lifthustoken"
 	"lifthus-auth/ent/predicate"
+	"lifthus-auth/ent/refreshtoken"
+	"lifthus-auth/ent/session"
 	"lifthus-auth/ent/user"
 	"math"
 
@@ -21,12 +21,12 @@ import (
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx                 *QueryContext
-	order               []OrderFunc
-	inters              []Interceptor
-	predicates          []predicate.User
-	withLifthusSessions *LifthusSessionQuery
-	withLifthusTokens   *LifthusTokenQuery
+	ctx               *QueryContext
+	order             []OrderFunc
+	inters            []Interceptor
+	predicates        []predicate.User
+	withSessions      *SessionQuery
+	withLifthusTokens *RefreshTokenQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -63,9 +63,9 @@ func (uq *UserQuery) Order(o ...OrderFunc) *UserQuery {
 	return uq
 }
 
-// QueryLifthusSessions chains the current query on the "lifthus_sessions" edge.
-func (uq *UserQuery) QueryLifthusSessions() *LifthusSessionQuery {
-	query := (&LifthusSessionClient{config: uq.config}).Query()
+// QuerySessions chains the current query on the "sessions" edge.
+func (uq *UserQuery) QuerySessions() *SessionQuery {
+	query := (&SessionClient{config: uq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := uq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -76,8 +76,8 @@ func (uq *UserQuery) QueryLifthusSessions() *LifthusSessionQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(lifthussession.Table, lifthussession.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.LifthusSessionsTable, user.LifthusSessionsColumn),
+			sqlgraph.To(session.Table, session.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.SessionsTable, user.SessionsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -86,8 +86,8 @@ func (uq *UserQuery) QueryLifthusSessions() *LifthusSessionQuery {
 }
 
 // QueryLifthusTokens chains the current query on the "lifthus_tokens" edge.
-func (uq *UserQuery) QueryLifthusTokens() *LifthusTokenQuery {
-	query := (&LifthusTokenClient{config: uq.config}).Query()
+func (uq *UserQuery) QueryLifthusTokens() *RefreshTokenQuery {
+	query := (&RefreshTokenClient{config: uq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := uq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -98,7 +98,7 @@ func (uq *UserQuery) QueryLifthusTokens() *LifthusTokenQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(lifthustoken.Table, lifthustoken.FieldID),
+			sqlgraph.To(refreshtoken.Table, refreshtoken.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.LifthusTokensTable, user.LifthusTokensColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
@@ -294,34 +294,34 @@ func (uq *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:              uq.config,
-		ctx:                 uq.ctx.Clone(),
-		order:               append([]OrderFunc{}, uq.order...),
-		inters:              append([]Interceptor{}, uq.inters...),
-		predicates:          append([]predicate.User{}, uq.predicates...),
-		withLifthusSessions: uq.withLifthusSessions.Clone(),
-		withLifthusTokens:   uq.withLifthusTokens.Clone(),
+		config:            uq.config,
+		ctx:               uq.ctx.Clone(),
+		order:             append([]OrderFunc{}, uq.order...),
+		inters:            append([]Interceptor{}, uq.inters...),
+		predicates:        append([]predicate.User{}, uq.predicates...),
+		withSessions:      uq.withSessions.Clone(),
+		withLifthusTokens: uq.withLifthusTokens.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
 	}
 }
 
-// WithLifthusSessions tells the query-builder to eager-load the nodes that are connected to
-// the "lifthus_sessions" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithLifthusSessions(opts ...func(*LifthusSessionQuery)) *UserQuery {
-	query := (&LifthusSessionClient{config: uq.config}).Query()
+// WithSessions tells the query-builder to eager-load the nodes that are connected to
+// the "sessions" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithSessions(opts ...func(*SessionQuery)) *UserQuery {
+	query := (&SessionClient{config: uq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	uq.withLifthusSessions = query
+	uq.withSessions = query
 	return uq
 }
 
 // WithLifthusTokens tells the query-builder to eager-load the nodes that are connected to
 // the "lifthus_tokens" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithLifthusTokens(opts ...func(*LifthusTokenQuery)) *UserQuery {
-	query := (&LifthusTokenClient{config: uq.config}).Query()
+func (uq *UserQuery) WithLifthusTokens(opts ...func(*RefreshTokenQuery)) *UserQuery {
+	query := (&RefreshTokenClient{config: uq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -408,7 +408,7 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
 		loadedTypes = [2]bool{
-			uq.withLifthusSessions != nil,
+			uq.withSessions != nil,
 			uq.withLifthusTokens != nil,
 		}
 	)
@@ -430,24 +430,24 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := uq.withLifthusSessions; query != nil {
-		if err := uq.loadLifthusSessions(ctx, query, nodes,
-			func(n *User) { n.Edges.LifthusSessions = []*LifthusSession{} },
-			func(n *User, e *LifthusSession) { n.Edges.LifthusSessions = append(n.Edges.LifthusSessions, e) }); err != nil {
+	if query := uq.withSessions; query != nil {
+		if err := uq.loadSessions(ctx, query, nodes,
+			func(n *User) { n.Edges.Sessions = []*Session{} },
+			func(n *User, e *Session) { n.Edges.Sessions = append(n.Edges.Sessions, e) }); err != nil {
 			return nil, err
 		}
 	}
 	if query := uq.withLifthusTokens; query != nil {
 		if err := uq.loadLifthusTokens(ctx, query, nodes,
-			func(n *User) { n.Edges.LifthusTokens = []*LifthusToken{} },
-			func(n *User, e *LifthusToken) { n.Edges.LifthusTokens = append(n.Edges.LifthusTokens, e) }); err != nil {
+			func(n *User) { n.Edges.LifthusTokens = []*RefreshToken{} },
+			func(n *User, e *RefreshToken) { n.Edges.LifthusTokens = append(n.Edges.LifthusTokens, e) }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (uq *UserQuery) loadLifthusSessions(ctx context.Context, query *LifthusSessionQuery, nodes []*User, init func(*User), assign func(*User, *LifthusSession)) error {
+func (uq *UserQuery) loadSessions(ctx context.Context, query *SessionQuery, nodes []*User, init func(*User), assign func(*User, *Session)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*User)
 	for i := range nodes {
@@ -457,8 +457,8 @@ func (uq *UserQuery) loadLifthusSessions(ctx context.Context, query *LifthusSess
 			init(nodes[i])
 		}
 	}
-	query.Where(predicate.LifthusSession(func(s *sql.Selector) {
-		s.Where(sql.InValues(user.LifthusSessionsColumn, fks...))
+	query.Where(predicate.Session(func(s *sql.Selector) {
+		s.Where(sql.InValues(user.SessionsColumn, fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -477,7 +477,7 @@ func (uq *UserQuery) loadLifthusSessions(ctx context.Context, query *LifthusSess
 	}
 	return nil
 }
-func (uq *UserQuery) loadLifthusTokens(ctx context.Context, query *LifthusTokenQuery, nodes []*User, init func(*User), assign func(*User, *LifthusToken)) error {
+func (uq *UserQuery) loadLifthusTokens(ctx context.Context, query *RefreshTokenQuery, nodes []*User, init func(*User), assign func(*User, *RefreshToken)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*User)
 	for i := range nodes {
@@ -487,7 +487,7 @@ func (uq *UserQuery) loadLifthusTokens(ctx context.Context, query *LifthusTokenQ
 			init(nodes[i])
 		}
 	}
-	query.Where(predicate.LifthusToken(func(s *sql.Selector) {
+	query.Where(predicate.RefreshToken(func(s *sql.Selector) {
 		s.Where(sql.InValues(user.LifthusTokensColumn, fks...))
 	}))
 	neighbors, err := query.All(ctx)
