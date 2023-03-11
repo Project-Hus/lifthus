@@ -1,6 +1,9 @@
 package main
 
 import (
+	"context"
+	"lifthus-auth/api/auth"
+	"lifthus-auth/db"
 	"log"
 	"net/http"
 
@@ -8,6 +11,10 @@ import (
 	"github.com/labstack/echo/v4"
 
 	_ "github.com/go-sql-driver/mysql"
+
+	echoSwagger "github.com/swaggo/echo-swagger"
+
+	"lifthus-auth/middleware"
 )
 
 // @title Project-Hus auth server
@@ -28,30 +35,28 @@ func main() {
 		log.Fatalf("[F] loading .env file failed : %s", err)
 	}
 
-	// connecting to hus_auth_db with ent
-	/*
-		client, err := db.ConnectToHusAuth()
-		if err != nil {
-			log.Fatal("%w", err)
-		}
-		defer client.Close()
+	// connecting to lifthus_user_db with ent
+	client, err := db.ConnectToLifthusUser()
+	if err != nil {
+		log.Fatal("%w", err)
+	}
+	defer client.Close()
 
-		// Run the auto migration tool.
-		if err := client.Schema.Create(context.Background()); err != nil {
-			log.Fatalf("[F] creating schema resources failed : %v", err)
-		}
-	*/
+	// Run the auto migration tool.
+	if err := client.Schema.Create(context.Background()); err != nil {
+		log.Fatalf("[F] creating schema resources failed : %v", err)
+	}
 
 	// subdomains
 	hosts := map[string]*Host{}
 
 	//  Create echo web server instance and set CORS headers
 	e := echo.New()
-	//e.Use(middleware.SetHusCorsHeaders)
+	e.Use(middleware.SetLifthusCorsHeaders)
 
 	// authApi, which controls auth all over the services
-	//authApi := auth.NewAuthApiController(client)
-	//hosts["localhost:9090"] = &Host{Echo: authApi} // gonna use auth.cloudhus.com later
+	authApi := auth.NewAuthApiController(client)
+	hosts["localhost:9091"] = &Host{Echo: authApi} // gonna use auth.cloudhus.com later
 
 	// get requset and process by its subdomain
 	e.Any("/*", func(c echo.Context) (err error) {
@@ -66,10 +71,10 @@ func main() {
 	})
 
 	// provide api docs with swagger 2.0
-	//e.GET("/swagger/*", echoSwagger.WrapHandler)
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	// Run the server
-	e.Logger.Fatal(e.Start(":9090"))
+	e.Logger.Fatal(e.Start(":9091"))
 }
 
 type Host struct {
