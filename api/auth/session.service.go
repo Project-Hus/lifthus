@@ -34,8 +34,10 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 		"exp": time.Now().Add(time.Hour * 24).Unix(),
 	})
 
+	hsk := []byte(os.Getenv("HUS_SECRET_KEY"))
+
 	// Sign and get the complete encoded token as a string using the secret
-	stSigned, err := st.SignedString(os.Getenv("HUS_SECRET_KEY"))
+	stSigned, err := st.SignedString(hsk)
 	if err != nil {
 		log.Println("[F] signing session token failed: ", err)
 		return c.NoContent(http.StatusInternalServerError)
@@ -43,14 +45,14 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 
 	// set cookie with session id
 	cookie := &http.Cookie{
-		Name:  "lifthus_st",
-		Value: stSigned,
-		Path:  "/",
-		//Secure:   true, // only sent over https
+		Name:     "lifthus_st",
+		Value:    stSigned,
+		Path:     "/",
 		HttpOnly: true,
 		Domain:   os.Getenv("LIFTHUS_DOMAIN"),
 		SameSite: http.SameSiteDefaultMode,
 	}
 	c.SetCookie(cookie)
+
 	return c.String(http.StatusCreated, sid)
 }
