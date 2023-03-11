@@ -17,9 +17,9 @@ import (
 	"lifthus-auth/middleware"
 )
 
-// @title Project-Hus auth server
+// @title Lifthus user server
 // @version 0.0.0
-// @description This is Project-Hus's root authentication server containing each user's UUID, which is unique for all hus services.
+// @description This is Project-Hus's subservice Lifthus's user management server.
 // @termsOfService http://swagger.io/terms/
 // @contact.name API Support
 // @contact.url lifthus531@gmail.com
@@ -27,7 +27,7 @@ import (
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 // @host lifthus.com
-// @BasePath /auth
+// @BasePath /user
 func main() {
 	// set .env
 	err := godotenv.Load() // now you can use os.Getenv("VAR_NAME")
@@ -59,7 +59,7 @@ func main() {
 	hosts["localhost:9091"] = &Host{Echo: authApi} // gonna use auth.cloudhus.com later
 
 	// get requset and process by its subdomain
-	e.Any("/*", func(c echo.Context) (err error) {
+	e.Any("/user/*", func(c echo.Context) (err error) {
 		req, res := c.Request(), c.Response()
 		host, ok := hosts[req.Host] // if the host is not registered, it will be nil.
 		if !ok {
