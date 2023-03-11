@@ -6,5 +6,14 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// LifthusGroup is the predicate function for lifthusgroup builders.
+type LifthusGroup func(*sql.Selector)
+
+// LifthusSession is the predicate function for lifthussession builders.
+type LifthusSession func(*sql.Selector)
+
+// LifthusToken is the predicate function for lifthustoken builders.
+type LifthusToken func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

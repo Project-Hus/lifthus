@@ -19,7 +19,9 @@ func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).StructTag(`json:"uid,omitempty"`).Default(uuid.New).Unique(), // user id from Hus
 
-		field.Bool("registered").Default(false), // whether the hus user is registered to Lifthus
+		field.Bool("registered").Default(false),           // whether the hus user is registered to Lifthus
+		field.Time("registered_at").Optional().Nillable(), // when the user is registered to Lifthus
+
 		field.String("username").Unique().Optional().Nillable(),
 
 		/* Those are duplicated with Hus, but they will be barely changed and we will check every each time if it is */
@@ -33,7 +35,7 @@ func (User) Fields() []ent.Field {
 		// User Info in the service
 		field.Text("profile_picture_url").Optional().Nillable(),
 
-		field.Time("created_at").Default(time.Now),
+		field.Time("created_at").Default(time.Now), // when the user first accessed to Lifthus with Hus session.
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
 }
@@ -42,5 +44,6 @@ func (User) Fields() []ent.Field {
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("lifthus_sessions", LifthusSession.Type),
+		edge.To("lifthus_tokens", LifthusToken.Type),
 	}
 }

@@ -10,11 +10,16 @@ import (
 
 	"lifthus-auth/ent/migrate"
 
+	"lifthus-auth/ent/lifthusgroup"
+	"lifthus-auth/ent/lifthussession"
+	"lifthus-auth/ent/lifthustoken"
 	"lifthus-auth/ent/user"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 )
 
 // Client is the client that holds all ent builders.
@@ -22,6 +27,12 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// LifthusGroup is the client for interacting with the LifthusGroup builders.
+	LifthusGroup *LifthusGroupClient
+	// LifthusSession is the client for interacting with the LifthusSession builders.
+	LifthusSession *LifthusSessionClient
+	// LifthusToken is the client for interacting with the LifthusToken builders.
+	LifthusToken *LifthusTokenClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -37,6 +48,9 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.LifthusGroup = NewLifthusGroupClient(c.config)
+	c.LifthusSession = NewLifthusSessionClient(c.config)
+	c.LifthusToken = NewLifthusTokenClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -118,9 +132,12 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		User:   NewUserClient(cfg),
+		ctx:            ctx,
+		config:         cfg,
+		LifthusGroup:   NewLifthusGroupClient(cfg),
+		LifthusSession: NewLifthusSessionClient(cfg),
+		LifthusToken:   NewLifthusTokenClient(cfg),
+		User:           NewUserClient(cfg),
 	}, nil
 }
 
@@ -138,16 +155,19 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		User:   NewUserClient(cfg),
+		ctx:            ctx,
+		config:         cfg,
+		LifthusGroup:   NewLifthusGroupClient(cfg),
+		LifthusSession: NewLifthusSessionClient(cfg),
+		LifthusToken:   NewLifthusTokenClient(cfg),
+		User:           NewUserClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		User.
+//		LifthusGroup.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -169,22 +189,420 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.LifthusGroup.Use(hooks...)
+	c.LifthusSession.Use(hooks...)
+	c.LifthusToken.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
+	c.LifthusGroup.Intercept(interceptors...)
+	c.LifthusSession.Intercept(interceptors...)
+	c.LifthusToken.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *LifthusGroupMutation:
+		return c.LifthusGroup.mutate(ctx, m)
+	case *LifthusSessionMutation:
+		return c.LifthusSession.mutate(ctx, m)
+	case *LifthusTokenMutation:
+		return c.LifthusToken.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// LifthusGroupClient is a client for the LifthusGroup schema.
+type LifthusGroupClient struct {
+	config
+}
+
+// NewLifthusGroupClient returns a client for the LifthusGroup from the given config.
+func NewLifthusGroupClient(c config) *LifthusGroupClient {
+	return &LifthusGroupClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `lifthusgroup.Hooks(f(g(h())))`.
+func (c *LifthusGroupClient) Use(hooks ...Hook) {
+	c.hooks.LifthusGroup = append(c.hooks.LifthusGroup, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `lifthusgroup.Intercept(f(g(h())))`.
+func (c *LifthusGroupClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LifthusGroup = append(c.inters.LifthusGroup, interceptors...)
+}
+
+// Create returns a builder for creating a LifthusGroup entity.
+func (c *LifthusGroupClient) Create() *LifthusGroupCreate {
+	mutation := newLifthusGroupMutation(c.config, OpCreate)
+	return &LifthusGroupCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LifthusGroup entities.
+func (c *LifthusGroupClient) CreateBulk(builders ...*LifthusGroupCreate) *LifthusGroupCreateBulk {
+	return &LifthusGroupCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LifthusGroup.
+func (c *LifthusGroupClient) Update() *LifthusGroupUpdate {
+	mutation := newLifthusGroupMutation(c.config, OpUpdate)
+	return &LifthusGroupUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LifthusGroupClient) UpdateOne(lg *LifthusGroup) *LifthusGroupUpdateOne {
+	mutation := newLifthusGroupMutation(c.config, OpUpdateOne, withLifthusGroup(lg))
+	return &LifthusGroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LifthusGroupClient) UpdateOneID(id int) *LifthusGroupUpdateOne {
+	mutation := newLifthusGroupMutation(c.config, OpUpdateOne, withLifthusGroupID(id))
+	return &LifthusGroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LifthusGroup.
+func (c *LifthusGroupClient) Delete() *LifthusGroupDelete {
+	mutation := newLifthusGroupMutation(c.config, OpDelete)
+	return &LifthusGroupDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LifthusGroupClient) DeleteOne(lg *LifthusGroup) *LifthusGroupDeleteOne {
+	return c.DeleteOneID(lg.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LifthusGroupClient) DeleteOneID(id int) *LifthusGroupDeleteOne {
+	builder := c.Delete().Where(lifthusgroup.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LifthusGroupDeleteOne{builder}
+}
+
+// Query returns a query builder for LifthusGroup.
+func (c *LifthusGroupClient) Query() *LifthusGroupQuery {
+	return &LifthusGroupQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLifthusGroup},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a LifthusGroup entity by its id.
+func (c *LifthusGroupClient) Get(ctx context.Context, id int) (*LifthusGroup, error) {
+	return c.Query().Where(lifthusgroup.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LifthusGroupClient) GetX(ctx context.Context, id int) *LifthusGroup {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *LifthusGroupClient) Hooks() []Hook {
+	return c.hooks.LifthusGroup
+}
+
+// Interceptors returns the client interceptors.
+func (c *LifthusGroupClient) Interceptors() []Interceptor {
+	return c.inters.LifthusGroup
+}
+
+func (c *LifthusGroupClient) mutate(ctx context.Context, m *LifthusGroupMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LifthusGroupCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LifthusGroupUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LifthusGroupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LifthusGroupDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown LifthusGroup mutation op: %q", m.Op())
+	}
+}
+
+// LifthusSessionClient is a client for the LifthusSession schema.
+type LifthusSessionClient struct {
+	config
+}
+
+// NewLifthusSessionClient returns a client for the LifthusSession from the given config.
+func NewLifthusSessionClient(c config) *LifthusSessionClient {
+	return &LifthusSessionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `lifthussession.Hooks(f(g(h())))`.
+func (c *LifthusSessionClient) Use(hooks ...Hook) {
+	c.hooks.LifthusSession = append(c.hooks.LifthusSession, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `lifthussession.Intercept(f(g(h())))`.
+func (c *LifthusSessionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LifthusSession = append(c.inters.LifthusSession, interceptors...)
+}
+
+// Create returns a builder for creating a LifthusSession entity.
+func (c *LifthusSessionClient) Create() *LifthusSessionCreate {
+	mutation := newLifthusSessionMutation(c.config, OpCreate)
+	return &LifthusSessionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LifthusSession entities.
+func (c *LifthusSessionClient) CreateBulk(builders ...*LifthusSessionCreate) *LifthusSessionCreateBulk {
+	return &LifthusSessionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LifthusSession.
+func (c *LifthusSessionClient) Update() *LifthusSessionUpdate {
+	mutation := newLifthusSessionMutation(c.config, OpUpdate)
+	return &LifthusSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LifthusSessionClient) UpdateOne(ls *LifthusSession) *LifthusSessionUpdateOne {
+	mutation := newLifthusSessionMutation(c.config, OpUpdateOne, withLifthusSession(ls))
+	return &LifthusSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LifthusSessionClient) UpdateOneID(id uuid.UUID) *LifthusSessionUpdateOne {
+	mutation := newLifthusSessionMutation(c.config, OpUpdateOne, withLifthusSessionID(id))
+	return &LifthusSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LifthusSession.
+func (c *LifthusSessionClient) Delete() *LifthusSessionDelete {
+	mutation := newLifthusSessionMutation(c.config, OpDelete)
+	return &LifthusSessionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LifthusSessionClient) DeleteOne(ls *LifthusSession) *LifthusSessionDeleteOne {
+	return c.DeleteOneID(ls.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LifthusSessionClient) DeleteOneID(id uuid.UUID) *LifthusSessionDeleteOne {
+	builder := c.Delete().Where(lifthussession.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LifthusSessionDeleteOne{builder}
+}
+
+// Query returns a query builder for LifthusSession.
+func (c *LifthusSessionClient) Query() *LifthusSessionQuery {
+	return &LifthusSessionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLifthusSession},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a LifthusSession entity by its id.
+func (c *LifthusSessionClient) Get(ctx context.Context, id uuid.UUID) (*LifthusSession, error) {
+	return c.Query().Where(lifthussession.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LifthusSessionClient) GetX(ctx context.Context, id uuid.UUID) *LifthusSession {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a LifthusSession.
+func (c *LifthusSessionClient) QueryUser(ls *LifthusSession) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ls.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(lifthussession.Table, lifthussession.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, lifthussession.UserTable, lifthussession.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(ls.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *LifthusSessionClient) Hooks() []Hook {
+	return c.hooks.LifthusSession
+}
+
+// Interceptors returns the client interceptors.
+func (c *LifthusSessionClient) Interceptors() []Interceptor {
+	return c.inters.LifthusSession
+}
+
+func (c *LifthusSessionClient) mutate(ctx context.Context, m *LifthusSessionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LifthusSessionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LifthusSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LifthusSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LifthusSessionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown LifthusSession mutation op: %q", m.Op())
+	}
+}
+
+// LifthusTokenClient is a client for the LifthusToken schema.
+type LifthusTokenClient struct {
+	config
+}
+
+// NewLifthusTokenClient returns a client for the LifthusToken from the given config.
+func NewLifthusTokenClient(c config) *LifthusTokenClient {
+	return &LifthusTokenClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `lifthustoken.Hooks(f(g(h())))`.
+func (c *LifthusTokenClient) Use(hooks ...Hook) {
+	c.hooks.LifthusToken = append(c.hooks.LifthusToken, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `lifthustoken.Intercept(f(g(h())))`.
+func (c *LifthusTokenClient) Intercept(interceptors ...Interceptor) {
+	c.inters.LifthusToken = append(c.inters.LifthusToken, interceptors...)
+}
+
+// Create returns a builder for creating a LifthusToken entity.
+func (c *LifthusTokenClient) Create() *LifthusTokenCreate {
+	mutation := newLifthusTokenMutation(c.config, OpCreate)
+	return &LifthusTokenCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of LifthusToken entities.
+func (c *LifthusTokenClient) CreateBulk(builders ...*LifthusTokenCreate) *LifthusTokenCreateBulk {
+	return &LifthusTokenCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for LifthusToken.
+func (c *LifthusTokenClient) Update() *LifthusTokenUpdate {
+	mutation := newLifthusTokenMutation(c.config, OpUpdate)
+	return &LifthusTokenUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LifthusTokenClient) UpdateOne(lt *LifthusToken) *LifthusTokenUpdateOne {
+	mutation := newLifthusTokenMutation(c.config, OpUpdateOne, withLifthusToken(lt))
+	return &LifthusTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LifthusTokenClient) UpdateOneID(id uuid.UUID) *LifthusTokenUpdateOne {
+	mutation := newLifthusTokenMutation(c.config, OpUpdateOne, withLifthusTokenID(id))
+	return &LifthusTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for LifthusToken.
+func (c *LifthusTokenClient) Delete() *LifthusTokenDelete {
+	mutation := newLifthusTokenMutation(c.config, OpDelete)
+	return &LifthusTokenDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LifthusTokenClient) DeleteOne(lt *LifthusToken) *LifthusTokenDeleteOne {
+	return c.DeleteOneID(lt.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *LifthusTokenClient) DeleteOneID(id uuid.UUID) *LifthusTokenDeleteOne {
+	builder := c.Delete().Where(lifthustoken.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LifthusTokenDeleteOne{builder}
+}
+
+// Query returns a query builder for LifthusToken.
+func (c *LifthusTokenClient) Query() *LifthusTokenQuery {
+	return &LifthusTokenQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeLifthusToken},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a LifthusToken entity by its id.
+func (c *LifthusTokenClient) Get(ctx context.Context, id uuid.UUID) (*LifthusToken, error) {
+	return c.Query().Where(lifthustoken.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LifthusTokenClient) GetX(ctx context.Context, id uuid.UUID) *LifthusToken {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a LifthusToken.
+func (c *LifthusTokenClient) QueryUser(lt *LifthusToken) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := lt.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(lifthustoken.Table, lifthustoken.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, lifthustoken.UserTable, lifthustoken.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(lt.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *LifthusTokenClient) Hooks() []Hook {
+	return c.hooks.LifthusToken
+}
+
+// Interceptors returns the client interceptors.
+func (c *LifthusTokenClient) Interceptors() []Interceptor {
+	return c.inters.LifthusToken
+}
+
+func (c *LifthusTokenClient) mutate(ctx context.Context, m *LifthusTokenMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LifthusTokenCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LifthusTokenUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LifthusTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LifthusTokenDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown LifthusToken mutation op: %q", m.Op())
 	}
 }
 
@@ -234,7 +652,7 @@ func (c *UserClient) UpdateOne(u *User) *UserUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *UserClient) UpdateOneID(id int) *UserUpdateOne {
+func (c *UserClient) UpdateOneID(id uuid.UUID) *UserUpdateOne {
 	mutation := newUserMutation(c.config, OpUpdateOne, withUserID(id))
 	return &UserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -251,7 +669,7 @@ func (c *UserClient) DeleteOne(u *User) *UserDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *UserClient) DeleteOneID(id int) *UserDeleteOne {
+func (c *UserClient) DeleteOneID(id uuid.UUID) *UserDeleteOne {
 	builder := c.Delete().Where(user.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -268,17 +686,49 @@ func (c *UserClient) Query() *UserQuery {
 }
 
 // Get returns a User entity by its id.
-func (c *UserClient) Get(ctx context.Context, id int) (*User, error) {
+func (c *UserClient) Get(ctx context.Context, id uuid.UUID) (*User, error) {
 	return c.Query().Where(user.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *UserClient) GetX(ctx context.Context, id int) *User {
+func (c *UserClient) GetX(ctx context.Context, id uuid.UUID) *User {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryLifthusSessions queries the lifthus_sessions edge of a User.
+func (c *UserClient) QueryLifthusSessions(u *User) *LifthusSessionQuery {
+	query := (&LifthusSessionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(lifthussession.Table, lifthussession.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.LifthusSessionsTable, user.LifthusSessionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryLifthusTokens queries the lifthus_tokens edge of a User.
+func (c *UserClient) QueryLifthusTokens(u *User) *LifthusTokenQuery {
+	query := (&LifthusTokenClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(lifthustoken.Table, lifthustoken.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.LifthusTokensTable, user.LifthusTokensColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.
@@ -309,9 +759,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		User []ent.Hook
+		LifthusGroup, LifthusSession, LifthusToken, User []ent.Hook
 	}
 	inters struct {
-		User []ent.Interceptor
+		LifthusGroup, LifthusSession, LifthusToken, User []ent.Interceptor
 	}
 )

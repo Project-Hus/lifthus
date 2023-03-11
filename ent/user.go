@@ -6,15 +6,73 @@ import (
 	"fmt"
 	"lifthus-auth/ent/user"
 	"strings"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 )
 
 // User is the model entity for the User schema.
 type User struct {
-	config
+	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"uid,omitempty"`
+	// Registered holds the value of the "registered" field.
+	Registered bool `json:"registered,omitempty"`
+	// RegisteredAt holds the value of the "registered_at" field.
+	RegisteredAt *time.Time `json:"registered_at,omitempty"`
+	// Username holds the value of the "username" field.
+	Username *string `json:"username,omitempty"`
+	// Email holds the value of the "email" field.
+	Email string `json:"email,omitempty"`
+	// EmailVerified holds the value of the "email_verified" field.
+	EmailVerified bool `json:"email_verified,omitempty"`
+	// Name holds the value of the "name" field.
+	Name string `json:"name,omitempty"`
+	// GivenName holds the value of the "given_name" field.
+	GivenName string `json:"given_name,omitempty"`
+	// FamilyName holds the value of the "family_name" field.
+	FamilyName string `json:"family_name,omitempty"`
+	// Birthdate holds the value of the "birthdate" field.
+	Birthdate *time.Time `json:"birthdate,omitempty"`
+	// ProfilePictureURL holds the value of the "profile_picture_url" field.
+	ProfilePictureURL *string `json:"profile_picture_url,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the UserQuery when eager-loading is set.
+	Edges UserEdges `json:"edges"`
+}
+
+// UserEdges holds the relations/edges for other nodes in the graph.
+type UserEdges struct {
+	// LifthusSessions holds the value of the lifthus_sessions edge.
+	LifthusSessions []*LifthusSession `json:"lifthus_sessions,omitempty"`
+	// LifthusTokens holds the value of the lifthus_tokens edge.
+	LifthusTokens []*LifthusToken `json:"lifthus_tokens,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [2]bool
+}
+
+// LifthusSessionsOrErr returns the LifthusSessions value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) LifthusSessionsOrErr() ([]*LifthusSession, error) {
+	if e.loadedTypes[0] {
+		return e.LifthusSessions, nil
+	}
+	return nil, &NotLoadedError{edge: "lifthus_sessions"}
+}
+
+// LifthusTokensOrErr returns the LifthusTokens value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) LifthusTokensOrErr() ([]*LifthusToken, error) {
+	if e.loadedTypes[1] {
+		return e.LifthusTokens, nil
+	}
+	return nil, &NotLoadedError{edge: "lifthus_tokens"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -22,8 +80,14 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case user.FieldRegistered, user.FieldEmailVerified:
+			values[i] = new(sql.NullBool)
+		case user.FieldUsername, user.FieldEmail, user.FieldName, user.FieldGivenName, user.FieldFamilyName, user.FieldProfilePictureURL:
+			values[i] = new(sql.NullString)
+		case user.FieldRegisteredAt, user.FieldBirthdate, user.FieldCreatedAt, user.FieldUpdatedAt:
+			values[i] = new(sql.NullTime)
 		case user.FieldID:
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type User", columns[i])
 		}
@@ -40,14 +104,100 @@ func (u *User) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case user.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				u.ID = *value
 			}
-			u.ID = int(value.Int64)
+		case user.FieldRegistered:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field registered", values[i])
+			} else if value.Valid {
+				u.Registered = value.Bool
+			}
+		case user.FieldRegisteredAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field registered_at", values[i])
+			} else if value.Valid {
+				u.RegisteredAt = new(time.Time)
+				*u.RegisteredAt = value.Time
+			}
+		case user.FieldUsername:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field username", values[i])
+			} else if value.Valid {
+				u.Username = new(string)
+				*u.Username = value.String
+			}
+		case user.FieldEmail:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field email", values[i])
+			} else if value.Valid {
+				u.Email = value.String
+			}
+		case user.FieldEmailVerified:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field email_verified", values[i])
+			} else if value.Valid {
+				u.EmailVerified = value.Bool
+			}
+		case user.FieldName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field name", values[i])
+			} else if value.Valid {
+				u.Name = value.String
+			}
+		case user.FieldGivenName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field given_name", values[i])
+			} else if value.Valid {
+				u.GivenName = value.String
+			}
+		case user.FieldFamilyName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field family_name", values[i])
+			} else if value.Valid {
+				u.FamilyName = value.String
+			}
+		case user.FieldBirthdate:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field birthdate", values[i])
+			} else if value.Valid {
+				u.Birthdate = new(time.Time)
+				*u.Birthdate = value.Time
+			}
+		case user.FieldProfilePictureURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field profile_picture_url", values[i])
+			} else if value.Valid {
+				u.ProfilePictureURL = new(string)
+				*u.ProfilePictureURL = value.String
+			}
+		case user.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				u.CreatedAt = value.Time
+			}
+		case user.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				u.UpdatedAt = value.Time
+			}
 		}
 	}
 	return nil
+}
+
+// QueryLifthusSessions queries the "lifthus_sessions" edge of the User entity.
+func (u *User) QueryLifthusSessions() *LifthusSessionQuery {
+	return NewUserClient(u.config).QueryLifthusSessions(u)
+}
+
+// QueryLifthusTokens queries the "lifthus_tokens" edge of the User entity.
+func (u *User) QueryLifthusTokens() *LifthusTokenQuery {
+	return NewUserClient(u.config).QueryLifthusTokens(u)
 }
 
 // Update returns a builder for updating this User.
@@ -72,7 +222,50 @@ func (u *User) Unwrap() *User {
 func (u *User) String() string {
 	var builder strings.Builder
 	builder.WriteString("User(")
-	builder.WriteString(fmt.Sprintf("id=%v", u.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", u.ID))
+	builder.WriteString("registered=")
+	builder.WriteString(fmt.Sprintf("%v", u.Registered))
+	builder.WriteString(", ")
+	if v := u.RegisteredAt; v != nil {
+		builder.WriteString("registered_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := u.Username; v != nil {
+		builder.WriteString("username=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	builder.WriteString("email=")
+	builder.WriteString(u.Email)
+	builder.WriteString(", ")
+	builder.WriteString("email_verified=")
+	builder.WriteString(fmt.Sprintf("%v", u.EmailVerified))
+	builder.WriteString(", ")
+	builder.WriteString("name=")
+	builder.WriteString(u.Name)
+	builder.WriteString(", ")
+	builder.WriteString("given_name=")
+	builder.WriteString(u.GivenName)
+	builder.WriteString(", ")
+	builder.WriteString("family_name=")
+	builder.WriteString(u.FamilyName)
+	builder.WriteString(", ")
+	if v := u.Birthdate; v != nil {
+		builder.WriteString("birthdate=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	if v := u.ProfilePictureURL; v != nil {
+		builder.WriteString("profile_picture_url=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(u.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(u.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

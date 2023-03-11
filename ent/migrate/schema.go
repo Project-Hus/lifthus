@@ -8,9 +8,73 @@ import (
 )
 
 var (
+	// LifthusGroupsColumns holds the columns for the "lifthus_groups" table.
+	LifthusGroupsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+	}
+	// LifthusGroupsTable holds the schema information for the "lifthus_groups" table.
+	LifthusGroupsTable = &schema.Table{
+		Name:       "lifthus_groups",
+		Columns:    LifthusGroupsColumns,
+		PrimaryKey: []*schema.Column{LifthusGroupsColumns[0]},
+	}
+	// LifthusSessionsColumns holds the columns for the "lifthus_sessions" table.
+	LifthusSessionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "connected_at", Type: field.TypeTime},
+		{Name: "uid", Type: field.TypeUUID, Nullable: true},
+	}
+	// LifthusSessionsTable holds the schema information for the "lifthus_sessions" table.
+	LifthusSessionsTable = &schema.Table{
+		Name:       "lifthus_sessions",
+		Columns:    LifthusSessionsColumns,
+		PrimaryKey: []*schema.Column{LifthusSessionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "lifthus_sessions_users_lifthus_sessions",
+				Columns:    []*schema.Column{LifthusSessionsColumns[2]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// LifthusTokensColumns holds the columns for the "lifthus_tokens" table.
+	LifthusTokensColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "revoked", Type: field.TypeBool, Default: false},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "uid", Type: field.TypeUUID},
+	}
+	// LifthusTokensTable holds the schema information for the "lifthus_tokens" table.
+	LifthusTokensTable = &schema.Table{
+		Name:       "lifthus_tokens",
+		Columns:    LifthusTokensColumns,
+		PrimaryKey: []*schema.Column{LifthusTokensColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "lifthus_tokens_users_lifthus_tokens",
+				Columns:    []*schema.Column{LifthusTokensColumns[4]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "registered", Type: field.TypeBool, Default: false},
+		{Name: "registered_at", Type: field.TypeTime, Nullable: true},
+		{Name: "username", Type: field.TypeString, Unique: true, Nullable: true},
+		{Name: "email", Type: field.TypeString, Unique: true},
+		{Name: "email_verified", Type: field.TypeBool},
+		{Name: "name", Type: field.TypeString},
+		{Name: "given_name", Type: field.TypeString},
+		{Name: "family_name", Type: field.TypeString},
+		{Name: "birthdate", Type: field.TypeTime, Nullable: true},
+		{Name: "profile_picture_url", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
@@ -20,9 +84,14 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		LifthusGroupsTable,
+		LifthusSessionsTable,
+		LifthusTokensTable,
 		UsersTable,
 	}
 )
 
 func init() {
+	LifthusSessionsTable.ForeignKeys[0].RefTable = UsersTable
+	LifthusTokensTable.ForeignKeys[0].RefTable = UsersTable
 }

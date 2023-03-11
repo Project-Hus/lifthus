@@ -6,6 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"lifthus-auth/ent/lifthusgroup"
+	"lifthus-auth/ent/lifthussession"
+	"lifthus-auth/ent/lifthustoken"
 	"lifthus-auth/ent/user"
 	"reflect"
 
@@ -65,7 +68,10 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
-		user.Table: user.ValidColumn,
+		lifthusgroup.Table:   lifthusgroup.ValidColumn,
+		lifthussession.Table: lifthussession.ValidColumn,
+		lifthustoken.Table:   lifthustoken.ValidColumn,
+		user.Table:           user.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {
