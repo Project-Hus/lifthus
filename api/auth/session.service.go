@@ -21,6 +21,26 @@ import (
 // @Success      201 "returns session id with session token in cookie"
 // @Failure      500 "failed to create new session"
 func (ac authApiController) NewSessionHandler(c echo.Context) error {
+	// get lifthus_st from cookie
+	lifthus_st, err := c.Cookie("lifthus_st")
+	if err != nil {
+		if err != http.ErrNoCookie {
+			log.Println("[F] getting lifthus_st from cookie failed: ", err)
+			return c.NoContent(http.StatusInternalServerError)
+		}
+	}
+	// if there is session cookie already, just maintain the session.
+	// it makes the session to be maintained through the whole tabs of the browser unlike using session storage.
+	if lifthus_st != nil {
+		return c.NoContent(http.StatusOK)
+	}
+	/*
+		although unlikely, this may cause malfunction. if the session is deleted from database before cookie,
+		the client should clear the cookie self.
+	*/
+
+	// and if there is no cookie, create new session and return session id
+
 	// create new session and get the session id
 	sid, err := session.CreateSession(c.Request().Context(), ac.Client)
 	if err != nil {
@@ -34,9 +54,8 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 		"exp": time.Now().Add(time.Hour * 24).Unix(),
 	})
 
-	hsk := []byte(os.Getenv("HUS_SECRET_KEY"))
-
 	// Sign and get the complete encoded token as a string using the secret
+	hsk := []byte(os.Getenv("HUS_SECRET_KEY"))
 	stSigned, err := st.SignedString(hsk)
 	if err != nil {
 		log.Println("[F] signing session token failed: ", err)
