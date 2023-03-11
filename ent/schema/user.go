@@ -43,7 +43,7 @@ func (User) Fields() []ent.Field {
 // Edges of the User.
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("lifthus_sessions", LifthusSession.Type),
-		edge.To("lifthus_tokens", LifthusToken.Type),
+		edge.To("sessions", Session.Type),
+		edge.To("lifthus_tokens", RefreshToken.Type),
 	}
 }

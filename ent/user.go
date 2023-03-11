@@ -48,27 +48,27 @@ type User struct {
 
 // UserEdges holds the relations/edges for other nodes in the graph.
 type UserEdges struct {
-	// LifthusSessions holds the value of the lifthus_sessions edge.
-	LifthusSessions []*LifthusSession `json:"lifthus_sessions,omitempty"`
+	// Sessions holds the value of the sessions edge.
+	Sessions []*Session `json:"sessions,omitempty"`
 	// LifthusTokens holds the value of the lifthus_tokens edge.
-	LifthusTokens []*LifthusToken `json:"lifthus_tokens,omitempty"`
+	LifthusTokens []*RefreshToken `json:"lifthus_tokens,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
 }
 
-// LifthusSessionsOrErr returns the LifthusSessions value or an error if the edge
+// SessionsOrErr returns the Sessions value or an error if the edge
 // was not loaded in eager-loading.
-func (e UserEdges) LifthusSessionsOrErr() ([]*LifthusSession, error) {
+func (e UserEdges) SessionsOrErr() ([]*Session, error) {
 	if e.loadedTypes[0] {
-		return e.LifthusSessions, nil
+		return e.Sessions, nil
 	}
-	return nil, &NotLoadedError{edge: "lifthus_sessions"}
+	return nil, &NotLoadedError{edge: "sessions"}
 }
 
 // LifthusTokensOrErr returns the LifthusTokens value or an error if the edge
 // was not loaded in eager-loading.
-func (e UserEdges) LifthusTokensOrErr() ([]*LifthusToken, error) {
+func (e UserEdges) LifthusTokensOrErr() ([]*RefreshToken, error) {
 	if e.loadedTypes[1] {
 		return e.LifthusTokens, nil
 	}
@@ -190,13 +190,13 @@ func (u *User) assignValues(columns []string, values []any) error {
 	return nil
 }
 
-// QueryLifthusSessions queries the "lifthus_sessions" edge of the User entity.
-func (u *User) QueryLifthusSessions() *LifthusSessionQuery {
-	return NewUserClient(u.config).QueryLifthusSessions(u)
+// QuerySessions queries the "sessions" edge of the User entity.
+func (u *User) QuerySessions() *SessionQuery {
+	return NewUserClient(u.config).QuerySessions(u)
 }
 
 // QueryLifthusTokens queries the "lifthus_tokens" edge of the User entity.
-func (u *User) QueryLifthusTokens() *LifthusTokenQuery {
+func (u *User) QueryLifthusTokens() *RefreshTokenQuery {
 	return NewUserClient(u.config).QueryLifthusTokens(u)
 }
 

@@ -37,24 +37,24 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// EdgeLifthusSessions holds the string denoting the lifthus_sessions edge name in mutations.
-	EdgeLifthusSessions = "lifthus_sessions"
+	// EdgeSessions holds the string denoting the sessions edge name in mutations.
+	EdgeSessions = "sessions"
 	// EdgeLifthusTokens holds the string denoting the lifthus_tokens edge name in mutations.
 	EdgeLifthusTokens = "lifthus_tokens"
 	// Table holds the table name of the user in the database.
 	Table = "users"
-	// LifthusSessionsTable is the table that holds the lifthus_sessions relation/edge.
-	LifthusSessionsTable = "lifthus_sessions"
-	// LifthusSessionsInverseTable is the table name for the LifthusSession entity.
-	// It exists in this package in order to avoid circular dependency with the "lifthussession" package.
-	LifthusSessionsInverseTable = "lifthus_sessions"
-	// LifthusSessionsColumn is the table column denoting the lifthus_sessions relation/edge.
-	LifthusSessionsColumn = "uid"
+	// SessionsTable is the table that holds the sessions relation/edge.
+	SessionsTable = "sessions"
+	// SessionsInverseTable is the table name for the Session entity.
+	// It exists in this package in order to avoid circular dependency with the "session" package.
+	SessionsInverseTable = "sessions"
+	// SessionsColumn is the table column denoting the sessions relation/edge.
+	SessionsColumn = "uid"
 	// LifthusTokensTable is the table that holds the lifthus_tokens relation/edge.
-	LifthusTokensTable = "lifthus_tokens"
-	// LifthusTokensInverseTable is the table name for the LifthusToken entity.
-	// It exists in this package in order to avoid circular dependency with the "lifthustoken" package.
-	LifthusTokensInverseTable = "lifthus_tokens"
+	LifthusTokensTable = "refresh_tokens"
+	// LifthusTokensInverseTable is the table name for the RefreshToken entity.
+	// It exists in this package in order to avoid circular dependency with the "refreshtoken" package.
+	LifthusTokensInverseTable = "refresh_tokens"
 	// LifthusTokensColumn is the table column denoting the lifthus_tokens relation/edge.
 	LifthusTokensColumn = "uid"
 )

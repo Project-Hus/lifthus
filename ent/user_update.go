@@ -6,9 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"lifthus-auth/ent/lifthussession"
-	"lifthus-auth/ent/lifthustoken"
 	"lifthus-auth/ent/predicate"
+	"lifthus-auth/ent/refreshtoken"
+	"lifthus-auth/ent/session"
 	"lifthus-auth/ent/user"
 	"time"
 
@@ -175,32 +175,32 @@ func (uu *UserUpdate) SetUpdatedAt(t time.Time) *UserUpdate {
 	return uu
 }
 
-// AddLifthusSessionIDs adds the "lifthus_sessions" edge to the LifthusSession entity by IDs.
-func (uu *UserUpdate) AddLifthusSessionIDs(ids ...uuid.UUID) *UserUpdate {
-	uu.mutation.AddLifthusSessionIDs(ids...)
+// AddSessionIDs adds the "sessions" edge to the Session entity by IDs.
+func (uu *UserUpdate) AddSessionIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddSessionIDs(ids...)
 	return uu
 }
 
-// AddLifthusSessions adds the "lifthus_sessions" edges to the LifthusSession entity.
-func (uu *UserUpdate) AddLifthusSessions(l ...*LifthusSession) *UserUpdate {
-	ids := make([]uuid.UUID, len(l))
-	for i := range l {
-		ids[i] = l[i].ID
+// AddSessions adds the "sessions" edges to the Session entity.
+func (uu *UserUpdate) AddSessions(s ...*Session) *UserUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
 	}
-	return uu.AddLifthusSessionIDs(ids...)
+	return uu.AddSessionIDs(ids...)
 }
 
-// AddLifthusTokenIDs adds the "lifthus_tokens" edge to the LifthusToken entity by IDs.
+// AddLifthusTokenIDs adds the "lifthus_tokens" edge to the RefreshToken entity by IDs.
 func (uu *UserUpdate) AddLifthusTokenIDs(ids ...uuid.UUID) *UserUpdate {
 	uu.mutation.AddLifthusTokenIDs(ids...)
 	return uu
 }
 
-// AddLifthusTokens adds the "lifthus_tokens" edges to the LifthusToken entity.
-func (uu *UserUpdate) AddLifthusTokens(l ...*LifthusToken) *UserUpdate {
-	ids := make([]uuid.UUID, len(l))
-	for i := range l {
-		ids[i] = l[i].ID
+// AddLifthusTokens adds the "lifthus_tokens" edges to the RefreshToken entity.
+func (uu *UserUpdate) AddLifthusTokens(r ...*RefreshToken) *UserUpdate {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
 	}
 	return uu.AddLifthusTokenIDs(ids...)
 }
@@ -210,44 +210,44 @@ func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
 }
 
-// ClearLifthusSessions clears all "lifthus_sessions" edges to the LifthusSession entity.
-func (uu *UserUpdate) ClearLifthusSessions() *UserUpdate {
-	uu.mutation.ClearLifthusSessions()
+// ClearSessions clears all "sessions" edges to the Session entity.
+func (uu *UserUpdate) ClearSessions() *UserUpdate {
+	uu.mutation.ClearSessions()
 	return uu
 }
 
-// RemoveLifthusSessionIDs removes the "lifthus_sessions" edge to LifthusSession entities by IDs.
-func (uu *UserUpdate) RemoveLifthusSessionIDs(ids ...uuid.UUID) *UserUpdate {
-	uu.mutation.RemoveLifthusSessionIDs(ids...)
+// RemoveSessionIDs removes the "sessions" edge to Session entities by IDs.
+func (uu *UserUpdate) RemoveSessionIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveSessionIDs(ids...)
 	return uu
 }
 
-// RemoveLifthusSessions removes "lifthus_sessions" edges to LifthusSession entities.
-func (uu *UserUpdate) RemoveLifthusSessions(l ...*LifthusSession) *UserUpdate {
-	ids := make([]uuid.UUID, len(l))
-	for i := range l {
-		ids[i] = l[i].ID
+// RemoveSessions removes "sessions" edges to Session entities.
+func (uu *UserUpdate) RemoveSessions(s ...*Session) *UserUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
 	}
-	return uu.RemoveLifthusSessionIDs(ids...)
+	return uu.RemoveSessionIDs(ids...)
 }
 
-// ClearLifthusTokens clears all "lifthus_tokens" edges to the LifthusToken entity.
+// ClearLifthusTokens clears all "lifthus_tokens" edges to the RefreshToken entity.
 func (uu *UserUpdate) ClearLifthusTokens() *UserUpdate {
 	uu.mutation.ClearLifthusTokens()
 	return uu
 }
 
-// RemoveLifthusTokenIDs removes the "lifthus_tokens" edge to LifthusToken entities by IDs.
+// RemoveLifthusTokenIDs removes the "lifthus_tokens" edge to RefreshToken entities by IDs.
 func (uu *UserUpdate) RemoveLifthusTokenIDs(ids ...uuid.UUID) *UserUpdate {
 	uu.mutation.RemoveLifthusTokenIDs(ids...)
 	return uu
 }
 
-// RemoveLifthusTokens removes "lifthus_tokens" edges to LifthusToken entities.
-func (uu *UserUpdate) RemoveLifthusTokens(l ...*LifthusToken) *UserUpdate {
-	ids := make([]uuid.UUID, len(l))
-	for i := range l {
-		ids[i] = l[i].ID
+// RemoveLifthusTokens removes "lifthus_tokens" edges to RefreshToken entities.
+func (uu *UserUpdate) RemoveLifthusTokens(r ...*RefreshToken) *UserUpdate {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
 	}
 	return uu.RemoveLifthusTokenIDs(ids...)
 }
@@ -345,33 +345,33 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := uu.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if uu.mutation.LifthusSessionsCleared() {
+	if uu.mutation.SessionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.LifthusSessionsTable,
-			Columns: []string{user.LifthusSessionsColumn},
+			Table:   user.SessionsTable,
+			Columns: []string{user.SessionsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: lifthussession.FieldID,
+					Column: session.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uu.mutation.RemovedLifthusSessionsIDs(); len(nodes) > 0 && !uu.mutation.LifthusSessionsCleared() {
+	if nodes := uu.mutation.RemovedSessionsIDs(); len(nodes) > 0 && !uu.mutation.SessionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.LifthusSessionsTable,
-			Columns: []string{user.LifthusSessionsColumn},
+			Table:   user.SessionsTable,
+			Columns: []string{user.SessionsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: lifthussession.FieldID,
+					Column: session.FieldID,
 				},
 			},
 		}
@@ -380,17 +380,17 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uu.mutation.LifthusSessionsIDs(); len(nodes) > 0 {
+	if nodes := uu.mutation.SessionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.LifthusSessionsTable,
-			Columns: []string{user.LifthusSessionsColumn},
+			Table:   user.SessionsTable,
+			Columns: []string{user.SessionsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: lifthussession.FieldID,
+					Column: session.FieldID,
 				},
 			},
 		}
@@ -409,7 +409,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: lifthustoken.FieldID,
+					Column: refreshtoken.FieldID,
 				},
 			},
 		}
@@ -425,7 +425,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: lifthustoken.FieldID,
+					Column: refreshtoken.FieldID,
 				},
 			},
 		}
@@ -444,7 +444,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: lifthustoken.FieldID,
+					Column: refreshtoken.FieldID,
 				},
 			},
 		}
@@ -617,32 +617,32 @@ func (uuo *UserUpdateOne) SetUpdatedAt(t time.Time) *UserUpdateOne {
 	return uuo
 }
 
-// AddLifthusSessionIDs adds the "lifthus_sessions" edge to the LifthusSession entity by IDs.
-func (uuo *UserUpdateOne) AddLifthusSessionIDs(ids ...uuid.UUID) *UserUpdateOne {
-	uuo.mutation.AddLifthusSessionIDs(ids...)
+// AddSessionIDs adds the "sessions" edge to the Session entity by IDs.
+func (uuo *UserUpdateOne) AddSessionIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddSessionIDs(ids...)
 	return uuo
 }
 
-// AddLifthusSessions adds the "lifthus_sessions" edges to the LifthusSession entity.
-func (uuo *UserUpdateOne) AddLifthusSessions(l ...*LifthusSession) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(l))
-	for i := range l {
-		ids[i] = l[i].ID
+// AddSessions adds the "sessions" edges to the Session entity.
+func (uuo *UserUpdateOne) AddSessions(s ...*Session) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
 	}
-	return uuo.AddLifthusSessionIDs(ids...)
+	return uuo.AddSessionIDs(ids...)
 }
 
-// AddLifthusTokenIDs adds the "lifthus_tokens" edge to the LifthusToken entity by IDs.
+// AddLifthusTokenIDs adds the "lifthus_tokens" edge to the RefreshToken entity by IDs.
 func (uuo *UserUpdateOne) AddLifthusTokenIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.AddLifthusTokenIDs(ids...)
 	return uuo
 }
 
-// AddLifthusTokens adds the "lifthus_tokens" edges to the LifthusToken entity.
-func (uuo *UserUpdateOne) AddLifthusTokens(l ...*LifthusToken) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(l))
-	for i := range l {
-		ids[i] = l[i].ID
+// AddLifthusTokens adds the "lifthus_tokens" edges to the RefreshToken entity.
+func (uuo *UserUpdateOne) AddLifthusTokens(r ...*RefreshToken) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
 	}
 	return uuo.AddLifthusTokenIDs(ids...)
 }
@@ -652,44 +652,44 @@ func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
 }
 
-// ClearLifthusSessions clears all "lifthus_sessions" edges to the LifthusSession entity.
-func (uuo *UserUpdateOne) ClearLifthusSessions() *UserUpdateOne {
-	uuo.mutation.ClearLifthusSessions()
+// ClearSessions clears all "sessions" edges to the Session entity.
+func (uuo *UserUpdateOne) ClearSessions() *UserUpdateOne {
+	uuo.mutation.ClearSessions()
 	return uuo
 }
 
-// RemoveLifthusSessionIDs removes the "lifthus_sessions" edge to LifthusSession entities by IDs.
-func (uuo *UserUpdateOne) RemoveLifthusSessionIDs(ids ...uuid.UUID) *UserUpdateOne {
-	uuo.mutation.RemoveLifthusSessionIDs(ids...)
+// RemoveSessionIDs removes the "sessions" edge to Session entities by IDs.
+func (uuo *UserUpdateOne) RemoveSessionIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveSessionIDs(ids...)
 	return uuo
 }
 
-// RemoveLifthusSessions removes "lifthus_sessions" edges to LifthusSession entities.
-func (uuo *UserUpdateOne) RemoveLifthusSessions(l ...*LifthusSession) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(l))
-	for i := range l {
-		ids[i] = l[i].ID
+// RemoveSessions removes "sessions" edges to Session entities.
+func (uuo *UserUpdateOne) RemoveSessions(s ...*Session) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
 	}
-	return uuo.RemoveLifthusSessionIDs(ids...)
+	return uuo.RemoveSessionIDs(ids...)
 }
 
-// ClearLifthusTokens clears all "lifthus_tokens" edges to the LifthusToken entity.
+// ClearLifthusTokens clears all "lifthus_tokens" edges to the RefreshToken entity.
 func (uuo *UserUpdateOne) ClearLifthusTokens() *UserUpdateOne {
 	uuo.mutation.ClearLifthusTokens()
 	return uuo
 }
 
-// RemoveLifthusTokenIDs removes the "lifthus_tokens" edge to LifthusToken entities by IDs.
+// RemoveLifthusTokenIDs removes the "lifthus_tokens" edge to RefreshToken entities by IDs.
 func (uuo *UserUpdateOne) RemoveLifthusTokenIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.RemoveLifthusTokenIDs(ids...)
 	return uuo
 }
 
-// RemoveLifthusTokens removes "lifthus_tokens" edges to LifthusToken entities.
-func (uuo *UserUpdateOne) RemoveLifthusTokens(l ...*LifthusToken) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(l))
-	for i := range l {
-		ids[i] = l[i].ID
+// RemoveLifthusTokens removes "lifthus_tokens" edges to RefreshToken entities.
+func (uuo *UserUpdateOne) RemoveLifthusTokens(r ...*RefreshToken) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
 	}
 	return uuo.RemoveLifthusTokenIDs(ids...)
 }
@@ -817,33 +817,33 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if value, ok := uuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if uuo.mutation.LifthusSessionsCleared() {
+	if uuo.mutation.SessionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.LifthusSessionsTable,
-			Columns: []string{user.LifthusSessionsColumn},
+			Table:   user.SessionsTable,
+			Columns: []string{user.SessionsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: lifthussession.FieldID,
+					Column: session.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uuo.mutation.RemovedLifthusSessionsIDs(); len(nodes) > 0 && !uuo.mutation.LifthusSessionsCleared() {
+	if nodes := uuo.mutation.RemovedSessionsIDs(); len(nodes) > 0 && !uuo.mutation.SessionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.LifthusSessionsTable,
-			Columns: []string{user.LifthusSessionsColumn},
+			Table:   user.SessionsTable,
+			Columns: []string{user.SessionsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: lifthussession.FieldID,
+					Column: session.FieldID,
 				},
 			},
 		}
@@ -852,17 +852,17 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uuo.mutation.LifthusSessionsIDs(); len(nodes) > 0 {
+	if nodes := uuo.mutation.SessionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.LifthusSessionsTable,
-			Columns: []string{user.LifthusSessionsColumn},
+			Table:   user.SessionsTable,
+			Columns: []string{user.SessionsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: lifthussession.FieldID,
+					Column: session.FieldID,
 				},
 			},
 		}
@@ -881,7 +881,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: lifthustoken.FieldID,
+					Column: refreshtoken.FieldID,
 				},
 			},
 		}
@@ -897,7 +897,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: lifthustoken.FieldID,
+					Column: refreshtoken.FieldID,
 				},
 			},
 		}
@@ -916,7 +916,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: lifthustoken.FieldID,
+					Column: refreshtoken.FieldID,
 				},
 			},
 		}

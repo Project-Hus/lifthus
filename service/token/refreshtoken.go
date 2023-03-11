@@ -1,4 +1,4 @@
-package service
+package token
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 
 // CreateRefreshToken takes user's uuid and create signed refresh token and return it.
 // It can be called only when user is authenticated by Third-party service.
-func CreateRefreshToken(ctx context.Context, client *ent.Client, nuid string) (string, error) {
+func CreateLifthusToken(ctx context.Context, client *ent.Client, nuid string) (string, error) {
 
 	uid, err := uuid.Parse(nuid)
 	if err != nil {
@@ -22,7 +22,7 @@ func CreateRefreshToken(ctx context.Context, client *ent.Client, nuid string) (s
 	}
 
 	// create refresh token in database, and its default key is uuid
-	tk, err := client.LifthusToken.
+	tk, err := client.RefreshToken.
 		Create().SetUID(uid).Save(ctx)
 	if err != nil {
 		log.Print("[F] creating refresh token failed: ", err)

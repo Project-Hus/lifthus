@@ -9,23 +9,24 @@ import (
 	"github.com/google/uuid"
 )
 
-// LifthusSession holds the schema definition for the LifthusSession entity.
-type LifthusSession struct {
+// Session holds the schema definition for the LifthusSession entity.
+type Session struct {
 	ent.Schema
 }
 
 // Fields of the LifthusSession.
-func (LifthusSession) Fields() []ent.Field {
+func (Session) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).StructTag(`json:"sid,omitempty"`).Default(uuid.New).Unique(), // sid
 		field.UUID("uid", uuid.UUID{}).Optional().Nillable(),
-		field.Time("connected_at").Default(time.Now), // connected at
+		field.Time("connected_at").Default(time.Now),  // connected at
+		field.Time("signed_at").Optional().Nillable(), // signed at
 	}
 }
 
 // Edges of the LifthusSession.
-func (LifthusSession) Edges() []ent.Edge {
+func (Session) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("user", User.Type).Ref("lifthus_sessions").Unique().Field("uid"),
+		edge.From("user", User.Type).Ref("sessions").Unique().Field("uid"),
 	}
 }

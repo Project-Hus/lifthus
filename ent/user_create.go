@@ -6,8 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"lifthus-auth/ent/lifthussession"
-	"lifthus-auth/ent/lifthustoken"
+	"lifthus-auth/ent/refreshtoken"
+	"lifthus-auth/ent/session"
 	"lifthus-auth/ent/user"
 	"time"
 
@@ -165,32 +165,32 @@ func (uc *UserCreate) SetNillableID(u *uuid.UUID) *UserCreate {
 	return uc
 }
 
-// AddLifthusSessionIDs adds the "lifthus_sessions" edge to the LifthusSession entity by IDs.
-func (uc *UserCreate) AddLifthusSessionIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddLifthusSessionIDs(ids...)
+// AddSessionIDs adds the "sessions" edge to the Session entity by IDs.
+func (uc *UserCreate) AddSessionIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddSessionIDs(ids...)
 	return uc
 }
 
-// AddLifthusSessions adds the "lifthus_sessions" edges to the LifthusSession entity.
-func (uc *UserCreate) AddLifthusSessions(l ...*LifthusSession) *UserCreate {
-	ids := make([]uuid.UUID, len(l))
-	for i := range l {
-		ids[i] = l[i].ID
+// AddSessions adds the "sessions" edges to the Session entity.
+func (uc *UserCreate) AddSessions(s ...*Session) *UserCreate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
 	}
-	return uc.AddLifthusSessionIDs(ids...)
+	return uc.AddSessionIDs(ids...)
 }
 
-// AddLifthusTokenIDs adds the "lifthus_tokens" edge to the LifthusToken entity by IDs.
+// AddLifthusTokenIDs adds the "lifthus_tokens" edge to the RefreshToken entity by IDs.
 func (uc *UserCreate) AddLifthusTokenIDs(ids ...uuid.UUID) *UserCreate {
 	uc.mutation.AddLifthusTokenIDs(ids...)
 	return uc
 }
 
-// AddLifthusTokens adds the "lifthus_tokens" edges to the LifthusToken entity.
-func (uc *UserCreate) AddLifthusTokens(l ...*LifthusToken) *UserCreate {
-	ids := make([]uuid.UUID, len(l))
-	for i := range l {
-		ids[i] = l[i].ID
+// AddLifthusTokens adds the "lifthus_tokens" edges to the RefreshToken entity.
+func (uc *UserCreate) AddLifthusTokens(r ...*RefreshToken) *UserCreate {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
 	}
 	return uc.AddLifthusTokenIDs(ids...)
 }
@@ -357,17 +357,17 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if nodes := uc.mutation.LifthusSessionsIDs(); len(nodes) > 0 {
+	if nodes := uc.mutation.SessionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.LifthusSessionsTable,
-			Columns: []string{user.LifthusSessionsColumn},
+			Table:   user.SessionsTable,
+			Columns: []string{user.SessionsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: lifthussession.FieldID,
+					Column: session.FieldID,
 				},
 			},
 		}
@@ -386,7 +386,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: lifthustoken.FieldID,
+					Column: refreshtoken.FieldID,
 				},
 			},
 		}

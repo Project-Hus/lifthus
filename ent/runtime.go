@@ -3,9 +3,9 @@
 package ent
 
 import (
-	"lifthus-auth/ent/lifthussession"
-	"lifthus-auth/ent/lifthustoken"
+	"lifthus-auth/ent/refreshtoken"
 	"lifthus-auth/ent/schema"
+	"lifthus-auth/ent/session"
 	"lifthus-auth/ent/user"
 	"time"
 
@@ -16,36 +16,36 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
-	lifthussessionFields := schema.LifthusSession{}.Fields()
-	_ = lifthussessionFields
-	// lifthussessionDescConnectedAt is the schema descriptor for connected_at field.
-	lifthussessionDescConnectedAt := lifthussessionFields[2].Descriptor()
-	// lifthussession.DefaultConnectedAt holds the default value on creation for the connected_at field.
-	lifthussession.DefaultConnectedAt = lifthussessionDescConnectedAt.Default.(func() time.Time)
-	// lifthussessionDescID is the schema descriptor for id field.
-	lifthussessionDescID := lifthussessionFields[0].Descriptor()
-	// lifthussession.DefaultID holds the default value on creation for the id field.
-	lifthussession.DefaultID = lifthussessionDescID.Default.(func() uuid.UUID)
-	lifthustokenFields := schema.LifthusToken{}.Fields()
-	_ = lifthustokenFields
-	// lifthustokenDescRevoked is the schema descriptor for revoked field.
-	lifthustokenDescRevoked := lifthustokenFields[2].Descriptor()
-	// lifthustoken.DefaultRevoked holds the default value on creation for the revoked field.
-	lifthustoken.DefaultRevoked = lifthustokenDescRevoked.Default.(bool)
-	// lifthustokenDescCreatedAt is the schema descriptor for created_at field.
-	lifthustokenDescCreatedAt := lifthustokenFields[3].Descriptor()
-	// lifthustoken.DefaultCreatedAt holds the default value on creation for the created_at field.
-	lifthustoken.DefaultCreatedAt = lifthustokenDescCreatedAt.Default.(func() time.Time)
-	// lifthustokenDescUpdatedAt is the schema descriptor for updated_at field.
-	lifthustokenDescUpdatedAt := lifthustokenFields[4].Descriptor()
-	// lifthustoken.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	lifthustoken.DefaultUpdatedAt = lifthustokenDescUpdatedAt.Default.(func() time.Time)
-	// lifthustoken.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	lifthustoken.UpdateDefaultUpdatedAt = lifthustokenDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// lifthustokenDescID is the schema descriptor for id field.
-	lifthustokenDescID := lifthustokenFields[0].Descriptor()
-	// lifthustoken.DefaultID holds the default value on creation for the id field.
-	lifthustoken.DefaultID = lifthustokenDescID.Default.(func() uuid.UUID)
+	refreshtokenFields := schema.RefreshToken{}.Fields()
+	_ = refreshtokenFields
+	// refreshtokenDescRevoked is the schema descriptor for revoked field.
+	refreshtokenDescRevoked := refreshtokenFields[2].Descriptor()
+	// refreshtoken.DefaultRevoked holds the default value on creation for the revoked field.
+	refreshtoken.DefaultRevoked = refreshtokenDescRevoked.Default.(bool)
+	// refreshtokenDescCreatedAt is the schema descriptor for created_at field.
+	refreshtokenDescCreatedAt := refreshtokenFields[3].Descriptor()
+	// refreshtoken.DefaultCreatedAt holds the default value on creation for the created_at field.
+	refreshtoken.DefaultCreatedAt = refreshtokenDescCreatedAt.Default.(func() time.Time)
+	// refreshtokenDescUpdatedAt is the schema descriptor for updated_at field.
+	refreshtokenDescUpdatedAt := refreshtokenFields[4].Descriptor()
+	// refreshtoken.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	refreshtoken.DefaultUpdatedAt = refreshtokenDescUpdatedAt.Default.(func() time.Time)
+	// refreshtoken.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	refreshtoken.UpdateDefaultUpdatedAt = refreshtokenDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// refreshtokenDescID is the schema descriptor for id field.
+	refreshtokenDescID := refreshtokenFields[0].Descriptor()
+	// refreshtoken.DefaultID holds the default value on creation for the id field.
+	refreshtoken.DefaultID = refreshtokenDescID.Default.(func() uuid.UUID)
+	sessionFields := schema.Session{}.Fields()
+	_ = sessionFields
+	// sessionDescConnectedAt is the schema descriptor for connected_at field.
+	sessionDescConnectedAt := sessionFields[2].Descriptor()
+	// session.DefaultConnectedAt holds the default value on creation for the connected_at field.
+	session.DefaultConnectedAt = sessionDescConnectedAt.Default.(func() time.Time)
+	// sessionDescID is the schema descriptor for id field.
+	sessionDescID := sessionFields[0].Descriptor()
+	// session.DefaultID holds the default value on creation for the id field.
+	session.DefaultID = sessionDescID.Default.(func() uuid.UUID)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescRegistered is the schema descriptor for registered field.

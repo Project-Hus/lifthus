@@ -4,7 +4,7 @@ package ent
 
 import (
 	"fmt"
-	"lifthus-auth/ent/lifthustoken"
+	"lifthus-auth/ent/refreshtoken"
 	"lifthus-auth/ent/user"
 	"strings"
 	"time"
@@ -13,8 +13,8 @@ import (
 	"github.com/google/uuid"
 )
 
-// LifthusToken is the model entity for the LifthusToken schema.
-type LifthusToken struct {
+// RefreshToken is the model entity for the RefreshToken schema.
+type RefreshToken struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty" json:tid,omitempty`
@@ -27,12 +27,12 @@ type LifthusToken struct {
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the LifthusTokenQuery when eager-loading is set.
-	Edges LifthusTokenEdges `json:"edges"`
+	// The values are being populated by the RefreshTokenQuery when eager-loading is set.
+	Edges RefreshTokenEdges `json:"edges"`
 }
 
-// LifthusTokenEdges holds the relations/edges for other nodes in the graph.
-type LifthusTokenEdges struct {
+// RefreshTokenEdges holds the relations/edges for other nodes in the graph.
+type RefreshTokenEdges struct {
 	// User holds the value of the user edge.
 	User *User `json:"user,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -42,7 +42,7 @@ type LifthusTokenEdges struct {
 
 // UserOrErr returns the User value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e LifthusTokenEdges) UserOrErr() (*User, error) {
+func (e RefreshTokenEdges) UserOrErr() (*User, error) {
 	if e.loadedTypes[0] {
 		if e.User == nil {
 			// Edge was loaded but was not found.
@@ -54,108 +54,108 @@ func (e LifthusTokenEdges) UserOrErr() (*User, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*LifthusToken) scanValues(columns []string) ([]any, error) {
+func (*RefreshToken) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case lifthustoken.FieldRevoked:
+		case refreshtoken.FieldRevoked:
 			values[i] = new(sql.NullBool)
-		case lifthustoken.FieldCreatedAt, lifthustoken.FieldUpdatedAt:
+		case refreshtoken.FieldCreatedAt, refreshtoken.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case lifthustoken.FieldID, lifthustoken.FieldUID:
+		case refreshtoken.FieldID, refreshtoken.FieldUID:
 			values[i] = new(uuid.UUID)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type LifthusToken", columns[i])
+			return nil, fmt.Errorf("unexpected column %q for type RefreshToken", columns[i])
 		}
 	}
 	return values, nil
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the LifthusToken fields.
-func (lt *LifthusToken) assignValues(columns []string, values []any) error {
+// to the RefreshToken fields.
+func (rt *RefreshToken) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case lifthustoken.FieldID:
+		case refreshtoken.FieldID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				lt.ID = *value
+				rt.ID = *value
 			}
-		case lifthustoken.FieldUID:
+		case refreshtoken.FieldUID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field uid", values[i])
 			} else if value != nil {
-				lt.UID = *value
+				rt.UID = *value
 			}
-		case lifthustoken.FieldRevoked:
+		case refreshtoken.FieldRevoked:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field revoked", values[i])
 			} else if value.Valid {
-				lt.Revoked = value.Bool
+				rt.Revoked = value.Bool
 			}
-		case lifthustoken.FieldCreatedAt:
+		case refreshtoken.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				lt.CreatedAt = value.Time
+				rt.CreatedAt = value.Time
 			}
-		case lifthustoken.FieldUpdatedAt:
+		case refreshtoken.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				lt.UpdatedAt = value.Time
+				rt.UpdatedAt = value.Time
 			}
 		}
 	}
 	return nil
 }
 
-// QueryUser queries the "user" edge of the LifthusToken entity.
-func (lt *LifthusToken) QueryUser() *UserQuery {
-	return NewLifthusTokenClient(lt.config).QueryUser(lt)
+// QueryUser queries the "user" edge of the RefreshToken entity.
+func (rt *RefreshToken) QueryUser() *UserQuery {
+	return NewRefreshTokenClient(rt.config).QueryUser(rt)
 }
 
-// Update returns a builder for updating this LifthusToken.
-// Note that you need to call LifthusToken.Unwrap() before calling this method if this LifthusToken
+// Update returns a builder for updating this RefreshToken.
+// Note that you need to call RefreshToken.Unwrap() before calling this method if this RefreshToken
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (lt *LifthusToken) Update() *LifthusTokenUpdateOne {
-	return NewLifthusTokenClient(lt.config).UpdateOne(lt)
+func (rt *RefreshToken) Update() *RefreshTokenUpdateOne {
+	return NewRefreshTokenClient(rt.config).UpdateOne(rt)
 }
 
-// Unwrap unwraps the LifthusToken entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the RefreshToken entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (lt *LifthusToken) Unwrap() *LifthusToken {
-	_tx, ok := lt.config.driver.(*txDriver)
+func (rt *RefreshToken) Unwrap() *RefreshToken {
+	_tx, ok := rt.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: LifthusToken is not a transactional entity")
+		panic("ent: RefreshToken is not a transactional entity")
 	}
-	lt.config.driver = _tx.drv
-	return lt
+	rt.config.driver = _tx.drv
+	return rt
 }
 
 // String implements the fmt.Stringer.
-func (lt *LifthusToken) String() string {
+func (rt *RefreshToken) String() string {
 	var builder strings.Builder
-	builder.WriteString("LifthusToken(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", lt.ID))
+	builder.WriteString("RefreshToken(")
+	builder.WriteString(fmt.Sprintf("id=%v, ", rt.ID))
 	builder.WriteString("uid=")
-	builder.WriteString(fmt.Sprintf("%v", lt.UID))
+	builder.WriteString(fmt.Sprintf("%v", rt.UID))
 	builder.WriteString(", ")
 	builder.WriteString("revoked=")
-	builder.WriteString(fmt.Sprintf("%v", lt.Revoked))
+	builder.WriteString(fmt.Sprintf("%v", rt.Revoked))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(lt.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(rt.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(lt.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(rt.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }
 
-// LifthusTokens is a parsable slice of LifthusToken.
-type LifthusTokens []*LifthusToken
+// RefreshTokens is a parsable slice of RefreshToken.
+type RefreshTokens []*RefreshToken

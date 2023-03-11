@@ -20,28 +20,28 @@ func (f LifthusGroupFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LifthusGroupMutation", m)
 }
 
-// The LifthusSessionFunc type is an adapter to allow the use of ordinary
-// function as LifthusSession mutator.
-type LifthusSessionFunc func(context.Context, *ent.LifthusSessionMutation) (ent.Value, error)
+// The RefreshTokenFunc type is an adapter to allow the use of ordinary
+// function as RefreshToken mutator.
+type RefreshTokenFunc func(context.Context, *ent.RefreshTokenMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f LifthusSessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.LifthusSessionMutation); ok {
+func (f RefreshTokenFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.RefreshTokenMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LifthusSessionMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RefreshTokenMutation", m)
 }
 
-// The LifthusTokenFunc type is an adapter to allow the use of ordinary
-// function as LifthusToken mutator.
-type LifthusTokenFunc func(context.Context, *ent.LifthusTokenMutation) (ent.Value, error)
+// The SessionFunc type is an adapter to allow the use of ordinary
+// function as Session mutator.
+type SessionFunc func(context.Context, *ent.SessionMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f LifthusTokenFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.LifthusTokenMutation); ok {
+func (f SessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SessionMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LifthusTokenMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SessionMutation", m)
 }
 
 // The UserFunc type is an adapter to allow the use of ordinary
