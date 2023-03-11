@@ -4,11 +4,16 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"lifthus-auth/ent/lifthussession"
+	"lifthus-auth/ent/lifthustoken"
 	"lifthus-auth/ent/user"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // UserCreate is the builder for creating a User entity.
@@ -18,6 +23,178 @@ type UserCreate struct {
 	hooks    []Hook
 }
 
+// SetRegistered sets the "registered" field.
+func (uc *UserCreate) SetRegistered(b bool) *UserCreate {
+	uc.mutation.SetRegistered(b)
+	return uc
+}
+
+// SetNillableRegistered sets the "registered" field if the given value is not nil.
+func (uc *UserCreate) SetNillableRegistered(b *bool) *UserCreate {
+	if b != nil {
+		uc.SetRegistered(*b)
+	}
+	return uc
+}
+
+// SetRegisteredAt sets the "registered_at" field.
+func (uc *UserCreate) SetRegisteredAt(t time.Time) *UserCreate {
+	uc.mutation.SetRegisteredAt(t)
+	return uc
+}
+
+// SetNillableRegisteredAt sets the "registered_at" field if the given value is not nil.
+func (uc *UserCreate) SetNillableRegisteredAt(t *time.Time) *UserCreate {
+	if t != nil {
+		uc.SetRegisteredAt(*t)
+	}
+	return uc
+}
+
+// SetUsername sets the "username" field.
+func (uc *UserCreate) SetUsername(s string) *UserCreate {
+	uc.mutation.SetUsername(s)
+	return uc
+}
+
+// SetNillableUsername sets the "username" field if the given value is not nil.
+func (uc *UserCreate) SetNillableUsername(s *string) *UserCreate {
+	if s != nil {
+		uc.SetUsername(*s)
+	}
+	return uc
+}
+
+// SetEmail sets the "email" field.
+func (uc *UserCreate) SetEmail(s string) *UserCreate {
+	uc.mutation.SetEmail(s)
+	return uc
+}
+
+// SetEmailVerified sets the "email_verified" field.
+func (uc *UserCreate) SetEmailVerified(b bool) *UserCreate {
+	uc.mutation.SetEmailVerified(b)
+	return uc
+}
+
+// SetName sets the "name" field.
+func (uc *UserCreate) SetName(s string) *UserCreate {
+	uc.mutation.SetName(s)
+	return uc
+}
+
+// SetGivenName sets the "given_name" field.
+func (uc *UserCreate) SetGivenName(s string) *UserCreate {
+	uc.mutation.SetGivenName(s)
+	return uc
+}
+
+// SetFamilyName sets the "family_name" field.
+func (uc *UserCreate) SetFamilyName(s string) *UserCreate {
+	uc.mutation.SetFamilyName(s)
+	return uc
+}
+
+// SetBirthdate sets the "birthdate" field.
+func (uc *UserCreate) SetBirthdate(t time.Time) *UserCreate {
+	uc.mutation.SetBirthdate(t)
+	return uc
+}
+
+// SetNillableBirthdate sets the "birthdate" field if the given value is not nil.
+func (uc *UserCreate) SetNillableBirthdate(t *time.Time) *UserCreate {
+	if t != nil {
+		uc.SetBirthdate(*t)
+	}
+	return uc
+}
+
+// SetProfilePictureURL sets the "profile_picture_url" field.
+func (uc *UserCreate) SetProfilePictureURL(s string) *UserCreate {
+	uc.mutation.SetProfilePictureURL(s)
+	return uc
+}
+
+// SetNillableProfilePictureURL sets the "profile_picture_url" field if the given value is not nil.
+func (uc *UserCreate) SetNillableProfilePictureURL(s *string) *UserCreate {
+	if s != nil {
+		uc.SetProfilePictureURL(*s)
+	}
+	return uc
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (uc *UserCreate) SetCreatedAt(t time.Time) *UserCreate {
+	uc.mutation.SetCreatedAt(t)
+	return uc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (uc *UserCreate) SetNillableCreatedAt(t *time.Time) *UserCreate {
+	if t != nil {
+		uc.SetCreatedAt(*t)
+	}
+	return uc
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (uc *UserCreate) SetUpdatedAt(t time.Time) *UserCreate {
+	uc.mutation.SetUpdatedAt(t)
+	return uc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (uc *UserCreate) SetNillableUpdatedAt(t *time.Time) *UserCreate {
+	if t != nil {
+		uc.SetUpdatedAt(*t)
+	}
+	return uc
+}
+
+// SetID sets the "id" field.
+func (uc *UserCreate) SetID(u uuid.UUID) *UserCreate {
+	uc.mutation.SetID(u)
+	return uc
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (uc *UserCreate) SetNillableID(u *uuid.UUID) *UserCreate {
+	if u != nil {
+		uc.SetID(*u)
+	}
+	return uc
+}
+
+// AddLifthusSessionIDs adds the "lifthus_sessions" edge to the LifthusSession entity by IDs.
+func (uc *UserCreate) AddLifthusSessionIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddLifthusSessionIDs(ids...)
+	return uc
+}
+
+// AddLifthusSessions adds the "lifthus_sessions" edges to the LifthusSession entity.
+func (uc *UserCreate) AddLifthusSessions(l ...*LifthusSession) *UserCreate {
+	ids := make([]uuid.UUID, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return uc.AddLifthusSessionIDs(ids...)
+}
+
+// AddLifthusTokenIDs adds the "lifthus_tokens" edge to the LifthusToken entity by IDs.
+func (uc *UserCreate) AddLifthusTokenIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddLifthusTokenIDs(ids...)
+	return uc
+}
+
+// AddLifthusTokens adds the "lifthus_tokens" edges to the LifthusToken entity.
+func (uc *UserCreate) AddLifthusTokens(l ...*LifthusToken) *UserCreate {
+	ids := make([]uuid.UUID, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return uc.AddLifthusTokenIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uc *UserCreate) Mutation() *UserMutation {
 	return uc.mutation
@@ -25,6 +202,7 @@ func (uc *UserCreate) Mutation() *UserMutation {
 
 // Save creates the User in the database.
 func (uc *UserCreate) Save(ctx context.Context) (*User, error) {
+	uc.defaults()
 	return withHooks[*User, UserMutation](ctx, uc.sqlSave, uc.mutation, uc.hooks)
 }
 
@@ -50,8 +228,52 @@ func (uc *UserCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (uc *UserCreate) defaults() {
+	if _, ok := uc.mutation.Registered(); !ok {
+		v := user.DefaultRegistered
+		uc.mutation.SetRegistered(v)
+	}
+	if _, ok := uc.mutation.CreatedAt(); !ok {
+		v := user.DefaultCreatedAt()
+		uc.mutation.SetCreatedAt(v)
+	}
+	if _, ok := uc.mutation.UpdatedAt(); !ok {
+		v := user.DefaultUpdatedAt()
+		uc.mutation.SetUpdatedAt(v)
+	}
+	if _, ok := uc.mutation.ID(); !ok {
+		v := user.DefaultID()
+		uc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (uc *UserCreate) check() error {
+	if _, ok := uc.mutation.Registered(); !ok {
+		return &ValidationError{Name: "registered", err: errors.New(`ent: missing required field "User.registered"`)}
+	}
+	if _, ok := uc.mutation.Email(); !ok {
+		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "User.email"`)}
+	}
+	if _, ok := uc.mutation.EmailVerified(); !ok {
+		return &ValidationError{Name: "email_verified", err: errors.New(`ent: missing required field "User.email_verified"`)}
+	}
+	if _, ok := uc.mutation.Name(); !ok {
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "User.name"`)}
+	}
+	if _, ok := uc.mutation.GivenName(); !ok {
+		return &ValidationError{Name: "given_name", err: errors.New(`ent: missing required field "User.given_name"`)}
+	}
+	if _, ok := uc.mutation.FamilyName(); !ok {
+		return &ValidationError{Name: "family_name", err: errors.New(`ent: missing required field "User.family_name"`)}
+	}
+	if _, ok := uc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
+	}
+	if _, ok := uc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "User.updated_at"`)}
+	}
 	return nil
 }
 
@@ -66,8 +288,13 @@ func (uc *UserCreate) sqlSave(ctx context.Context) (*User, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	uc.mutation.id = &_node.ID
 	uc.mutation.done = true
 	return _node, nil
@@ -76,8 +303,98 @@ func (uc *UserCreate) sqlSave(ctx context.Context) (*User, error) {
 func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	var (
 		_node = &User{config: uc.config}
-		_spec = sqlgraph.NewCreateSpec(user.Table, sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(user.Table, sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID))
 	)
+	if id, ok := uc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
+	}
+	if value, ok := uc.mutation.Registered(); ok {
+		_spec.SetField(user.FieldRegistered, field.TypeBool, value)
+		_node.Registered = value
+	}
+	if value, ok := uc.mutation.RegisteredAt(); ok {
+		_spec.SetField(user.FieldRegisteredAt, field.TypeTime, value)
+		_node.RegisteredAt = &value
+	}
+	if value, ok := uc.mutation.Username(); ok {
+		_spec.SetField(user.FieldUsername, field.TypeString, value)
+		_node.Username = &value
+	}
+	if value, ok := uc.mutation.Email(); ok {
+		_spec.SetField(user.FieldEmail, field.TypeString, value)
+		_node.Email = value
+	}
+	if value, ok := uc.mutation.EmailVerified(); ok {
+		_spec.SetField(user.FieldEmailVerified, field.TypeBool, value)
+		_node.EmailVerified = value
+	}
+	if value, ok := uc.mutation.Name(); ok {
+		_spec.SetField(user.FieldName, field.TypeString, value)
+		_node.Name = value
+	}
+	if value, ok := uc.mutation.GivenName(); ok {
+		_spec.SetField(user.FieldGivenName, field.TypeString, value)
+		_node.GivenName = value
+	}
+	if value, ok := uc.mutation.FamilyName(); ok {
+		_spec.SetField(user.FieldFamilyName, field.TypeString, value)
+		_node.FamilyName = value
+	}
+	if value, ok := uc.mutation.Birthdate(); ok {
+		_spec.SetField(user.FieldBirthdate, field.TypeTime, value)
+		_node.Birthdate = &value
+	}
+	if value, ok := uc.mutation.ProfilePictureURL(); ok {
+		_spec.SetField(user.FieldProfilePictureURL, field.TypeString, value)
+		_node.ProfilePictureURL = &value
+	}
+	if value, ok := uc.mutation.CreatedAt(); ok {
+		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := uc.mutation.UpdatedAt(); ok {
+		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
+	if nodes := uc.mutation.LifthusSessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LifthusSessionsTable,
+			Columns: []string{user.LifthusSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: lifthussession.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.LifthusTokensIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LifthusTokensTable,
+			Columns: []string{user.LifthusTokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: lifthustoken.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -95,6 +412,7 @@ func (ucb *UserCreateBulk) Save(ctx context.Context) ([]*User, error) {
 	for i := range ucb.builders {
 		func(i int, root context.Context) {
 			builder := ucb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*UserMutation)
 				if !ok {
@@ -121,10 +439,6 @@ func (ucb *UserCreateBulk) Save(ctx context.Context) ([]*User, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})

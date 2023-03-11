@@ -6,12 +6,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"lifthus-auth/ent/lifthussession"
+	"lifthus-auth/ent/lifthustoken"
 	"lifthus-auth/ent/predicate"
 	"lifthus-auth/ent/user"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // UserUpdate is the builder for updating User entities.
@@ -27,13 +31,230 @@ func (uu *UserUpdate) Where(ps ...predicate.User) *UserUpdate {
 	return uu
 }
 
+// SetRegistered sets the "registered" field.
+func (uu *UserUpdate) SetRegistered(b bool) *UserUpdate {
+	uu.mutation.SetRegistered(b)
+	return uu
+}
+
+// SetNillableRegistered sets the "registered" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableRegistered(b *bool) *UserUpdate {
+	if b != nil {
+		uu.SetRegistered(*b)
+	}
+	return uu
+}
+
+// SetRegisteredAt sets the "registered_at" field.
+func (uu *UserUpdate) SetRegisteredAt(t time.Time) *UserUpdate {
+	uu.mutation.SetRegisteredAt(t)
+	return uu
+}
+
+// SetNillableRegisteredAt sets the "registered_at" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableRegisteredAt(t *time.Time) *UserUpdate {
+	if t != nil {
+		uu.SetRegisteredAt(*t)
+	}
+	return uu
+}
+
+// ClearRegisteredAt clears the value of the "registered_at" field.
+func (uu *UserUpdate) ClearRegisteredAt() *UserUpdate {
+	uu.mutation.ClearRegisteredAt()
+	return uu
+}
+
+// SetUsername sets the "username" field.
+func (uu *UserUpdate) SetUsername(s string) *UserUpdate {
+	uu.mutation.SetUsername(s)
+	return uu
+}
+
+// SetNillableUsername sets the "username" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableUsername(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetUsername(*s)
+	}
+	return uu
+}
+
+// ClearUsername clears the value of the "username" field.
+func (uu *UserUpdate) ClearUsername() *UserUpdate {
+	uu.mutation.ClearUsername()
+	return uu
+}
+
+// SetEmail sets the "email" field.
+func (uu *UserUpdate) SetEmail(s string) *UserUpdate {
+	uu.mutation.SetEmail(s)
+	return uu
+}
+
+// SetEmailVerified sets the "email_verified" field.
+func (uu *UserUpdate) SetEmailVerified(b bool) *UserUpdate {
+	uu.mutation.SetEmailVerified(b)
+	return uu
+}
+
+// SetName sets the "name" field.
+func (uu *UserUpdate) SetName(s string) *UserUpdate {
+	uu.mutation.SetName(s)
+	return uu
+}
+
+// SetGivenName sets the "given_name" field.
+func (uu *UserUpdate) SetGivenName(s string) *UserUpdate {
+	uu.mutation.SetGivenName(s)
+	return uu
+}
+
+// SetFamilyName sets the "family_name" field.
+func (uu *UserUpdate) SetFamilyName(s string) *UserUpdate {
+	uu.mutation.SetFamilyName(s)
+	return uu
+}
+
+// SetBirthdate sets the "birthdate" field.
+func (uu *UserUpdate) SetBirthdate(t time.Time) *UserUpdate {
+	uu.mutation.SetBirthdate(t)
+	return uu
+}
+
+// SetNillableBirthdate sets the "birthdate" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableBirthdate(t *time.Time) *UserUpdate {
+	if t != nil {
+		uu.SetBirthdate(*t)
+	}
+	return uu
+}
+
+// ClearBirthdate clears the value of the "birthdate" field.
+func (uu *UserUpdate) ClearBirthdate() *UserUpdate {
+	uu.mutation.ClearBirthdate()
+	return uu
+}
+
+// SetProfilePictureURL sets the "profile_picture_url" field.
+func (uu *UserUpdate) SetProfilePictureURL(s string) *UserUpdate {
+	uu.mutation.SetProfilePictureURL(s)
+	return uu
+}
+
+// SetNillableProfilePictureURL sets the "profile_picture_url" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableProfilePictureURL(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetProfilePictureURL(*s)
+	}
+	return uu
+}
+
+// ClearProfilePictureURL clears the value of the "profile_picture_url" field.
+func (uu *UserUpdate) ClearProfilePictureURL() *UserUpdate {
+	uu.mutation.ClearProfilePictureURL()
+	return uu
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (uu *UserUpdate) SetCreatedAt(t time.Time) *UserUpdate {
+	uu.mutation.SetCreatedAt(t)
+	return uu
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableCreatedAt(t *time.Time) *UserUpdate {
+	if t != nil {
+		uu.SetCreatedAt(*t)
+	}
+	return uu
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (uu *UserUpdate) SetUpdatedAt(t time.Time) *UserUpdate {
+	uu.mutation.SetUpdatedAt(t)
+	return uu
+}
+
+// AddLifthusSessionIDs adds the "lifthus_sessions" edge to the LifthusSession entity by IDs.
+func (uu *UserUpdate) AddLifthusSessionIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddLifthusSessionIDs(ids...)
+	return uu
+}
+
+// AddLifthusSessions adds the "lifthus_sessions" edges to the LifthusSession entity.
+func (uu *UserUpdate) AddLifthusSessions(l ...*LifthusSession) *UserUpdate {
+	ids := make([]uuid.UUID, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return uu.AddLifthusSessionIDs(ids...)
+}
+
+// AddLifthusTokenIDs adds the "lifthus_tokens" edge to the LifthusToken entity by IDs.
+func (uu *UserUpdate) AddLifthusTokenIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddLifthusTokenIDs(ids...)
+	return uu
+}
+
+// AddLifthusTokens adds the "lifthus_tokens" edges to the LifthusToken entity.
+func (uu *UserUpdate) AddLifthusTokens(l ...*LifthusToken) *UserUpdate {
+	ids := make([]uuid.UUID, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return uu.AddLifthusTokenIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
 }
 
+// ClearLifthusSessions clears all "lifthus_sessions" edges to the LifthusSession entity.
+func (uu *UserUpdate) ClearLifthusSessions() *UserUpdate {
+	uu.mutation.ClearLifthusSessions()
+	return uu
+}
+
+// RemoveLifthusSessionIDs removes the "lifthus_sessions" edge to LifthusSession entities by IDs.
+func (uu *UserUpdate) RemoveLifthusSessionIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveLifthusSessionIDs(ids...)
+	return uu
+}
+
+// RemoveLifthusSessions removes "lifthus_sessions" edges to LifthusSession entities.
+func (uu *UserUpdate) RemoveLifthusSessions(l ...*LifthusSession) *UserUpdate {
+	ids := make([]uuid.UUID, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return uu.RemoveLifthusSessionIDs(ids...)
+}
+
+// ClearLifthusTokens clears all "lifthus_tokens" edges to the LifthusToken entity.
+func (uu *UserUpdate) ClearLifthusTokens() *UserUpdate {
+	uu.mutation.ClearLifthusTokens()
+	return uu
+}
+
+// RemoveLifthusTokenIDs removes the "lifthus_tokens" edge to LifthusToken entities by IDs.
+func (uu *UserUpdate) RemoveLifthusTokenIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveLifthusTokenIDs(ids...)
+	return uu
+}
+
+// RemoveLifthusTokens removes "lifthus_tokens" edges to LifthusToken entities.
+func (uu *UserUpdate) RemoveLifthusTokens(l ...*LifthusToken) *UserUpdate {
+	ids := make([]uuid.UUID, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return uu.RemoveLifthusTokenIDs(ids...)
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (uu *UserUpdate) Save(ctx context.Context) (int, error) {
+	uu.defaults()
 	return withHooks[int, UserMutation](ctx, uu.sqlSave, uu.mutation, uu.hooks)
 }
 
@@ -59,14 +280,178 @@ func (uu *UserUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (uu *UserUpdate) defaults() {
+	if _, ok := uu.mutation.UpdatedAt(); !ok {
+		v := user.UpdateDefaultUpdatedAt()
+		uu.mutation.SetUpdatedAt(v)
+	}
+}
+
 func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := sqlgraph.NewUpdateSpec(user.Table, user.Columns, sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(user.Table, user.Columns, sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID))
 	if ps := uu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := uu.mutation.Registered(); ok {
+		_spec.SetField(user.FieldRegistered, field.TypeBool, value)
+	}
+	if value, ok := uu.mutation.RegisteredAt(); ok {
+		_spec.SetField(user.FieldRegisteredAt, field.TypeTime, value)
+	}
+	if uu.mutation.RegisteredAtCleared() {
+		_spec.ClearField(user.FieldRegisteredAt, field.TypeTime)
+	}
+	if value, ok := uu.mutation.Username(); ok {
+		_spec.SetField(user.FieldUsername, field.TypeString, value)
+	}
+	if uu.mutation.UsernameCleared() {
+		_spec.ClearField(user.FieldUsername, field.TypeString)
+	}
+	if value, ok := uu.mutation.Email(); ok {
+		_spec.SetField(user.FieldEmail, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.EmailVerified(); ok {
+		_spec.SetField(user.FieldEmailVerified, field.TypeBool, value)
+	}
+	if value, ok := uu.mutation.Name(); ok {
+		_spec.SetField(user.FieldName, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.GivenName(); ok {
+		_spec.SetField(user.FieldGivenName, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.FamilyName(); ok {
+		_spec.SetField(user.FieldFamilyName, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.Birthdate(); ok {
+		_spec.SetField(user.FieldBirthdate, field.TypeTime, value)
+	}
+	if uu.mutation.BirthdateCleared() {
+		_spec.ClearField(user.FieldBirthdate, field.TypeTime)
+	}
+	if value, ok := uu.mutation.ProfilePictureURL(); ok {
+		_spec.SetField(user.FieldProfilePictureURL, field.TypeString, value)
+	}
+	if uu.mutation.ProfilePictureURLCleared() {
+		_spec.ClearField(user.FieldProfilePictureURL, field.TypeString)
+	}
+	if value, ok := uu.mutation.CreatedAt(); ok {
+		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := uu.mutation.UpdatedAt(); ok {
+		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if uu.mutation.LifthusSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LifthusSessionsTable,
+			Columns: []string{user.LifthusSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: lifthussession.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedLifthusSessionsIDs(); len(nodes) > 0 && !uu.mutation.LifthusSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LifthusSessionsTable,
+			Columns: []string{user.LifthusSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: lifthussession.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.LifthusSessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LifthusSessionsTable,
+			Columns: []string{user.LifthusSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: lifthussession.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uu.mutation.LifthusTokensCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LifthusTokensTable,
+			Columns: []string{user.LifthusTokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: lifthustoken.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedLifthusTokensIDs(); len(nodes) > 0 && !uu.mutation.LifthusTokensCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LifthusTokensTable,
+			Columns: []string{user.LifthusTokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: lifthustoken.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.LifthusTokensIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LifthusTokensTable,
+			Columns: []string{user.LifthusTokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: lifthustoken.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -88,9 +473,225 @@ type UserUpdateOne struct {
 	mutation *UserMutation
 }
 
+// SetRegistered sets the "registered" field.
+func (uuo *UserUpdateOne) SetRegistered(b bool) *UserUpdateOne {
+	uuo.mutation.SetRegistered(b)
+	return uuo
+}
+
+// SetNillableRegistered sets the "registered" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableRegistered(b *bool) *UserUpdateOne {
+	if b != nil {
+		uuo.SetRegistered(*b)
+	}
+	return uuo
+}
+
+// SetRegisteredAt sets the "registered_at" field.
+func (uuo *UserUpdateOne) SetRegisteredAt(t time.Time) *UserUpdateOne {
+	uuo.mutation.SetRegisteredAt(t)
+	return uuo
+}
+
+// SetNillableRegisteredAt sets the "registered_at" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableRegisteredAt(t *time.Time) *UserUpdateOne {
+	if t != nil {
+		uuo.SetRegisteredAt(*t)
+	}
+	return uuo
+}
+
+// ClearRegisteredAt clears the value of the "registered_at" field.
+func (uuo *UserUpdateOne) ClearRegisteredAt() *UserUpdateOne {
+	uuo.mutation.ClearRegisteredAt()
+	return uuo
+}
+
+// SetUsername sets the "username" field.
+func (uuo *UserUpdateOne) SetUsername(s string) *UserUpdateOne {
+	uuo.mutation.SetUsername(s)
+	return uuo
+}
+
+// SetNillableUsername sets the "username" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableUsername(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetUsername(*s)
+	}
+	return uuo
+}
+
+// ClearUsername clears the value of the "username" field.
+func (uuo *UserUpdateOne) ClearUsername() *UserUpdateOne {
+	uuo.mutation.ClearUsername()
+	return uuo
+}
+
+// SetEmail sets the "email" field.
+func (uuo *UserUpdateOne) SetEmail(s string) *UserUpdateOne {
+	uuo.mutation.SetEmail(s)
+	return uuo
+}
+
+// SetEmailVerified sets the "email_verified" field.
+func (uuo *UserUpdateOne) SetEmailVerified(b bool) *UserUpdateOne {
+	uuo.mutation.SetEmailVerified(b)
+	return uuo
+}
+
+// SetName sets the "name" field.
+func (uuo *UserUpdateOne) SetName(s string) *UserUpdateOne {
+	uuo.mutation.SetName(s)
+	return uuo
+}
+
+// SetGivenName sets the "given_name" field.
+func (uuo *UserUpdateOne) SetGivenName(s string) *UserUpdateOne {
+	uuo.mutation.SetGivenName(s)
+	return uuo
+}
+
+// SetFamilyName sets the "family_name" field.
+func (uuo *UserUpdateOne) SetFamilyName(s string) *UserUpdateOne {
+	uuo.mutation.SetFamilyName(s)
+	return uuo
+}
+
+// SetBirthdate sets the "birthdate" field.
+func (uuo *UserUpdateOne) SetBirthdate(t time.Time) *UserUpdateOne {
+	uuo.mutation.SetBirthdate(t)
+	return uuo
+}
+
+// SetNillableBirthdate sets the "birthdate" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableBirthdate(t *time.Time) *UserUpdateOne {
+	if t != nil {
+		uuo.SetBirthdate(*t)
+	}
+	return uuo
+}
+
+// ClearBirthdate clears the value of the "birthdate" field.
+func (uuo *UserUpdateOne) ClearBirthdate() *UserUpdateOne {
+	uuo.mutation.ClearBirthdate()
+	return uuo
+}
+
+// SetProfilePictureURL sets the "profile_picture_url" field.
+func (uuo *UserUpdateOne) SetProfilePictureURL(s string) *UserUpdateOne {
+	uuo.mutation.SetProfilePictureURL(s)
+	return uuo
+}
+
+// SetNillableProfilePictureURL sets the "profile_picture_url" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableProfilePictureURL(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetProfilePictureURL(*s)
+	}
+	return uuo
+}
+
+// ClearProfilePictureURL clears the value of the "profile_picture_url" field.
+func (uuo *UserUpdateOne) ClearProfilePictureURL() *UserUpdateOne {
+	uuo.mutation.ClearProfilePictureURL()
+	return uuo
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (uuo *UserUpdateOne) SetCreatedAt(t time.Time) *UserUpdateOne {
+	uuo.mutation.SetCreatedAt(t)
+	return uuo
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableCreatedAt(t *time.Time) *UserUpdateOne {
+	if t != nil {
+		uuo.SetCreatedAt(*t)
+	}
+	return uuo
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (uuo *UserUpdateOne) SetUpdatedAt(t time.Time) *UserUpdateOne {
+	uuo.mutation.SetUpdatedAt(t)
+	return uuo
+}
+
+// AddLifthusSessionIDs adds the "lifthus_sessions" edge to the LifthusSession entity by IDs.
+func (uuo *UserUpdateOne) AddLifthusSessionIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddLifthusSessionIDs(ids...)
+	return uuo
+}
+
+// AddLifthusSessions adds the "lifthus_sessions" edges to the LifthusSession entity.
+func (uuo *UserUpdateOne) AddLifthusSessions(l ...*LifthusSession) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return uuo.AddLifthusSessionIDs(ids...)
+}
+
+// AddLifthusTokenIDs adds the "lifthus_tokens" edge to the LifthusToken entity by IDs.
+func (uuo *UserUpdateOne) AddLifthusTokenIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddLifthusTokenIDs(ids...)
+	return uuo
+}
+
+// AddLifthusTokens adds the "lifthus_tokens" edges to the LifthusToken entity.
+func (uuo *UserUpdateOne) AddLifthusTokens(l ...*LifthusToken) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return uuo.AddLifthusTokenIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
+}
+
+// ClearLifthusSessions clears all "lifthus_sessions" edges to the LifthusSession entity.
+func (uuo *UserUpdateOne) ClearLifthusSessions() *UserUpdateOne {
+	uuo.mutation.ClearLifthusSessions()
+	return uuo
+}
+
+// RemoveLifthusSessionIDs removes the "lifthus_sessions" edge to LifthusSession entities by IDs.
+func (uuo *UserUpdateOne) RemoveLifthusSessionIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveLifthusSessionIDs(ids...)
+	return uuo
+}
+
+// RemoveLifthusSessions removes "lifthus_sessions" edges to LifthusSession entities.
+func (uuo *UserUpdateOne) RemoveLifthusSessions(l ...*LifthusSession) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return uuo.RemoveLifthusSessionIDs(ids...)
+}
+
+// ClearLifthusTokens clears all "lifthus_tokens" edges to the LifthusToken entity.
+func (uuo *UserUpdateOne) ClearLifthusTokens() *UserUpdateOne {
+	uuo.mutation.ClearLifthusTokens()
+	return uuo
+}
+
+// RemoveLifthusTokenIDs removes the "lifthus_tokens" edge to LifthusToken entities by IDs.
+func (uuo *UserUpdateOne) RemoveLifthusTokenIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveLifthusTokenIDs(ids...)
+	return uuo
+}
+
+// RemoveLifthusTokens removes "lifthus_tokens" edges to LifthusToken entities.
+func (uuo *UserUpdateOne) RemoveLifthusTokens(l ...*LifthusToken) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return uuo.RemoveLifthusTokenIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -108,6 +709,7 @@ func (uuo *UserUpdateOne) Select(field string, fields ...string) *UserUpdateOne 
 
 // Save executes the query and returns the updated User entity.
 func (uuo *UserUpdateOne) Save(ctx context.Context) (*User, error) {
+	uuo.defaults()
 	return withHooks[*User, UserMutation](ctx, uuo.sqlSave, uuo.mutation, uuo.hooks)
 }
 
@@ -133,8 +735,16 @@ func (uuo *UserUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (uuo *UserUpdateOne) defaults() {
+	if _, ok := uuo.mutation.UpdatedAt(); !ok {
+		v := user.UpdateDefaultUpdatedAt()
+		uuo.mutation.SetUpdatedAt(v)
+	}
+}
+
 func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
-	_spec := sqlgraph.NewUpdateSpec(user.Table, user.Columns, sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(user.Table, user.Columns, sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID))
 	id, ok := uuo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "User.id" for update`)}
@@ -158,6 +768,162 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := uuo.mutation.Registered(); ok {
+		_spec.SetField(user.FieldRegistered, field.TypeBool, value)
+	}
+	if value, ok := uuo.mutation.RegisteredAt(); ok {
+		_spec.SetField(user.FieldRegisteredAt, field.TypeTime, value)
+	}
+	if uuo.mutation.RegisteredAtCleared() {
+		_spec.ClearField(user.FieldRegisteredAt, field.TypeTime)
+	}
+	if value, ok := uuo.mutation.Username(); ok {
+		_spec.SetField(user.FieldUsername, field.TypeString, value)
+	}
+	if uuo.mutation.UsernameCleared() {
+		_spec.ClearField(user.FieldUsername, field.TypeString)
+	}
+	if value, ok := uuo.mutation.Email(); ok {
+		_spec.SetField(user.FieldEmail, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.EmailVerified(); ok {
+		_spec.SetField(user.FieldEmailVerified, field.TypeBool, value)
+	}
+	if value, ok := uuo.mutation.Name(); ok {
+		_spec.SetField(user.FieldName, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.GivenName(); ok {
+		_spec.SetField(user.FieldGivenName, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.FamilyName(); ok {
+		_spec.SetField(user.FieldFamilyName, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.Birthdate(); ok {
+		_spec.SetField(user.FieldBirthdate, field.TypeTime, value)
+	}
+	if uuo.mutation.BirthdateCleared() {
+		_spec.ClearField(user.FieldBirthdate, field.TypeTime)
+	}
+	if value, ok := uuo.mutation.ProfilePictureURL(); ok {
+		_spec.SetField(user.FieldProfilePictureURL, field.TypeString, value)
+	}
+	if uuo.mutation.ProfilePictureURLCleared() {
+		_spec.ClearField(user.FieldProfilePictureURL, field.TypeString)
+	}
+	if value, ok := uuo.mutation.CreatedAt(); ok {
+		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := uuo.mutation.UpdatedAt(); ok {
+		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if uuo.mutation.LifthusSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LifthusSessionsTable,
+			Columns: []string{user.LifthusSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: lifthussession.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedLifthusSessionsIDs(); len(nodes) > 0 && !uuo.mutation.LifthusSessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LifthusSessionsTable,
+			Columns: []string{user.LifthusSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: lifthussession.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.LifthusSessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LifthusSessionsTable,
+			Columns: []string{user.LifthusSessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: lifthussession.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.LifthusTokensCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LifthusTokensTable,
+			Columns: []string{user.LifthusTokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: lifthustoken.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedLifthusTokensIDs(); len(nodes) > 0 && !uuo.mutation.LifthusTokensCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LifthusTokensTable,
+			Columns: []string{user.LifthusTokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: lifthustoken.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.LifthusTokensIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LifthusTokensTable,
+			Columns: []string{user.LifthusTokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: lifthustoken.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &User{config: uuo.config}
 	_spec.Assign = _node.assignValues

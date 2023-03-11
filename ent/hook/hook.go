@@ -8,6 +8,42 @@ import (
 	"lifthus-auth/ent"
 )
 
+// The LifthusGroupFunc type is an adapter to allow the use of ordinary
+// function as LifthusGroup mutator.
+type LifthusGroupFunc func(context.Context, *ent.LifthusGroupMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LifthusGroupFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LifthusGroupMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LifthusGroupMutation", m)
+}
+
+// The LifthusSessionFunc type is an adapter to allow the use of ordinary
+// function as LifthusSession mutator.
+type LifthusSessionFunc func(context.Context, *ent.LifthusSessionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LifthusSessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LifthusSessionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LifthusSessionMutation", m)
+}
+
+// The LifthusTokenFunc type is an adapter to allow the use of ordinary
+// function as LifthusToken mutator.
+type LifthusTokenFunc func(context.Context, *ent.LifthusTokenMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LifthusTokenFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.LifthusTokenMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LifthusTokenMutation", m)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)

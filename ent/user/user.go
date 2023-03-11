@@ -2,18 +2,78 @@
 
 package user
 
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the user type in the database.
 	Label = "user"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldRegistered holds the string denoting the registered field in the database.
+	FieldRegistered = "registered"
+	// FieldRegisteredAt holds the string denoting the registered_at field in the database.
+	FieldRegisteredAt = "registered_at"
+	// FieldUsername holds the string denoting the username field in the database.
+	FieldUsername = "username"
+	// FieldEmail holds the string denoting the email field in the database.
+	FieldEmail = "email"
+	// FieldEmailVerified holds the string denoting the email_verified field in the database.
+	FieldEmailVerified = "email_verified"
+	// FieldName holds the string denoting the name field in the database.
+	FieldName = "name"
+	// FieldGivenName holds the string denoting the given_name field in the database.
+	FieldGivenName = "given_name"
+	// FieldFamilyName holds the string denoting the family_name field in the database.
+	FieldFamilyName = "family_name"
+	// FieldBirthdate holds the string denoting the birthdate field in the database.
+	FieldBirthdate = "birthdate"
+	// FieldProfilePictureURL holds the string denoting the profile_picture_url field in the database.
+	FieldProfilePictureURL = "profile_picture_url"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
+	// EdgeLifthusSessions holds the string denoting the lifthus_sessions edge name in mutations.
+	EdgeLifthusSessions = "lifthus_sessions"
+	// EdgeLifthusTokens holds the string denoting the lifthus_tokens edge name in mutations.
+	EdgeLifthusTokens = "lifthus_tokens"
 	// Table holds the table name of the user in the database.
 	Table = "users"
+	// LifthusSessionsTable is the table that holds the lifthus_sessions relation/edge.
+	LifthusSessionsTable = "lifthus_sessions"
+	// LifthusSessionsInverseTable is the table name for the LifthusSession entity.
+	// It exists in this package in order to avoid circular dependency with the "lifthussession" package.
+	LifthusSessionsInverseTable = "lifthus_sessions"
+	// LifthusSessionsColumn is the table column denoting the lifthus_sessions relation/edge.
+	LifthusSessionsColumn = "uid"
+	// LifthusTokensTable is the table that holds the lifthus_tokens relation/edge.
+	LifthusTokensTable = "lifthus_tokens"
+	// LifthusTokensInverseTable is the table name for the LifthusToken entity.
+	// It exists in this package in order to avoid circular dependency with the "lifthustoken" package.
+	LifthusTokensInverseTable = "lifthus_tokens"
+	// LifthusTokensColumn is the table column denoting the lifthus_tokens relation/edge.
+	LifthusTokensColumn = "uid"
 )
 
 // Columns holds all SQL columns for user fields.
 var Columns = []string{
 	FieldID,
+	FieldRegistered,
+	FieldRegisteredAt,
+	FieldUsername,
+	FieldEmail,
+	FieldEmailVerified,
+	FieldName,
+	FieldGivenName,
+	FieldFamilyName,
+	FieldBirthdate,
+	FieldProfilePictureURL,
+	FieldCreatedAt,
+	FieldUpdatedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -25,3 +85,16 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultRegistered holds the default value on creation for the "registered" field.
+	DefaultRegistered bool
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
+	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
+	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
+)

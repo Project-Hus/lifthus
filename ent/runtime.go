@@ -2,8 +2,68 @@
 
 package ent
 
+import (
+	"lifthus-auth/ent/lifthussession"
+	"lifthus-auth/ent/lifthustoken"
+	"lifthus-auth/ent/schema"
+	"lifthus-auth/ent/user"
+	"time"
+
+	"github.com/google/uuid"
+)
+
 // The init function reads all schema descriptors with runtime code
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	lifthussessionFields := schema.LifthusSession{}.Fields()
+	_ = lifthussessionFields
+	// lifthussessionDescConnectedAt is the schema descriptor for connected_at field.
+	lifthussessionDescConnectedAt := lifthussessionFields[2].Descriptor()
+	// lifthussession.DefaultConnectedAt holds the default value on creation for the connected_at field.
+	lifthussession.DefaultConnectedAt = lifthussessionDescConnectedAt.Default.(func() time.Time)
+	// lifthussessionDescID is the schema descriptor for id field.
+	lifthussessionDescID := lifthussessionFields[0].Descriptor()
+	// lifthussession.DefaultID holds the default value on creation for the id field.
+	lifthussession.DefaultID = lifthussessionDescID.Default.(func() uuid.UUID)
+	lifthustokenFields := schema.LifthusToken{}.Fields()
+	_ = lifthustokenFields
+	// lifthustokenDescRevoked is the schema descriptor for revoked field.
+	lifthustokenDescRevoked := lifthustokenFields[2].Descriptor()
+	// lifthustoken.DefaultRevoked holds the default value on creation for the revoked field.
+	lifthustoken.DefaultRevoked = lifthustokenDescRevoked.Default.(bool)
+	// lifthustokenDescCreatedAt is the schema descriptor for created_at field.
+	lifthustokenDescCreatedAt := lifthustokenFields[3].Descriptor()
+	// lifthustoken.DefaultCreatedAt holds the default value on creation for the created_at field.
+	lifthustoken.DefaultCreatedAt = lifthustokenDescCreatedAt.Default.(func() time.Time)
+	// lifthustokenDescUpdatedAt is the schema descriptor for updated_at field.
+	lifthustokenDescUpdatedAt := lifthustokenFields[4].Descriptor()
+	// lifthustoken.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	lifthustoken.DefaultUpdatedAt = lifthustokenDescUpdatedAt.Default.(func() time.Time)
+	// lifthustoken.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	lifthustoken.UpdateDefaultUpdatedAt = lifthustokenDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// lifthustokenDescID is the schema descriptor for id field.
+	lifthustokenDescID := lifthustokenFields[0].Descriptor()
+	// lifthustoken.DefaultID holds the default value on creation for the id field.
+	lifthustoken.DefaultID = lifthustokenDescID.Default.(func() uuid.UUID)
+	userFields := schema.User{}.Fields()
+	_ = userFields
+	// userDescRegistered is the schema descriptor for registered field.
+	userDescRegistered := userFields[1].Descriptor()
+	// user.DefaultRegistered holds the default value on creation for the registered field.
+	user.DefaultRegistered = userDescRegistered.Default.(bool)
+	// userDescCreatedAt is the schema descriptor for created_at field.
+	userDescCreatedAt := userFields[11].Descriptor()
+	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
+	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
+	// userDescUpdatedAt is the schema descriptor for updated_at field.
+	userDescUpdatedAt := userFields[12].Descriptor()
+	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
+	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	user.UpdateDefaultUpdatedAt = userDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// userDescID is the schema descriptor for id field.
+	userDescID := userFields[0].Descriptor()
+	// user.DefaultID holds the default value on creation for the id field.
+	user.DefaultID = userDescID.Default.(func() uuid.UUID)
 }
