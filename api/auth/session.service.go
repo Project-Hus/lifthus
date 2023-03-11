@@ -48,6 +48,7 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 		Name:     "lifthus_st",
 		Value:    stSigned,
 		Path:     "/",
+		Secure:   false,
 		HttpOnly: true,
 		Domain:   os.Getenv("LIFTHUS_DOMAIN"),
 		SameSite: http.SameSiteDefaultMode,
