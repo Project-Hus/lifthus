@@ -18,7 +18,7 @@ import (
 // @Description  and the server returns session id with session token in cookie.
 // @ Description then the client send the session id to Hus auth server.
 // @Tags         auth
-// @Success      201 "returns session id with session token in cookie"
+// @Success      200 "returns session id with session token in cookie"
 // @Failure      500 "failed to create new session"
 func (ac authApiController) NewSessionHandler(c echo.Context) error {
 	// get lifthus_st from cookie
@@ -32,7 +32,7 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 	// if there is session cookie already, just maintain the session.
 	// it makes the session to be maintained through the whole tabs of the browser unlike using session storage.
 	if lifthus_st != nil {
-		return c.NoContent(http.StatusOK)
+		return c.String(http.StatusOK, lifthus_st.Value)
 	}
 	/*
 		although unlikely, this may cause malfunction. if the session is deleted from database before cookie,
@@ -75,4 +75,30 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 	c.SetCookie(cookie)
 
 	return c.String(http.StatusCreated, sid)
+}
+
+// NewSessionHandler godoc
+// @Router       /hus/session/check [post]
+// @Summary      gets lifthus sid and uid from hus and set the login session.
+// @Description  at the same time user connects to lifthus newly, the client requests new session token.
+// @Description  and the server returns session id with session token in cookie.
+// @Description then the client send the session id to Hus auth server.
+// @Description and Hus validates the login session and tell lifthus.
+// @Description and finally, Hus redirects the client to lifthus's endpoint.
+// @Tags         auth
+// @Success      200 "session checking success"
+// @Failure      500 "failed to set the login session"
+func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
+	// from request body json, get sid string and uid string
+	scbd := HusSessionCheckBody{}
+	if err := c.Bind(scbd); err != nil {
+		log.Println("[F] binding HusSessionCheck body failed: ", err)
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	err := session.SetSignedSession(c.Request().Context(), ac.Client, scbd.Sid, scbd.Uid)
+	if err != nil {
+		log.Println("[F] setting signed session failed: ", err)
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	return c.NoContent(http.StatusOK)
 }

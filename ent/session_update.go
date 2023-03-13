@@ -70,14 +70,6 @@ func (su *SessionUpdate) SetSignedAt(t time.Time) *SessionUpdate {
 	return su
 }
 
-// SetNillableSignedAt sets the "signed_at" field if the given value is not nil.
-func (su *SessionUpdate) SetNillableSignedAt(t *time.Time) *SessionUpdate {
-	if t != nil {
-		su.SetSignedAt(*t)
-	}
-	return su
-}
-
 // ClearSignedAt clears the value of the "signed_at" field.
 func (su *SessionUpdate) ClearSignedAt() *SessionUpdate {
 	su.mutation.ClearSignedAt()
@@ -116,6 +108,7 @@ func (su *SessionUpdate) ClearUser() *SessionUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (su *SessionUpdate) Save(ctx context.Context) (int, error) {
+	su.defaults()
 	return withHooks[int, SessionMutation](ctx, su.sqlSave, su.mutation, su.hooks)
 }
 
@@ -138,6 +131,14 @@ func (su *SessionUpdate) Exec(ctx context.Context) error {
 func (su *SessionUpdate) ExecX(ctx context.Context) {
 	if err := su.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (su *SessionUpdate) defaults() {
+	if _, ok := su.mutation.SignedAt(); !ok && !su.mutation.SignedAtCleared() {
+		v := session.UpdateDefaultSignedAt()
+		su.mutation.SetSignedAt(v)
 	}
 }
 
@@ -254,14 +255,6 @@ func (suo *SessionUpdateOne) SetSignedAt(t time.Time) *SessionUpdateOne {
 	return suo
 }
 
-// SetNillableSignedAt sets the "signed_at" field if the given value is not nil.
-func (suo *SessionUpdateOne) SetNillableSignedAt(t *time.Time) *SessionUpdateOne {
-	if t != nil {
-		suo.SetSignedAt(*t)
-	}
-	return suo
-}
-
 // ClearSignedAt clears the value of the "signed_at" field.
 func (suo *SessionUpdateOne) ClearSignedAt() *SessionUpdateOne {
 	suo.mutation.ClearSignedAt()
@@ -313,6 +306,7 @@ func (suo *SessionUpdateOne) Select(field string, fields ...string) *SessionUpda
 
 // Save executes the query and returns the updated Session entity.
 func (suo *SessionUpdateOne) Save(ctx context.Context) (*Session, error) {
+	suo.defaults()
 	return withHooks[*Session, SessionMutation](ctx, suo.sqlSave, suo.mutation, suo.hooks)
 }
 
@@ -335,6 +329,14 @@ func (suo *SessionUpdateOne) Exec(ctx context.Context) error {
 func (suo *SessionUpdateOne) ExecX(ctx context.Context) {
 	if err := suo.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (suo *SessionUpdateOne) defaults() {
+	if _, ok := suo.mutation.SignedAt(); !ok && !suo.mutation.SignedAtCleared() {
+		v := session.UpdateDefaultSignedAt()
+		suo.mutation.SetSignedAt(v)
 	}
 }
 
