@@ -18,9 +18,9 @@ type Session struct {
 func (Session) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).StructTag(`json:"sid,omitempty"`).Default(uuid.New).Unique(), // sid
-		field.UUID("uid", uuid.UUID{}).Optional().Nillable(),
-		field.Time("connected_at").Default(time.Now),  // connected at
-		field.Time("signed_at").Optional().Nillable(), // signed at
+		field.UUID("uid", uuid.UUID{}).Optional().Nillable().Unique(),
+		field.Time("connected_at").Default(time.Now),                          // connected at
+		field.Time("signed_at").Optional().Nillable().UpdateDefault(time.Now), // signed at
 	}
 }
 

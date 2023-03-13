@@ -24,6 +24,23 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/hus/session/check": {
+            "post": {
+                "description": "at the same time user connects to lifthus newly, the client requests new session token.\nand the server returns session id with session token in cookie.\nthen the client send the session id to Hus auth server.\nand Hus validates the login session and tell lifthus.\nand finally, Hus redirects the client to lifthus's endpoint.",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "gets lifthus sid and uid from hus and set the login session.",
+                "responses": {
+                    "200": {
+                        "description": "session checking success"
+                    },
+                    "500": {
+                        "description": "failed to set the login session"
+                    }
+                }
+            }
+        },
         "/session/new": {
             "post": {
                 "description": "at the same time user connects to lifthus newly, the client requests new session token.\nand the server returns session id with session token in cookie.",
@@ -32,7 +49,7 @@ const docTemplate = `{
                 ],
                 "summary": "gets new connection and assign a lifthus session token.",
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "returns session id with session token in cookie"
                     },
                     "500": {

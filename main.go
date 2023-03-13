@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"lifthus-auth/api/auth"
+
 	"lifthus-auth/db"
 	"log"
 	"net/http"
@@ -14,6 +14,7 @@ import (
 
 	echoSwagger "github.com/swaggo/echo-swagger"
 
+	"lifthus-auth/api/auth"
 	"lifthus-auth/middleware"
 )
 
@@ -36,7 +37,7 @@ func main() {
 	}
 
 	// connecting to lifthus_user_db with ent
-	client, err := db.ConnectToLifthusUser()
+	client, err := db.ConnectToLifthusAuth()
 	if err != nil {
 		log.Fatal("%w", err)
 	}
@@ -55,11 +56,11 @@ func main() {
 	e.Use(middleware.SetLifthusCorsHeaders)
 
 	// authApi, which controls auth all over the services
-	authApi := auth.NewAuthApiController(client)
-	hosts["localhost:9091"] = &Host{Echo: authApi} // gonna use auth.cloudhus.com later
+	userApi := auth.NewAuthApiController(client)
+	hosts["auth.localhost:9091"] = &Host{Echo: userApi} // gonna use auth.cloudhus.com later
 
 	// get requset and process by its subdomain
-	e.Any("/user/*", func(c echo.Context) (err error) {
+	e.Any("/*", func(c echo.Context) (err error) {
 		req, res := c.Request(), c.Response()
 		host, ok := hosts[req.Host] // if the host is not registered, it will be nil.
 		if !ok {

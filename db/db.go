@@ -10,7 +10,7 @@ import (
 
 // ConncectToHusAuth returns hus_auth_db's ent client.
 // you've got to close it with Close() in defer out of this function.
-func ConnectToLifthusUser() (*ent.Client, error) {
+func ConnectToLifthusAuth() (*ent.Client, error) {
 	dbHost := os.Getenv("DB_HOST")
 	dbPort := os.Getenv("DB_PORT")
 	dbUser := os.Getenv("DB_USER")
