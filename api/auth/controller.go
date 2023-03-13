@@ -8,11 +8,11 @@ import (
 
 // authApis interface defines what auth api has to handle
 type authApis interface {
-	/* client side api */
-	NewSessionHandler(c echo.Context) error
-
-	/* hus side api */
-	HusSessionCheckHandler(c echo.Context) error
+	/* Session establishing process */
+	// client -> lifthus -> client -> hus -> lifthus -> hus -> client -> SessionCheckHandler
+	NewSessionHandler(c echo.Context) error      // from client
+	HusSessionCheckHandler(c echo.Context) error // from hus
+	SessionCheckHandler(c echo.Context) error    // from client
 }
 
 // authApiController defines what auth api has to have and implements authApis interface at service file.
@@ -28,6 +28,7 @@ func NewAuthApiController(client *ent.Client) *echo.Echo {
 
 	authApi.POST("/session/new", authApiController.NewSessionHandler)
 	authApi.POST("/hus/session/check", authApiController.HusSessionCheckHandler)
+	authApi.POST("/session/check", authApiController.SessionCheckHandler)
 
 	return authApi
 }

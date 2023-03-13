@@ -165,19 +165,23 @@ func (uc *UserCreate) SetNillableID(u *uuid.UUID) *UserCreate {
 	return uc
 }
 
-// AddSessionIDs adds the "sessions" edge to the Session entity by IDs.
-func (uc *UserCreate) AddSessionIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddSessionIDs(ids...)
+// SetSessionsID sets the "sessions" edge to the Session entity by ID.
+func (uc *UserCreate) SetSessionsID(id uuid.UUID) *UserCreate {
+	uc.mutation.SetSessionsID(id)
 	return uc
 }
 
-// AddSessions adds the "sessions" edges to the Session entity.
-func (uc *UserCreate) AddSessions(s ...*Session) *UserCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// SetNillableSessionsID sets the "sessions" edge to the Session entity by ID if the given value is not nil.
+func (uc *UserCreate) SetNillableSessionsID(id *uuid.UUID) *UserCreate {
+	if id != nil {
+		uc = uc.SetSessionsID(*id)
 	}
-	return uc.AddSessionIDs(ids...)
+	return uc
+}
+
+// SetSessions sets the "sessions" edge to the Session entity.
+func (uc *UserCreate) SetSessions(s *Session) *UserCreate {
+	return uc.SetSessionsID(s.ID)
 }
 
 // AddLifthusTokenIDs adds the "lifthus_tokens" edge to the RefreshToken entity by IDs.
@@ -359,7 +363,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	}
 	if nodes := uc.mutation.SessionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   user.SessionsTable,
 			Columns: []string{user.SessionsColumn},

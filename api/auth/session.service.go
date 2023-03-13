@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"lifthus-auth/service/session"
 	"log"
 	"net/http"
@@ -74,10 +75,10 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 	}
 	c.SetCookie(cookie)
 
-	return c.String(http.StatusCreated, sid)
+	return c.Redirect(http.StatusPermanentRedirect, os.Getenv("HUS_AUTH_URL")+"/session/check/lifthus/"+sid)
 }
 
-// NewSessionHandler godoc
+// HusSessionCheckHandler godoc
 // @Router       /hus/session/check [post]
 // @Summary      gets lifthus sid and uid from hus and set the login session.
 // @Description  at the same time user connects to lifthus newly, the client requests new session token.
@@ -101,4 +102,19 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 	return c.NoContent(http.StatusOK)
+}
+
+// SessionCheckHandler godoc
+// @Router       /session/check [post]
+// @Summary      gets lifthus sid and uid from hus and set the login session.
+// @Description  at the same time user connects to lifthus newly, the client requests new session token.
+// @Description  and the server returns session id with session token in cookie.
+// @Description then the client send the session id to Hus auth server.
+// @Description and Hus validates the login session and tell lifthus.
+// @Description and finally, Hus redirects the client to lifthus's endpoint.
+// @Tags         auth
+// @Success      200 "session checking success"
+// @Failure      500 "failed to set the login session"
+func (ac authApiController) SessionCheckHandler(c echo.Context) error {
+	return fmt.Errorf("")
 }

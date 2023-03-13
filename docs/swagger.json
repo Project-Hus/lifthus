@@ -16,7 +16,7 @@
         "version": "0.0.0"
     },
     "host": "lifthus.com",
-    "basePath": "/user",
+    "basePath": "/",
     "paths": {
         "/hus/session/check": {
             "post": {

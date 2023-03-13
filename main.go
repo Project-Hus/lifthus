@@ -28,7 +28,7 @@ import (
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 // @host lifthus.com
-// @BasePath /user
+// @BasePath /
 func main() {
 	// set .env
 	err := godotenv.Load() // now you can use os.Getenv("VAR_NAME")

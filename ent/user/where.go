@@ -731,7 +731,7 @@ func HasSessions() predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, SessionsTable, SessionsColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, SessionsTable, SessionsColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -743,7 +743,7 @@ func HasSessionsWith(preds ...predicate.Session) predicate.User {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(SessionsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, SessionsTable, SessionsColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, SessionsTable, SessionsColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

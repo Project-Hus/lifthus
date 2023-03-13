@@ -4,6 +4,7 @@ package ent
 
 import (
 	"fmt"
+	"lifthus-auth/ent/session"
 	"lifthus-auth/ent/user"
 	"strings"
 	"time"
@@ -49,7 +50,7 @@ type User struct {
 // UserEdges holds the relations/edges for other nodes in the graph.
 type UserEdges struct {
 	// Sessions holds the value of the sessions edge.
-	Sessions []*Session `json:"sessions,omitempty"`
+	Sessions *Session `json:"sessions,omitempty"`
 	// LifthusTokens holds the value of the lifthus_tokens edge.
 	LifthusTokens []*RefreshToken `json:"lifthus_tokens,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -58,9 +59,13 @@ type UserEdges struct {
 }
 
 // SessionsOrErr returns the Sessions value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) SessionsOrErr() ([]*Session, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) SessionsOrErr() (*Session, error) {
 	if e.loadedTypes[0] {
+		if e.Sessions == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: session.Label}
+		}
 		return e.Sessions, nil
 	}
 	return nil, &NotLoadedError{edge: "sessions"}
