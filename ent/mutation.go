@@ -1423,8 +1423,7 @@ type UserMutation struct {
 	created_at            *time.Time
 	updated_at            *time.Time
 	clearedFields         map[string]struct{}
-	sessions              map[uuid.UUID]struct{}
-	removedsessions       map[uuid.UUID]struct{}
+	sessions              *uuid.UUID
 	clearedsessions       bool
 	lifthus_tokens        map[uuid.UUID]struct{}
 	removedlifthus_tokens map[uuid.UUID]struct{}
@@ -2022,14 +2021,9 @@ func (m *UserMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// AddSessionIDs adds the "sessions" edge to the Session entity by ids.
-func (m *UserMutation) AddSessionIDs(ids ...uuid.UUID) {
-	if m.sessions == nil {
-		m.sessions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.sessions[ids[i]] = struct{}{}
-	}
+// SetSessionsID sets the "sessions" edge to the Session entity by id.
+func (m *UserMutation) SetSessionsID(id uuid.UUID) {
+	m.sessions = &id
 }
 
 // ClearSessions clears the "sessions" edge to the Session entity.
@@ -2042,29 +2036,20 @@ func (m *UserMutation) SessionsCleared() bool {
 	return m.clearedsessions
 }
 
-// RemoveSessionIDs removes the "sessions" edge to the Session entity by IDs.
-func (m *UserMutation) RemoveSessionIDs(ids ...uuid.UUID) {
-	if m.removedsessions == nil {
-		m.removedsessions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.sessions, ids[i])
-		m.removedsessions[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedSessions returns the removed IDs of the "sessions" edge to the Session entity.
-func (m *UserMutation) RemovedSessionsIDs() (ids []uuid.UUID) {
-	for id := range m.removedsessions {
-		ids = append(ids, id)
+// SessionsID returns the "sessions" edge ID in the mutation.
+func (m *UserMutation) SessionsID() (id uuid.UUID, exists bool) {
+	if m.sessions != nil {
+		return *m.sessions, true
 	}
 	return
 }
 
 // SessionsIDs returns the "sessions" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// SessionsID instead. It exists only for internal usage by the builders.
 func (m *UserMutation) SessionsIDs() (ids []uuid.UUID) {
-	for id := range m.sessions {
-		ids = append(ids, id)
+	if id := m.sessions; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -2073,7 +2058,6 @@ func (m *UserMutation) SessionsIDs() (ids []uuid.UUID) {
 func (m *UserMutation) ResetSessions() {
 	m.sessions = nil
 	m.clearedsessions = false
-	m.removedsessions = nil
 }
 
 // AddLifthusTokenIDs adds the "lifthus_tokens" edge to the RefreshToken entity by ids.
@@ -2492,11 +2476,9 @@ func (m *UserMutation) AddedEdges() []string {
 func (m *UserMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case user.EdgeSessions:
-		ids := make([]ent.Value, 0, len(m.sessions))
-		for id := range m.sessions {
-			ids = append(ids, id)
+		if id := m.sessions; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case user.EdgeLifthusTokens:
 		ids := make([]ent.Value, 0, len(m.lifthus_tokens))
 		for id := range m.lifthus_tokens {
@@ -2510,9 +2492,6 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.removedsessions != nil {
-		edges = append(edges, user.EdgeSessions)
-	}
 	if m.removedlifthus_tokens != nil {
 		edges = append(edges, user.EdgeLifthusTokens)
 	}
@@ -2523,12 +2502,6 @@ func (m *UserMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case user.EdgeSessions:
-		ids := make([]ent.Value, 0, len(m.removedsessions))
-		for id := range m.removedsessions {
-			ids = append(ids, id)
-		}
-		return ids
 	case user.EdgeLifthusTokens:
 		ids := make([]ent.Value, 0, len(m.removedlifthus_tokens))
 		for id := range m.removedlifthus_tokens {
@@ -2567,6 +2540,9 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *UserMutation) ClearEdge(name string) error {
 	switch name {
+	case user.EdgeSessions:
+		m.ClearSessions()
+		return nil
 	}
 	return fmt.Errorf("unknown User unique edge %s", name)
 }

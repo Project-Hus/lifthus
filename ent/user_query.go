@@ -77,7 +77,7 @@ func (uq *UserQuery) QuerySessions() *SessionQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(session.Table, session.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.SessionsTable, user.SessionsColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, user.SessionsTable, user.SessionsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -431,9 +431,8 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		return nodes, nil
 	}
 	if query := uq.withSessions; query != nil {
-		if err := uq.loadSessions(ctx, query, nodes,
-			func(n *User) { n.Edges.Sessions = []*Session{} },
-			func(n *User, e *Session) { n.Edges.Sessions = append(n.Edges.Sessions, e) }); err != nil {
+		if err := uq.loadSessions(ctx, query, nodes, nil,
+			func(n *User, e *Session) { n.Edges.Sessions = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -453,9 +452,6 @@ func (uq *UserQuery) loadSessions(ctx context.Context, query *SessionQuery, node
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
 	}
 	query.Where(predicate.Session(func(s *sql.Selector) {
 		s.Where(sql.InValues(user.SessionsColumn, fks...))

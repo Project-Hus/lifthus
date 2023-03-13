@@ -65,7 +65,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "0.0.0",
 	Host:             "lifthus.com",
-	BasePath:         "/user",
+	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Lifthus user server",
 	Description:      "This is Project-Hus's subservice Lifthus's user management server.",
