@@ -19,7 +19,8 @@ import (
 // @Description  and the server returns session id with session token in cookie.
 // @ Description then the client send the session id to Hus auth server.
 // @Tags         auth
-// @Success      200 "returns session id with session token in cookie"
+// @Success      200 "session already exists"
+// @Success      201 "returns session id with session token in cookie"
 // @Failure      500 "failed to create new session"
 func (ac authApiController) NewSessionHandler(c echo.Context) error {
 	// get lifthus_st from cookie
@@ -33,7 +34,18 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 	// if there is session cookie already, just maintain the session.
 	// it makes the session to be maintained through the whole tabs of the browser unlike using session storage.
 	if lifthus_st != nil {
-		return c.String(http.StatusOK, lifthus_st.Value)
+		// parse lifthus_st
+		st, err := jwt.Parse(lifthus_st.Value, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			}
+			return []byte(os.Getenv("HUS_SECRET_KEY")), nil
+		})
+		if err != nil || !st.Valid {
+			return c.NoContent(http.StatusInternalServerError)
+		}
+		sid := st.Claims.(jwt.MapClaims)["sid"].(string)
+		return c.String(http.StatusOK, sid)
 	}
 	/*
 		although unlikely, this may cause malfunction. if the session is deleted from database before cookie,
@@ -75,7 +87,8 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 	}
 	c.SetCookie(cookie)
 
-	return c.Redirect(http.StatusPermanentRedirect, os.Getenv("HUS_AUTH_URL")+"/session/check/lifthus/"+sid)
+	return c.String(http.StatusCreated, sid)
+	//return c.Redirect(http.StatusPermanentRedirect, os.Getenv("HUS_AUTH_URL")+"/session/check/lifthus/"+sid)
 }
 
 // HusSessionCheckHandler godoc
@@ -92,13 +105,12 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 	// from request body json, get sid string and uid string
 	scbd := HusSessionCheckBody{}
-	if err := c.Bind(scbd); err != nil {
-		log.Println("[F] binding HusSessionCheck body failed: ", err)
+	if err := c.Bind(&scbd); err != nil {
+		log.Println("[F] binding HusSessionCheckBody failed: ", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 	err := session.SetSignedSession(c.Request().Context(), ac.Client, scbd.Sid, scbd.Uid)
 	if err != nil {
-		log.Println("[F] setting signed session failed: ", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 	return c.NoContent(http.StatusOK)
@@ -116,5 +128,6 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 // @Success      200 "session checking success"
 // @Failure      500 "failed to set the login session"
 func (ac authApiController) SessionCheckHandler(c echo.Context) error {
-	return fmt.Errorf("")
+	fmt.Println("WOW you came here!")
+	return c.NoContent(http.StatusOK)
 }
