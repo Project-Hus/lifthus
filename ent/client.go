@@ -573,7 +573,7 @@ func (c *SessionClient) QueryUser(s *Session) *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(session.Table, session.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, session.UserTable, session.UserColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, session.UserTable, session.UserColumn),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil
@@ -707,7 +707,7 @@ func (c *UserClient) QuerySessions(u *User) *SessionQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(session.Table, session.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, user.SessionsTable, user.SessionsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.SessionsTable, user.SessionsColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil

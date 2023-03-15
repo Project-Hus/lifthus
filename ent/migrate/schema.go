@@ -45,7 +45,7 @@ var (
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "connected_at", Type: field.TypeTime},
 		{Name: "signed_at", Type: field.TypeTime, Nullable: true},
-		{Name: "uid", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "uid", Type: field.TypeUUID, Nullable: true},
 	}
 	// SessionsTable holds the schema information for the "sessions" table.
 	SessionsTable = &schema.Table{

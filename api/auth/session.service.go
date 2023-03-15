@@ -2,6 +2,8 @@ package auth
 
 import (
 	"fmt"
+	"lifthus-auth/common"
+	"lifthus-auth/db"
 	"lifthus-auth/service/session"
 	"log"
 	"net/http"
@@ -104,12 +106,27 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 // @Failure      500 "failed to set the login session"
 func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 	// from request body json, get sid string and uid string
-	scbd := HusSessionCheckBody{}
+	scbd := common.HusSessionCheckBody{}
 	if err := c.Bind(&scbd); err != nil {
 		log.Println("[F] binding HusSessionCheckBody failed: ", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
-	err := session.SetSignedSession(c.Request().Context(), ac.Client, scbd.Sid, scbd.Uid)
+
+	// Query if the user exists in the database
+	u, err := db.QueryUserByUID(c.Request().Context(), ac.Client, scbd.Uid)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	if u == nil {
+		// create new user if the user does not exist.
+		_, err = db.CreateNewLifthusUser(c.Request().Context(), ac.Client, scbd)
+		if err != nil {
+			log.Println("[F] creating new user failed: ", err)
+			return c.NoContent(http.StatusInternalServerError)
+		}
+	}
+
+	err = session.SetSignedSession(c.Request().Context(), ac.Client, scbd.Sid, scbd.Uid)
 	if err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
@@ -118,15 +135,12 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 
 // SessionCheckHandler godoc
 // @Router       /session/check [post]
-// @Summary      gets lifthus sid and uid from hus and set the login session.
-// @Description  at the same time user connects to lifthus newly, the client requests new session token.
-// @Description  and the server returns session id with session token in cookie.
-// @Description then the client send the session id to Hus auth server.
-// @Description and Hus validates the login session and tell lifthus.
-// @Description and finally, Hus redirects the client to lifthus's endpoint.
+// @Summary      gets lifthus sid in cookie from client and set refresh token in cookie.
+// @Description  Hus told lifthus that the user is logged in. so now we can set the login session.
 // @Tags         auth
-// @Success      200 "session checking success"
-// @Failure      500 "failed to set the login session"
+// @Success      200 "publishing refresh token success"
+// @Failure      401 "unauthorized"
+// @Failure      500 "internal server error"
 func (ac authApiController) SessionCheckHandler(c echo.Context) error {
 	fmt.Println("WOW you came here!")
 	return c.NoContent(http.StatusOK)
