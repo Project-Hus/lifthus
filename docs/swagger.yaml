@@ -29,6 +29,20 @@ paths:
       summary: gets lifthus sid and uid from hus and set the login session.
       tags:
       - auth
+  /session/check:
+    post:
+      description: Hus told lifthus that the user is logged in. so now we can set
+        the login session.
+      responses:
+        "200":
+          description: publishing refresh token success
+        "401":
+          description: unauthorized
+        "500":
+          description: internal server error
+      summary: gets lifthus sid in cookie from client and set refresh token in cookie.
+      tags:
+      - auth
   /session/new:
     post:
       description: |-
@@ -36,6 +50,8 @@ paths:
         and the server returns session id with session token in cookie.
       responses:
         "200":
+          description: session already exists
+        "201":
           description: returns session id with session token in cookie
         "500":
           description: failed to create new session

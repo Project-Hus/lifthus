@@ -41,6 +41,26 @@ const docTemplate = `{
                 }
             }
         },
+        "/session/check": {
+            "post": {
+                "description": "Hus told lifthus that the user is logged in. so now we can set the login session.",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "gets lifthus sid in cookie from client and set refresh token in cookie.",
+                "responses": {
+                    "200": {
+                        "description": "publishing refresh token success"
+                    },
+                    "401": {
+                        "description": "unauthorized"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
+        },
         "/session/new": {
             "post": {
                 "description": "at the same time user connects to lifthus newly, the client requests new session token.\nand the server returns session id with session token in cookie.",
@@ -50,6 +70,9 @@ const docTemplate = `{
                 "summary": "gets new connection and assign a lifthus session token.",
                 "responses": {
                     "200": {
+                        "description": "session already exists"
+                    },
+                    "201": {
                         "description": "returns session id with session token in cookie"
                     },
                     "500": {
