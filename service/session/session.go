@@ -5,18 +5,38 @@ import (
 	"fmt"
 	"lifthus-auth/ent"
 	"log"
+	"os"
+	"time"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 )
 
 // CreateLifthusSession creates new session for user and returns the session ID.
-func CreateSession(ctx context.Context, client *ent.Client) (string, error) {
+func CreateSession(ctx context.Context, client *ent.Client) (sid string, stSigned string, err error) {
 	// create new lifthus session
 	ns, err := client.Session.Create().Save(ctx)
 	if err != nil {
 		log.Println("[F] creating new session failed: ", err)
 	}
-	return ns.ID.String(), nil
+	sid = ns.ID.String()
+
+	// create new jwt session token with session id
+	st := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sid": sid,
+		"uid": nil, // it will be omitted actually.
+		"exp": time.Now().Add(time.Hour * 24).Unix(),
+	})
+
+	// Sign and get the complete encoded token as a string using the secret
+	hsk := []byte(os.Getenv("HUS_SECRET_KEY"))
+	stSigned, err = st.SignedString(hsk)
+	if err != nil {
+		log.Println("[F] signing session token failed: ", err)
+		return "", "", err
+	}
+
+	return ns.ID.String(), stSigned, nil
 }
 
 func SetSignedSession(ctx context.Context, client *ent.Client, sid string, uid string) error {
