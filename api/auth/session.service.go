@@ -108,7 +108,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
-	return c.NoContent(http.StatusOK)
+	return c.String(http.StatusOK, "session signing success")
 }
 
 // SessionCheckHandler godoc
