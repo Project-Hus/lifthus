@@ -24,16 +24,16 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/hus/session/check": {
+        "/hus/session/sign": {
             "post": {
-                "description": "at the same time user connects to lifthus newly, the client requests new session token.\nand the server returns session id with session token in cookie.\nthen the client send the session id to Hus auth server.\nand Hus validates the login session and tell lifthus.\nand finally, Hus redirects the client to lifthus's endpoint.",
+                "description": "Hus sends SID and UID which are verified and Lifthus sets the session token to be signed in.",
                 "tags": [
                     "auth"
                 ],
-                "summary": "gets lifthus sid and uid from hus and set the login session.",
+                "summary": "gets lifthus sid and uid from Hus and sets the session token to be signed in.",
                 "responses": {
                     "200": {
-                        "description": "session checking success"
+                        "description": "session signing success"
                     },
                     "500": {
                         "description": "failed to set the login session"
@@ -41,7 +41,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/session/check": {
+        "/session/access/newsid": {
             "post": {
                 "description": "Hus told lifthus that the user is logged in. so now we can set the login session.",
                 "tags": [
@@ -63,15 +63,12 @@ const docTemplate = `{
         },
         "/session/new": {
             "post": {
-                "description": "at the same time user connects to lifthus newly, the client requests new session token.\nand the server returns session id with session token in cookie.",
+                "description": "at the same time the user opens Lifthus from browser, the client requests new session token.\nand Lifthus auth server returns session id with session token in cookie.",
                 "tags": [
                     "auth"
                 ],
-                "summary": "gets new connection and assign a lifthus session token.",
+                "summary": "when lifthus web app is opened, session token is assigned.",
                 "responses": {
-                    "200": {
-                        "description": "session already exists"
-                    },
                     "201": {
                         "description": "returns session id with session token in cookie"
                     },

@@ -13,23 +13,13 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// client will get new sid from the handler above,
-// then client will send the sid to Hus auth server.
-// and if Hus responds Unauthorized, client will stay unsigned in.
-// or else, Hus tells Lifthus that the user is signed in.
-// then Lifthus will set the login session and tells Ok to Hus.
-// Hus got Ok, now Hus tells the client Ok.
-// and finally, the client requests access token from Lifthus and Lifthus revokes the sessoin.
-// after the access token is expired, the process will be repeated.
-
 // NewSessionHandler godoc
 // @Router       /session/new [post]
-// @Summary      gets new connection and assign a lifthus session token.
-// @Description  at the same time user connects to lifthus newly, the client requests new session token.
-// @Description  and the server returns session id with session token in cookie.
-// @ Description then the client send the session id to Hus auth server.
+// @Summary      when lifthus web app is opened, session token is assigned.
+// @Description  at the same time the user opens Lifthus from browser, the client requests new session token.
+// @Description  and Lifthus auth server returns session id with session token in cookie.
+// @ Description then the client send the session id to Hus auth server to validate the session.
 // @Tags         auth
-// @Success      200 "session already exists"
 // @Success      201 "returns session id with session token in cookie"
 // @Failure      500 "failed to create new session"
 func (ac authApiController) NewSessionHandler(c echo.Context) error {
@@ -49,7 +39,7 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 		if err != nil || exp {
 			err = fmt.Errorf("[F]parsing lifthus_st failed:%w", err)
 			log.Println(err)
-			return c.String(http.StatusUnauthorized, err.Error())
+			return c.String(http.StatusInternalServerError, err.Error())
 		}
 		sid := st["sid"].(string)
 
@@ -71,7 +61,7 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 	cookie := &http.Cookie{
 		Name:     "lifthus_st",
 		Value:    stSigned,
-		Path:     "/",
+		Path:     "/session",
 		Secure:   false,
 		HttpOnly: true,
 		Domain:   os.Getenv("LIFTHUS_DOMAIN"),
@@ -82,42 +72,41 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 	return c.String(http.StatusCreated, sid)
 }
 
-// HusSessionCheckHandler godoc
-// @Router       /hus/session/check [post]
-// @Summary      gets lifthus sid and uid from hus and set the login session.
-// @Description  at the same time user connects to lifthus newly, the client requests new session token.
-// @Description  and the server returns session id with session token in cookie.
-// @Description then the client send the session id to Hus auth server.
-// @Description and Hus validates the login session and tell lifthus.
-// @Description and finally, Hus redirects the client to lifthus's endpoint.
+// HusSessionHandler godoc
+// @Router       /hus/session/sign [post]
+// @Summary      gets lifthus sid and uid from Hus and sets the session token to be signed in.
+// @Description Hus sends SID and UID which are verified and Lifthus sets the session token to be signed in.
 // @Tags         auth
-// @Success      200 "session checking success"
+// @Success      200 "session signing success"
 // @Failure      500 "failed to set the login session"
-func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
+func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	// from request body json, get sid string and uid string
 	scbd := common.HusSessionCheckBody{}
 	if err := c.Bind(&scbd); err != nil {
-		log.Println("[F] binding HusSessionCheckBody failed: ", err)
-		return c.NoContent(http.StatusInternalServerError)
+		err = fmt.Errorf("[F]binding HusSessionCheckBody failed:%w", err)
+		log.Println(err)
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
 	// Query if the user exists in the database
 	u, err := db.QueryUserByUID(c.Request().Context(), ac.Client, scbd.Uid)
 	if err != nil {
-		return c.NoContent(http.StatusInternalServerError)
+		log.Println(err)
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	if u == nil {
 		// create new user if the user does not exist.
 		_, err = db.CreateNewLifthusUser(c.Request().Context(), ac.Client, scbd)
 		if err != nil {
-			log.Println("[F] creating new user failed: ", err)
-			return c.NoContent(http.StatusInternalServerError)
+			log.Println(err)
+			return c.String(http.StatusInternalServerError, err.Error())
 		}
 	}
 
 	err = session.SetSignedSession(c.Request().Context(), ac.Client, scbd.Sid, scbd.Uid)
 	if err != nil {
-		return c.NoContent(http.StatusInternalServerError)
+		log.Println(err)
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	return c.NoContent(http.StatusOK)
 }
