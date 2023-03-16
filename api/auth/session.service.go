@@ -13,6 +13,15 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// client will get new sid from the handler above,
+// then client will send the sid to Hus auth server.
+// and if Hus responds Unauthorized, client will stay unsigned in.
+// or else, Hus tells Lifthus that the user is signed in.
+// then Lifthus will set the login session and tells Ok to Hus.
+// Hus got Ok, now Hus tells the client Ok.
+// and finally, the client requests access token from Lifthus and Lifthus revokes the sessoin.
+// after the access token is expired, the process will be repeated.
+
 // NewSessionHandler godoc
 // @Router       /session/new [post]
 // @Summary      gets new connection and assign a lifthus session token.
@@ -24,6 +33,8 @@ import (
 // @Success      201 "returns session id with session token in cookie"
 // @Failure      500 "failed to create new session"
 func (ac authApiController) NewSessionHandler(c echo.Context) error {
+	// this handler would not be called if the client has unexpired access token.
+
 	// get lifthus_st from cookie
 	lifthus_st, err := c.Cookie("lifthus_st")
 	if err != nil && err != http.ErrNoCookie {
@@ -53,7 +64,7 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 	// create new lifthus session
 	sid, stSigned, err := session.CreateSession(c.Request().Context(), ac.Client)
 	if err != nil {
-		return c.NoContent(http.StatusInternalServerError)
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
 	// set cookie with session id
