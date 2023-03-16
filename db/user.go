@@ -2,10 +2,10 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"lifthus-auth/common"
 	"lifthus-auth/ent"
 	"lifthus-auth/ent/user"
-	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,8 +14,7 @@ import (
 func CreateNewLifthusUser(c context.Context, client *ent.Client, nu common.HusSessionCheckBody) (*ent.User, error) {
 	uid_uuid, err := uuid.Parse(nu.Uid)
 	if err != nil {
-		log.Println("[F] parsing uuid failed: ", err)
-		return nil, err
+		return nil, fmt.Errorf("!!parsing uuid failed:%w", err)
 	}
 	// create new lifthus user
 	lu := client.User.Create().SetID(uid_uuid).
@@ -27,15 +26,13 @@ func CreateNewLifthusUser(c context.Context, client *ent.Client, nu common.HusSe
 	if nu.Birthdate != "" {
 		t, err := time.Parse(time.RFC3339, nu.Birthdate)
 		if err != nil {
-			log.Println("[F] parsing birthdate failed: ", err)
-			return nil, err
+			return nil, fmt.Errorf("!!parsing birthdate failed:%w", err)
 		}
 		lu.SetBirthdate(t)
 	}
 	nlu, err := lu.Save(c)
 	if err != nil {
-		log.Println("[F] creating new lifthus userfailed: ", err)
-		return nil, err
+		return nil, fmt.Errorf("!!creating new lifthus userfailed:%w", err)
 	}
 	return nlu, nil
 }
@@ -43,12 +40,11 @@ func CreateNewLifthusUser(c context.Context, client *ent.Client, nu common.HusSe
 func QueryUserByUID(c context.Context, client *ent.Client, uid string) (*ent.User, error) {
 	uid_uuid, err := uuid.Parse(uid)
 	if err != nil {
-		log.Println("[F] parsing uuid failed: ", err)
+		return nil, fmt.Errorf("!!parsing uuid failed:%w", err)
 	}
 	u, err := client.User.Query().Where(user.ID(uid_uuid)).Only(context.Background())
 	if err != nil && !ent.IsNotFound(err) {
-		log.Println("[F] getting user by uid failed: ", err)
-		return nil, err
+		return nil, fmt.Errorf("!!getting user by uid failed:%w", err)
 	}
 	return u, nil
 }

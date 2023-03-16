@@ -33,13 +33,13 @@ func main() {
 	// set .env
 	err := godotenv.Load() // now you can use os.Getenv("VAR_NAME")
 	if err != nil {
-		log.Fatalf("[F] loading .env file failed : %s", err)
+		log.Fatalf("[F]loading .env file failed : %v", err)
 	}
 
 	// connecting to lifthus_user_db with ent
 	client, err := db.ConnectToLifthusAuth()
 	if err != nil {
-		log.Fatal("%w", err)
+		log.Fatal("[F]connecting db failed:%w", err)
 	}
 	defer client.Close()
 
