@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"lifthus-auth/common"
 	"lifthus-auth/db"
-	"lifthus-auth/helper"
+
 	"lifthus-auth/service/session"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -25,27 +26,15 @@ import (
 func (ac authApiController) NewSessionHandler(c echo.Context) error {
 	// this handler would not be called if the client has unexpired access token.
 
-	// get lifthus_st from cookie
-	lifthus_st, err := c.Cookie("lifthus_st")
+	lifthus_psid, err := c.Cookie("lifthus_psid")
 	if err != nil && err != http.ErrNoCookie {
-		err = fmt.Errorf("[F]getting lifthus_st from cookie failed:%w", err)
+		err = fmt.Errorf("[F]getting lifthus_psid from cookie failed:%w", err)
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
-	// if the client has token already, revoke it.
-	if lifthus_st != nil {
-		// parse lifthus_st
-		st, _, err := helper.ParseJWTwithHMAC(lifthus_st.Value)
+	if lifthus_psid != nil && lifthus_psid.Value != "" {
+		err = session.RevokeSession(c.Request().Context(), ac.Client, lifthus_psid.Value)
 		if err != nil {
-			err = fmt.Errorf("[F]parsing lifthus_st failed:%w", err)
-			log.Println(err)
-			return c.String(http.StatusInternalServerError, err.Error())
-		}
-		sid := st["sid"].(string)
-
-		err = session.RevokeSession(c.Request().Context(), ac.Client, sid)
-		if err != nil {
-			err = fmt.Errorf("[F]revoking session failed:%w", err)
 			log.Println(err)
 			return c.String(http.StatusInternalServerError, err.Error())
 		}
@@ -61,13 +50,25 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 	cookie := &http.Cookie{
 		Name:     "lifthus_st",
 		Value:    stSigned,
-		Path:     "/session",
+		Path:     "/",
 		Secure:   false,
 		HttpOnly: true,
 		Domain:   os.Getenv("LIFTHUS_DOMAIN"),
 		SameSite: http.SameSiteDefaultMode,
 	}
 	c.SetCookie(cookie)
+
+	cookie2 := &http.Cookie{
+		Name:     "lifthus_psid",
+		Value:    sid,
+		Path:     "/",
+		Secure:   false,
+		HttpOnly: true,
+		Domain:   os.Getenv("LIFTHUS_DOMAIN"),
+		Expires:  time.Now().AddDate(1, 0, 0),
+		SameSite: http.SameSiteDefaultMode,
+	}
+	c.SetCookie(cookie2)
 
 	return c.String(http.StatusCreated, sid)
 }

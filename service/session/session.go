@@ -44,7 +44,7 @@ func RevokeSession(ctx context.Context, client *ent.Client, sid string) error {
 	// delete the session from database
 	err = client.Session.DeleteOneID(sid_uuid).Exec(ctx)
 	if err != nil && !ent.IsNotFound(err) {
-		return fmt.Errorf("!!deleting session failed:%w", err)
+		return fmt.Errorf("!!revoking session failed:%w", err)
 	}
 	return nil
 }
