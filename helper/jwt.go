@@ -12,7 +12,7 @@ func ParseJWTwithHMAC(tokenString string) (claims jwt.MapClaims, expired bool, e
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf(" [F] invalid signing method ")
 		}
-		return []byte(os.Getenv("HUS_AUTH_TOKEN_KEY")), nil
+		return []byte(os.Getenv("HUS_SECRET_KEY")), nil
 	})
 	if err != nil {
 		return nil, false, err
