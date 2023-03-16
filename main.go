@@ -33,19 +33,19 @@ func main() {
 	// set .env
 	err := godotenv.Load() // now you can use os.Getenv("VAR_NAME")
 	if err != nil {
-		log.Fatalf("[F]loading .env file failed : %v", err)
+		log.Fatalf("[F]loading .env file failed:%v", err)
 	}
 
 	// connecting to lifthus_user_db with ent
 	client, err := db.ConnectToLifthusAuth()
 	if err != nil {
-		log.Fatal("[F]connecting db failed:%w", err)
+		log.Fatalf("[F]connecting db failed:%v", err)
 	}
 	defer client.Close()
 
 	// Run the auto migration tool.
 	if err := client.Schema.Create(context.Background()); err != nil {
-		log.Fatalf("[F] creating schema resources failed : %v", err)
+		log.Fatalf("[F]creating schema resources failed : %v", err)
 	}
 
 	// subdomains

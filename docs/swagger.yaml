@@ -26,10 +26,12 @@ paths:
         signed in.
       tags:
       - auth
-  /session/access/newsid:
+  /session/access:
     post:
-      description: Hus told lifthus that the user is logged in. so now we can set
-        the login session.
+      description: |-
+        Hus told lifthus that the user is signed in.
+        so now we can publish access token to the client who has verified sid.
+        and also we revoke the used session token.
       responses:
         "200":
           description: publishing refresh token success
@@ -37,7 +39,7 @@ paths:
           description: unauthorized
         "500":
           description: internal server error
-      summary: gets lifthus sid in cookie from client and set refresh token in cookie.
+      summary: gets lifthus sid in cookie from client and publishes access token.
       tags:
       - auth
   /session/new:

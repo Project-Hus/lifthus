@@ -35,8 +35,8 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 	// if the client has token already, revoke it.
 	if lifthus_st != nil {
 		// parse lifthus_st
-		st, exp, err := helper.ParseJWTwithHMAC(lifthus_st.Value)
-		if err != nil || exp {
+		st, _, err := helper.ParseJWTwithHMAC(lifthus_st.Value)
+		if err != nil {
 			err = fmt.Errorf("[F]parsing lifthus_st failed:%w", err)
 			log.Println(err)
 			return c.String(http.StatusInternalServerError, err.Error())
@@ -111,32 +111,17 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	return c.String(http.StatusOK, "session signing success")
 }
 
-// SessionCheckHandler godoc
-// @Router       /session/access/newsid [post]
-// @Summary      gets lifthus sid in cookie from client and set refresh token in cookie.
-// @Description  Hus told lifthus that the user is logged in. so now we can set the login session.
+// AccessTokenHandler godoc
+// @Router       /session/access [post]
+// @Summary      gets lifthus sid in cookie from client and publishes access token.
+// @Description  Hus told lifthus that the user is signed in.
+// @Description so now we can publish access token to the client who has verified sid.
+// @Description and also we revoke the used session token.
 // @Tags         auth
-// @Success      200 "publishing refresh token success"
+// @Success      201 "publishing access token success"
 // @Failure      401 "unauthorized"
 // @Failure      500 "internal server error"
-func (ac authApiController) SessionCheckHandler(c echo.Context) error {
-	// 세션 토큰 확인하고 로그인된 토큰이면 다시 허스에게 로그인 상태 확인하고
-	//  세션 토큰은 재발급하면서 액세스 토큰 새로 발급
-	fmt.Println("WOW you came here!")
-	return c.NoContent(http.StatusOK)
-}
-
-// SessionCheckHandler godoc
-// @Router       /session/access/newsid [post]
-// @Summary      gets lifthus sid in cookie from client and set refresh token in cookie.
-// @Description  Hus told lifthus that the user is logged in. so now we can set the login session.
-// @Tags         auth
-// @Success      200 "publishing refresh token success"
-// @Failure      401 "unauthorized"
-// @Failure      500 "internal server error"
-func (ac authApiController) AccessHandler(c echo.Context) error {
-	// 세션 토큰 확인하고 로그인된 토큰이면 다시 허스에게 로그인 상태 확인하고
-	//  세션 토큰은 재발급하면서 액세스 토큰 새로 발급
-	fmt.Println("WOW you came here!")
+func (ac authApiController) AccessTokenHandler(c echo.Context) error {
+	fmt.Println("AccessTokenHandler")
 	return c.NoContent(http.StatusOK)
 }
