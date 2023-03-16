@@ -17,22 +17,24 @@ func CreateSession(ctx context.Context, client *ent.Client) (sid string, stSigne
 	// create new lifthus session
 	ns, err := client.Session.Create().Save(ctx)
 	if err != nil {
-		log.Println("[F] creating new session failed: ", err)
+		err = fmt.Errorf("[F]creating new session failed:%w", err)
+		log.Println(err)
+		return "", "", err
 	}
-	sid = ns.ID.String()
 
+	sid = ns.ID.String()
 	// create new jwt session token with session id
 	st := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sid": sid,
-		"uid": nil, // it will be omitted actually.
-		"exp": time.Now().Add(time.Hour).Unix(),
+		"exp": time.Now().Add(time.Minute * 10).Unix(),
 	})
 
-	// Sign and get the complete encoded token as a string using the secret
+	// sign and get the complete encoded token as a string using the secret
 	hsk := []byte(os.Getenv("HUS_SECRET_KEY"))
 	stSigned, err = st.SignedString(hsk)
 	if err != nil {
-		log.Println("[F] signing session token failed: ", err)
+		err = fmt.Errorf("[F]signing session token failed:%w", err)
+		log.Println(err)
 		return "", "", err
 	}
 
