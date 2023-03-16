@@ -43,6 +43,11 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 		sid := st["sid"].(string)
 
 		err = session.RevokeSession(c.Request().Context(), ac.Client, sid)
+		if err != nil {
+			err = fmt.Errorf("[F]revoking session failed:%w", err)
+			log.Println(err)
+			return c.String(http.StatusInternalServerError, err.Error())
+		}
 	}
 
 	// create new lifthus session
