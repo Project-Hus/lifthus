@@ -41,13 +41,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/session/access/newsid": {
+        "/session/access": {
             "post": {
-                "description": "Hus told lifthus that the user is logged in. so now we can set the login session.",
+                "description": "Hus told lifthus that the user is signed in.\nso now we can publish access token to the client who has verified sid.\nand also we revoke the used session token.",
                 "tags": [
                     "auth"
                 ],
-                "summary": "gets lifthus sid in cookie from client and set refresh token in cookie.",
+                "summary": "gets lifthus sid in cookie from client and publishes access token.",
                 "responses": {
                     "200": {
                         "description": "publishing refresh token success"
