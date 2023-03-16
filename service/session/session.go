@@ -25,7 +25,7 @@ func CreateSession(ctx context.Context, client *ent.Client) (sid string, stSigne
 	st := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sid": sid,
 		"uid": nil, // it will be omitted actually.
-		"exp": time.Now().Add(time.Hour * 24).Unix(),
+		"exp": time.Now().Add(time.Hour).Unix(),
 	})
 
 	// Sign and get the complete encoded token as a string using the secret
@@ -37,6 +37,23 @@ func CreateSession(ctx context.Context, client *ent.Client) (sid string, stSigne
 	}
 
 	return ns.ID.String(), stSigned, nil
+}
+
+func RevokeSession(ctx context.Context, client *ent.Client, sid string) error {
+	sid_uuid, err := uuid.Parse(sid)
+	if err != nil {
+		err = fmt.Errorf("[F]parsing uuid failed:%w", err)
+		log.Println(err)
+		return err
+	}
+	// delete the session from database
+	err = client.Session.DeleteOneID(sid_uuid).Exec(ctx)
+	if err != nil && !ent.IsNotFound(err) {
+		err = fmt.Errorf("[F]deleting session failed:%w", err)
+		log.Println(err)
+		return err
+	}
+	return nil
 }
 
 func SetSignedSession(ctx context.Context, client *ent.Client, sid string, uid string) error {

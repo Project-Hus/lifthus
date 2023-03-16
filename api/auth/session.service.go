@@ -27,26 +27,25 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 	// get lifthus_st from cookie
 	lifthus_st, err := c.Cookie("lifthus_st")
 	if err != nil && err != http.ErrNoCookie {
-		log.Println("[F] getting lifthus_st from cookie failed: ", err)
-		return c.NoContent(http.StatusInternalServerError)
+		err = fmt.Errorf("[F]getting lifthus_st from cookie failed:%w", err)
+		log.Println(err)
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
-	// if there is session cookie already, just maintain the session.
-	// it makes the session to be maintained through the whole tabs of the browser unlike using session storage.
+	// if the client has token already, revoke it.
 	if lifthus_st != nil {
 		// parse lifthus_st
 		st, exp, err := helper.ParseJWTwithHMAC(lifthus_st.Value)
-		if err != nil || !exp {
-			return c.NoContent(http.StatusInternalServerError)
+		if err != nil || exp {
+			err = fmt.Errorf("[F]parsing lifthus_st failed:%w", err)
+			log.Println(err)
+			return c.String(http.StatusUnauthorized, err.Error())
 		}
 		sid := st["sid"].(string)
-		return c.String(http.StatusOK, sid)
-	}
-	/*
-		although unlikely, this may cause malfunction. if the session is deleted from database before cookie,
-		the client should clear the cookie self.
-	*/
 
-	// and if there is no cookie, create new session and return session id.
+		err = session.RevokeSession(c.Request().Context(), ac.Client, sid)
+	}
+
+	// create new lifthus session
 	sid, stSigned, err := session.CreateSession(c.Request().Context(), ac.Client)
 	if err != nil {
 		return c.NoContent(http.StatusInternalServerError)
@@ -65,7 +64,6 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 	c.SetCookie(cookie)
 
 	return c.String(http.StatusCreated, sid)
-	//return c.Redirect(http.StatusPermanentRedirect, os.Getenv("HUS_AUTH_URL")+"/session/check/lifthus/"+sid)
 }
 
 // HusSessionCheckHandler godoc
@@ -109,7 +107,7 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 }
 
 // SessionCheckHandler godoc
-// @Router       /session/check [post]
+// @Router       /session/access/newsid [post]
 // @Summary      gets lifthus sid in cookie from client and set refresh token in cookie.
 // @Description  Hus told lifthus that the user is logged in. so now we can set the login session.
 // @Tags         auth
@@ -117,6 +115,23 @@ func (ac authApiController) HusSessionCheckHandler(c echo.Context) error {
 // @Failure      401 "unauthorized"
 // @Failure      500 "internal server error"
 func (ac authApiController) SessionCheckHandler(c echo.Context) error {
+	// 세션 토큰 확인하고 로그인된 토큰이면 다시 허스에게 로그인 상태 확인하고
+	//  세션 토큰은 재발급하면서 액세스 토큰 새로 발급
+	fmt.Println("WOW you came here!")
+	return c.NoContent(http.StatusOK)
+}
+
+// SessionCheckHandler godoc
+// @Router       /session/access/newsid [post]
+// @Summary      gets lifthus sid in cookie from client and set refresh token in cookie.
+// @Description  Hus told lifthus that the user is logged in. so now we can set the login session.
+// @Tags         auth
+// @Success      200 "publishing refresh token success"
+// @Failure      401 "unauthorized"
+// @Failure      500 "internal server error"
+func (ac authApiController) AccessHandler(c echo.Context) error {
+	// 세션 토큰 확인하고 로그인된 토큰이면 다시 허스에게 로그인 상태 확인하고
+	//  세션 토큰은 재발급하면서 액세스 토큰 새로 발급
 	fmt.Println("WOW you came here!")
 	return c.NoContent(http.StatusOK)
 }
