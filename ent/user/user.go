@@ -39,8 +39,6 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// EdgeSessions holds the string denoting the sessions edge name in mutations.
 	EdgeSessions = "sessions"
-	// EdgeLifthusTokens holds the string denoting the lifthus_tokens edge name in mutations.
-	EdgeLifthusTokens = "lifthus_tokens"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// SessionsTable is the table that holds the sessions relation/edge.
@@ -50,13 +48,6 @@ const (
 	SessionsInverseTable = "sessions"
 	// SessionsColumn is the table column denoting the sessions relation/edge.
 	SessionsColumn = "uid"
-	// LifthusTokensTable is the table that holds the lifthus_tokens relation/edge.
-	LifthusTokensTable = "refresh_tokens"
-	// LifthusTokensInverseTable is the table name for the RefreshToken entity.
-	// It exists in this package in order to avoid circular dependency with the "refreshtoken" package.
-	LifthusTokensInverseTable = "refresh_tokens"
-	// LifthusTokensColumn is the table column denoting the lifthus_tokens relation/edge.
-	LifthusTokensColumn = "uid"
 )
 
 // Columns holds all SQL columns for user fields.

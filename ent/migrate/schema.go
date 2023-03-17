@@ -18,28 +18,6 @@ var (
 		Columns:    LifthusGroupsColumns,
 		PrimaryKey: []*schema.Column{LifthusGroupsColumns[0]},
 	}
-	// RefreshTokensColumns holds the columns for the "refresh_tokens" table.
-	RefreshTokensColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "revoked", Type: field.TypeBool, Default: false},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "uid", Type: field.TypeUUID},
-	}
-	// RefreshTokensTable holds the schema information for the "refresh_tokens" table.
-	RefreshTokensTable = &schema.Table{
-		Name:       "refresh_tokens",
-		Columns:    RefreshTokensColumns,
-		PrimaryKey: []*schema.Column{RefreshTokensColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "refresh_tokens_users_lifthus_tokens",
-				Columns:    []*schema.Column{RefreshTokensColumns[4]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-	}
 	// SessionsColumns holds the columns for the "sessions" table.
 	SessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -86,13 +64,11 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		LifthusGroupsTable,
-		RefreshTokensTable,
 		SessionsTable,
 		UsersTable,
 	}
 )
 
 func init() {
-	RefreshTokensTable.ForeignKeys[0].RefTable = UsersTable
 	SessionsTable.ForeignKeys[0].RefTable = UsersTable
 }

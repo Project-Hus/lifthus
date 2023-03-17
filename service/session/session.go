@@ -23,6 +23,7 @@ func CreateSession(ctx context.Context, client *ent.Client) (sid string, stSigne
 	// create new jwt session token with session id
 	st := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sid": sid,
+		"uid": "",
 		"exp": time.Now().Add(time.Minute * 10).Unix(),
 	})
 

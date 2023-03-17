@@ -753,33 +753,6 @@ func HasSessionsWith(preds ...predicate.Session) predicate.User {
 	})
 }
 
-// HasLifthusTokens applies the HasEdge predicate on the "lifthus_tokens" edge.
-func HasLifthusTokens() predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, LifthusTokensTable, LifthusTokensColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasLifthusTokensWith applies the HasEdge predicate on the "lifthus_tokens" edge with a given conditions (other predicates).
-func HasLifthusTokensWith(preds ...predicate.RefreshToken) predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(LifthusTokensInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, LifthusTokensTable, LifthusTokensColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.User) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
