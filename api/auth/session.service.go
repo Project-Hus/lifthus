@@ -2,8 +2,10 @@ package auth
 
 import (
 	"fmt"
+	"io/ioutil"
 	"lifthus-auth/common"
 	"lifthus-auth/db"
+	"lifthus-auth/helper"
 
 	"lifthus-auth/service/session"
 	"log"
@@ -81,12 +83,37 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 // @Success      200 "session signing success"
 // @Failure      500 "failed to set the login session"
 func (ac authApiController) HusSessionHandler(c echo.Context) error {
-	// from request body json, get sid string and uid string
-	scbd := common.HusSessionCheckBody{}
-	if err := c.Bind(&scbd); err != nil {
-		err = fmt.Errorf("[F]binding HusSessionCheckBody failed:%w", err)
+
+	body, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		err = fmt.Errorf("[F]reading request body failed:%w", err)
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	hscb := string(body)
+
+	hscbParsed, exp, err := helper.ParseJWTwithHMAC(hscb)
+	if err != nil {
+		err = fmt.Errorf("[F]parsing jwt failed:%w", err)
+		log.Println(err)
+		return c.String(http.StatusInternalServerError, err.Error())
+	} else if exp {
+		err = fmt.Errorf("[F]token is expired")
+		log.Println(err)
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+
+	hscbParsed["sid"] = hscbParsed["sid"].(string)
+	// from request body json, get sid string and uid string
+	scbd := common.HusSessionCheckBody{
+		Sid:           hscbParsed["sid"].(string),
+		Uid:           hscbParsed["uid"].(string),
+		Email:         hscbParsed["email"].(string),
+		EmailVerified: hscbParsed["email_verified"].(bool),
+		Name:          hscbParsed["name"].(string),
+		GivenName:     hscbParsed["given_name"].(string),
+		FamilyName:    hscbParsed["family_name"].(string),
+		Birthdate:     hscbParsed["birthdate"].(string),
 	}
 
 	// Query if the user exists in the database
