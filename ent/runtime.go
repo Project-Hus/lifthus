@@ -3,7 +3,6 @@
 package ent
 
 import (
-	"lifthus-auth/ent/refreshtoken"
 	"lifthus-auth/ent/schema"
 	"lifthus-auth/ent/session"
 	"lifthus-auth/ent/user"
@@ -16,26 +15,6 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
-	refreshtokenFields := schema.RefreshToken{}.Fields()
-	_ = refreshtokenFields
-	// refreshtokenDescRevoked is the schema descriptor for revoked field.
-	refreshtokenDescRevoked := refreshtokenFields[2].Descriptor()
-	// refreshtoken.DefaultRevoked holds the default value on creation for the revoked field.
-	refreshtoken.DefaultRevoked = refreshtokenDescRevoked.Default.(bool)
-	// refreshtokenDescCreatedAt is the schema descriptor for created_at field.
-	refreshtokenDescCreatedAt := refreshtokenFields[3].Descriptor()
-	// refreshtoken.DefaultCreatedAt holds the default value on creation for the created_at field.
-	refreshtoken.DefaultCreatedAt = refreshtokenDescCreatedAt.Default.(func() time.Time)
-	// refreshtokenDescUpdatedAt is the schema descriptor for updated_at field.
-	refreshtokenDescUpdatedAt := refreshtokenFields[4].Descriptor()
-	// refreshtoken.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	refreshtoken.DefaultUpdatedAt = refreshtokenDescUpdatedAt.Default.(func() time.Time)
-	// refreshtoken.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	refreshtoken.UpdateDefaultUpdatedAt = refreshtokenDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// refreshtokenDescID is the schema descriptor for id field.
-	refreshtokenDescID := refreshtokenFields[0].Descriptor()
-	// refreshtoken.DefaultID holds the default value on creation for the id field.
-	refreshtoken.DefaultID = refreshtokenDescID.Default.(func() uuid.UUID)
 	sessionFields := schema.Session{}.Fields()
 	_ = sessionFields
 	// sessionDescConnectedAt is the schema descriptor for connected_at field.

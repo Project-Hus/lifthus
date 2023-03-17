@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"lifthus-auth/ent/refreshtoken"
 	"lifthus-auth/ent/session"
 	"lifthus-auth/ent/user"
 	"time"
@@ -178,21 +177,6 @@ func (uc *UserCreate) AddSessions(s ...*Session) *UserCreate {
 		ids[i] = s[i].ID
 	}
 	return uc.AddSessionIDs(ids...)
-}
-
-// AddLifthusTokenIDs adds the "lifthus_tokens" edge to the RefreshToken entity by IDs.
-func (uc *UserCreate) AddLifthusTokenIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddLifthusTokenIDs(ids...)
-	return uc
-}
-
-// AddLifthusTokens adds the "lifthus_tokens" edges to the RefreshToken entity.
-func (uc *UserCreate) AddLifthusTokens(r ...*RefreshToken) *UserCreate {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
-	}
-	return uc.AddLifthusTokenIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -368,25 +352,6 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: session.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := uc.mutation.LifthusTokensIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.LifthusTokensTable,
-			Columns: []string{user.LifthusTokensColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: refreshtoken.FieldID,
 				},
 			},
 		}

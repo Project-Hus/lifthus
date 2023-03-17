@@ -9,9 +9,6 @@ import (
 // LifthusGroup is the predicate function for lifthusgroup builders.
 type LifthusGroup func(*sql.Selector)
 
-// RefreshToken is the predicate function for refreshtoken builders.
-type RefreshToken func(*sql.Selector)
-
 // Session is the predicate function for session builders.
 type Session func(*sql.Selector)
 

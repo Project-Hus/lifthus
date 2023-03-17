@@ -50,11 +50,9 @@ type User struct {
 type UserEdges struct {
 	// Sessions holds the value of the sessions edge.
 	Sessions []*Session `json:"sessions,omitempty"`
-	// LifthusTokens holds the value of the lifthus_tokens edge.
-	LifthusTokens []*RefreshToken `json:"lifthus_tokens,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [1]bool
 }
 
 // SessionsOrErr returns the Sessions value or an error if the edge
@@ -64,15 +62,6 @@ func (e UserEdges) SessionsOrErr() ([]*Session, error) {
 		return e.Sessions, nil
 	}
 	return nil, &NotLoadedError{edge: "sessions"}
-}
-
-// LifthusTokensOrErr returns the LifthusTokens value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) LifthusTokensOrErr() ([]*RefreshToken, error) {
-	if e.loadedTypes[1] {
-		return e.LifthusTokens, nil
-	}
-	return nil, &NotLoadedError{edge: "lifthus_tokens"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -193,11 +182,6 @@ func (u *User) assignValues(columns []string, values []any) error {
 // QuerySessions queries the "sessions" edge of the User entity.
 func (u *User) QuerySessions() *SessionQuery {
 	return NewUserClient(u.config).QuerySessions(u)
-}
-
-// QueryLifthusTokens queries the "lifthus_tokens" edge of the User entity.
-func (u *User) QueryLifthusTokens() *RefreshTokenQuery {
-	return NewUserClient(u.config).QueryLifthusTokens(u)
 }
 
 // Update returns a builder for updating this User.

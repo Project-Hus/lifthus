@@ -14,8 +14,6 @@ type Tx struct {
 	config
 	// LifthusGroup is the client for interacting with the LifthusGroup builders.
 	LifthusGroup *LifthusGroupClient
-	// RefreshToken is the client for interacting with the RefreshToken builders.
-	RefreshToken *RefreshTokenClient
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
 	// User is the client for interacting with the User builders.
@@ -152,7 +150,6 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.LifthusGroup = NewLifthusGroupClient(tx.config)
-	tx.RefreshToken = NewRefreshTokenClient(tx.config)
 	tx.Session = NewSessionClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }

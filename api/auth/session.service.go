@@ -13,6 +13,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
 
@@ -30,7 +31,7 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 
 	lifthus_psid, err := c.Cookie("lifthus_psid")
 	if err != nil && err != http.ErrNoCookie {
-		err = fmt.Errorf("[F]getting lifthus_psid from cookie failed:%w", err)
+		err = fmt.Errorf("!!getting lifthus_psid from cookie failed:%w", err)
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -86,7 +87,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 
 	body, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
-		err = fmt.Errorf("[F]reading request body failed:%w", err)
+		err = fmt.Errorf("!!reading request body failed:%w", err)
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -94,11 +95,11 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 
 	hscbParsed, exp, err := helper.ParseJWTwithHMAC(hscb)
 	if err != nil {
-		err = fmt.Errorf("[F]parsing jwt failed:%w", err)
+		err = fmt.Errorf("!!parsing jwt failed:%w", err)
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	} else if exp {
-		err = fmt.Errorf("[F]token is expired")
+		err = fmt.Errorf("!!token is expired")
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -136,6 +137,30 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
+
+	nst := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sid": scbd.Sid,
+		"uid": scbd.Uid,
+		"exp": time.Now().Add(time.Minute * 10).Unix(),
+	})
+	nstSigned, err := nst.SignedString([]byte(os.Getenv("HUS_SECRET_KEY")))
+	if err != nil {
+		log.Println(err)
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+
+	nstCookie := &http.Cookie{
+		Name:     "lifthus_st",
+		Value:    nstSigned,
+		Path:     "/",
+		Secure:   false,
+		HttpOnly: true,
+		Domain:   os.Getenv("LIFTHUS_DOMAIN"),
+		SameSite: http.SameSiteDefaultMode,
+	}
+
+	c.SetCookie(nstCookie)
+
 	return c.String(http.StatusOK, "session signing success")
 }
 
@@ -150,6 +175,73 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 // @Failure      401 "unauthorized"
 // @Failure      500 "internal server error"
 func (ac authApiController) AccessTokenHandler(c echo.Context) error {
-	fmt.Println("AccessTokenHandler")
-	return c.NoContent(http.StatusOK)
+	// get lifthus_st from cookie
+	lifthus_st, err := c.Cookie("lifthus_st")
+	if err != nil {
+		err = fmt.Errorf("!!no valid token:%w", err)
+		return c.String(http.StatusUnauthorized, err.Error())
+	}
+
+	// parse lifthus_st
+	lst, exp, err := helper.ParseJWTwithHMAC(lifthus_st.Value)
+	if err != nil {
+		log.Println(err)
+		return c.String(http.StatusUnauthorized, err.Error())
+	}
+
+	sid := lst["sid"].(string)
+	uid := lst["uid"].(string)
+
+	ls, err := db.QuerySessionBySID(c.Request().Context(), ac.Client, sid)
+	if err != nil {
+		log.Println(err)
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	if ls == nil {
+		err = fmt.Errorf("!!no valid session")
+		log.Println(err)
+		return c.String(http.StatusUnauthorized, err.Error())
+	}
+
+	err = session.RevokeSession(c.Request().Context(), ac.Client, sid)
+	if err != nil {
+		log.Println(err)
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+
+	if exp {
+		err = fmt.Errorf("!!token is expired")
+		log.Println(err)
+		return c.String(http.StatusUnauthorized, err.Error())
+	}
+
+	// if the session is signed more than 5 seconds ago, it is expired.
+	if time.Since(*ls.SignedAt).Seconds() > 5 {
+		err = fmt.Errorf("!!signed session is expired")
+		log.Println(err)
+		return c.String(http.StatusUnauthorized, err.Error())
+	}
+
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sid": sid,
+		"uid": uid,
+		"exp": time.Now().Add(time.Minute * 5).Unix(),
+	})
+	atSigned, err := accessToken.SignedString([]byte(os.Getenv("HUS_SECRET_KEY")))
+	if err != nil {
+		err = fmt.Errorf("!!signing accessToekn failed:%w", err)
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	atCookie := &http.Cookie{
+		Name:     "lifthus_at",
+		Value:    atSigned,
+		Path:     "/",
+		Secure:   false,
+		HttpOnly: true,
+		Domain:   os.Getenv("LIFTHUS_DOMAIN"),
+		SameSite: http.SameSiteDefaultMode,
+	}
+	c.SetCookie(atCookie)
+
+	return c.String(http.StatusOK, "new access token and old session revoked")
 }

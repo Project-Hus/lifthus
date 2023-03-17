@@ -11,7 +11,6 @@ import (
 	"lifthus-auth/ent/migrate"
 
 	"lifthus-auth/ent/lifthusgroup"
-	"lifthus-auth/ent/refreshtoken"
 	"lifthus-auth/ent/session"
 	"lifthus-auth/ent/user"
 
@@ -29,8 +28,6 @@ type Client struct {
 	Schema *migrate.Schema
 	// LifthusGroup is the client for interacting with the LifthusGroup builders.
 	LifthusGroup *LifthusGroupClient
-	// RefreshToken is the client for interacting with the RefreshToken builders.
-	RefreshToken *RefreshTokenClient
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
 	// User is the client for interacting with the User builders.
@@ -49,7 +46,6 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.LifthusGroup = NewLifthusGroupClient(c.config)
-	c.RefreshToken = NewRefreshTokenClient(c.config)
 	c.Session = NewSessionClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -135,7 +131,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:          ctx,
 		config:       cfg,
 		LifthusGroup: NewLifthusGroupClient(cfg),
-		RefreshToken: NewRefreshTokenClient(cfg),
 		Session:      NewSessionClient(cfg),
 		User:         NewUserClient(cfg),
 	}, nil
@@ -158,7 +153,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:          ctx,
 		config:       cfg,
 		LifthusGroup: NewLifthusGroupClient(cfg),
-		RefreshToken: NewRefreshTokenClient(cfg),
 		Session:      NewSessionClient(cfg),
 		User:         NewUserClient(cfg),
 	}, nil
@@ -190,7 +184,6 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.LifthusGroup.Use(hooks...)
-	c.RefreshToken.Use(hooks...)
 	c.Session.Use(hooks...)
 	c.User.Use(hooks...)
 }
@@ -199,7 +192,6 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.LifthusGroup.Intercept(interceptors...)
-	c.RefreshToken.Intercept(interceptors...)
 	c.Session.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 }
@@ -209,8 +201,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *LifthusGroupMutation:
 		return c.LifthusGroup.mutate(ctx, m)
-	case *RefreshTokenMutation:
-		return c.RefreshToken.mutate(ctx, m)
 	case *SessionMutation:
 		return c.Session.mutate(ctx, m)
 	case *UserMutation:
@@ -335,140 +325,6 @@ func (c *LifthusGroupClient) mutate(ctx context.Context, m *LifthusGroupMutation
 		return (&LifthusGroupDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown LifthusGroup mutation op: %q", m.Op())
-	}
-}
-
-// RefreshTokenClient is a client for the RefreshToken schema.
-type RefreshTokenClient struct {
-	config
-}
-
-// NewRefreshTokenClient returns a client for the RefreshToken from the given config.
-func NewRefreshTokenClient(c config) *RefreshTokenClient {
-	return &RefreshTokenClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `refreshtoken.Hooks(f(g(h())))`.
-func (c *RefreshTokenClient) Use(hooks ...Hook) {
-	c.hooks.RefreshToken = append(c.hooks.RefreshToken, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `refreshtoken.Intercept(f(g(h())))`.
-func (c *RefreshTokenClient) Intercept(interceptors ...Interceptor) {
-	c.inters.RefreshToken = append(c.inters.RefreshToken, interceptors...)
-}
-
-// Create returns a builder for creating a RefreshToken entity.
-func (c *RefreshTokenClient) Create() *RefreshTokenCreate {
-	mutation := newRefreshTokenMutation(c.config, OpCreate)
-	return &RefreshTokenCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of RefreshToken entities.
-func (c *RefreshTokenClient) CreateBulk(builders ...*RefreshTokenCreate) *RefreshTokenCreateBulk {
-	return &RefreshTokenCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for RefreshToken.
-func (c *RefreshTokenClient) Update() *RefreshTokenUpdate {
-	mutation := newRefreshTokenMutation(c.config, OpUpdate)
-	return &RefreshTokenUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *RefreshTokenClient) UpdateOne(rt *RefreshToken) *RefreshTokenUpdateOne {
-	mutation := newRefreshTokenMutation(c.config, OpUpdateOne, withRefreshToken(rt))
-	return &RefreshTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *RefreshTokenClient) UpdateOneID(id uuid.UUID) *RefreshTokenUpdateOne {
-	mutation := newRefreshTokenMutation(c.config, OpUpdateOne, withRefreshTokenID(id))
-	return &RefreshTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for RefreshToken.
-func (c *RefreshTokenClient) Delete() *RefreshTokenDelete {
-	mutation := newRefreshTokenMutation(c.config, OpDelete)
-	return &RefreshTokenDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *RefreshTokenClient) DeleteOne(rt *RefreshToken) *RefreshTokenDeleteOne {
-	return c.DeleteOneID(rt.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *RefreshTokenClient) DeleteOneID(id uuid.UUID) *RefreshTokenDeleteOne {
-	builder := c.Delete().Where(refreshtoken.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &RefreshTokenDeleteOne{builder}
-}
-
-// Query returns a query builder for RefreshToken.
-func (c *RefreshTokenClient) Query() *RefreshTokenQuery {
-	return &RefreshTokenQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeRefreshToken},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a RefreshToken entity by its id.
-func (c *RefreshTokenClient) Get(ctx context.Context, id uuid.UUID) (*RefreshToken, error) {
-	return c.Query().Where(refreshtoken.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *RefreshTokenClient) GetX(ctx context.Context, id uuid.UUID) *RefreshToken {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryUser queries the user edge of a RefreshToken.
-func (c *RefreshTokenClient) QueryUser(rt *RefreshToken) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := rt.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(refreshtoken.Table, refreshtoken.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, refreshtoken.UserTable, refreshtoken.UserColumn),
-		)
-		fromV = sqlgraph.Neighbors(rt.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *RefreshTokenClient) Hooks() []Hook {
-	return c.hooks.RefreshToken
-}
-
-// Interceptors returns the client interceptors.
-func (c *RefreshTokenClient) Interceptors() []Interceptor {
-	return c.inters.RefreshToken
-}
-
-func (c *RefreshTokenClient) mutate(ctx context.Context, m *RefreshTokenMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&RefreshTokenCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&RefreshTokenUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&RefreshTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&RefreshTokenDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown RefreshToken mutation op: %q", m.Op())
 	}
 }
 
@@ -715,22 +571,6 @@ func (c *UserClient) QuerySessions(u *User) *SessionQuery {
 	return query
 }
 
-// QueryLifthusTokens queries the lifthus_tokens edge of a User.
-func (c *UserClient) QueryLifthusTokens(u *User) *RefreshTokenQuery {
-	query := (&RefreshTokenClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(refreshtoken.Table, refreshtoken.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.LifthusTokensTable, user.LifthusTokensColumn),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -759,9 +599,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		LifthusGroup, RefreshToken, Session, User []ent.Hook
+		LifthusGroup, Session, User []ent.Hook
 	}
 	inters struct {
-		LifthusGroup, RefreshToken, Session, User []ent.Interceptor
+		LifthusGroup, Session, User []ent.Interceptor
 	}
 )

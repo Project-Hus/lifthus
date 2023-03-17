@@ -44,6 +44,8 @@ func (User) Fields() []ent.Field {
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("sessions", Session.Type),
-		edge.To("lifthus_tokens", RefreshToken.Type),
 	}
 }
+
+// mac command to see which port is in use
+// sudo lsof -i -P -n | grep LISTEN

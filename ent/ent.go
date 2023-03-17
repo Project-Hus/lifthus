@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"lifthus-auth/ent/lifthusgroup"
-	"lifthus-auth/ent/refreshtoken"
 	"lifthus-auth/ent/session"
 	"lifthus-auth/ent/user"
 	"reflect"
@@ -69,7 +68,6 @@ type OrderFunc func(*sql.Selector)
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
 		lifthusgroup.Table: lifthusgroup.ValidColumn,
-		refreshtoken.Table: refreshtoken.ValidColumn,
 		session.Table:      session.ValidColumn,
 		user.Table:         user.ValidColumn,
 	}
