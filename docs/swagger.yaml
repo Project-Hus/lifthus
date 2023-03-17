@@ -33,8 +33,8 @@ paths:
         so now we can publish access token to the client who has verified sid.
         and also we revoke the used session token.
       responses:
-        "200":
-          description: publishing refresh token success
+        "201":
+          description: publishing access token success
         "401":
           description: unauthorized
         "500":

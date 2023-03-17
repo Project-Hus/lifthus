@@ -49,8 +49,8 @@ const docTemplate = `{
                 ],
                 "summary": "gets lifthus sid in cookie from client and publishes access token.",
                 "responses": {
-                    "200": {
-                        "description": "publishing refresh token success"
+                    "201": {
+                        "description": "publishing access token success"
                     },
                     "401": {
                         "description": "unauthorized"
