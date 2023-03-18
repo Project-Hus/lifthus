@@ -25,6 +25,10 @@ func init() {
 	sessionDescSignedAt := sessionFields[3].Descriptor()
 	// session.UpdateDefaultSignedAt holds the default value on update for the signed_at field.
 	session.UpdateDefaultSignedAt = sessionDescSignedAt.UpdateDefault.(func() time.Time)
+	// sessionDescUsed is the schema descriptor for used field.
+	sessionDescUsed := sessionFields[4].Descriptor()
+	// session.DefaultUsed holds the default value on creation for the used field.
+	session.DefaultUsed = sessionDescUsed.Default.(bool)
 	// sessionDescID is the schema descriptor for id field.
 	sessionDescID := sessionFields[0].Descriptor()
 	// session.DefaultID holds the default value on creation for the id field.

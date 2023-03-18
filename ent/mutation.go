@@ -303,6 +303,7 @@ type SessionMutation struct {
 	id            *uuid.UUID
 	connected_at  *time.Time
 	signed_at     *time.Time
+	used          *bool
 	clearedFields map[string]struct{}
 	user          *uuid.UUID
 	cleareduser   bool
@@ -549,6 +550,42 @@ func (m *SessionMutation) ResetSignedAt() {
 	delete(m.clearedFields, session.FieldSignedAt)
 }
 
+// SetUsed sets the "used" field.
+func (m *SessionMutation) SetUsed(b bool) {
+	m.used = &b
+}
+
+// Used returns the value of the "used" field in the mutation.
+func (m *SessionMutation) Used() (r bool, exists bool) {
+	v := m.used
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUsed returns the old "used" field's value of the Session entity.
+// If the Session object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SessionMutation) OldUsed(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUsed is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUsed requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUsed: %w", err)
+	}
+	return oldValue.Used, nil
+}
+
+// ResetUsed resets all changes to the "used" field.
+func (m *SessionMutation) ResetUsed() {
+	m.used = nil
+}
+
 // SetUserID sets the "user" edge to the User entity by id.
 func (m *SessionMutation) SetUserID(id uuid.UUID) {
 	m.user = &id
@@ -622,7 +659,7 @@ func (m *SessionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SessionMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.user != nil {
 		fields = append(fields, session.FieldUID)
 	}
@@ -631,6 +668,9 @@ func (m *SessionMutation) Fields() []string {
 	}
 	if m.signed_at != nil {
 		fields = append(fields, session.FieldSignedAt)
+	}
+	if m.used != nil {
+		fields = append(fields, session.FieldUsed)
 	}
 	return fields
 }
@@ -646,6 +686,8 @@ func (m *SessionMutation) Field(name string) (ent.Value, bool) {
 		return m.ConnectedAt()
 	case session.FieldSignedAt:
 		return m.SignedAt()
+	case session.FieldUsed:
+		return m.Used()
 	}
 	return nil, false
 }
@@ -661,6 +703,8 @@ func (m *SessionMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldConnectedAt(ctx)
 	case session.FieldSignedAt:
 		return m.OldSignedAt(ctx)
+	case session.FieldUsed:
+		return m.OldUsed(ctx)
 	}
 	return nil, fmt.Errorf("unknown Session field %s", name)
 }
@@ -690,6 +734,13 @@ func (m *SessionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSignedAt(v)
+		return nil
+	case session.FieldUsed:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUsed(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Session field %s", name)
@@ -763,6 +814,9 @@ func (m *SessionMutation) ResetField(name string) error {
 		return nil
 	case session.FieldSignedAt:
 		m.ResetSignedAt()
+		return nil
+	case session.FieldUsed:
+		m.ResetUsed()
 		return nil
 	}
 	return fmt.Errorf("unknown Session field %s", name)

@@ -24,6 +24,8 @@ type Session struct {
 	ConnectedAt time.Time `json:"connected_at,omitempty"`
 	// SignedAt holds the value of the "signed_at" field.
 	SignedAt *time.Time `json:"signed_at,omitempty"`
+	// Used holds the value of the "used" field.
+	Used bool `json:"used,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SessionQuery when eager-loading is set.
 	Edges SessionEdges `json:"edges"`
@@ -58,6 +60,8 @@ func (*Session) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case session.FieldUID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case session.FieldUsed:
+			values[i] = new(sql.NullBool)
 		case session.FieldConnectedAt, session.FieldSignedAt:
 			values[i] = new(sql.NullTime)
 		case session.FieldID:
@@ -102,6 +106,12 @@ func (s *Session) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				s.SignedAt = new(time.Time)
 				*s.SignedAt = value.Time
+			}
+		case session.FieldUsed:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field used", values[i])
+			} else if value.Valid {
+				s.Used = value.Bool
 			}
 		}
 	}
@@ -148,6 +158,9 @@ func (s *Session) String() string {
 		builder.WriteString("signed_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
+	builder.WriteString(", ")
+	builder.WriteString("used=")
+	builder.WriteString(fmt.Sprintf("%v", s.Used))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -76,6 +76,20 @@ func (su *SessionUpdate) ClearSignedAt() *SessionUpdate {
 	return su
 }
 
+// SetUsed sets the "used" field.
+func (su *SessionUpdate) SetUsed(b bool) *SessionUpdate {
+	su.mutation.SetUsed(b)
+	return su
+}
+
+// SetNillableUsed sets the "used" field if the given value is not nil.
+func (su *SessionUpdate) SetNillableUsed(b *bool) *SessionUpdate {
+	if b != nil {
+		su.SetUsed(*b)
+	}
+	return su
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (su *SessionUpdate) SetUserID(id uuid.UUID) *SessionUpdate {
 	su.mutation.SetUserID(id)
@@ -159,6 +173,9 @@ func (su *SessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if su.mutation.SignedAtCleared() {
 		_spec.ClearField(session.FieldSignedAt, field.TypeTime)
+	}
+	if value, ok := su.mutation.Used(); ok {
+		_spec.SetField(session.FieldUsed, field.TypeBool, value)
 	}
 	if su.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -258,6 +275,20 @@ func (suo *SessionUpdateOne) SetSignedAt(t time.Time) *SessionUpdateOne {
 // ClearSignedAt clears the value of the "signed_at" field.
 func (suo *SessionUpdateOne) ClearSignedAt() *SessionUpdateOne {
 	suo.mutation.ClearSignedAt()
+	return suo
+}
+
+// SetUsed sets the "used" field.
+func (suo *SessionUpdateOne) SetUsed(b bool) *SessionUpdateOne {
+	suo.mutation.SetUsed(b)
+	return suo
+}
+
+// SetNillableUsed sets the "used" field if the given value is not nil.
+func (suo *SessionUpdateOne) SetNillableUsed(b *bool) *SessionUpdateOne {
+	if b != nil {
+		suo.SetUsed(*b)
+	}
 	return suo
 }
 
@@ -374,6 +405,9 @@ func (suo *SessionUpdateOne) sqlSave(ctx context.Context) (_node *Session, err e
 	}
 	if suo.mutation.SignedAtCleared() {
 		_spec.ClearField(session.FieldSignedAt, field.TypeTime)
+	}
+	if value, ok := suo.mutation.Used(); ok {
+		_spec.SetField(session.FieldUsed, field.TypeBool, value)
 	}
 	if suo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

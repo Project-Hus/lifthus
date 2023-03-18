@@ -27,29 +27,69 @@ import (
 // @Success      201 "returns session id with session token in cookie"
 // @Failure      500 "failed to create new session"
 func (ac authApiController) NewSessionHandler(c echo.Context) error {
-	// this handler would not be called if the client has unexpired access token.
+	/* 4 ways to handle session token */
+	// A: if there is no session, return new session token with new SID
+	// B-1: if it is signed but expired, reset used, signed_at, uid from db and return new token with same SID
+	// B-2: if it is not signed and expired, return new session token with same SID
+	// C: if it is valid, just return
 
+	// first get psid and st from cookie
 	lifthus_psid, err := c.Cookie("lifthus_psid")
 	if err != nil && err != http.ErrNoCookie {
 		err = fmt.Errorf("!!getting lifthus_psid from cookie failed:%w", err)
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
-	if lifthus_psid != nil && lifthus_psid.Value != "" {
-		err = session.RevokeSession(c.Request().Context(), ac.Client, lifthus_psid.Value)
-		if err != nil {
-			log.Println(err)
-			return c.String(http.StatusInternalServerError, err.Error())
-		}
-	}
-
-	// create new lifthus session
-	sid, stSigned, err := session.CreateSession(c.Request().Context(), ac.Client)
-	if err != nil {
+	lifthus_st, err := c.Cookie("lifthus_st")
+	if err != nil && err != http.ErrNoCookie {
+		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
-	// set cookie with session id
+	// sid and stSigned to be set in cookie
+	var sid, stSigned string
+
+	// case A: if there is no session, revoke psid and create new session.
+	if lifthus_st == nil || lifthus_st.Value == "" {
+		// revoke psid if psid exists
+		if lifthus_psid != nil && lifthus_psid.Value != "" {
+			err := session.RevokeSession(c.Request().Context(), ac.Client, lifthus_psid.Value)
+			if err != nil {
+				log.Println(err)
+				return c.String(http.StatusInternalServerError, err.Error())
+			}
+			// create new session
+			sid, stSigned, err = session.CreateSession(c.Request().Context(), ac.Client)
+			if err != nil {
+				log.Println(err)
+				return c.String(http.StatusInternalServerError, err.Error())
+			}
+		}
+
+		// case B,C: if session token exists, validate it.
+	} else {
+		// ValidateSessionToken validates the token for case B, and updates the db for case B-1.
+		sid, uid, exp, err := session.ValidateSessionToken(c.Request().Context(), ac.Client, lifthus_st.Value)
+		if err != nil {
+			log.Println(err)
+			return c.String(http.StatusInternalServerError, err.Error())
+
+			// case B: if it is expired, refresh the token using same SID.
+		} else if exp {
+			stSigned, err = session.RefreshSession(c.Request().Context(), ac.Client, sid)
+			if err != nil {
+				log.Println(err)
+				return c.String(http.StatusInternalServerError, err.Error())
+			}
+			// case C: if it is valid, just keep the token and return
+		} else {
+			return c.String(http.StatusOK, uid)
+
+			// case B: if it is expired, refresh the token using same SID.
+		}
+	}
+
+	// set session token in cookie.
 	cookie := &http.Cookie{
 		Name:     "lifthus_st",
 		Value:    stSigned,
@@ -61,6 +101,7 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 	}
 	c.SetCookie(cookie)
 
+	// set psid to revoke it later.
 	cookie2 := &http.Cookie{
 		Name:     "lifthus_psid",
 		Value:    sid,

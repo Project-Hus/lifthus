@@ -64,6 +64,20 @@ func (sc *SessionCreate) SetNillableSignedAt(t *time.Time) *SessionCreate {
 	return sc
 }
 
+// SetUsed sets the "used" field.
+func (sc *SessionCreate) SetUsed(b bool) *SessionCreate {
+	sc.mutation.SetUsed(b)
+	return sc
+}
+
+// SetNillableUsed sets the "used" field if the given value is not nil.
+func (sc *SessionCreate) SetNillableUsed(b *bool) *SessionCreate {
+	if b != nil {
+		sc.SetUsed(*b)
+	}
+	return sc
+}
+
 // SetID sets the "id" field.
 func (sc *SessionCreate) SetID(u uuid.UUID) *SessionCreate {
 	sc.mutation.SetID(u)
@@ -136,6 +150,10 @@ func (sc *SessionCreate) defaults() {
 		v := session.DefaultConnectedAt()
 		sc.mutation.SetConnectedAt(v)
 	}
+	if _, ok := sc.mutation.Used(); !ok {
+		v := session.DefaultUsed
+		sc.mutation.SetUsed(v)
+	}
 	if _, ok := sc.mutation.ID(); !ok {
 		v := session.DefaultID()
 		sc.mutation.SetID(v)
@@ -146,6 +164,9 @@ func (sc *SessionCreate) defaults() {
 func (sc *SessionCreate) check() error {
 	if _, ok := sc.mutation.ConnectedAt(); !ok {
 		return &ValidationError{Name: "connected_at", err: errors.New(`ent: missing required field "Session.connected_at"`)}
+	}
+	if _, ok := sc.mutation.Used(); !ok {
+		return &ValidationError{Name: "used", err: errors.New(`ent: missing required field "Session.used"`)}
 	}
 	return nil
 }
@@ -189,6 +210,10 @@ func (sc *SessionCreate) createSpec() (*Session, *sqlgraph.CreateSpec) {
 	if value, ok := sc.mutation.SignedAt(); ok {
 		_spec.SetField(session.FieldSignedAt, field.TypeTime, value)
 		_node.SignedAt = &value
+	}
+	if value, ok := sc.mutation.Used(); ok {
+		_spec.SetField(session.FieldUsed, field.TypeBool, value)
+		_node.Used = value
 	}
 	if nodes := sc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
