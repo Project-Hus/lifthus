@@ -164,8 +164,8 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	return c.String(http.StatusOK, "session signing success")
 }
 
-// AccessTokenHandler godoc
-// @Router       /session/access [post]
+// SessionSignHandler godoc
+// @Router       /session/sign [post]
 // @Summary      gets lifthus sid in cookie from client and publishes access token.
 // @Description  Hus told lifthus that the user is signed in.
 // @Description so now we can publish access token to the client who has verified sid.
@@ -174,7 +174,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 // @Success      201 "publishing access token success"
 // @Failure      401 "unauthorized"
 // @Failure      500 "internal server error"
-func (ac authApiController) AccessTokenHandler(c echo.Context) error {
+func (ac authApiController) SessionSignHandler(c echo.Context) error {
 	// get lifthus_st from cookie
 	lifthus_st, err := c.Cookie("lifthus_st")
 	if err != nil {
@@ -192,6 +192,17 @@ func (ac authApiController) AccessTokenHandler(c echo.Context) error {
 	sid := lst["sid"].(string)
 	uid := lst["uid"].(string)
 
+	if exp {
+		err = session.RevokeSession(c.Request().Context(), ac.Client, sid)
+		if err != nil {
+			log.Println(err)
+			return c.String(http.StatusInternalServerError, err.Error())
+		}
+		err = fmt.Errorf("!!token is expired")
+		log.Println(err)
+		return c.String(http.StatusUnauthorized, err.Error())
+	}
+
 	ls, err := db.QuerySessionBySID(c.Request().Context(), ac.Client, sid)
 	if err != nil {
 		log.Println(err)
@@ -203,45 +214,38 @@ func (ac authApiController) AccessTokenHandler(c echo.Context) error {
 		return c.String(http.StatusUnauthorized, err.Error())
 	}
 
-	err = session.RevokeSession(c.Request().Context(), ac.Client, sid)
-	if err != nil {
-		log.Println(err)
-		return c.String(http.StatusInternalServerError, err.Error())
-	}
-
-	if exp {
-		err = fmt.Errorf("!!token is expired")
-		log.Println(err)
-		return c.String(http.StatusUnauthorized, err.Error())
-	}
-
 	// if the session is signed more than 5 seconds ago, it is expired.
 	if time.Since(*ls.SignedAt).Seconds() > 5 {
+		err = session.RevokeSession(c.Request().Context(), ac.Client, sid)
+		if err != nil {
+			log.Println(err)
+			return c.String(http.StatusInternalServerError, err.Error())
+		}
 		err = fmt.Errorf("!!signed session is expired")
 		log.Println(err)
 		return c.String(http.StatusUnauthorized, err.Error())
 	}
 
-	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+	nst := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sid": sid,
 		"uid": uid,
 		"exp": time.Now().Add(time.Minute * 5).Unix(),
 	})
-	atSigned, err := accessToken.SignedString([]byte(os.Getenv("HUS_SECRET_KEY")))
+	nstSigned, err := nst.SignedString([]byte(os.Getenv("HUS_SECRET_KEY")))
 	if err != nil {
 		err = fmt.Errorf("!!signing accessToekn failed:%w", err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
-	atCookie := &http.Cookie{
-		Name:     "lifthus_at",
-		Value:    atSigned,
+	nstCookie := &http.Cookie{
+		Name:     "lifthus_st",
+		Value:    nstSigned,
 		Path:     "/",
 		Secure:   false,
 		HttpOnly: true,
 		Domain:   os.Getenv("LIFTHUS_DOMAIN"),
 		SameSite: http.SameSiteDefaultMode,
 	}
-	c.SetCookie(atCookie)
+	c.SetCookie(nstCookie)
 
 	return c.String(http.StatusOK, "new access token and old session revoked")
 }
