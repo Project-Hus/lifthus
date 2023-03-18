@@ -190,7 +190,6 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 	}
 
 	sid := lst["sid"].(string)
-	uid := lst["uid"].(string)
 
 	if exp {
 		err = session.RevokeSession(c.Request().Context(), ac.Client, sid)
@@ -228,7 +227,7 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 
 	nst := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sid": sid,
-		"uid": uid,
+		"uid": ls.UID,
 		"exp": time.Now().Add(time.Minute * 5).Unix(),
 	})
 	nstSigned, err := nst.SignedString([]byte(os.Getenv("HUS_SECRET_KEY")))
@@ -247,5 +246,5 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 	}
 	c.SetCookie(nstCookie)
 
-	return c.String(http.StatusOK, "new access token and old session revoked")
+	return c.String(http.StatusOK, ls.UID.String())
 }
