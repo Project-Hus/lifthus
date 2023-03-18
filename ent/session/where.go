@@ -71,6 +71,11 @@ func SignedAt(v time.Time) predicate.Session {
 	return predicate.Session(sql.FieldEQ(FieldSignedAt, v))
 }
 
+// Used applies equality check predicate on the "used" field. It's identical to UsedEQ.
+func Used(v bool) predicate.Session {
+	return predicate.Session(sql.FieldEQ(FieldUsed, v))
+}
+
 // UIDEQ applies the EQ predicate on the "uid" field.
 func UIDEQ(v uuid.UUID) predicate.Session {
 	return predicate.Session(sql.FieldEQ(FieldUID, v))
@@ -189,6 +194,16 @@ func SignedAtIsNil() predicate.Session {
 // SignedAtNotNil applies the NotNil predicate on the "signed_at" field.
 func SignedAtNotNil() predicate.Session {
 	return predicate.Session(sql.FieldNotNull(FieldSignedAt))
+}
+
+// UsedEQ applies the EQ predicate on the "used" field.
+func UsedEQ(v bool) predicate.Session {
+	return predicate.Session(sql.FieldEQ(FieldUsed, v))
+}
+
+// UsedNEQ applies the NEQ predicate on the "used" field.
+func UsedNEQ(v bool) predicate.Session {
+	return predicate.Session(sql.FieldNEQ(FieldUsed, v))
 }
 
 // HasUser applies the HasEdge predicate on the "user" edge.

@@ -21,6 +21,7 @@ func (Session) Fields() []ent.Field {
 		field.UUID("uid", uuid.UUID{}).Optional().Nillable(),
 		field.Time("connected_at").Default(time.Now),                          // connected at
 		field.Time("signed_at").Optional().Nillable().UpdateDefault(time.Now), // signed at
+		field.Bool("used").Default(false),                                     // used to sign Lifthus session
 	}
 }
 

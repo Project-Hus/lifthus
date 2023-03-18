@@ -19,6 +19,8 @@ const (
 	FieldConnectedAt = "connected_at"
 	// FieldSignedAt holds the string denoting the signed_at field in the database.
 	FieldSignedAt = "signed_at"
+	// FieldUsed holds the string denoting the used field in the database.
+	FieldUsed = "used"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the session in the database.
@@ -38,6 +40,7 @@ var Columns = []string{
 	FieldUID,
 	FieldConnectedAt,
 	FieldSignedAt,
+	FieldUsed,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -55,6 +58,8 @@ var (
 	DefaultConnectedAt func() time.Time
 	// UpdateDefaultSignedAt holds the default value on update for the "signed_at" field.
 	UpdateDefaultSignedAt func() time.Time
+	// DefaultUsed holds the default value on creation for the "used" field.
+	DefaultUsed bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

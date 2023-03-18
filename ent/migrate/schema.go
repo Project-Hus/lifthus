@@ -23,6 +23,7 @@ var (
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "connected_at", Type: field.TypeTime},
 		{Name: "signed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "used", Type: field.TypeBool, Default: false},
 		{Name: "uid", Type: field.TypeUUID, Nullable: true},
 	}
 	// SessionsTable holds the schema information for the "sessions" table.
@@ -33,7 +34,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "sessions_users_sessions",
-				Columns:    []*schema.Column{SessionsColumns[3]},
+				Columns:    []*schema.Column{SessionsColumns[4]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
