@@ -81,11 +81,10 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 				log.Println(err)
 				return c.String(http.StatusInternalServerError, err.Error())
 			}
+
 			// case C: if it is valid, just keep the token and return
 		} else {
 			return c.String(http.StatusOK, uid)
-
-			// case B: if it is expired, refresh the token using same SID.
 		}
 	}
 

@@ -64,20 +64,31 @@ func SetSignedSession(ctx context.Context, client *ent.Client, sid string, uid s
 	return nil
 }
 
+// ValidateSessionToken validates the session and updates the db.
+// cases:
+// B-1: if it is signed but expired, reset used, signed_at, uid from db and return same SID and empty UID
+// B-2: if it is not signed and expired, return same SID
+// C: if it is valid, just return
 func ValidateSessionToken(ctx context.Context, client *ent.Client, st string) (
 	sid string,
 	uid string,
 	exp bool,
 	err error,
 ) {
-	// parse jwt token
+	// parse session token
 	stParsed, exp, err := helper.ParseJWTwithHMAC(st)
 	if err != nil {
 		return "", "", false, fmt.Errorf("!!parsing jwt token failed:%w", err)
 	}
-	sid = stParsed["sid"].(string)
-	uid = stParsed["uid"].(string)
-
+	// get sid and uid, if not found, return error
+	sid, ok := stParsed["sid"].(string)
+	if !ok {
+		return "", "", false, fmt.Errorf("!!parsing jwt token failed: sid not found")
+	}
+	uid, ok = stParsed["uid"].(string)
+	if !ok {
+		return "", "", false, fmt.Errorf("!!parsing jwt token failed: uid not found")
+	}
 	sid_uuid, err := uuid.Parse(sid)
 	if err != nil {
 		return "", "", false, fmt.Errorf("!!parsing uuid failed:%w", err)
@@ -90,10 +101,10 @@ func ValidateSessionToken(ctx context.Context, client *ent.Client, st string) (
 			return "", "", false, fmt.Errorf("!!updating session failed:%w", err)
 		}
 	}
-
 	return sid, uid, exp, nil
 }
 
+// RefreshSession refreshes the session token with same SID and empty UID.
 func RefreshSession(ctx context.Context, client *ent.Client, sid string) (stSigned string, err error) {
 	// create new jwt session token with session id
 	st := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
