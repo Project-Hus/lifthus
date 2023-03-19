@@ -58,23 +58,23 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 				log.Println(err)
 				return c.String(http.StatusInternalServerError, err.Error())
 			}
-			// create new session
-			sid, stSigned, err = session.CreateSession(c.Request().Context(), ac.Client)
-			if err != nil {
-				log.Println(err)
-				return c.String(http.StatusInternalServerError, err.Error())
-			}
 		}
-
+		// create new session
+		sid, stSigned, err = session.CreateSession(c.Request().Context(), ac.Client)
+		if err != nil {
+			log.Println(err)
+			return c.String(http.StatusInternalServerError, err.Error())
+		}
 		// case B,C: if session token exists, validate it.
 	} else {
-		// ValidateSessionToken validates the token for case B, and updates the db for case B-1.
+		// ValidateSessionToken validates the token for case B,C, and updates the db for case B-1.
 		sid, uid, exp, err := session.ValidateSessionToken(c.Request().Context(), ac.Client, lifthus_st.Value)
+		// deal with error
 		if err != nil {
 			log.Println(err)
 			return c.String(http.StatusInternalServerError, err.Error())
 
-			// case B: if it is expired, refresh the token using same SID.
+			// case B: if it is expired, refresh the token using same SID but clear the UID.
 		} else if exp {
 			stSigned, err = session.RefreshSession(c.Request().Context(), ac.Client, sid)
 			if err != nil {
