@@ -114,7 +114,23 @@ func RefreshSessionToken(ctx context.Context, client *ent.Client, sid string) (s
 	})
 	stSigned, err = st.SignedString([]byte(os.Getenv("HUS_SECRET_KEY")))
 	if err != nil {
-		return "", fmt.Errorf("!!signing session token failed:%w", err)
+		return "", err
 	}
 	return stSigned, nil
+}
+
+// RevokeHusToken takes session token and revokes them.
+func RevokeSessionToken(ctx context.Context, client *ent.Client, st string) error {
+	stClaims, _, err := helper.ParseJWTwithHMAC(st)
+
+	sid_uuid, err := uuid.Parse(stClaims["sid"].(string))
+	if err != nil {
+		return err
+	}
+
+	err = client.Session.DeleteOneID(sid_uuid).Exec(ctx)
+	if err != nil && !ent.IsNotFound(err) {
+		return err
+	}
+	return nil
 }
