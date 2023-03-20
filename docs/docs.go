@@ -41,39 +41,42 @@ const docTemplate = `{
                 }
             }
         },
-        "/session/access": {
-            "post": {
-                "description": "Hus told lifthus that the user is signed in.\nso now we can publish access token to the client who has verified sid.\nand also we revoke the used session token.",
+        "/session/new": {
+            "get": {
+                "description": "case A: no session, return newly generated session token with 201.\ncase B-1: signed but expired, reset session info(used, signed_at, uid) except SID and return new session token with 201.\ncase B-2: not signed and expired, return new session token keeping SID with 201.\ncase C-1: valid and signed, just return with 200.\ncase C-2: valid and not signed, return with 201 to tell client to check Hus session.",
                 "tags": [
                     "auth"
                 ],
-                "summary": "gets lifthus sid in cookie from client and publishes access token.",
+                "summary": "accepts tokens in cookie, parse and validate them, and returns tokens depending on the token's status.",
                 "responses": {
+                    "200": {
+                        "description": "if valid session exists, return uid"
+                    },
                     "201": {
-                        "description": "publishing access token success"
+                        "description": "if there's no session or existing session is expired, return new session token"
+                    },
+                    "500": {
+                        "description": "failed to create new session"
+                    }
+                }
+            }
+        },
+        "/session/sign": {
+            "post": {
+                "description": "Hus told lifthus that the user is signed in.\nso now we can sign the token which is owned by the client who has verified sid.",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "gets lifthus sid in cookie from client and signs the lifthus token.",
+                "responses": {
+                    "200": {
+                        "description": "session successfully signed"
                     },
                     "401": {
                         "description": "unauthorized"
                     },
                     "500": {
                         "description": "internal server error"
-                    }
-                }
-            }
-        },
-        "/session/new": {
-            "post": {
-                "description": "at the same time the user opens Lifthus from browser, the client requests new session token.\nand Lifthus auth server returns session id with session token in cookie.",
-                "tags": [
-                    "auth"
-                ],
-                "summary": "when lifthus web app is opened, session token is assigned.",
-                "responses": {
-                    "201": {
-                        "description": "returns session id with session token in cookie"
-                    },
-                    "500": {
-                        "description": "failed to create new session"
                     }
                 }
             }

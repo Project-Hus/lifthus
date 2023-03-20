@@ -26,7 +26,7 @@ func NewAuthApiController(client *ent.Client) *echo.Echo {
 
 	authApiController := newAuthApiController(client)
 
-	authApi.POST("/session/new", authApiController.NewSessionHandler)
+	authApi.GET("/session/new", authApiController.NewSessionHandler)
 	authApi.POST("/hus/session/sign", authApiController.HusSessionHandler)
 	authApi.POST("/session/sign", authApiController.SessionSignHandler)
 

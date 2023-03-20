@@ -24,7 +24,7 @@ func CreateSession(ctx context.Context, client *ent.Client) (sid string, stSigne
 	st := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sid": ns.ID.String(),
 		"uid": "",
-		"exp": time.Now().Add(time.Minute * 10).Unix(),
+		"exp": time.Now().Add(time.Minute * 5).Unix(),
 	})
 
 	// sign and get the complete encoded token as a string using the secret
@@ -69,7 +69,7 @@ func SetSignedSession(ctx context.Context, client *ent.Client, sid string, uid s
 // B-1: if it is signed but expired, reset used, signed_at, uid from db and return same SID and empty UID
 // B-2: if it is not signed and expired, return same SID
 // C: if it is valid, just return
-func ValidateSessionToken(ctx context.Context, client *ent.Client, st string) (
+func ValidateSession(ctx context.Context, client *ent.Client, st string) (
 	sid string,
 	uid string,
 	exp bool,
@@ -105,12 +105,12 @@ func ValidateSessionToken(ctx context.Context, client *ent.Client, st string) (
 }
 
 // RefreshSession refreshes the session token with same SID and empty UID.
-func RefreshSession(ctx context.Context, client *ent.Client, sid string) (stSigned string, err error) {
+func RefreshSessionToken(ctx context.Context, client *ent.Client, sid string) (stSigned string, err error) {
 	// create new jwt session token with session id
 	st := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sid": sid,
 		"uid": "",
-		"exp": time.Now().Add(time.Minute * 10).Unix(),
+		"exp": time.Now().Add(time.Minute * 5).Unix(),
 	})
 	stSigned, err = st.SignedString([]byte(os.Getenv("HUS_SECRET_KEY")))
 	if err != nil {

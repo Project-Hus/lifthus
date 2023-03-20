@@ -26,33 +26,39 @@ paths:
         signed in.
       tags:
       - auth
-  /session/access:
+  /session/new:
+    get:
+      description: |-
+        case A: no session, return newly generated session token with 201.
+        case B-1: signed but expired, reset session info(used, signed_at, uid) except SID and return new session token with 201.
+        case B-2: not signed and expired, return new session token keeping SID with 201.
+        case C-1: valid and signed, just return with 200.
+        case C-2: valid and not signed, return with 201 to tell client to check Hus session.
+      responses:
+        "200":
+          description: if valid session exists, return uid
+        "201":
+          description: if there's no session or existing session is expired, return
+            new session token
+        "500":
+          description: failed to create new session
+      summary: accepts tokens in cookie, parse and validate them, and returns tokens
+        depending on the token's status.
+      tags:
+      - auth
+  /session/sign:
     post:
       description: |-
         Hus told lifthus that the user is signed in.
-        so now we can publish access token to the client who has verified sid.
-        and also we revoke the used session token.
+        so now we can sign the token which is owned by the client who has verified sid.
       responses:
-        "201":
-          description: publishing access token success
+        "200":
+          description: session successfully signed
         "401":
           description: unauthorized
         "500":
           description: internal server error
-      summary: gets lifthus sid in cookie from client and publishes access token.
-      tags:
-      - auth
-  /session/new:
-    post:
-      description: |-
-        at the same time the user opens Lifthus from browser, the client requests new session token.
-        and Lifthus auth server returns session id with session token in cookie.
-      responses:
-        "201":
-          description: returns session id with session token in cookie
-        "500":
-          description: failed to create new session
-      summary: when lifthus web app is opened, session token is assigned.
+      summary: gets lifthus sid in cookie from client and signs the lifthus token.
       tags:
       - auth
 swagger: "2.0"
