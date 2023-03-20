@@ -14,16 +14,18 @@ info:
   version: 0.0.0
 paths:
   /hus/session/sign:
-    post:
-      description: Hus sends SID and UID which are verified and Lifthus sets the session
-        token to be signed in.
+    patch:
+      description: |-
+        Hus sends id token and Lifthus sets the session info to be signed in with specific uid.
+        and if the user is not registered, Lifthus will register the user.
+        Hus user info's change will be reflected as well.
       responses:
         "200":
           description: session signing success
         "500":
           description: failed to set the login session
-      summary: gets lifthus sid and uid from Hus and sets the session token to be
-        signed in.
+      summary: gets Hus id token and sets the session token to be signed in after
+        updating the info.
       tags:
       - auth
   /session/new:
@@ -47,9 +49,9 @@ paths:
       tags:
       - auth
   /session/sign:
-    post:
+    get:
       description: |-
-        Hus told lifthus that the user is signed in.
+        Hus told lifthus that the client with specific SID is signed in.
         so now we can sign the token which is owned by the client who has verified sid.
       responses:
         "200":
@@ -58,7 +60,7 @@ paths:
           description: unauthorized
         "500":
           description: internal server error
-      summary: gets lifthus sid in cookie from client and signs the lifthus token.
+      summary: gets lifthus sid in cookie from client, and signs the lifthus token.
       tags:
       - auth
 swagger: "2.0"
