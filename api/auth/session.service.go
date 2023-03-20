@@ -117,16 +117,18 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 }
 
 // HusSessionHandler godoc
-// @Router       /hus/session/sign [post]
-// @Summary      gets lifthus sid and uid from Hus and sets the session token to be signed in.
-// @Description Hus sends SID and UID which are verified and Lifthus sets the session token to be signed in.
+// @Router       /hus/session/sign [patch]
+// @Summary      gets Hus id token and sets the session token to be signed in after updating the info.
+// @Description Hus sends id token and Lifthus sets the session info to be signed in with specific uid.
+// @Description and if the user is not registered, Lifthus will register the user.
+// @Description Hus user info's change will be reflected as well.
 // @Tags         auth
 // @Success      200 "session signing success"
 // @Failure      500 "failed to set the login session"
 func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	body, err := io.ReadAll(c.Request().Body)
 	if err != nil {
-		err = fmt.Errorf("!!reading request body failed:%w", err)
+		err = fmt.Errorf("reading request body failed:%w", err)
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -134,16 +136,14 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 
 	hscbParsed, exp, err := helper.ParseJWTwithHMAC(hscb)
 	if err != nil {
-		err = fmt.Errorf("!!parsing jwt failed:%w", err)
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	} else if exp {
-		err = fmt.Errorf("!!token is expired")
+		err = fmt.Errorf("token is expired")
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
-	hscbParsed["sid"] = hscbParsed["sid"].(string)
 	// from request body json, get sid string and uid string
 	scbd := common.HusSessionCheckBody{
 		Sid:           hscbParsed["sid"].(string),
@@ -164,7 +164,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	}
 	if u == nil {
 		// create new user if the user does not exist.
-		_, err = db.CreateNewLifthusUser(c.Request().Context(), ac.Client, scbd)
+		u, err = db.CreateNewLifthusUser(c.Request().Context(), ac.Client, scbd)
 		if err != nil {
 			log.Println(err)
 			return c.String(http.StatusInternalServerError, err.Error())
@@ -177,34 +177,11 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
-	nst := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sid": scbd.Sid,
-		"uid": scbd.Uid,
-		"exp": time.Now().Add(time.Minute * 5).Unix(),
-	})
-	nstSigned, err := nst.SignedString([]byte(os.Getenv("HUS_SECRET_KEY")))
-	if err != nil {
-		log.Println(err)
-		return c.String(http.StatusInternalServerError, err.Error())
-	}
-
-	nstCookie := &http.Cookie{
-		Name:     "lifthus_st",
-		Value:    nstSigned,
-		Path:     "/",
-		Secure:   false,
-		HttpOnly: true,
-		Domain:   os.Getenv("LIFTHUS_DOMAIN"),
-		SameSite: http.SameSiteDefaultMode,
-	}
-
-	c.SetCookie(nstCookie)
-
 	return c.String(http.StatusOK, "session signing success")
 }
 
 // SessionSignHandler godoc
-// @Router       /session/sign [post]
+// @Router       /session/sign [get]
 // @Summary      gets lifthus sid in cookie from client and signs the lifthus token.
 // @Description  Hus told lifthus that the user is signed in.
 // @Description so now we can sign the token which is owned by the client who has verified sid.
