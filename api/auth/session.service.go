@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -164,14 +165,14 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	}
 	if u == nil {
 		// create new user if the user does not exist.
-		u, err = db.CreateNewLifthusUser(c.Request().Context(), ac.Client, scbd)
+		_, err = db.CreateNewLifthusUser(c.Request().Context(), ac.Client, scbd)
 		if err != nil {
 			log.Println(err)
 			return c.String(http.StatusInternalServerError, err.Error())
 		}
 	}
 
-	err = session.SetSignedSession(c.Request().Context(), ac.Client, scbd.Sid, scbd.Uid)
+	err = session.SignSession(c.Request().Context(), ac.Client, scbd.Sid, scbd.Uid)
 	if err != nil {
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
@@ -182,8 +183,8 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 
 // SessionSignHandler godoc
 // @Router       /session/sign [get]
-// @Summary      gets lifthus sid in cookie from client and signs the lifthus token.
-// @Description  Hus told lifthus that the user is signed in.
+// @Summary      gets lifthus sid in cookie from client, and signs the lifthus token.
+// @Description  Hus told lifthus that the client with specific SID is signed in.
 // @Description so now we can sign the token which is owned by the client who has verified sid.
 // @Tags         auth
 // @Success      200 "session successfully signed"
@@ -193,11 +194,10 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 	// get lifthus_st from cookie
 	lifthus_st, err := c.Cookie("lifthus_st")
 	if err != nil {
-		err = fmt.Errorf("!!no valid token:%w", err)
 		return c.String(http.StatusUnauthorized, err.Error())
 	}
 
-	// parse lifthus_st
+	// parse lifthus_st if it exists.
 	lst, exp, err := helper.ParseJWTwithHMAC(lifthus_st.Value)
 	if err != nil {
 		log.Println(err)
@@ -207,14 +207,7 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 	sid := lst["sid"].(string)
 
 	if exp {
-		err = session.RevokeSession(c.Request().Context(), ac.Client, sid)
-		if err != nil {
-			log.Println(err)
-			return c.String(http.StatusInternalServerError, err.Error())
-		}
-		err = fmt.Errorf("!!token is expired")
-		log.Println(err)
-		return c.String(http.StatusUnauthorized, err.Error())
+		return c.String(http.StatusUnauthorized, "retry")
 	}
 
 	ls, err := db.QuerySessionBySID(c.Request().Context(), ac.Client, sid)
@@ -223,31 +216,42 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	if ls == nil {
-		err = fmt.Errorf("!!no valid session")
+		err = fmt.Errorf("no valid session")
 		log.Println(err)
 		return c.String(http.StatusUnauthorized, err.Error())
 	}
 
-	// if the session is signed more than 5 seconds ago, it is expired.
+	// if it is already used to sign, return error.
+	if ls.Used {
+		err = fmt.Errorf("alredy used to sign")
+		log.Println(err)
+		return c.String(http.StatusUnauthorized, err.Error())
+	}
+	sidUUID, err := uuid.Parse(sid)
+	if err != nil {
+		log.Println(err)
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	// if the session is not used, set the session to be used.
+	ac.Client.Session.UpdateOneID(sidUUID).SetUsed(true).Exec(c.Request().Context())
+
+	// if the session is signed more than 5 seconds ago, revoke the session.
 	if time.Since(*ls.SignedAt).Seconds() > 5 {
-		err = session.RevokeSession(c.Request().Context(), ac.Client, sid)
-		if err != nil {
-			log.Println(err)
-			return c.String(http.StatusInternalServerError, err.Error())
-		}
-		err = fmt.Errorf("!!signed session is expired")
+		_ = session.RevokeSession(c.Request().Context(), ac.Client, sid)
+		err = fmt.Errorf("signing time is expired")
 		log.Println(err)
 		return c.String(http.StatusUnauthorized, err.Error())
 	}
 
 	nst := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sid": sid,
-		"uid": ls.UID,
-		"exp": time.Now().Add(time.Minute * 5).Unix(),
+		"purpose": "lifthus_session",
+		"sid":     sid,
+		"uid":     ls.UID,
+		"exp":     time.Now().Add(time.Minute * 5).Unix(),
 	})
 	nstSigned, err := nst.SignedString([]byte(os.Getenv("HUS_SECRET_KEY")))
 	if err != nil {
-		err = fmt.Errorf("!!signing accessToekn failed:%w", err)
+		err = fmt.Errorf("signing accessToekn failed:%w", err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	nstCookie := &http.Cookie{

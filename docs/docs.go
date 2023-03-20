@@ -25,12 +25,12 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/hus/session/sign": {
-            "post": {
-                "description": "Hus sends SID and UID which are verified and Lifthus sets the session token to be signed in.",
+            "patch": {
+                "description": "Hus sends id token and Lifthus sets the session info to be signed in with specific uid.\nand if the user is not registered, Lifthus will register the user.\nHus user info's change will be reflected as well.",
                 "tags": [
                     "auth"
                 ],
-                "summary": "gets lifthus sid and uid from Hus and sets the session token to be signed in.",
+                "summary": "gets Hus id token and sets the session token to be signed in after updating the info.",
                 "responses": {
                     "200": {
                         "description": "session signing success"
@@ -62,12 +62,12 @@ const docTemplate = `{
             }
         },
         "/session/sign": {
-            "post": {
-                "description": "Hus told lifthus that the user is signed in.\nso now we can sign the token which is owned by the client who has verified sid.",
+            "get": {
+                "description": "Hus told lifthus that the client with specific SID is signed in.\nso now we can sign the token which is owned by the client who has verified sid.",
                 "tags": [
                     "auth"
                 ],
-                "summary": "gets lifthus sid in cookie from client and signs the lifthus token.",
+                "summary": "gets lifthus sid in cookie from client, and signs the lifthus token.",
                 "responses": {
                     "200": {
                         "description": "session successfully signed"
