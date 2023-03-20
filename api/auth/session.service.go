@@ -2,7 +2,7 @@ package auth
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"lifthus-auth/common"
 	"lifthus-auth/db"
 	"lifthus-auth/helper"
@@ -18,25 +18,21 @@ import (
 )
 
 // NewSessionHandler godoc
-// @Router       /session/new [post]
-// @Summary      when lifthus web app is opened, session token is assigned.
-// @Description  at the same time the user opens Lifthus from browser, the client requests new session token.
-// @Description  and Lifthus auth server returns session id with session token in cookie.
-// @ Description then the client send the session id to Hus auth server to validate the session.
+// @Router       /session/new [get]
+// @Summary      accepts tokens in cookie, parse and validate them, and returns tokens depending on the token's status.
+// @Description  case A: no session, return newly generated session token with 201.
+// @Description  case B-1: signed but expired, reset session info(used, signed_at, uid) except SID and return new session token with 201.
+// @Description case B-2: not signed and expired, return new session token keeping SID with 201.
+// @Description case C-1: valid and signed, just return with 200.
+// @Description case C-2: valid and not signed, return with 201 to tell client to check Hus session.
 // @Tags         auth
-// @Success      201 "returns session id with session token in cookie"
+// @Success      200 "if valid session exists, return uid"
+// @Success      201 "if there's no session or existing session is expired, return new session token"
 // @Failure      500 "failed to create new session"
 func (ac authApiController) NewSessionHandler(c echo.Context) error {
-	/* 4 ways to handle session token */
-	// A: if there is no session, return new session token with new SID
-	// B-1: if it is signed but expired, reset used, signed_at, uid from db and return new token with same SID
-	// B-2: if it is not signed and expired, return new session token with same SID
-	// C: if it is valid, just return
 
-	// first get psid and st from cookie
-	lifthus_psid, err := c.Cookie("lifthus_psid")
+	lifthus_pst, err := c.Cookie("lifthus_pst")
 	if err != nil && err != http.ErrNoCookie {
-		err = fmt.Errorf("!!getting lifthus_psid from cookie failed:%w", err)
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -46,14 +42,14 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
-	// sid and stSigned to be set in cookie
-	var sid, stSigned string
+	var sid, stSigned, uid string
+	var exp bool
 
-	// case A: if there is no session, revoke psid and create new session.
+	// case A: no session, create new session
 	if lifthus_st == nil || lifthus_st.Value == "" {
 		// revoke psid if psid exists
-		if lifthus_psid != nil && lifthus_psid.Value != "" {
-			err := session.RevokeSession(c.Request().Context(), ac.Client, lifthus_psid.Value)
+		if lifthus_pst != nil && lifthus_pst.Value != "" {
+			err := session.RevokeSessionToken(c.Request().Context(), ac.Client, lifthus_pst.Value)
 			if err != nil {
 				log.Println(err)
 				return c.String(http.StatusInternalServerError, err.Error())
@@ -65,18 +61,18 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 			log.Println(err)
 			return c.String(http.StatusInternalServerError, err.Error())
 		}
+
 		// case B,C: if session token exists, validate it.
 	} else {
 		// ValidateSessionToken validates the token for case B,C, and updates the db for case B-1.
-		sid, uid, exp, err := session.ValidateSessionToken(c.Request().Context(), ac.Client, lifthus_st.Value)
-		// deal with error
+		sid, uid, exp, err = session.ValidateSession(c.Request().Context(), ac.Client, lifthus_st.Value)
 		if err != nil {
 			log.Println(err)
 			return c.String(http.StatusInternalServerError, err.Error())
 
-			// case B: if it is expired, refresh the token using same SID but clear the UID.
+			// case B-1,2: if it is expired, refresh the token using same SID but clear the UID.
 		} else if exp {
-			stSigned, err = session.RefreshSession(c.Request().Context(), ac.Client, sid)
+			stSigned, err = session.RefreshSessionToken(c.Request().Context(), ac.Client, sid)
 			if err != nil {
 				log.Println(err)
 				return c.String(http.StatusInternalServerError, err.Error())
@@ -84,7 +80,11 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 
 			// case C: if it is valid, just keep the token and return
 		} else {
-			return c.String(http.StatusOK, uid)
+			if uid != "" { // case C-1
+				return c.String(http.StatusOK, uid)
+			} else { // case C-2
+				return c.String(http.StatusCreated, sid)
+			}
 		}
 	}
 
@@ -100,10 +100,10 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 	}
 	c.SetCookie(cookie)
 
-	// set psid to revoke it later.
+	// set pst to revoke it later.
 	cookie2 := &http.Cookie{
-		Name:     "lifthus_psid",
-		Value:    sid,
+		Name:     "lifthus_pst",
+		Value:    stSigned,
 		Path:     "/",
 		Secure:   false,
 		HttpOnly: true,
@@ -124,8 +124,7 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 // @Success      200 "session signing success"
 // @Failure      500 "failed to set the login session"
 func (ac authApiController) HusSessionHandler(c echo.Context) error {
-
-	body, err := ioutil.ReadAll(c.Request().Body)
+	body, err := io.ReadAll(c.Request().Body)
 	if err != nil {
 		err = fmt.Errorf("!!reading request body failed:%w", err)
 		log.Println(err)
@@ -181,7 +180,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	nst := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sid": scbd.Sid,
 		"uid": scbd.Uid,
-		"exp": time.Now().Add(time.Minute * 10).Unix(),
+		"exp": time.Now().Add(time.Minute * 5).Unix(),
 	})
 	nstSigned, err := nst.SignedString([]byte(os.Getenv("HUS_SECRET_KEY")))
 	if err != nil {
@@ -206,12 +205,11 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 
 // SessionSignHandler godoc
 // @Router       /session/sign [post]
-// @Summary      gets lifthus sid in cookie from client and publishes access token.
+// @Summary      gets lifthus sid in cookie from client and signs the lifthus token.
 // @Description  Hus told lifthus that the user is signed in.
-// @Description so now we can publish access token to the client who has verified sid.
-// @Description and also we revoke the used session token.
+// @Description so now we can sign the token which is owned by the client who has verified sid.
 // @Tags         auth
-// @Success      201 "publishing access token success"
+// @Success      200 "session successfully signed"
 // @Failure      401 "unauthorized"
 // @Failure      500 "internal server error"
 func (ac authApiController) SessionSignHandler(c echo.Context) error {
