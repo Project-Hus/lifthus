@@ -3,9 +3,9 @@ package session
 import (
 	"context"
 	"fmt"
+	"lifthus-auth/common/lifthus"
 	"lifthus-auth/ent"
 	"lifthus-auth/helper"
-	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -29,7 +29,7 @@ func CreateSession(ctx context.Context, client *ent.Client) (sid string, stSigne
 	})
 
 	// sign and get the complete encoded token as a string using the secret
-	hsk := []byte(os.Getenv("HUS_SECRET_KEY"))
+	hsk := []byte(lifthus.HusSecretKey)
 	stSigned, err = st.SignedString(hsk)
 	if err != nil {
 		return "", "", fmt.Errorf("!!signing session token failed:%w", err)
@@ -118,7 +118,7 @@ func RefreshSessionToken(ctx context.Context, client *ent.Client, sid string) (s
 		"uid":     "",
 		"exp":     time.Now().Add(time.Minute * 5).Unix(),
 	})
-	stSigned, err = st.SignedString([]byte(os.Getenv("HUS_SECRET_KEY")))
+	stSigned, err = st.SignedString([]byte(lifthus.HusSecretKey))
 	if err != nil {
 		return "", err
 	}
