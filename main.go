@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"os"
 
 	"lifthus-auth/common/lifthus"
 	"lifthus-auth/db"
@@ -48,6 +49,9 @@ func main() {
 	if err := client.Schema.Create(context.Background()); err != nil {
 		log.Fatalf("[F]creating schema resources failed : %v", err)
 	}
+
+	// initialize Lifthus common variables
+	lifthus.InitLifthusVars(os.Getenv("GOENV"), client)
 
 	// subdomains
 	hosts := map[string]*Host{}
