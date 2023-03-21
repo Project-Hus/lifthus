@@ -3,19 +3,20 @@ package main
 import (
 	"context"
 
+	"lifthus-auth/common/lifthus"
 	"lifthus-auth/db"
 	"log"
 	"net/http"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 
 	_ "github.com/go-sql-driver/mysql"
 
 	echoSwagger "github.com/swaggo/echo-swagger"
 
 	"lifthus-auth/api/auth"
-	"lifthus-auth/middleware"
 )
 
 // @title Lifthus user server
@@ -53,7 +54,19 @@ func main() {
 
 	//  Create echo web server instance and set CORS headers
 	e := echo.New()
-	e.Use(middleware.SetLifthusCorsHeaders)
+
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		// If your Backend is deployed in AWS and using API Gateway to call through,
+		// then all these headers need to be applied in API Gateway level also.
+		AllowOrigins: lifthus.Origins,
+		AllowHeaders: []string{
+			echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization,
+		},
+		AllowCredentials: true,
+		AllowMethods: []string{
+			http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete, http.MethodOptions, http.MethodPatch,
+		},
+	}))
 
 	// authApi, which controls auth all over the services
 	userApi := auth.NewAuthApiController(client)

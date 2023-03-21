@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"io"
 	"lifthus-auth/common"
+	"lifthus-auth/common/lifthus"
 	"lifthus-auth/db"
 	"lifthus-auth/helper"
 
 	"lifthus-auth/service/session"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -96,7 +96,7 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 		Path:     "/",
 		Secure:   false,
 		HttpOnly: true,
-		Domain:   os.Getenv("LIFTHUS_DOMAIN"),
+		Domain:   lifthus.CookieDomain,
 		SameSite: http.SameSiteDefaultMode,
 	}
 	c.SetCookie(cookie)
@@ -108,7 +108,7 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 		Path:     "/",
 		Secure:   false,
 		HttpOnly: true,
-		Domain:   os.Getenv("LIFTHUS_DOMAIN"),
+		Domain:   lifthus.CookieDomain,
 		Expires:  time.Now().AddDate(1, 0, 0),
 		SameSite: http.SameSiteDefaultMode,
 	}
@@ -249,7 +249,7 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 		"uid":     ls.UID,
 		"exp":     time.Now().Add(time.Minute * 5).Unix(),
 	})
-	nstSigned, err := nst.SignedString([]byte(os.Getenv("HUS_SECRET_KEY")))
+	nstSigned, err := nst.SignedString([]byte(lifthus.HusSecretKey))
 	if err != nil {
 		err = fmt.Errorf("signing accessToekn failed:%w", err)
 		return c.String(http.StatusInternalServerError, err.Error())
@@ -260,7 +260,7 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 		Path:     "/",
 		Secure:   false,
 		HttpOnly: true,
-		Domain:   os.Getenv("LIFTHUS_DOMAIN"),
+		Domain:   lifthus.CookieDomain,
 		SameSite: http.SameSiteDefaultMode,
 	}
 	c.SetCookie(nstCookie)
