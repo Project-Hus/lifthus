@@ -32,10 +32,10 @@ func InitLifthusVars(goenv string, _ *ent.Client) {
 	} else { // development
 		Host = "localhost:9091"
 		URL = "http://localhost:9091"
-		Origins = []string{"https://localhost:3000", "http://localhost:9090", "http://localhost:9091"}
+		Origins = []string{"http://localhost:3000", "http://localhost:9090", "http://localhost:9091"}
 		CookieDomain = ""
 		AuthURL = "http://localhost:9091"
 		ApiURL = "http://localhost:9091"
 	}
-	fmt.Println("initialized Lifthus vars for" + goenv)
+	fmt.Println("initialized Lifthus vars for " + goenv)
 }
