@@ -54,10 +54,10 @@ func main() {
 	lifthus.InitLifthusVars(os.Getenv("GOENV"), client)
 
 	// subdomains
-	hosts := map[string]*Host{}
+	// hosts := map[string]*Host{}
 
 	//  Create echo web server instance and set CORS headers
-	e := echo.New()
+	e := auth.NewAuthApiController(client) //echo.New()
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		// If your Backend is deployed in AWS and using API Gateway to call through,
@@ -72,21 +72,22 @@ func main() {
 		},
 	}))
 
-	// authApi, which controls auth all over the services
-	userApi := auth.NewAuthApiController(client)
-	hosts["localhost:9091"] = &Host{Echo: userApi} // gonna use auth.cloudhus.com later
+	// // authApi, which controls auth all over the services
+	// userApi := auth.NewAuthApiController(client)
+	// hosts["localhost:9091"] = &Host{Echo: userApi} // gonna use auth.cloudhus.com later
 
-	// get requset and process by its subdomain
-	e.Any("/*", func(c echo.Context) (err error) {
-		req, res := c.Request(), c.Response()
-		host, ok := hosts[req.Host] // if the host is not registered, it will be nil.
-		if !ok {
-			return c.NoContent(http.StatusNotFound)
-		} else {
-			host.Echo.ServeHTTP(res, req)
-		}
-		return err
-	})
+	// // get requset and process by its subdomain
+	// e.Any("/*", func(c echo.Context) (err error) {
+	// 	fmt.Println(c.Request().Host, c.Request().URL.Path)
+	// 	req, res := c.Request(), c.Response()
+	// 	host, ok := hosts[req.Host] // if the host is not registered, it will be nil.
+	// 	if !ok {
+	// 		return c.NoContent(http.StatusNotFound)
+	// 	} else {
+	// 		host.Echo.ServeHTTP(res, req)
+	// 	}
+	// 	return err
+	// })
 
 	// provide api docs with swagger 2.0
 	e.GET("/swagger/*", echoSwagger.WrapHandler)

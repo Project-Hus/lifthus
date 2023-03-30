@@ -26,9 +26,9 @@ func NewAuthApiController(client *ent.Client) *echo.Echo {
 
 	authApiController := newAuthApiController(client)
 
-	authApi.GET("/session/new", authApiController.NewSessionHandler)
-	authApi.PATCH("/hus/session/sign", authApiController.HusSessionHandler)
-	authApi.GET("/session/sign", authApiController.SessionSignHandler)
+	authApi.GET("/auth/session/new", authApiController.NewSessionHandler)
+	authApi.PATCH("/auth/hus/session/sign", authApiController.HusSessionHandler)
+	authApi.GET("/auth/session/sign", authApiController.SessionSignHandler)
 
 	return authApi
 }
