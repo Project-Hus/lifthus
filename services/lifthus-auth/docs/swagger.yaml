@@ -1,0 +1,66 @@
+basePath: /
+host: lifthus.com
+info:
+  contact:
+    email: lifthus531@gmail.com
+    name: API Support
+    url: lifthus531@gmail.com
+  description: This is Project-Hus's subservice Lifthus's user management server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Lifthus user server
+  version: 0.0.0
+paths:
+  /hus/session/sign:
+    patch:
+      description: |-
+        Hus sends id token and Lifthus sets the session info to be signed in with specific uid.
+        and if the user is not registered, Lifthus will register the user.
+        Hus user info's change will be reflected as well.
+      responses:
+        "200":
+          description: session signing success
+        "500":
+          description: failed to set the login session
+      summary: gets Hus id token and sets the session token to be signed in after
+        updating the info.
+      tags:
+      - auth
+  /session/new:
+    get:
+      description: |-
+        case A: no session, return newly generated session token with 201.
+        case B-1: signed but expired, reset session info(used, signed_at, uid) except SID and return new session token with 201.
+        case B-2: not signed and expired, return new session token keeping SID with 201.
+        case C-1: valid and signed, just return with 200.
+        case C-2: valid and not signed, return with 201 to tell client to check Hus session.
+      responses:
+        "200":
+          description: if valid session exists, return uid
+        "201":
+          description: if there's no session or existing session is expired, return
+            new session token
+        "500":
+          description: failed to create new session
+      summary: accepts tokens in cookie, parse and validate them, and returns tokens
+        depending on the token's status.
+      tags:
+      - auth
+  /session/sign:
+    get:
+      description: |-
+        Hus told lifthus that the client with specific SID is signed in.
+        so now we can sign the token which is owned by the client who has verified sid.
+      responses:
+        "200":
+          description: session successfully signed
+        "401":
+          description: unauthorized
+        "500":
+          description: internal server error
+      summary: gets lifthus sid in cookie from client, and signs the lifthus token.
+      tags:
+      - auth
+swagger: "2.0"

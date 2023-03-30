@@ -1,0 +1,150 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'lifthus serverless microservices
+
+  '
+Globals:
+  Function:
+    Timeout: 5
+    MemorySize: 128
+    Tracing: Active
+    Environment:
+      Variables:
+        GOOGLE_CLIENT_ID:
+          Fn::Sub: '{{resolve:ssm:GOOGLE_CLIENT_ID:1}}'
+        HUS_AUTH_DB_NAME:
+          Fn::Sub: '{{resolve:ssm:HUS_AUTH_DB_NAME:1}}'
+        HUS_AUTH_DB_PASSWORD:
+          Fn::Sub: '{{resolve:ssm:HUS_AUTH_DB_PASSWORD:1}}'
+        HUS_AUTH_DB_USER:
+          Fn::Sub: '{{resolve:ssm:HUS_AUTH_DB_USER:1}}'
+        HUS_DB_HOST:
+          Fn::Sub: '{{resolve:ssm:HUS_DB_HOST:1}}'
+        HUS_DB_PORT:
+          Fn::Sub: '{{resolve:ssm:HUS_DB_PORT:1}}'
+        HUS_SECRET_KEY:
+          Fn::Sub: '{{resolve:ssm:HUS_SECRET_KEY:1}}'
+        GOENV: production
+  Api:
+    Cors:
+      AllowOrigin: '''*'''
+      AllowHeaders: '''*'''
+      AllowMethods: '''*'''
+      MaxAge: 43200
+    TracingEnabled: true
+Resources:
+  LifthusAuthApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Name: LifthusAuthApi
+      StageName: prod
+      Domain:
+        DomainName: auth.lifthus.com
+        CertificateArn:
+          Fn::Sub: '{{resolve:ssm:CLOUDHUS_ACM_ARN:1}}'
+        EndpointConfiguration: REGIONAL
+        Route53:
+          HostedZoneId:
+            Fn::Sub: '{{resolve:ssm:LIFTHUS_HOSTED_ZONE_ID:1}}}'
+          RecordName: auth.lifthus.com
+  LifthusAuthService:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: LifthusAuthService
+      Handler: lifthus-auth
+      Runtime: go1.x
+      Architectures:
+      - x86_64
+      Events:
+        LifthusAuthServiceRoot:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: LifthusAuthApi
+            Path: /auth
+            Method: ANY
+        LifthusAuthServiceProxy:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: LifthusAuthApi
+            Path: /auth/{proxy+}
+            Method: ANY
+    Metadata:
+      SamResourceId: LifthusAuthService
+  LifthusApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Name: LifthusApi
+      StageName: prod
+      Domain:
+        DomainName: api.lifthus.com
+        CertificateArn:
+          Fn::Sub: '{{resolve:ssm:CLOUDHUS_ACM_ARN:1}}'
+        EndpointConfiguration: REGIONAL
+        Route53:
+          HostedZoneId:
+            Fn::Sub: '{{resolve:ssm:LIFTHUS_HOSTED_ZONE_ID:1}}}'
+          RecordName: api.lifthus.com
+  LifthusPostService:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: LifthusPostService
+      Handler: main.handler
+      Runtime: nodejs18.x
+      Architectures:
+      - x86_64
+      Events:
+        LifthusPostServiceRoot:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: LifthusApi
+            Path: /post
+            Method: ANY
+        LifthusPostServiceProxy:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: LifthusApi
+            Path: /post/{proxy+}
+            Method: ANY
+    Metadata:
+      SamResourceId: LifthusPostService
+  ApplicationResourceGroup:
+    Type: AWS::ResourceGroups::Group
+    Properties:
+      Name:
+        Fn::Join:
+        - ''
+        - - ApplicationInsights-SAM-
+          - Ref: AWS::StackName
+      ResourceQuery:
+        Type: CLOUDFORMATION_STACK_1_0
+  ApplicationInsightsMonitoring:
+    Type: AWS::ApplicationInsights::Application
+    Properties:
+      ResourceGroupName:
+        Fn::Join:
+        - ''
+        - - ApplicationInsights-SAM-
+          - Ref: AWS::StackName
+      AutoConfigurationEnabled: 'true'
+    DependsOn: ApplicationResourceGroup
+Outputs:
+  HelloWorldAPI:
+    Description: API Gateway endpoint URL for Prod environment for First Function
+    Value:
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/
+  HelloWorldFunction:
+    Description: First Lambda Function ARN
+    Value:
+      Fn::GetAtt:
+      - HelloWorldFunction
+      - Arn
+  HelloWorldFunctionIamRole:
+    Description: Implicit IAM Role created for Hello World function
+    Value:
+      Fn::GetAtt:
+      - HelloWorldFunctionRole
+      - Arn

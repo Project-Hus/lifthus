@@ -32,10 +32,6 @@ Resources:
   LifthusAuthApi:
     Type: AWS::Serverless::HttpApi
     Properties:
-      # Auth:
-      # Authorizer: NONE
-      # ApiKeyRequired: false
-      # AddDefaultAuthorizerToCorsPreflight: false
       Name: LifthusAuthApi
       StageName: prod
       Domain:
@@ -45,28 +41,66 @@ Resources:
         Route53:
           HostedZoneId: !Sub "{{resolve:ssm:LIFTHUS_HOSTED_ZONE_ID:1}}}"
           RecordName: "auth.lifthus.com"
-  HusAuthService:
+  LifthusAuthService:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: services/hus-auth/
-      Handler: hus-auth
+      CodeUri: services/lifthus-auth/
+      Handler: lifthus-auth
       Runtime: go1.x
       Architectures:
         - x86_64
       Events:
-        HusAuthServiceRoot:
+        LifthusAuthServiceRoot:
           Type: HttpApi
           Properties:
             ApiId:
-              Ref: HusAuthApi
+              Ref: LifthusAuthApi
             Path: "/auth"
             Method: ANY
-        HusAuthServiceProxy:
+        LifthusAuthServiceProxy:
           Type: HttpApi
           Properties:
             ApiId:
-              Ref: HusAuthApi
+              Ref: LifthusAuthApi
             Path: /auth/{proxy+} # auth service uses subdomain, but to do proxy locally, prefix is needed.
+            Method: ANY
+
+  # lifthus api ==================================================
+  LifthusApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Name: LifthusApi
+      StageName: prod
+      Domain:
+        DomainName: "api.lifthus.com"
+        CertificateArn: !Sub "{{resolve:ssm:CLOUDHUS_ACM_ARN:1}}"
+        EndpointConfiguration: REGIONAL
+        Route53:
+          HostedZoneId: !Sub "{{resolve:ssm:LIFTHUS_HOSTED_ZONE_ID:1}}}"
+          RecordName: "api.lifthus.com"
+  # lifthus post service
+  LifthusPostService:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: services/lifthus-post/dist
+      Handler: main.handler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Events:
+        LifthusPostServiceRoot:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: LifthusApi
+            Path: "/post"
+            Method: ANY
+        LifthusPostServiceProxy:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: LifthusApi
+            Path: /post/{proxy+} # auth service uses subdomain, but to do proxy locally, prefix is needed.
             Method: ANY
 
   ApplicationResourceGroup:
