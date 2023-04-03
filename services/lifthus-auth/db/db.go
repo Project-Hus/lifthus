@@ -11,8 +11,8 @@ import (
 // ConncectToHusAuth returns hus_auth_db's ent client.
 // you've got to close it with Close() in defer out of this function.
 func ConnectToLifthusAuth() (*ent.Client, error) {
-	dbHost, ok1 := os.LookupEnv("HUS_DB_HOST")
-	dbPort, ok2 := os.LookupEnv("HUS_DB_PORT")
+	dbHost, ok1 := os.LookupEnv("LIFTHUS_DB_HOST")
+	dbPort, ok2 := os.LookupEnv("LIFTHUS_DB_PORT")
 	dbUser, ok3 := os.LookupEnv("LIFTHUS_AUTH_DB_USER")
 	dbPassword, ok4 := os.LookupEnv("LIFTHUS_AUTH_DB_PASSWORD")
 	dbName, ok5 := os.LookupEnv("LIFTHUS_AUTH_DB_NAME")
