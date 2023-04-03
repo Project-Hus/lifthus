@@ -60,6 +60,7 @@ func main() {
 	e := auth.NewAuthApiController(client) //echo.New()
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+
 		// If your Backend is deployed in AWS and using API Gateway to call through,
 		// then all these headers need to be applied in API Gateway level also.
 		AllowOrigins: lifthus.Origins,

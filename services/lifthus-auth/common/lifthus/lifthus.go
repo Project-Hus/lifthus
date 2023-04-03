@@ -1,7 +1,6 @@
 package lifthus
 
 import (
-	"fmt"
 	"lifthus-auth/ent"
 	"os"
 )
@@ -29,7 +28,7 @@ func InitLifthusVars(goenv string, _ *ent.Client) {
 		CookieDomain = ".lifthus.com"
 		AuthURL = "https://auth.lifthus.com"
 		ApiURL = "https://api.lifthus.com"
-	} else { // development
+	} else { // development or native
 		Host = "localhost:9091"
 		URL = "http://localhost:9091"
 		Origins = []string{"http://localhost:3000", "http://localhost:9090", "http://localhost:9091"}
@@ -37,5 +36,4 @@ func InitLifthusVars(goenv string, _ *ent.Client) {
 		AuthURL = "http://localhost:9091"
 		ApiURL = "http://localhost:9091"
 	}
-	fmt.Println("initialized Lifthus vars for " + goenv)
 }
