@@ -2,23 +2,31 @@ package main
 
 import (
 	"context"
-	"os"
-
-	"lifthus-auth/common/lifthus"
-	"lifthus-auth/db"
 	"log"
 	"net/http"
+	"os"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
-	_ "github.com/go-sql-driver/mysql"
+	"lifthus-auth/ent"
+
+	"lifthus-auth/common/lifthus"
+	"lifthus-auth/db"
+
+	"lifthus-auth/api/auth"
+
+	_ "lifthus-auth/docs"
 
 	echoSwagger "github.com/swaggo/echo-swagger"
 
-	"lifthus-auth/api/auth"
+	echoadapter "github.com/awslabs/aws-lambda-go-api-proxy/echo"
 )
+
+var echoLambda *echoadapter.EchoLambda
+var dbClient *ent.Client
 
 // @title Lifthus user server
 // @version 0.0.0
