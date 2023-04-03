@@ -2,6 +2,7 @@ package lifthus
 
 import (
 	"lifthus-auth/ent"
+	"log"
 	"os"
 )
 
@@ -18,9 +19,12 @@ var ApiURL = ""
 var LifthusURL = "http://localhost:3000"
 
 func InitLifthusVars(goenv string, _ *ent.Client) {
-	//common
-	GoogleClientID = os.Getenv("GOOGLE_CLIENT_ID")
-	HusSecretKey = os.Getenv("HUS_SECRET_KEY")
+	ok1, ok2 := false, false
+	GoogleClientID, ok1 = os.LookupEnv("GOOGLE_CLIENT_ID")
+	HusSecretKey, ok2 = os.LookupEnv("HUS_SECRET_KEY")
+	if !ok1 || !ok2 {
+		log.Fatalf("GOOGLE_CLIENT_ID or HUS_SECRET_KEY is not set")
+	}
 	if goenv == "production" {
 		Host = "lifthus.com"
 		URL = "https://lifthus.com"

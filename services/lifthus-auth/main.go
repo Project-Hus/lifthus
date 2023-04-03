@@ -73,7 +73,7 @@ func main() {
 	}
 
 	// initialize Lifthus common variables
-	lifthus.InitLifthusVars(os.Getenv("GOENV"), client)
+	lifthus.InitLifthusVars(goenv, client)
 
 	// create new http.Client for authApi
 	authHttpClient := &http.Client{
