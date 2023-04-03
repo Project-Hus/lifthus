@@ -16,5 +16,5 @@
 env.json
 
 # build output
-.aws-sam
+.aws-sam/
 lifthus-auth
