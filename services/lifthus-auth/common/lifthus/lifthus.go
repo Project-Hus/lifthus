@@ -28,7 +28,8 @@ func InitLifthusVars(goenv string, _ *ent.Client) {
 	if goenv == "production" {
 		Host = "lifthus.com"
 		URL = "https://lifthus.com"
-		Origins = []string{"https://cloudhus.com", "https://lifthus.com", "https://surfhus.com"}
+		Origins = []string{"https://cloudhus.com", "https://lifthus.com", "https://surfhus.com",
+			"https://www.cloudhus.com", "https://www.lifthus.com", "https://www.surfhus.com"}
 		CookieDomain = ".lifthus.com"
 		AuthURL = "https://auth.lifthus.com"
 		ApiURL = "https://api.lifthus.com"
