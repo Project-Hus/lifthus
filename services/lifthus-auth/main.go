@@ -64,16 +64,16 @@ func main() {
 	}
 
 	// connecting to lifthus_user_db with ent
-	client, err := db.ConnectToLifthusAuth()
+	dbClient, err := db.ConnectToLifthusAuth()
 	if err != nil {
 		log.Fatalf("[F]connecting db failed:%v", err)
 	}
 	if goenv == "native" {
-		defer client.Close()
+		defer dbClient.Close()
 	}
 
 	// initialize Lifthus common variables
-	lifthus.InitLifthusVars(goenv, client)
+	lifthus.InitLifthusVars(goenv, dbClient)
 
 	// create new http.Client for authApi
 	authHttpClient := &http.Client{
