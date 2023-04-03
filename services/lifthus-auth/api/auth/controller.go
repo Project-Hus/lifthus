@@ -16,6 +16,10 @@ type AuthApiControllerParams struct {
 func NewAuthApiController(authApi *echo.Echo, params AuthApiControllerParams) *echo.Echo {
 	authApiController := newAuthApiController(params)
 
+	authApi.GET("/auth", func(c echo.Context) error {
+		return c.String(http.StatusOK, "Welcome to Lifthus")
+	})
+
 	authApi.GET("/auth/session/new", authApiController.NewSessionHandler)
 	authApi.PATCH("/auth/hus/session/sign", authApiController.HusSessionHandler)
 	authApi.GET("/auth/session/sign", authApiController.SessionSignHandler)

@@ -43,7 +43,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: services/lifthus-auth/
-      Handler: lifthus-auth
+      Handler: lifthus-authppppppppppp
       Runtime: go1.x
       Architectures:
         - x86_64
