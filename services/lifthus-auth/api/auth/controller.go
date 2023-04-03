@@ -2,29 +2,19 @@ package auth
 
 import (
 	"lifthus-auth/ent"
+	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
 
-// authApis interface defines what auth api has to handle
-type authApis interface {
-	/* Session establishing process */
-	// client -> lifthus -> client -> hus -> lifthus -> hus -> client -> SessionCheckHandler
-	NewSessionHandler(c echo.Context) error  // from client
-	HusSessionHandler(c echo.Context) error  // from hus
-	SessionSignHandler(c echo.Context) error // from client
-}
-
-// authApiController defines what auth api has to have and implements authApis interface at service file.
-type authApiController struct {
-	Client *ent.Client
+type AuthApiControllerParams struct {
+	DbClient   *ent.Client
+	HttpClient *http.Client
 }
 
 // NewAuthApiController returns Echo comprising of auth api routes. instance to main.
-func NewAuthApiController(client *ent.Client) *echo.Echo {
-	authApi := echo.New()
-
-	authApiController := newAuthApiController(client)
+func NewAuthApiController(authApi *echo.Echo, params AuthApiControllerParams) *echo.Echo {
+	authApiController := newAuthApiController(params)
 
 	authApi.GET("/auth/session/new", authApiController.NewSessionHandler)
 	authApi.PATCH("/auth/hus/session/sign", authApiController.HusSessionHandler)
@@ -34,6 +24,21 @@ func NewAuthApiController(client *ent.Client) *echo.Echo {
 }
 
 // newAuthApiController returns a new authApiController that implements every auth api features.
-func newAuthApiController(client *ent.Client) authApis {
-	return &authApiController{Client: client}
+func newAuthApiController(params AuthApiControllerParams) authApis {
+	return &authApiController{dbClient: params.DbClient, httpClient: params.HttpClient}
+}
+
+// authApiController defines what auth api has to have and implements authApis interface at service file.
+type authApiController struct {
+	dbClient   *ent.Client
+	httpClient *http.Client
+}
+
+// authApis interface defines what auth api has to handle
+type authApis interface {
+	/* Session establishing process */
+	// client -> lifthus -> client -> hus -> lifthus -> hus -> client -> SessionCheckHandler
+	NewSessionHandler(c echo.Context) error  // from client
+	HusSessionHandler(c echo.Context) error  // from hus
+	SessionSignHandler(c echo.Context) error // from client
 }

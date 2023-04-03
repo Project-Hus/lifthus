@@ -50,14 +50,14 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 	if lifthus_st == nil || lifthus_st.Value == "" {
 		// revoke psid if psid exists
 		if lifthus_pst != nil && lifthus_pst.Value != "" {
-			err := session.RevokeSessionToken(c.Request().Context(), ac.Client, lifthus_pst.Value)
+			err := session.RevokeSessionToken(c.Request().Context(), ac.dbClient, lifthus_pst.Value)
 			if err != nil {
 				log.Println(err)
 				return c.String(http.StatusInternalServerError, err.Error())
 			}
 		}
 		// create new session
-		sid, stSigned, err = session.CreateSession(c.Request().Context(), ac.Client)
+		sid, stSigned, err = session.CreateSession(c.Request().Context(), ac.dbClient)
 		if err != nil {
 			log.Println(err)
 			return c.String(http.StatusInternalServerError, err.Error())
@@ -66,14 +66,14 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 		// case B,C: if session token exists, validate it.
 	} else {
 		// ValidateSessionToken validates the token for case B,C, and updates the db for case B-1.
-		sid, uid, exp, err = session.ValidateSession(c.Request().Context(), ac.Client, lifthus_st.Value)
+		sid, uid, exp, err = session.ValidateSession(c.Request().Context(), ac.dbClient, lifthus_st.Value)
 		if err != nil {
 			log.Println(err)
 			return c.String(http.StatusInternalServerError, err.Error())
 
 			// case B-1,2: if it is expired, refresh the token using same SID but clear the UID.
 		} else if exp {
-			stSigned, err = session.RefreshSessionToken(c.Request().Context(), ac.Client, sid)
+			stSigned, err = session.RefreshSessionToken(c.Request().Context(), ac.dbClient, sid)
 			if err != nil {
 				log.Println(err)
 				return c.String(http.StatusInternalServerError, err.Error())
@@ -158,21 +158,21 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	}
 
 	// Query if the user exists in the database
-	u, err := db.QueryUserByUID(c.Request().Context(), ac.Client, scbd.Uid)
+	u, err := db.QueryUserByUID(c.Request().Context(), ac.dbClient, scbd.Uid)
 	if err != nil {
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	if u == nil {
 		// create new user if the user does not exist.
-		_, err = db.CreateNewLifthusUser(c.Request().Context(), ac.Client, scbd)
+		_, err = db.CreateNewLifthusUser(c.Request().Context(), ac.dbClient, scbd)
 		if err != nil {
 			log.Println(err)
 			return c.String(http.StatusInternalServerError, err.Error())
 		}
 	}
 
-	err = session.SignSession(c.Request().Context(), ac.Client, scbd.Sid, scbd.Uid)
+	err = session.SignSession(c.Request().Context(), ac.dbClient, scbd.Sid, scbd.Uid)
 	if err != nil {
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
@@ -210,7 +210,7 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 		return c.String(http.StatusUnauthorized, "retry")
 	}
 
-	ls, err := db.QuerySessionBySID(c.Request().Context(), ac.Client, sid)
+	ls, err := db.QuerySessionBySID(c.Request().Context(), ac.dbClient, sid)
 	if err != nil {
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
@@ -233,11 +233,11 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	// if the session is not used, set the session to be used.
-	ac.Client.Session.UpdateOneID(sidUUID).SetUsed(true).Exec(c.Request().Context())
+	ac.dbClient.Session.UpdateOneID(sidUUID).SetUsed(true).Exec(c.Request().Context())
 
 	// if the session is signed more than 5 seconds ago, revoke the session.
 	if time.Since(*ls.SignedAt).Seconds() > 5 {
-		_ = session.RevokeSession(c.Request().Context(), ac.Client, sid)
+		_ = session.RevokeSession(c.Request().Context(), ac.dbClient, sid)
 		err = fmt.Errorf("signing time is expired")
 		log.Println(err)
 		return c.String(http.StatusUnauthorized, err.Error())
