@@ -97,7 +97,7 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 		Secure:   false,
 		HttpOnly: true,
 		Domain:   lifthus.CookieDomain,
-		SameSite: http.SameSiteDefaultMode,
+		SameSite: http.SameSiteLaxMode,
 	}
 	c.SetCookie(cookie)
 
@@ -110,7 +110,7 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 		HttpOnly: true,
 		Domain:   lifthus.CookieDomain,
 		Expires:  time.Now().AddDate(1, 0, 0),
-		SameSite: http.SameSiteDefaultMode,
+		SameSite: http.SameSiteLaxMode,
 	}
 	c.SetCookie(cookie2)
 
@@ -261,7 +261,7 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 		Secure:   false,
 		HttpOnly: true,
 		Domain:   lifthus.CookieDomain,
-		SameSite: http.SameSiteDefaultMode,
+		SameSite: http.SameSiteLaxMode,
 	}
 	c.SetCookie(nstCookie)
 

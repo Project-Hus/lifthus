@@ -15,7 +15,7 @@ Globals:
         LIFTHUS_AUTH_DB_PASSWORD: "{{resolve:ssm:LIFTHUS_AUTH_DB_PASSWORD:1}}"
         LIFTHUS_AUTH_DB_USER: "{{resolve:ssm:LIFTHUS_AUTH_DB_USER:1}}"
         LIFTHUS_AUTH_DB_HOST: "{{resolve:ssm:LIFTHUS_AUTH_DB_HOST:1}}"
-        LIFTHUS_AUTH_DB_PORT: "{{resolve:ssm:LIFTHUS_DB_PORT:1}}"
+        LIFTHUS_AUTH_DB_PORT: "{{resolve:ssm:LIFTHUS_AUTH_DB_PORT:1}}"
         HUS_SECRET_KEY: "{{resolve:ssm:HUS_SECRET_KEY:1}}"
         GOENV: "{{resolve:ssm:GOENV:1}}"
   Api:
@@ -78,7 +78,7 @@ Resources:
         CertificateArn: !Sub "{{resolve:ssm:CLOUDHUS_ACM_ARN:1}}"
         EndpointConfiguration: REGIONAL
         Route53:
-          HostedZoneId: !Sub "{{resolve:ssm:LIFTHUS_HOSTED_ZONE_ID:1}}}"
+          HostedZoneId: !Sub "{{resolve:ssm:LIFTHUS_HOSTED_ZONE_ID:1}}"
   # lifthus post service
   LifthusPostService:
     Type: AWS::Serverless::Function
