@@ -84,7 +84,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: services/lifthus-post/dist
-      Handler: main.handler
+      Handler: lambda.handler
       Runtime: nodejs18.x
       Architectures:
         - x86_64
@@ -101,7 +101,7 @@ Resources:
           Properties:
             ApiId:
               Ref: LifthusApi
-            Path: /post/{proxy+} # auth service uses subdomain, but to do proxy locally, prefix is needed.
+            Path: /post/{proxy+}
             Method: ANY
 
   ApplicationResourceGroup:

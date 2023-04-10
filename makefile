@@ -1,6 +1,8 @@
 .PHONY: build
 
 build:
+    # building nest js app
+	tsc -p services/lifthus-post/tsconfig.build.json
 	sam build
 
 start:
