@@ -17,6 +17,7 @@ Globals:
         LIFTHUS_AUTH_DB_HOST: "{{resolve:ssm:LIFTHUS_AUTH_DB_HOST:1}}"
         LIFTHUS_AUTH_DB_PORT: "{{resolve:ssm:LIFTHUS_AUTH_DB_PORT:1}}"
 
+        LIFTHUS_POST_DB_URL: "{{resolve:ssm:LIFTHUS_POST_DB_URL:1}}"
         LIFTHUS_POST_DB_NAME: "{{resolve:ssm:LIFTHUS_POST_DB_NAME:1}}"
         LIFTHUS_POST_DB_USER: "{{resolve:ssm:LIFTHUS_POST_DB_USER:1}}"
         LIFTHUS_POST_DB_PASSWORD: "{{resolve:ssm:LIFTHUS_POST_DB_PASSWORD:1}}"
