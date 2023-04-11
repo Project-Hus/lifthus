@@ -16,6 +16,13 @@ Globals:
         LIFTHUS_AUTH_DB_USER: "{{resolve:ssm:LIFTHUS_AUTH_DB_USER:1}}"
         LIFTHUS_AUTH_DB_HOST: "{{resolve:ssm:LIFTHUS_AUTH_DB_HOST:1}}"
         LIFTHUS_AUTH_DB_PORT: "{{resolve:ssm:LIFTHUS_AUTH_DB_PORT:1}}"
+
+        LIFTHUS_POST_DB_NAME: "{{resolve:ssm:LIFTHUS_POST_DB_NAME:1}}"
+        LIFTHUS_POST_DB_USER: "{{resolve:ssm:LIFTHUS_POST_DB_USER:1}}"
+        LIFTHUS_POST_DB_PASSWORD: "{{resolve:ssm:LIFTHUS_POST_DB_PASSWORD:1}}"
+        LIFTHUS_POST_DB_HOST: "{{resolve:ssm:LIFTHUS_POST_DB_HOST:1}}"
+        LIFTHUS_POST_DB_PORT: "{{resolve:ssm:LIFTHUS_POST_DB_PORT:1}}"
+
         HUS_SECRET_KEY: "{{resolve:ssm:HUS_SECRET_KEY:1}}"
         GOENV: "{{resolve:ssm:GOENV:1}}"
   Api:
