@@ -1,4 +1,3 @@
-// main.ts
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
@@ -18,9 +17,10 @@ export async function bootstrap() {
   return app;
 }
 
+// for local native development
 async function run() {
   const nestApp = await bootstrap();
-  await nestApp.listen(3000);
+  await nestApp.listen(9092);
 }
 
 run();

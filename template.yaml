@@ -43,7 +43,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: services/lifthus-auth/
-      Handler: lifthus-authppppppppppp
+      Handler: lifthus-auth
       Runtime: go1.x
       Architectures:
         - x86_64
@@ -75,15 +75,15 @@ Resources:
       Name: LifthusApi
       Domain:
         DomainName: "api.lifthus.com"
-        CertificateArn: !Sub "{{resolve:ssm:CLOUDHUS_ACM_ARN:1}}"
+        CertificateArn: "{{resolve:ssm:CLOUDHUS_ACM_ARN:1}}"
         EndpointConfiguration: REGIONAL
         Route53:
-          HostedZoneId: !Sub "{{resolve:ssm:LIFTHUS_HOSTED_ZONE_ID:1}}"
+          HostedZoneId: "{{resolve:ssm:LIFTHUS_HOSTED_ZONE_ID:1}}"
   # lifthus post service
   LifthusPostService:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: services/lifthus-post/dist
+      CodeUri: services/post/dist/
       Handler: lambda.handler
       Runtime: nodejs18.x
       Architectures:

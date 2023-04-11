@@ -2,7 +2,9 @@
 
 build:
     # building nest js app
-	tsc -p services/lifthus-post/tsconfig.build.json
+	rm -rf services/post/dist
+	tsc -p services/post/tsconfig.build.json
+	cp services/post/package.json services/post/dist
 	sam build
 
 start:
