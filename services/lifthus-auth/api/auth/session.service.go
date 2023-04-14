@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"lifthus-auth/common"
@@ -265,5 +266,26 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 	}
 	c.SetCookie(nstCookie)
 
-	return c.String(http.StatusOK, ls.UID.String())
+	// get user's Name from database using ls.UID
+	lsu, err := db.QueryUserByUID(c.Request().Context(), ac.dbClient, ls.UID.String())
+	if err != nil {
+		log.Println(err)
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+
+	// make struct with UID and Name
+	signResp := struct {
+		UID  string `json:"uid"`
+		Name string `json:"name"`
+	}{
+		UID:  ls.UID.String(),
+		Name: lsu.Name,
+	}
+	signRespJSON, err := json.Marshal(signResp)
+	if err != nil {
+		log.Println(err)
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSONBlob(http.StatusOK, signRespJSON)
 }
