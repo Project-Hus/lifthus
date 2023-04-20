@@ -23,4 +23,4 @@ async function run() {
   await nestApp.listen(9092);
 }
 
-run();
+//run();

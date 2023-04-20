@@ -275,8 +275,8 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 
 	// make struct with UID and Name
 	signResp := struct {
-		UID  string `json:"uid"`
-		Name string `json:"name"`
+		UID  string `json:"user_id"`
+		Name string `json:"user_name"`
 	}{
 		UID:  ls.UID.String(),
 		Name: lsu.Name,
