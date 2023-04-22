@@ -21,6 +21,7 @@ s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-132dqcw27j5y6"
 s3_prefix = "lifthus"
 region = "us-west-2"
 image_repositories = []
+disable_rollback = true
 
 [default.package.parameters]
 resolve_s3 = true

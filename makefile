@@ -1,10 +1,8 @@
 .PHONY: build
 
 build:
-    # building nest js app
 	rm -rf services/post/dist
 	tsc -p services/post/tsconfig.build.json
-	# rename 's/\.js$$/.mjs/' ./services/post/dist/*.js
 	cp services/post/package.json services/post/dist
 	sam build
 
