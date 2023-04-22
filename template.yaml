@@ -91,8 +91,10 @@ Resources:
   LifthusPostService:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: services/post/
-      Handler: src/lambda.handler
+      #CodeUri: services/post/
+      CodeUri: services/post/dist/
+      #Handler: src/lambda.handler
+      Handler: lambda.handler
       Runtime: nodejs18.x
       Architectures:
         - x86_64
@@ -111,23 +113,23 @@ Resources:
               Ref: LifthusApi
             Path: /post/{proxy+}
             Method: ANY
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        EntryPoints:
-          - src/lambda.ts
-        Format: "cjs"
-        Minify: false
-        # OutExtension:
-        #   - .js=.mjs
-        Target: "es2017"
-        Sourcemap: false
-        External:
-          - "@nestjs/microservices"
-          - "@nestjs/websockets"
-          - "cache-manager"
-          - "class-transformer"
-          - "class-validator"
+    # Metadata:
+    #   BuildMethod: esbuild
+    #   BuildProperties:
+    #     EntryPoints:
+    #       - src/lambda.ts
+    #     Format: "cjs"
+    #     Minify: false
+    #     # OutExtension:
+    #     #   - .js=.mjs
+    #     Target: "es2017"
+    #     Sourcemap: false
+    #     External:
+    #       - "@nestjs/microservices"
+    #       - "@nestjs/websockets"
+    #       - "cache-manager"
+    #       - "class-transformer"
+    #       - "class-validator"
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group
