@@ -118,7 +118,7 @@ func main() {
 
 	e = auth.NewAuthApiController(e, authApiControllerParams)
 
-	e.GET("/auth/openapi/*", echoSwagger.WrapHandler)
+	e.GET("/auth/openapi", echoSwagger.WrapHandler)
 
 	if goenv == "native" {
 		e.Logger.Fatal(e.Start(":9091"))
