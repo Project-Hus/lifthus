@@ -10,6 +10,10 @@ Globals:
     Tracing: Active
     Environment:
       Variables:
+        # * Environment variables
+        # deployment : Parameter Store
+        # local : env.json
+        # native : .env
         GOOGLE_CLIENT_ID: "{{resolve:ssm:GOOGLE_CLIENT_ID:1}}"
         LIFTHUS_AUTH_DB_NAME: "{{resolve:ssm:LIFTHUS_AUTH_DB_NAME:1}}"
         LIFTHUS_AUTH_DB_PASSWORD: "{{resolve:ssm:LIFTHUS_AUTH_DB_PASSWORD:1}}"
@@ -70,6 +74,7 @@ Resources:
               Ref: LifthusAuthApi
             Path: /auth/{proxy+}
             Method: ANY
+        # * VPC applied well but outbound request from Lambda not working so this prop is commented out
         #VpcConfig:
         #   SubnetIds: # subnet for lambda function
         #     - "{{resolve:ssm:US_WEST_2A_SUBNET_ID:1}}"
@@ -91,12 +96,9 @@ Resources:
   LifthusPostService:
     Type: AWS::Serverless::Function
     Properties:
-      # SAM esbuild
+      # !! SAM esbuild (not working properly)
       #CodeUri: services/post/
       #Handler: src/lambda.handler
-      # SAM tsc
-      #CodeUri: services/post/dist/
-      #Handler: lambda.handler
       # SAM tsc esbuild bundle
       CodeUri: services/post/dist-bundle/
       Handler: lambda.handler
@@ -118,7 +120,7 @@ Resources:
               Ref: LifthusApi
             Path: /post/{proxy+}
             Method: ANY
-    # SAM esbuild
+    # SAM esbuild (not working properly)
     # Metadata:
     #   BuildMethod: esbuild
     #   BuildProperties:
