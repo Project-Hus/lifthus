@@ -1,6 +1,9 @@
 # lifthus
 
-This is a sample template for lifthus - Below is a brief explanation of what we have generated for you:
+[Lifthus](https://www.lifthus.com)
+is most intelligent cross-platform routine management service.
+
+[Lifthus Beginning](https://docs.google.com/presentation/d/1UiRTRIvArtJDfQevNZeZTeK4EXtu1o76/edit?usp=sharing&ouid=108170774438783580095&rtpof=true&sd=true)
 
 ```bash
 .
