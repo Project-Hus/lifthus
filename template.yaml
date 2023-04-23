@@ -91,9 +91,14 @@ Resources:
   LifthusPostService:
     Type: AWS::Serverless::Function
     Properties:
+      # SAM esbuild
       #CodeUri: services/post/
-      CodeUri: services/post/dist/
       #Handler: src/lambda.handler
+      # SAM tsc
+      #CodeUri: services/post/dist/
+      #Handler: lambda.handler
+      # SAM tsc esbuild bundle
+      CodeUri: services/post/dist-bundle/
       Handler: lambda.handler
       Runtime: nodejs18.x
       Architectures:
@@ -113,6 +118,7 @@ Resources:
               Ref: LifthusApi
             Path: /post/{proxy+}
             Method: ANY
+    # SAM esbuild
     # Metadata:
     #   BuildMethod: esbuild
     #   BuildProperties:
