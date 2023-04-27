@@ -1,0 +1,22 @@
+// npx prisma migrate dev --name init
+// This prisma migrate dev command generates SQL files and directly runs them against the database.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("LIFTUHS_POST_DB_URL")
+}
+
+model Post {
+  id      String  @id @default(uuid()) @db.Char(36)
+  title   String
+  content String?
+  author  String  @db.Char(36) // user's uuid
+}
+
+model Comment {
+  id String @id @default(uuid()) @db.Char(36)
+}
