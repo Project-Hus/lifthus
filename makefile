@@ -14,12 +14,9 @@ build:
 	sam build
 
 build-win:
-	rmdir /s services/post/dist
-	rmdir /s services/post/dist-bundle
-
 	tsc -p services/post/tsconfig.build.json
-	copy services/post/package.json services/post/dist
-	npm --prefix services/post/dist install ./services/post/dist
+	copy "services/post/package.json" "services/post/dist"
+	npm install --prefix ./services/post/dist ./services/post/dist
 	node services/post/esbuild.js
 
 	sam build
