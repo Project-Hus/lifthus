@@ -2,8 +2,8 @@ DEFAULT_GOAL := build
 
 build:
 	# Remove previous build artifacts
-	rm -rf services/post/dist
-	rm -rf services/post/dist-bundle
+	#rm -rf services/post/dist
+	#rm -rf services/post/dist-bundle
 
 	# Transpile and bundle PostService
 	tsc -p services/post/tsconfig.build.json
