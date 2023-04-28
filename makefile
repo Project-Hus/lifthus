@@ -1,9 +1,9 @@
-.PHONY: build
+DEFAULT_GOAL := build
 
 build:
 	# Remove previous build artifacts
-	rm -rf services/post/dist
-	rm -rf services/post/dist-bundle
+	#rm -rf services/post/dist
+	#rm -rf services/post/dist-bundle
 
 	# Transpile and bundle PostService
 	tsc -p services/post/tsconfig.build.json
@@ -12,6 +12,7 @@ build:
 	node services/post/esbuild.js
 
 	sam build
+.PHONY: build
 
 build-win:
 	tsc -p services/post/tsconfig.build.json
@@ -20,7 +21,9 @@ build-win:
 	node services/post/esbuild.js
 
 	sam build
+.PHONY: build-win
 
+# make start DEBUG=--debug
 start:
-	# make start DEBUG=--debug
 	sam local start-api --env-vars env.json -p 9091 $(DEBUG)
+.PHONY: start

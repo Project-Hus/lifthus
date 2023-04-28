@@ -11,12 +11,39 @@ datasource db {
 }
 
 model Post {
-  id      String  @id @default(uuid()) @db.Char(36)
-  title   String
-  content String?
-  author  String  @db.Char(36) // user's uuid
+  id        String   @id @default(uuid()) @db.Char(36)
+  author    String   @db.Char(36) // user's uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  content   String
 }
 
 model Comment {
+  id        String   @id @default(uuid()) @db.Char(36)
+  author    String   @db.Char(36) // user's uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  content   String
+}
+
+// M:N relation example with model A and model B with C as the join table
+model A {
+  id  String @id @default(uuid()) @db.Char(36)
+  bId String @db.Char(36)
+  b   B      @relation(fields: [bId], references: [id])
+  c   C[]
+}
+
+model B {
   id String @id @default(uuid()) @db.Char(36)
+  a  A[]
+  c  C[]
+}
+
+model C {
+  id  String @id @default(uuid()) @db.Char(36)
+  aId String @db.Char(36)
+  bId String @db.Char(36)
+  a   A      @relation(fields: [aId], references: [id])
+  b   B      @relation(fields: [bId], references: [id])
 }
