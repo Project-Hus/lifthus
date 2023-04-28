@@ -18,14 +18,15 @@ var ApiURL = ""
 
 var LifthusURL = "http://localhost:3000"
 
-func InitLifthusVars(goenv string, _ *ent.Client) {
+func InitLifthusVars(husenv string, _ *ent.Client) {
 	ok1, ok2 := false, false
 	GoogleClientID, ok1 = os.LookupEnv("GOOGLE_CLIENT_ID")
 	HusSecretKey, ok2 = os.LookupEnv("HUS_SECRET_KEY")
 	if !ok1 || !ok2 {
 		log.Fatalf("GOOGLE_CLIENT_ID or HUS_SECRET_KEY is not set")
 	}
-	if goenv == "production" {
+	switch husenv {
+	case "production":
 		Host = "lifthus.com"
 		URL = "https://lifthus.com"
 		Origins = []string{"https://cloudhus.com", "https://lifthus.com", "https://surfhus.com",
@@ -33,12 +34,16 @@ func InitLifthusVars(goenv string, _ *ent.Client) {
 		CookieDomain = ".lifthus.com"
 		AuthURL = "https://auth.lifthus.com"
 		ApiURL = "https://api.lifthus.com"
-	} else { // development or native
+	case "development":
+		fallthrough
+	case "native":
 		Host = "localhost:9091"
 		URL = "http://localhost:9091"
 		Origins = []string{"http://localhost:3000", "http://localhost:9090", "http://localhost:9091"}
 		CookieDomain = ""
 		AuthURL = "http://localhost:9091"
 		ApiURL = "http://localhost:9091"
+	default:
+		log.Fatal("HUS_ENV must be set(production|development|native)")
 	}
 }

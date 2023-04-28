@@ -11,9 +11,9 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	envbyjson "github.com/lifthus/envbyjson/go"
 
 	"lifthus-auth/ent"
 
@@ -44,36 +44,30 @@ var dbClient *ent.Client
 // @host lifthus.com
 // @BasePath /
 func main() {
-	// GOENV
+	// HUS_ENV
 	// production : production for aws lambda
 	// development : sam local environment
 	// native : native go environment
-	goenv, ok := os.LookupEnv("GOENV")
-	if !ok {
-		log.Fatalf("GOENV is not set")
+	husenv, heok := os.LookupEnv("HUS_ENV")
+	if !heok {
+		log.Fatal("environment variable HUS_ENV must be set(production|development|native)")
 	}
 
-	// in production environment, env vars comes from parameter store.
-	// in development environment, env vars comes from env.json.
-	// in native Go environment, load env vars from .env
-	if goenv == "native" {
-		err := godotenv.Load()
-		if err != nil {
-			log.Fatalf("loading .env file failed : %s", err)
-		}
+	// if husenv is native, load env.json with envbyjson
+	if husenv == "native" {
+		envbyjson.LoadProp("../../env.json", "Parameters")
 	}
+
+	// initialize Lifthus common variables
+	lifthus.InitLifthusVars(husenv, dbClient)
 
 	// connecting to lifthus_user_db with ent
 	dbClient, err := db.ConnectToLifthusAuth()
 	if err != nil {
 		log.Fatalf("[F]connecting db failed:%v", err)
 	}
-	if goenv == "native" {
-		defer dbClient.Close()
-	}
-
-	// initialize Lifthus common variables
-	lifthus.InitLifthusVars(goenv, dbClient)
+	// main's defer in lambda environment is actually not executed.
+	defer dbClient.Close()
 
 	// create new http.Client for authApi
 	authHttpClient := &http.Client{
@@ -120,15 +114,14 @@ func main() {
 
 	e.GET("/auth/openapi", echoSwagger.WrapHandler)
 
-	if goenv == "native" {
+	// if the environment is native, run the echo server.
+	if husenv == "native" {
 		e.Logger.Fatal(e.Start(":9091"))
 	} else {
+		// if it's in lambda environment, run lambda.Start.
 		echoLambda = echoadapter.NewV2(e)
 		lambda.Start(Handler)
 	}
-
-	// Run the server
-	e.Logger.Fatal(e.Start(":9091"))
 }
 
 func Handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {

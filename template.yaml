@@ -29,7 +29,6 @@ Globals:
         LIFTHUS_POST_DB_PORT: "{{resolve:ssm:LIFTHUS_POST_DB_PORT:1}}"
 
         HUS_SECRET_KEY: "{{resolve:ssm:HUS_SECRET_KEY:1}}"
-        GOENV: "{{resolve:ssm:GOENV:1}}"
         HUS_ENV: "{{resolve:ssm:HUS_ENV:1}}"
   Api:
     Cors:
