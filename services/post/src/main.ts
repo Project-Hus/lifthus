@@ -1,7 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { setupSwagger } from './util/swagger';
+import envbyjson from 'envbyjson';
 
+/**
+ * sets up the nestjs app and returns it.
+ *
+ * @returns nestjs application
+ */
 export async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -21,10 +27,23 @@ export async function bootstrap() {
   return app;
 }
 
-// for local native development
-async function run() {
+/**
+ *  if the environment is native, it will be called instead of the lambda handler.
+ */
+async function run(port: number) {
   const nestApp = await bootstrap();
-  await nestApp.listen(9092);
+  await nestApp.listen(port);
 }
 
-//run();
+try {
+  // load the environment variables from the env.json file
+  envbyjson.loadProp('../../env.json', 'Parameters');
+  console.log(process.env.HUS_ENV, 'mna');
+  // run the nestjs server if the environment is native
+  if (process.env.HUS_ENV === 'native') {
+    console.log('native nestsjs running');
+    run(Number(process.env.POST_PORT));
+  }
+} catch (e) {
+  console.log(e);
+}
