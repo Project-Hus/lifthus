@@ -116,7 +116,7 @@ func main() {
 
 	// if the environment is native, run the echo server.
 	if husenv == "native" {
-		e.Logger.Fatal(e.Start(":9091"))
+		e.Logger.Fatal(e.Start(":" + os.Getenv("AUTH_PORT")))
 	} else {
 		// if it's in lambda environment, run lambda.Start.
 		echoLambda = echoadapter.NewV2(e)
