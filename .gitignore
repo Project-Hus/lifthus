@@ -21,3 +21,5 @@ lifthus-auth
 
 # openapi output
 docs/
+
+.DS_Store
