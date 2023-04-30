@@ -25,6 +25,7 @@
     "@nestjs/jwt": "^10.0.3",
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/swagger": "^6.3.0",
+    "@prisma/client": "^4.13.0",
     "@vendia/serverless-express": "^4.10.1",
     "aws-lambda": "^1.0.7",
     "envbyjson": "^1.0.1",
