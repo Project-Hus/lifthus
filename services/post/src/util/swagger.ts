@@ -9,8 +9,11 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 export function setupSwagger(app: INestApplication): void {
   const options = new DocumentBuilder()
     .setTitle('Lifthus post service API')
+    .setVersion('0.0.0')
     .setDescription('this document describes the API of the post service')
-    .setVersion('0.1.0')
+    .setTermsOfService('http://swagger.io/terms/')
+    .setContact('lifthus', 'https://github.com/lifthus', 'lifthus531@gmail.com')
+    .setLicense('MIT', '-')
     .setBasePath('/post')
     .build();
 
