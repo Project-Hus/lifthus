@@ -112,7 +112,7 @@ func main() {
 
 	e = auth.NewAuthApiController(e, authApiControllerParams)
 
-	e.GET("/auth/openapi", echoSwagger.WrapHandler)
+	e.GET("/auth/openapi/*", echoSwagger.WrapHandler)
 
 	// if the environment is native, run the echo server.
 	if husenv == "native" {
