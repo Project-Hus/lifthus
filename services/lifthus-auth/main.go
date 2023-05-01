@@ -42,7 +42,7 @@ var dbClient *ent.Client
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 // @host auth.lifthus.com
-// @BasePath /
+// @BasePath /auth
 func main() {
 	// HUS_ENV
 	// production : production for aws lambda
