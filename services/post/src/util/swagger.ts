@@ -11,6 +11,7 @@ export function setupSwagger(app: INestApplication): void {
     .setTitle('Lifthus post service API')
     .setDescription('this document describes the API of the post service')
     .setVersion('0.1.0')
+    .setBasePath('/post')
     .build();
 
   const document = SwaggerModule.createDocument(app, options);
