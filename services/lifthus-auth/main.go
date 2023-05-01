@@ -41,7 +41,7 @@ var dbClient *ent.Client
 // @contact.email lifthus531@gmail.com
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
-// @host api.lifthus.com
+// @host auth.lifthus.com
 // @BasePath /
 func main() {
 	// HUS_ENV
