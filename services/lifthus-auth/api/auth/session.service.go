@@ -20,7 +20,7 @@ import (
 )
 
 // NewSessionHandler godoc
-// @Router       /session/new [get]
+// @Router       /auth/session/new [get]
 // @Summary      accepts tokens in cookie, parse and validate them, and returns tokens depending on the token's status.
 // @Description  case A: no session, return newly generated session token with 201.
 // @Description  case B-1: signed but expired, reset session info(used, signed_at, uid) except SID and return new session token with 201.
@@ -119,7 +119,7 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 }
 
 // HusSessionHandler godoc
-// @Router       /hus/session/sign [patch]
+// @Router       /auth/hus/session/sign [patch]
 // @Summary      gets Hus id token and sets the session token to be signed in after updating the info.
 // @Description Hus sends id token and Lifthus sets the session info to be signed in with specific uid.
 // @Description and if the user is not registered, Lifthus will register the user.
@@ -183,7 +183,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 }
 
 // SessionSignHandler godoc
-// @Router       /session/sign [get]
+// @Router       /auth/session/sign [get]
 // @Summary      gets lifthus sid in cookie from client, and signs the lifthus token.
 // @Description  Hus told lifthus that the client with specific SID is signed in.
 // @Description so now we can sign the token which is owned by the client who has verified sid.
