@@ -3,7 +3,7 @@ description: Suggest improvement to the code, structure, etc
 title: "[Improvement]: "
 labels: ["improvement"]
 assignees:
-  - cloudhus
+  - lifthus
 body:
   - type: markdown
     attributes:
