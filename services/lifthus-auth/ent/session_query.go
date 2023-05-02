@@ -298,7 +298,7 @@ func (sq *SessionQuery) WithUser(opts ...func(*UserQuery)) *SessionQuery {
 // Example:
 //
 //	var v []struct {
-//		UID uuid.UUID `json:"uid,omitempty"`
+//		UID uint64 `json:"uid,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -321,7 +321,7 @@ func (sq *SessionQuery) GroupBy(field string, fields ...string) *SessionGroupBy 
 // Example:
 //
 //	var v []struct {
-//		UID uuid.UUID `json:"uid,omitempty"`
+//		UID uint64 `json:"uid,omitempty"`
 //	}
 //
 //	client.Session.Query().
@@ -402,8 +402,8 @@ func (sq *SessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Sess
 }
 
 func (sq *SessionQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*Session, init func(*Session), assign func(*Session, *User)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Session)
+	ids := make([]uint64, 0, len(nodes))
+	nodeids := make(map[uint64][]*Session)
 	for i := range nodes {
 		if nodes[i].UID == nil {
 			continue

@@ -305,7 +305,7 @@ type SessionMutation struct {
 	signed_at     *time.Time
 	used          *bool
 	clearedFields map[string]struct{}
-	user          *uuid.UUID
+	user          *uint64
 	cleareduser   bool
 	done          bool
 	oldValue      func(context.Context) (*Session, error)
@@ -417,12 +417,12 @@ func (m *SessionMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 }
 
 // SetUID sets the "uid" field.
-func (m *SessionMutation) SetUID(u uuid.UUID) {
+func (m *SessionMutation) SetUID(u uint64) {
 	m.user = &u
 }
 
 // UID returns the value of the "uid" field in the mutation.
-func (m *SessionMutation) UID() (r uuid.UUID, exists bool) {
+func (m *SessionMutation) UID() (r uint64, exists bool) {
 	v := m.user
 	if v == nil {
 		return
@@ -433,7 +433,7 @@ func (m *SessionMutation) UID() (r uuid.UUID, exists bool) {
 // OldUID returns the old "uid" field's value of the Session entity.
 // If the Session object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SessionMutation) OldUID(ctx context.Context) (v *uuid.UUID, err error) {
+func (m *SessionMutation) OldUID(ctx context.Context) (v *uint64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldUID is only allowed on UpdateOne operations")
 	}
@@ -587,7 +587,7 @@ func (m *SessionMutation) ResetUsed() {
 }
 
 // SetUserID sets the "user" edge to the User entity by id.
-func (m *SessionMutation) SetUserID(id uuid.UUID) {
+func (m *SessionMutation) SetUserID(id uint64) {
 	m.user = &id
 }
 
@@ -602,7 +602,7 @@ func (m *SessionMutation) UserCleared() bool {
 }
 
 // UserID returns the "user" edge ID in the mutation.
-func (m *SessionMutation) UserID() (id uuid.UUID, exists bool) {
+func (m *SessionMutation) UserID() (id uint64, exists bool) {
 	if m.user != nil {
 		return *m.user, true
 	}
@@ -612,7 +612,7 @@ func (m *SessionMutation) UserID() (id uuid.UUID, exists bool) {
 // UserIDs returns the "user" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // UserID instead. It exists only for internal usage by the builders.
-func (m *SessionMutation) UserIDs() (ids []uuid.UUID) {
+func (m *SessionMutation) UserIDs() (ids []uint64) {
 	if id := m.user; id != nil {
 		ids = append(ids, *id)
 	}
@@ -715,7 +715,7 @@ func (m *SessionMutation) OldField(ctx context.Context, name string) (ent.Value,
 func (m *SessionMutation) SetField(name string, value ent.Value) error {
 	switch name {
 	case session.FieldUID:
-		v, ok := value.(uuid.UUID)
+		v, ok := value.(uint64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -749,13 +749,16 @@ func (m *SessionMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *SessionMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *SessionMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
 	return nil, false
 }
 
@@ -901,7 +904,7 @@ type UserMutation struct {
 	config
 	op                  Op
 	typ                 string
-	id                  *uuid.UUID
+	id                  *uint64
 	registered          *bool
 	registered_at       *time.Time
 	username            *string
@@ -943,7 +946,7 @@ func newUserMutation(c config, op Op, opts ...userOption) *UserMutation {
 }
 
 // withUserID sets the ID field of the mutation.
-func withUserID(id uuid.UUID) userOption {
+func withUserID(id uint64) userOption {
 	return func(m *UserMutation) {
 		var (
 			err   error
@@ -995,13 +998,13 @@ func (m UserMutation) Tx() (*Tx, error) {
 
 // SetID sets the value of the id field. Note that this
 // operation is only accepted on creation of User entities.
-func (m *UserMutation) SetID(id uuid.UUID) {
+func (m *UserMutation) SetID(id uint64) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *UserMutation) ID() (id uuid.UUID, exists bool) {
+func (m *UserMutation) ID() (id uint64, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -1012,12 +1015,12 @@ func (m *UserMutation) ID() (id uuid.UUID, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *UserMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+func (m *UserMutation) IDs(ctx context.Context) ([]uint64, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []uuid.UUID{id}, nil
+			return []uint64{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
