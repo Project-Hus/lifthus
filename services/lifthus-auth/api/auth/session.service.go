@@ -149,7 +149,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	// from request body json, get sid string and uid string
 	scbd := common.HusSessionCheckBody{
 		Sid:           hscbParsed["sid"].(string),
-		Uid:           hscbParsed["uid"].(string),
+		Uid:           hscbParsed["uid"].(uint64),
 		Email:         hscbParsed["email"].(string),
 		EmailVerified: hscbParsed["email_verified"].(bool),
 		Name:          hscbParsed["name"].(string),
@@ -267,7 +267,7 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 	c.SetCookie(nstCookie)
 
 	// get user's Name from database using ls.UID
-	lsu, err := db.QueryUserByUID(c.Request().Context(), ac.dbClient, ls.UID.String())
+	lsu, err := db.QueryUserByUID(c.Request().Context(), ac.dbClient, *ls.UID)
 	if err != nil {
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
@@ -275,10 +275,10 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 
 	// make struct with UID and Name
 	signResp := struct {
-		UID  string `json:"user_id"`
+		UID  uint64 `json:"user_id"`
 		Name string `json:"user_name"`
 	}{
-		UID:  ls.UID.String(),
+		UID:  *ls.UID,
 		Name: lsu.Name,
 	}
 	signRespJSON, err := json.Marshal(signResp)

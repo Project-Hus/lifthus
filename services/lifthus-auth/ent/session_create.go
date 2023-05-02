@@ -23,13 +23,13 @@ type SessionCreate struct {
 }
 
 // SetUID sets the "uid" field.
-func (sc *SessionCreate) SetUID(u uuid.UUID) *SessionCreate {
+func (sc *SessionCreate) SetUID(u uint64) *SessionCreate {
 	sc.mutation.SetUID(u)
 	return sc
 }
 
 // SetNillableUID sets the "uid" field if the given value is not nil.
-func (sc *SessionCreate) SetNillableUID(u *uuid.UUID) *SessionCreate {
+func (sc *SessionCreate) SetNillableUID(u *uint64) *SessionCreate {
 	if u != nil {
 		sc.SetUID(*u)
 	}
@@ -93,13 +93,13 @@ func (sc *SessionCreate) SetNillableID(u *uuid.UUID) *SessionCreate {
 }
 
 // SetUserID sets the "user" edge to the User entity by ID.
-func (sc *SessionCreate) SetUserID(id uuid.UUID) *SessionCreate {
+func (sc *SessionCreate) SetUserID(id uint64) *SessionCreate {
 	sc.mutation.SetUserID(id)
 	return sc
 }
 
 // SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (sc *SessionCreate) SetNillableUserID(id *uuid.UUID) *SessionCreate {
+func (sc *SessionCreate) SetNillableUserID(id *uint64) *SessionCreate {
 	if id != nil {
 		sc = sc.SetUserID(*id)
 	}
@@ -224,7 +224,7 @@ func (sc *SessionCreate) createSpec() (*Session, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
+					Type:   field.TypeUint64,
 					Column: user.FieldID,
 				},
 			},

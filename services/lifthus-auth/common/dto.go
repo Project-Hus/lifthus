@@ -2,7 +2,7 @@ package common
 
 type HusSessionCheckBody struct {
 	Sid           string `json:"sid"`
-	Uid           string `json:"uid"`
+	Uid           uint64 `json:"uid"`
 	Email         string `json:"email"`
 	EmailVerified bool   `json:"email_verified"`
 	Name          string `json:"name"`
