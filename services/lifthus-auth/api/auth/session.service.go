@@ -8,6 +8,7 @@ import (
 	"lifthus-auth/common/lifthus"
 	"lifthus-auth/db"
 	"lifthus-auth/helper"
+	"strconv"
 
 	"lifthus-auth/service/session"
 	"log"
@@ -83,7 +84,31 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 			// case C: if it is valid, just keep the token and return
 		} else {
 			if uid != "" { // case C-1
-				return c.String(http.StatusOK, uid)
+				// get user by uid
+				uidUint64, err := strconv.ParseUint(uid, 10, 64)
+				if err != nil {
+					log.Println(err)
+					return c.String(http.StatusInternalServerError, err.Error())
+				}
+				ls, err := db.QueryUserByUID(c.Request().Context(), ac.dbClient, uidUint64)
+				if err != nil {
+					log.Println(err)
+					return c.String(http.StatusInternalServerError, err.Error())
+				}
+				// make struct with UID and Name
+				keepResp := struct {
+					UID  string `json:"user_id"`
+					Name string `json:"user_name"`
+				}{
+					UID:  strconv.FormatUint(ls.ID, 10),
+					Name: ls.Name,
+				}
+				keepRespJSON, err := json.Marshal(keepResp)
+				if err != nil {
+					log.Println(err)
+					return c.String(http.StatusInternalServerError, err.Error())
+				}
+				return c.JSONBlob(http.StatusOK, keepRespJSON)
 			} else { // case C-2
 				return c.String(http.StatusCreated, sid)
 			}
@@ -149,7 +174,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	// from request body json, get sid string and uid string
 	scbd := common.HusSessionCheckBody{
 		Sid:           hscbParsed["sid"].(string),
-		Uid:           hscbParsed["uid"].(uint64),
+		Uid:           hscbParsed["uid"].(string),
 		Email:         hscbParsed["email"].(string),
 		EmailVerified: hscbParsed["email_verified"].(bool),
 		Name:          hscbParsed["name"].(string),
@@ -159,7 +184,12 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	}
 
 	// Query if the user exists in the database
-	u, err := db.QueryUserByUID(c.Request().Context(), ac.dbClient, scbd.Uid)
+	scbdUidUint64, err := strconv.ParseUint(scbd.Uid, 10, 64)
+	if err != nil {
+		log.Println(err)
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	u, err := db.QueryUserByUID(c.Request().Context(), ac.dbClient, scbdUidUint64)
 	if err != nil {
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
@@ -173,7 +203,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 		}
 	}
 
-	err = session.SignSession(c.Request().Context(), ac.dbClient, scbd.Sid, scbd.Uid)
+	err = session.SignSession(c.Request().Context(), ac.dbClient, scbd.Sid, scbdUidUint64)
 	if err != nil {
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
@@ -247,7 +277,7 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 	nst := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"purpose": "lifthus_session",
 		"sid":     sid,
-		"uid":     ls.UID,
+		"uid":     strconv.FormatUint(*ls.UID, 10),
 		"exp":     time.Now().Add(time.Minute * 5).Unix(),
 	})
 	nstSigned, err := nst.SignedString([]byte(lifthus.HusSecretKey))
@@ -275,10 +305,10 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 
 	// make struct with UID and Name
 	signResp := struct {
-		UID  uint64 `json:"user_id"`
+		UID  string `json:"user_id"`
 		Name string `json:"user_name"`
 	}{
-		UID:  *ls.UID,
+		UID:  strconv.FormatUint(*ls.UID, 10),
 		Name: lsu.Name,
 	}
 	signRespJSON, err := json.Marshal(signResp)

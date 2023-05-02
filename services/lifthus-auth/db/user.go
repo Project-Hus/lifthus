@@ -6,12 +6,17 @@ import (
 	"lifthus-auth/common"
 	"lifthus-auth/ent"
 	"lifthus-auth/ent/user"
+	"strconv"
 	"time"
 )
 
 func CreateNewLifthusUser(c context.Context, client *ent.Client, nu common.HusSessionCheckBody) (*ent.User, error) {
 	// create new lifthus user
-	lu := client.User.Create().SetID(nu.Uid).
+	nuUid, err := strconv.ParseUint(nu.Uid, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("!!parsing uid failed:%w", err)
+	}
+	lu := client.User.Create().SetID(nuUid).
 		SetEmail(nu.Email).
 		SetEmailVerified(nu.EmailVerified).
 		SetName(nu.Name).
