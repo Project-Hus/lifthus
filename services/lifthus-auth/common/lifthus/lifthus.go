@@ -35,11 +35,22 @@ func InitLifthusVars(husenv string, _ *ent.Client) {
 		AuthURL = "https://auth.lifthus.com"
 		ApiURL = "https://api.lifthus.com"
 	case "development":
-		fallthrough
+		Host = "localhost:9100"
+		URL = "http://localhost:9100"
+		Origins = []string{"http://localhost:3000", "http://localhost:9000", "http://localhost:9200"}
+		CookieDomain = ""
+		AuthURL = "http://localhost:9091"
+		ApiURL = "http://localhost:9091"
 	case "native":
-		Host = "localhost:9091"
-		URL = "http://localhost:9091"
-		Origins = []string{"http://localhost:3000", "http://localhost:9090", "http://localhost:9091"}
+		Host = "localhost:9100"
+		URL = "http://localhost:9101"
+		Origins = []string{
+			"http://localhost:3000",
+			"http://localhost:9001",
+			"http://localhost:9002",
+			"http://localhost:9101",
+			"http://localhost:9102",
+		}
 		CookieDomain = ""
 		AuthURL = "http://localhost:9091"
 		ApiURL = "http://localhost:9091"
