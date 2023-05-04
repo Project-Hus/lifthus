@@ -51,19 +51,33 @@ func RevokeSession(ctx context.Context, client *ent.Client, sid string) error {
 	return nil
 }
 
-func SignSession(ctx context.Context, client *ent.Client, sid string, uid string) error {
+func SignSession(ctx context.Context, client *ent.Client, sid string, uid uint64) error {
 	sid_uuid, err := uuid.Parse(sid)
-	uid_uuid, err1 := uuid.Parse(uid)
-	if err != nil || err1 != nil {
-		return fmt.Errorf("!!parsing uuid failed: %w, %w", err, err1)
+	if err != nil {
+		return fmt.Errorf("!!parsing uuid failed: %w", err)
 	}
 	// update the session with uid
-	_, err = client.Session.UpdateOneID(sid_uuid).SetUID(uid_uuid).SetUsed(false).Save(ctx)
+	_, err = client.Session.UpdateOneID(sid_uuid).SetUID(uid).SetUsed(false).Save(ctx)
 	if err != nil {
 		return fmt.Errorf("!!updating session with uid failed: %w", err)
 	}
 	return nil
 }
+
+// UUID version
+// func SignSession(ctx context.Context, client *ent.Client, sid string, uid string) error {
+// 	sid_uuid, err := uuid.Parse(sid)
+// 	uid_uuid, err1 := uuid.Parse(uid)
+// 	if err != nil || err1 != nil {
+// 		return fmt.Errorf("!!parsing uuid failed: %w, %w", err, err1)
+// 	}
+// 	// update the session with uid
+// 	_, err = client.Session.UpdateOneID(sid_uuid).SetUID(uid_uuid).SetUsed(false).Save(ctx)
+// 	if err != nil {
+// 		return fmt.Errorf("!!updating session with uid failed: %w", err)
+// 	}
+// 	return nil
+// }
 
 // ValidateSession validates the session and updates the db.
 // cases:

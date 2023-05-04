@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 )
 
 // SessionUpdate is the builder for updating Session entities.
@@ -31,13 +30,13 @@ func (su *SessionUpdate) Where(ps ...predicate.Session) *SessionUpdate {
 }
 
 // SetUID sets the "uid" field.
-func (su *SessionUpdate) SetUID(u uuid.UUID) *SessionUpdate {
+func (su *SessionUpdate) SetUID(u uint64) *SessionUpdate {
 	su.mutation.SetUID(u)
 	return su
 }
 
 // SetNillableUID sets the "uid" field if the given value is not nil.
-func (su *SessionUpdate) SetNillableUID(u *uuid.UUID) *SessionUpdate {
+func (su *SessionUpdate) SetNillableUID(u *uint64) *SessionUpdate {
 	if u != nil {
 		su.SetUID(*u)
 	}
@@ -91,13 +90,13 @@ func (su *SessionUpdate) SetNillableUsed(b *bool) *SessionUpdate {
 }
 
 // SetUserID sets the "user" edge to the User entity by ID.
-func (su *SessionUpdate) SetUserID(id uuid.UUID) *SessionUpdate {
+func (su *SessionUpdate) SetUserID(id uint64) *SessionUpdate {
 	su.mutation.SetUserID(id)
 	return su
 }
 
 // SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (su *SessionUpdate) SetNillableUserID(id *uuid.UUID) *SessionUpdate {
+func (su *SessionUpdate) SetNillableUserID(id *uint64) *SessionUpdate {
 	if id != nil {
 		su = su.SetUserID(*id)
 	}
@@ -186,7 +185,7 @@ func (su *SessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
+					Type:   field.TypeUint64,
 					Column: user.FieldID,
 				},
 			},
@@ -202,7 +201,7 @@ func (su *SessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
+					Type:   field.TypeUint64,
 					Column: user.FieldID,
 				},
 			},
@@ -233,13 +232,13 @@ type SessionUpdateOne struct {
 }
 
 // SetUID sets the "uid" field.
-func (suo *SessionUpdateOne) SetUID(u uuid.UUID) *SessionUpdateOne {
+func (suo *SessionUpdateOne) SetUID(u uint64) *SessionUpdateOne {
 	suo.mutation.SetUID(u)
 	return suo
 }
 
 // SetNillableUID sets the "uid" field if the given value is not nil.
-func (suo *SessionUpdateOne) SetNillableUID(u *uuid.UUID) *SessionUpdateOne {
+func (suo *SessionUpdateOne) SetNillableUID(u *uint64) *SessionUpdateOne {
 	if u != nil {
 		suo.SetUID(*u)
 	}
@@ -293,13 +292,13 @@ func (suo *SessionUpdateOne) SetNillableUsed(b *bool) *SessionUpdateOne {
 }
 
 // SetUserID sets the "user" edge to the User entity by ID.
-func (suo *SessionUpdateOne) SetUserID(id uuid.UUID) *SessionUpdateOne {
+func (suo *SessionUpdateOne) SetUserID(id uint64) *SessionUpdateOne {
 	suo.mutation.SetUserID(id)
 	return suo
 }
 
 // SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (suo *SessionUpdateOne) SetNillableUserID(id *uuid.UUID) *SessionUpdateOne {
+func (suo *SessionUpdateOne) SetNillableUserID(id *uint64) *SessionUpdateOne {
 	if id != nil {
 		suo = suo.SetUserID(*id)
 	}
@@ -418,7 +417,7 @@ func (suo *SessionUpdateOne) sqlSave(ctx context.Context) (_node *Session, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
+					Type:   field.TypeUint64,
 					Column: user.FieldID,
 				},
 			},
@@ -434,7 +433,7 @@ func (suo *SessionUpdateOne) sqlSave(ctx context.Context) (_node *Session, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
+					Type:   field.TypeUint64,
 					Column: user.FieldID,
 				},
 			},

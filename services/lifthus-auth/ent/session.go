@@ -19,7 +19,7 @@ type Session struct {
 	// ID of the ent.
 	ID uuid.UUID `json:"sid,omitempty"`
 	// UID holds the value of the "uid" field.
-	UID *uuid.UUID `json:"uid,omitempty"`
+	UID *uint64 `json:"uid,omitempty"`
 	// ConnectedAt holds the value of the "connected_at" field.
 	ConnectedAt time.Time `json:"connected_at,omitempty"`
 	// SignedAt holds the value of the "signed_at" field.
@@ -58,10 +58,10 @@ func (*Session) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case session.FieldUID:
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case session.FieldUsed:
 			values[i] = new(sql.NullBool)
+		case session.FieldUID:
+			values[i] = new(sql.NullInt64)
 		case session.FieldConnectedAt, session.FieldSignedAt:
 			values[i] = new(sql.NullTime)
 		case session.FieldID:
@@ -88,11 +88,11 @@ func (s *Session) assignValues(columns []string, values []any) error {
 				s.ID = *value
 			}
 		case session.FieldUID:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field uid", values[i])
 			} else if value.Valid {
-				s.UID = new(uuid.UUID)
-				*s.UID = *value.S.(*uuid.UUID)
+				s.UID = new(uint64)
+				*s.UID = uint64(value.Int64)
 			}
 		case session.FieldConnectedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {

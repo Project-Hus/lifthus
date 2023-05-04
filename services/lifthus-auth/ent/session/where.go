@@ -57,7 +57,7 @@ func IDLTE(id uuid.UUID) predicate.Session {
 }
 
 // UID applies equality check predicate on the "uid" field. It's identical to UIDEQ.
-func UID(v uuid.UUID) predicate.Session {
+func UID(v uint64) predicate.Session {
 	return predicate.Session(sql.FieldEQ(FieldUID, v))
 }
 
@@ -77,22 +77,22 @@ func Used(v bool) predicate.Session {
 }
 
 // UIDEQ applies the EQ predicate on the "uid" field.
-func UIDEQ(v uuid.UUID) predicate.Session {
+func UIDEQ(v uint64) predicate.Session {
 	return predicate.Session(sql.FieldEQ(FieldUID, v))
 }
 
 // UIDNEQ applies the NEQ predicate on the "uid" field.
-func UIDNEQ(v uuid.UUID) predicate.Session {
+func UIDNEQ(v uint64) predicate.Session {
 	return predicate.Session(sql.FieldNEQ(FieldUID, v))
 }
 
 // UIDIn applies the In predicate on the "uid" field.
-func UIDIn(vs ...uuid.UUID) predicate.Session {
+func UIDIn(vs ...uint64) predicate.Session {
 	return predicate.Session(sql.FieldIn(FieldUID, vs...))
 }
 
 // UIDNotIn applies the NotIn predicate on the "uid" field.
-func UIDNotIn(vs ...uuid.UUID) predicate.Session {
+func UIDNotIn(vs ...uint64) predicate.Session {
 	return predicate.Session(sql.FieldNotIn(FieldUID, vs...))
 }
 

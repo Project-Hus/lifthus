@@ -24,7 +24,7 @@ var (
 		{Name: "connected_at", Type: field.TypeTime},
 		{Name: "signed_at", Type: field.TypeTime, Nullable: true},
 		{Name: "used", Type: field.TypeBool, Default: false},
-		{Name: "uid", Type: field.TypeUUID, Nullable: true},
+		{Name: "uid", Type: field.TypeUint64, Nullable: true},
 	}
 	// SessionsTable holds the schema information for the "sessions" table.
 	SessionsTable = &schema.Table{
@@ -42,7 +42,7 @@ var (
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "id", Type: field.TypeUint64, Increment: true},
 		{Name: "registered", Type: field.TypeBool, Default: false},
 		{Name: "registered_at", Type: field.TypeTime, Nullable: true},
 		{Name: "username", Type: field.TypeString, Unique: true, Nullable: true},
