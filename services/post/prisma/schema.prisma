@@ -11,7 +11,7 @@ datasource db {
 }
 
 model Post {
-  id        String   @id @default(uuid()) @db.Char(36)
+  id        BigInt   @id @default(autoincrement())
   author    String   @db.Char(36) // user's uuid
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -19,24 +19,11 @@ model Post {
 }
 
 model Comment {
-  id        String   @id @default(uuid()) @db.Char(36)
+  id        BigInt   @id @default(autoincrement())
   author    String   @db.Char(36) // user's uuid
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   content   String
-
-  reply Reply[]
-}
-
-model Reply {
-  id        String   @id @default(uuid()) @db.Char(36)
-  author    String   @db.Char(36) // user's uuid
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  content   String
-
-  comment   Comment @relation(fields: [commentId], references: [id])
-  commentId String  @db.Char(36)
 }
 
 // M:N relation example with model A and model B with C as the join table
