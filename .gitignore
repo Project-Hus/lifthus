@@ -19,7 +19,5 @@ env.json
 .aws-sam/
 lifthus-auth
 
-# openapi output
-docs/
-
+# MacOS files
 .DS_Store
