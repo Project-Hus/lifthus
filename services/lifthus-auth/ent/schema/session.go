@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -12,6 +14,14 @@ import (
 // Session holds the schema definition for the LifthusSession entity.
 type Session struct {
 	ent.Schema
+}
+
+func (Session) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entsql.Annotation{
+			Options: "ENGINE=MEMORY",
+		},
+	}
 }
 
 // Fields of the LifthusSession.

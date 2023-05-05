@@ -3,6 +3,7 @@
 package migrate
 
 import (
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/dialect/sql/schema"
 	"entgo.io/ent/schema/field"
 )
@@ -72,4 +73,7 @@ var (
 
 func init() {
 	SessionsTable.ForeignKeys[0].RefTable = UsersTable
+	SessionsTable.Annotation = &entsql.Annotation{
+		Options: "ENGINE=MEMORY",
+	}
 }
