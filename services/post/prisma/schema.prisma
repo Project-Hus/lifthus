@@ -7,43 +7,42 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("LIFTUHS_POST_DB_URL")
+  url      = env("LIFTHUS_POST_DB_URL")
 }
 
 model Post {
-  id        BigInt   @id @default(autoincrement())
-  author    String   @db.Char(36) // user's uuid
+  id        BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  author    BigInt   @db.UnsignedBigInt
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   content   String
+
+  mentions Mention[] @relation("mentions")
 }
 
 model Comment {
-  id        BigInt   @id @default(autoincrement())
-  author    String   @db.Char(36) // user's uuid
+  id        BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  author    BigInt   @db.UnsignedBigInt
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   content   String
+
+  replies Comment[] @relation("replies")
+
+  parent   Comment? @relation("replies", fields: [parentId], references: [id])
+  parentId BigInt?  @db.UnsignedBigInt
+
+  mentions Mention[] @relation("mentions")
 }
 
-// M:N relation example with model A and model B with C as the join table
-model A {
-  id  String @id @default(uuid()) @db.Char(36)
-  bId String @db.Char(36)
-  b   B      @relation(fields: [bId], references: [id])
-  c   C[]
-}
+model Mention {
+  id BigInt @id @default(autoincrement()) @db.UnsignedBigInt
 
-model B {
-  id String @id @default(uuid()) @db.Char(36)
-  a  A[]
-  c  C[]
-}
+  post     Post?    @relation("mentions", fields: [postId], references: [id])
+  postId   BigInt?  @db.UnsignedBigInt
+  coment   Comment? @relation("mentions", fields: [comentId], references: [id])
+  comentId BigInt?  @db.UnsignedBigInt
 
-model C {
-  id  String @id @default(uuid()) @db.Char(36)
-  aId String @db.Char(36)
-  bId String @db.Char(36)
-  a   A      @relation(fields: [aId], references: [id])
-  b   B      @relation(fields: [bId], references: [id])
+  mentionor BigInt @db.UnsignedBigInt
+  mentionee BigInt @db.UnsignedBigInt
 }
