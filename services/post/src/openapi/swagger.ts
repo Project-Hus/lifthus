@@ -20,3 +20,8 @@ export function setupSwagger(app: INestApplication): void {
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('/post/openapi', app, document);
 }
+
+// currently not working in Lambda environment.
+// I tried adding events for static files in template,
+// and several other things, but it didn't work.
+// I will try to fix it later.

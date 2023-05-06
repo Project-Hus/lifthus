@@ -10,8 +10,7 @@ import envbyjson from 'envbyjson';
  */
 export async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
-  setupSwagger(app);
+  await setupSwagger(app);
 
   // set CORS
   app.enableCors({
@@ -24,6 +23,7 @@ export async function bootstrap() {
     preflightContinue: false,
     optionsSuccessStatus: 204,
   });
+
   return app;
 }
 

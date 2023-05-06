@@ -12,7 +12,7 @@ let expressApp: any;
 export const handler = async (
   event: any,
   context: Context,
-  callback: Callback,
+  callback: Callback, // this call back is used to
 ) => {
   // if app is not initialized, initialize it
   if (!server || !app || !expressApp) {
@@ -21,5 +21,6 @@ export const handler = async (
     expressApp = app.getHttpAdapter().getInstance();
     server = server ?? serverlessExpress({ app: expressApp });
   }
+
   return server(event, context, callback);
 };
