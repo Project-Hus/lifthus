@@ -15,6 +15,7 @@ model Post {
   author    BigInt     @db.UnsignedBigInt
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+  slug      String     @unique
   content   String     @db.Text
   mentions  Mention[]  @relation("mentions")
   likes     PostLike[]
