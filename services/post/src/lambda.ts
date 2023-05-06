@@ -15,9 +15,8 @@ export const handler = async (
   callback: Callback, // this call back is used to
 ) => {
   // if app is not initialized, initialize it
-  if (!server || !app || !expressApp) {
+  if (!server) {
     app = await bootstrap();
-    await app.init();
     expressApp = app.getHttpAdapter().getInstance();
     server = server ?? serverlessExpress({ app: expressApp });
   }

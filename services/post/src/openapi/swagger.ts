@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 /**
- * OpenAPI 2.0
+ * OpenAPI
  *
  * @param {INestApplication} app
  */

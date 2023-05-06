@@ -24,6 +24,8 @@ export async function bootstrap() {
     optionsSuccessStatus: 204,
   });
 
+  await app.init();
+
   return app;
 }
 
