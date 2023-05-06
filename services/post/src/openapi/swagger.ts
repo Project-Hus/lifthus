@@ -1,12 +1,12 @@
 import { INestApplication } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { SwaggerModule, DocumentBuilder, OpenAPIObject } from '@nestjs/swagger';
 
 /**
  * OpenAPI
  *
  * @param {INestApplication} app
  */
-export function setupSwagger(app: INestApplication): void {
+export function setupSwagger(app: INestApplication): OpenAPIObject {
   const options = new DocumentBuilder()
     .setTitle('Lifthus post service API')
     .setVersion('0.0.0')
@@ -14,11 +14,15 @@ export function setupSwagger(app: INestApplication): void {
     .setTermsOfService('http://swagger.io/terms/')
     .setContact('lifthus', 'https://github.com/lifthus', 'lifthus531@gmail.com')
     .setLicense('MIT', '-')
-    .setBasePath('/post')
+    .addServer('/post')
     .build();
 
   const document = SwaggerModule.createDocument(app, options);
-  SwaggerModule.setup('/post/openapi', app, document);
+  // We use "swagger-ui-express" to provide the openapi document.
+  // becausae nest SwaggerModule doesn't work in Lambda environment.
+  // SwaggerModule.setup('/post/openapi', app, document);
+
+  return document;
 }
 
 // currently not working in Lambda environment.

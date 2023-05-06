@@ -3,6 +3,9 @@ import { AppModule } from './app.module';
 import { setupSwagger } from './openapi/swagger';
 import envbyjson from 'envbyjson';
 
+import SwaggerUi from 'swagger-ui-express';
+import { OpenapiModule } from './openapi/openapi.module';
+
 /**
  * sets up the nestjs app and returns it.
  *
@@ -10,7 +13,6 @@ import envbyjson from 'envbyjson';
  */
 export async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await setupSwagger(app);
 
   // set CORS
   app.enableCors({
@@ -19,10 +21,26 @@ export async function bootstrap() {
       'https://*.lifthus.com',
       'https://lifthus.com',
     ],
+    allowedHeaders: [
+      'origin',
+      'content-type',
+      'authorization',
+      'accept',
+      'x-requested-with',
+      'access-Control-Allow-Origin',
+      'headerAccessControlAllowHeaders',
+      'headerAccessControlAllowMethods',
+      'headerXRequestedWith',
+    ],
+    credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
+    //preflightContinue: false,
+    //optionsSuccessStatus: 204,
   });
+
+  const openapi = await NestFactory.create(OpenapiModule);
+  const openapiDoc = await setupSwagger(openapi);
+  app.use('/post/openapi', SwaggerUi.serve, SwaggerUi.setup(openapiDoc));
 
   await app.init();
 

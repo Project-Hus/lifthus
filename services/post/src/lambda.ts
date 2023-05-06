@@ -21,5 +21,7 @@ export const handler = async (
     server = server ?? serverlessExpress({ app: expressApp });
   }
 
-  return server(event, context, callback);
+  const tmp = await server(event, context, callback);
+  console.log('SDFSFDFDSFDFFSDFSFDFDFDDFDFD=================');
+  return tmp;
 };
