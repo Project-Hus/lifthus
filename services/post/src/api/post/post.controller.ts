@@ -12,9 +12,7 @@ export class PostController {
   getHello(): string {
     return this.appService.getHello();
   }
-
-  @Get()
-  @Header('Content-Type', 'text/html')
+  @Get('/openapi')
   getSwagger(): string {
     return this.openapiService.getSwaggerHTML();
   }

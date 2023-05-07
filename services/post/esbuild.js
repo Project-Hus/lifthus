@@ -17,7 +17,7 @@ const config = {
         "@nestjs/websockets/socket-module",
         "cache-manager",
         "class-transformer",
-        "class-validator"
+        "class-validator",
     ]
 };
 
