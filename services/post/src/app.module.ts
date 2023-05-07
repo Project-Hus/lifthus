@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
-import { PostService, OpenapiService } from './api/post/post.service';
-import { PostController } from './api/post/post.controller';
+import { PostService } from './api/post/post.service';
+import { PostController } from './api/post.controller';
+import { OpenapiService } from './api/openapi/openapi.service';
+import { OpenapiController } from './api/openapi/openapi.controller';
 
 @Module({
   imports: [],
-  controllers: [PostController],
+  controllers: [PostController, OpenapiController],
   providers: [PostService, OpenapiService],
 })
 export class AppModule {}
