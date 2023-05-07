@@ -1,12 +1,19 @@
-import { Controller, Get } from '@nestjs/common';
-import { PostService } from './post.service';
+import { Controller, Get, Header } from '@nestjs/common';
+import { PostService, OpenapiService } from './post.service';
 
-@Controller()
+@Controller('/post')
 export class PostController {
-  constructor(private readonly appService: PostService) {}
+  constructor(
+    private readonly appService: PostService,
+    private readonly openapiService: OpenapiService,
+  ) {}
 
-  @Get('/post')
+  @Get()
   getHello(): string {
     return this.appService.getHello();
+  }
+  @Get('/openapi')
+  getSwagger(): string {
+    return this.openapiService.getSwaggerHTML();
   }
 }
