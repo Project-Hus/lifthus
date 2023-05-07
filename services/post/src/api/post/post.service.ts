@@ -8,3 +8,10 @@ export class PostService {
     return 'Hello World!';
   }
 }
+
+@Injectable()
+export class OpenapiService {
+  getSwaggerHTML() {
+    return SwaggerUi.generateHTML();
+  }
+}

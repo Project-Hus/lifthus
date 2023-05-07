@@ -1,13 +1,12 @@
 import { Controller, Get, Header } from '@nestjs/common';
 import { OpenapiService } from './openapi.service';
 
-@Controller()
+@Controller('nonono/post/openapi')
 export class OpenapiController {
   constructor(private readonly openapiService: OpenapiService) {}
 
-  @Get('/post/openapi')
-  getHello(): string {
-    console.log('YOYOYO OPENAPI');
+  @Get()
+  getSwagger(): string {
     return this.openapiService.getSwaggerHTML();
   }
 }

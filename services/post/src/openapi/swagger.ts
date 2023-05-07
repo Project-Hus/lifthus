@@ -14,7 +14,6 @@ export function setupSwagger(app: INestApplication): OpenAPIObject {
     .setTermsOfService('http://swagger.io/terms/')
     .setContact('lifthus', 'https://github.com/lifthus', 'lifthus531@gmail.com')
     .setLicense('MIT', '-')
-    .addServer('/post')
     .build();
 
   const document = SwaggerModule.createDocument(app, options);

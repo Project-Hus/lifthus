@@ -57,9 +57,9 @@ async function run(port: number) {
 
 try {
   // load the environment variables from the env.json file
-  envbyjson.loadProp('../../env.json', 'Parameters');
   // run the nestjs server if the environment is native
   if (process.env.HUS_ENV === 'native') {
+    envbyjson.loadProp('../../env.json', 'Parameters');
     console.log('native nestsjs running');
     run(Number(process.env.POST_PORT));
   }

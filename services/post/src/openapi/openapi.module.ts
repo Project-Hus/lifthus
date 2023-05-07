@@ -5,7 +5,7 @@ import { AppModule } from 'src/app.module';
 
 @Module({
   imports: [AppModule],
-  controllers: [OpenapiController],
-  providers: [OpenapiService],
+  //controllers: [OpenapiController],
+  //providers: [OpenapiService],
 })
 export class OpenapiModule {}
