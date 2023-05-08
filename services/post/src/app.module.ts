@@ -9,7 +9,6 @@ import { JwtModule } from '@nestjs/jwt';
   imports: [
     JwtModule.register({
       secret: process.env.HUS_SECRET_KEY,
-      signOptions: { expiresIn: '60s' },
     }),
   ],
   controllers: [PostController, OpenapiController],
