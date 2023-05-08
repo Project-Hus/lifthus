@@ -1,7 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { setupSwagger } from './openapi/swagger';
+
 import envbyjson from 'envbyjson';
+
+import cookieParser from 'cookie-parser';
 
 import SwaggerUi from 'swagger-ui-express';
 import { OpenapiModule } from './openapi/openapi.module';
@@ -37,6 +40,8 @@ export async function bootstrap() {
     //preflightContinue: false,
     //optionsSuccessStatus: 204,
   });
+
+  app.use(cookieParser());
 
   const openapi = await NestFactory.create(OpenapiModule);
   const openapiDoc = await setupSwagger(openapi);
