@@ -3,7 +3,7 @@ export {};
 
 declare global {
   namespace Express {
-    type Uid = string;
+    type Uid = number;
     interface Request {
       uid?: Uid;
     }

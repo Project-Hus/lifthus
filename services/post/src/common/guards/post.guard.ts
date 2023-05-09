@@ -7,10 +7,7 @@ export class UserGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-    const lst = getCookie('lifthus_st', context);
-    if (!lst) {
-      return false;
-    }
+    const uid = context.switchToHttp().getRequest().uid;
 
     return true;
   }
