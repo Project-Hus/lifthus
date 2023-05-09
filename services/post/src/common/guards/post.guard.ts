@@ -8,6 +8,9 @@ export class UserGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const lst = getCookie('lifthus_st', context);
+    if (!lst) {
+      return false;
+    }
 
     return true;
   }

@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { PostService } from './api/post.service';
-import { PostController } from './api/post.controller';
-import { OpenapiService } from './api/openapi/openapi.service';
-import { OpenapiController } from './api/openapi/openapi.controller';
+import { PostService } from './post/post.service';
+import { OpenapiController } from './openapi/openapi.controller';
 import { JwtModule } from '@nestjs/jwt';
+import { PostController } from './post/post.controller';
+import { OpenapiService } from './openapi/openapi.service';
 
 @Module({
   imports: [
