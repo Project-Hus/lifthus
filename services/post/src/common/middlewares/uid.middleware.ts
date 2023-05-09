@@ -16,7 +16,7 @@ export class UidMiddleware implements NestMiddleware {
         );
         // if lifthus session token is valid, set uid to req
         // lst.uid to number
-        req.uid = parseInt(lst.uid);
+        if (lst.uid) req.uid = parseInt(lst.uid);
       } catch (e) {
         // else just nothing
       }
