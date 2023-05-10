@@ -1,10 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { setupSwagger } from './openapi/swagger';
+
 import envbyjson from 'envbyjson';
 
-import SwaggerUi from 'swagger-ui-express';
-import { OpenapiModule } from './openapi/openapi.module';
+import cookieParser from 'cookie-parser';
+
+// import SwaggerUi from 'swagger-ui-express';
+// import { OpenapiModule } from './openapi/openapi.module';
 
 /**
  * sets up the nestjs app and returns it.
@@ -38,9 +41,11 @@ export async function bootstrap() {
     //optionsSuccessStatus: 204,
   });
 
-  const openapi = await NestFactory.create(OpenapiModule);
-  const openapiDoc = await setupSwagger(openapi);
-  app.use('/post/openapi', SwaggerUi.serve, SwaggerUi.setup(openapiDoc));
+  app.use(cookieParser());
+
+  //const openapi = await NestFactory.create(OpenapiModule);
+  //const openapiDoc = await setupSwagger(openapi);
+  //app.use('/post/openapi', SwaggerUi.serve, SwaggerUi.setup(openapiDoc));
 
   await app.init();
 
