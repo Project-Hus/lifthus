@@ -1,6 +1,7 @@
-import { Controller, Get, Res } from '@nestjs/common';
+import { Controller, Get, Res, Req, UseGuards } from '@nestjs/common';
 import { GetService } from './get.service';
-import { Response } from 'express';
+import { Request, Response } from 'express';
+import { UserGuard } from 'src/common/guards/post.guard';
 
 @Controller('/post/get')
 export class GetController {
@@ -9,6 +10,12 @@ export class GetController {
   @Get()
   getHello(): string {
     return this.getService.getHello();
+  }
+
+  @UseGuards(UserGuard)
+  @Get('/signed')
+  getUid(@Req() req: Request) {
+    return `Yo! {req.uid}`;
   }
 
   @Get('/cookie')

@@ -8,7 +8,9 @@ export class UserGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const uid = context.switchToHttp().getRequest().uid;
-    if (!uid && uid != 0) {
+    // undefined means not signed user so block.
+    // and uid 0 can't exist. autoincrement starts from 1
+    if (!uid) {
       return false;
     }
     return true;
