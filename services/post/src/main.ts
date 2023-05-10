@@ -6,9 +6,8 @@ import envbyjson from 'envbyjson';
 
 import cookieParser from 'cookie-parser';
 
-import SwaggerUi from 'swagger-ui-express';
-import { OpenapiModule } from './openapi/openapi.module';
-import { uidMiddleware } from './common/middlewares/uid.middleware';
+// import SwaggerUi from 'swagger-ui-express';
+// import { OpenapiModule } from './openapi/openapi.module';
 
 /**
  * sets up the nestjs app and returns it.
@@ -43,7 +42,6 @@ export async function bootstrap() {
   });
 
   app.use(cookieParser());
-  app.use(uidMiddleware);
 
   //const openapi = await NestFactory.create(OpenapiModule);
   //const openapiDoc = await setupSwagger(openapi);

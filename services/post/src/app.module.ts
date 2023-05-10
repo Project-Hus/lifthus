@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { PostService } from './post/post.service';
 import { OpenapiController } from './openapi/openapi.controller';
 import { JwtModule } from '@nestjs/jwt';
@@ -6,6 +6,7 @@ import { PostController } from './post/post.controller';
 import { OpenapiService } from './openapi/openapi.service';
 import { GetService } from './get/get.service';
 import { GetController } from './get/get.controller';
+import { UidMiddleware } from './common/middlewares/uid.middleware';
 
 @Module({
   imports: [
@@ -16,4 +17,8 @@ import { GetController } from './get/get.controller';
   controllers: [GetController, PostController, OpenapiController],
   providers: [GetService, PostService, OpenapiService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(UidMiddleware).forRoutes('*');
+  }
+}
