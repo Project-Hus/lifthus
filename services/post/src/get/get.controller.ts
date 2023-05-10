@@ -1,5 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Res } from '@nestjs/common';
 import { GetService } from './get.service';
+import { Response } from 'express';
 
 @Controller('/post/get')
 export class GetController {
@@ -8,6 +9,11 @@ export class GetController {
   @Get()
   getHello(): string {
     return this.getService.getHello();
+  }
+
+  @Get('/cookie')
+  getCookie(@Res() res: Response) {
+    res.send(this.getService.getCookie(res));
   }
 
   @Get('/one/:id')

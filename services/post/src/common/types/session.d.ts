@@ -1,6 +1,7 @@
 export interface LifthusSessionJWTPayload {
   purpose: 'lifthus_session';
   sid: string;
-  uid: string;
+  tid?: string;
+  uid?: string;
   exp: number;
 }
