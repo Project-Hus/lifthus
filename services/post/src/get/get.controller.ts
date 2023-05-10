@@ -15,7 +15,7 @@ export class GetController {
   @UseGuards(UserGuard)
   @Get('/signed')
   getUid(@Req() req: Request) {
-    return `Yo! {req.uid}`;
+    return `Yo! ${req.uid}`;
   }
 
   @Get('/cookie')
