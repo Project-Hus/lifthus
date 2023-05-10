@@ -13,7 +13,7 @@ export const getCookie = (data: string, ctx: ExecutionContext): string => {
  * @example
  * getSlug('hello world'); // 'hello-world'
  */
-export const getSlug = (data: string): string => {
+export const generateSlug = (data: string): string => {
   const slug = data;
   return slug;
 };
