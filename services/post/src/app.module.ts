@@ -3,11 +3,6 @@ import { OpenapiController } from './openapi/openapi.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { OpenapiService } from './openapi/openapi.service';
 import { UidMiddleware } from './common/middlewares/uid.middleware';
-import { QueryController } from './modules/query/query.controller';
-import { PostQueryService } from './modules/query/post.query.service';
-import { PostController } from './modules/post/post.controller';
-import { PostService } from './modules/post/post.service';
-import { CommentController } from './modules/comment/comment.controller';
 import { QueryModule } from './modules/query.module';
 import { MutationModule } from './modules/mutation.module';
 
