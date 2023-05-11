@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { QueryController } from 'src/query/query.controller';
-import { PostMutationService } from './post.mutation.service';
-import { MutationController } from './mutation.controller';
+import { QueryController } from 'src/modules/query/query.controller';
+import { PostController } from './post.controller';
+import { PostService } from './post.service';
 
 describe('AppController', () => {
   let queryController: QueryController;
 
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
-      controllers: [MutationController],
-      providers: [PostMutationService],
+      controllers: [PostController],
+      providers: [PostService],
     }).compile();
 
     queryController = app.get<QueryController>(QueryController);

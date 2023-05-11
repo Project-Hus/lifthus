@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { UserGuard } from 'src/common/guards/post.guard';
 import { Request } from 'express';
-import { PostMutationService } from './post.mutation.service';
+import { PostService } from './post.service';
 
 /**
  * Mutation Controller
@@ -18,8 +18,8 @@ import { PostMutationService } from './post.mutation.service';
  * @class MutationController
  */
 @Controller('/post/mutation')
-export class MutationController {
-  constructor(private readonly postMutationService: PostMutationService) {}
+export class PostController {
+  constructor(private readonly postService: PostService) {}
 
   /**
    * generates new post by the form data if the user is signed.
