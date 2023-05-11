@@ -7,15 +7,20 @@ import { QueryController } from './modules/query/query.controller';
 import { PostQueryService } from './modules/query/post.query.service';
 import { PostController } from './modules/post/post.controller';
 import { PostService } from './modules/post/post.service';
+import { CommentController } from './modules/comment/comment.controller';
+import { QueryModule } from './modules/query.module';
+import { MutationModule } from './modules/mutation.module';
 
 @Module({
   imports: [
     JwtModule.register({
       secret: process.env.HUS_SECRET_KEY,
     }),
+    QueryModule,
+    MutationModule,
   ],
-  controllers: [QueryController, PostController, OpenapiController],
-  providers: [PostQueryService, PostService, OpenapiService],
+  controllers: [OpenapiController],
+  providers: [OpenapiService],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
