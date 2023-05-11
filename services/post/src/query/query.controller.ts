@@ -1,15 +1,15 @@
 import { Controller, Get, Res, Req, UseGuards } from '@nestjs/common';
-import { GetService } from './get.service';
 import { Request, Response } from 'express';
 import { UserGuard } from 'src/common/guards/post.guard';
+import { QueryService } from './query.service';
 
-@Controller('/post/get')
-export class GetController {
-  constructor(private readonly getService: GetService) {}
+@Controller('/post/query')
+export class QueryController {
+  constructor(private readonly gueryService: QueryService) {}
 
   @Get()
   getHello(): string {
-    return this.getService.getHello();
+    return this.gueryService.getHello();
   }
 
   @UseGuards(UserGuard)
@@ -20,7 +20,7 @@ export class GetController {
 
   @Get('/cookie')
   getCookie(@Res() res: Response) {
-    res.send(this.getService.getCookie(res));
+    res.send(this.gueryService.getCookie(res));
   }
 
   @Get('/one/:id')
