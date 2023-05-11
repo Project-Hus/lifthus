@@ -5,8 +5,8 @@ import { OpenapiService } from './openapi/openapi.service';
 import { UidMiddleware } from './common/middlewares/uid.middleware';
 import { QueryController } from './query/query.controller';
 import { MutationController } from './mutation/mutation.controller';
-import { QueryService } from './query/query.service';
-import { MutationService } from './mutation/mutation.service';
+import { PostMutationService } from './mutation/post.mutation.service';
+import { PostQueryService } from './query/post.query.service';
 
 @Module({
   imports: [
@@ -15,7 +15,7 @@ import { MutationService } from './mutation/mutation.service';
     }),
   ],
   controllers: [QueryController, MutationController, OpenapiController],
-  providers: [QueryService, MutationService, OpenapiService],
+  providers: [PostQueryService, PostMutationService, OpenapiService],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
