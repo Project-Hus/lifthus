@@ -17,7 +17,7 @@ import { PostService } from './post.service';
  * @description this controller is responsible for handling all mutation requests for posts.
  * @class MutationController
  */
-@Controller('/post/mutation')
+@Controller('/post/post')
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
@@ -53,5 +53,21 @@ export class PostController {
     // also check if the post belongs to the user
     const uid: number = req.uid;
     return; //this.appService.delete(uid, pid);
+  }
+
+  @UseGuards(UserGuard)
+  @Post('/like/')
+  likePost(@Req() req: Request, @Body() post: any): any {
+    // also check if the post belongs to the user
+    const uid: number = req.uid;
+    return; //this.appService.like(uid, post);
+  }
+
+  @UseGuards(UserGuard)
+  @Post('/unlike/')
+  unlikePost(@Req() req: Request, @Body() post: any): any {
+    // also check if the post belongs to the user
+    const uid: number = req.uid;
+    return; //this.appService.unlike(uid, post);
   }
 }

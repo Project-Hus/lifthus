@@ -11,15 +11,19 @@ datasource db {
 }
 
 model Post {
-  id        BigInt     @id @default(autoincrement()) @db.UnsignedBigInt
-  author    BigInt     @db.UnsignedBigInt
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  slug      String     @unique
-  content   String     @db.Text
-  mentions  Mention[]  @relation("mentions")
-  likes     PostLike[]
-  comments  Comment[]
+  id        BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  author    BigInt   @db.UnsignedBigInt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  slug    String @unique
+  content String @db.Text
+
+  mentions Mention[]  @relation("mentions")
+  likenum  Int        @default(0)
+  likes    PostLike[]
+
+  comments Comment[]
 }
 
 model Comment {
@@ -27,16 +31,20 @@ model Comment {
   author    BigInt   @db.UnsignedBigInt
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  post      Post     @relation(fields: [postId], references: [id])
-  postId    BigInt   @db.UnsignedBigInt
-  content   String   @db.VarChar(531)
+
+  post   Post   @relation(fields: [postId], references: [id])
+  postId BigInt @db.UnsignedBigInt
 
   parent   Comment? @relation("replies", fields: [parentId], references: [id])
   parentId BigInt?  @db.UnsignedBigInt
 
+  content String @db.VarChar(531)
+
+  likenum  Int           @default(0)
   mentions Mention[]     @relation("mentions")
   likes    CommentLike[]
-  replies  Comment[]     @relation("replies")
+
+  replies Comment[] @relation("replies")
 }
 
 model PostLike {
@@ -49,8 +57,8 @@ model PostLike {
 
 model CommentLike {
   id        BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
-  comment   Comment  @relation(fields: [postId], references: [id])
-  postId    BigInt   @db.UnsignedBigInt
+  comment   Comment  @relation(fields: [commentId], references: [id])
+  commentId BigInt   @db.UnsignedBigInt
   user      BigInt   @db.UnsignedBigInt
   createdAt DateTime @default(now())
 }
