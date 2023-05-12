@@ -1,5 +1,7 @@
 // npx prisma migrate dev --name init
 // This prisma migrate dev command generates SQL files and directly runs them against the database.
+// npx prisma generate
+// This prisma generate command generates the Prisma Client JS library based on your Prisma schema.
 
 generator client {
   provider = "prisma-client-js"
