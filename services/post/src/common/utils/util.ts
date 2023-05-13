@@ -14,6 +14,18 @@ export const getCookie = (data: string, ctx: ExecutionContext): string => {
  * getSlug('hello world'); // 'hello-world'
  */
 export const generateSlug = (data: string): string => {
-  const slug = data;
+  const specialChars = "!@#$%&*?,";
+  let slug = data.replace(/[\s]+/g, '-');
+
+  for (let i = 0; i < specialChars.length; i++) {
+    const char = specialChars[i];
+    const encodedChar = encodeURIComponent(char);
+    slug = slug.split(char).join(encodedChar);
+  }
+  
   return slug;
 };
+
+
+
+
