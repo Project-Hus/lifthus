@@ -54,7 +54,7 @@ export class PostController {
     | Prisma.PrismaPromise<Prisma.BatchPayload>
     | { code: number; message: string } {
     const uid: number = req.uid;
-    const aid: number = post.author;
+    const aid: number = Number(post.author);
     if (uid !== aid) return { code: 403, message: 'Forbidden' };
     return this.postService.updatePost({
       author: aid,

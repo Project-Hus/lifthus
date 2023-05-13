@@ -3,6 +3,6 @@
  * @param content string
  */
 export interface PostDto {
-  author: number;
+  author: PrimaryKey;
   content: string;
 }

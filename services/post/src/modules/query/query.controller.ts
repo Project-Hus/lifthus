@@ -1,9 +1,18 @@
-import { Controller, Get, Res, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Res,
+  Req,
+  UseGuards,
+  Body,
+  Param,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 import { UserGuard } from 'src/common/guards/post.guard';
 import { PostQueryService } from './post.query.service';
 import { CommentQueryService } from './comment.query.service';
 import { Post, Prisma } from '@prisma/client';
+import { PostQueryDto } from './post.query.dto';
 
 @Controller('/post/query')
 export class QueryController {
@@ -17,8 +26,21 @@ export class QueryController {
     return this.postQueryService.getHello();
   }
 
-  @Get('/post/:uid')
-  async getPosts(@Req() req: Request, @Res() res: Response): Promise<Post[]> {
-    return Promise.reject('Not Implemented');
+  /**
+   * gets user ID and skip number from url params and returns 10 posts from the skip number.
+   * @param req
+   * @param res
+   * @param uid
+   * @param skip
+   * @returns {PostQueryDto[]}
+   */
+  @Get('/post/:uid/:skip')
+  async getPosts(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Param('uid') uid: number,
+    @Param('skip') skip: number,
+  ): Promise<PostQueryDto[]> {
+    return this.postQueryService.getUserPosts(uid, skip);
   }
 }
