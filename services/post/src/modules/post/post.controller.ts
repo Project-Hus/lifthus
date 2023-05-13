@@ -11,6 +11,8 @@ import {
 import { UserGuard } from 'src/common/guards/post.guard';
 import { Request } from 'express';
 import { PostService } from './post.service';
+import { PostDto } from './post.dto';
+import { Prisma } from '@prisma/client';
 
 /**
  * Mutation Controller
@@ -28,9 +30,13 @@ export class PostController {
    */
   @UseGuards(UserGuard)
   @Post()
-  wirtePost(@Req() req: Request, @Body() post: any): any {
-    const uid: number = req.uid;
-    return; //this.appService.post(uid, post);
+  wirtePost(@Req() req: Request, @Body() post: PostDto): any {
+    const uid: number = req.uid; // embedded user id
+    return this.postService.wirtePost({
+      author: uid,
+      slug: '',
+      content: post.content,
+    });
   }
 
   /**
@@ -41,10 +47,13 @@ export class PostController {
    */
   @UseGuards(UserGuard)
   @Put()
-  updatePost(@Req() req: Request, @Body() post: any): any {
-    // also check if the post belongs to the user
+  updatePost(@Req() req: Request, @Body() post: PostDto): any {
     const uid: number = req.uid;
-    return; //this.appService.put(uid, post);
+    const aid: number = Number(post.author);
+    if (uid !== post.author) {
+      return { code: 403, message: 'Forbidden' };
+    }
+    return this.postService.updatePost(post);
   }
 
   /**
@@ -56,9 +65,8 @@ export class PostController {
   @UseGuards(UserGuard)
   @Delete()
   deletePost(@Req() req: Request, @Param('pid') pid: string): any {
-    // also check if the post belongs to the user
     const uid: number = req.uid;
-    return; //this.appService.delete(uid, pid);
+    const aid: return; //this.appService.delete(uid, pid);
   }
 
   /**

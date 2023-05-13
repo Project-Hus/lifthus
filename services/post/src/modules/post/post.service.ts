@@ -5,9 +5,11 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class PostService {
   constructor(private readonly prisma: PrismaService) {}
+
   getHello(): string {
     return 'Hello World!';
   }
+
   wirtePost(data: Prisma.PostCreateInput): Promise<Post> {
     return this.prisma.post.create({
       data,
@@ -29,6 +31,9 @@ export class PostService {
   }
 
   likePost(uid: number, where: Prisma.PostWhereUniqueInput): Promise<Post> {
+    this.prisma.postLike.create({
+      data: { user: uid, post: { connect: where } },
+    });
     return this.prisma.post.update({
       data: { likenum: { increment: 1 } },
       where,
@@ -36,6 +41,9 @@ export class PostService {
   }
 
   unlikePost(uid: number, where: Prisma.PostWhereUniqueInput): Promise<Post> {
+    this.prisma.postLike.delete({
+      where: { postId_user: { user: uid, postId: where.id } },
+    });
     return this.prisma.post.update({
       data: { likenum: { decrement: 1 } },
       where,
