@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { Post } from '@prisma/client';
 import { Response } from 'express';
-import { PostDBService } from 'src/prisma/post.db.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class PostQueryService {
-  constructor(private readonly postDBService: PostDBService) {}
+  constructor(private readonly prismaService: PrismaService) {}
   getHello(): string {
     return 'Hello World!';
   }
 
   async getUserPosts(): Promise<Post[]> {
-    return this.postDBService.posts({});
+    return this.prismaService.post.findMany();
   }
 }
