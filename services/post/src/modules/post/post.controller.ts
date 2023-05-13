@@ -12,7 +12,7 @@ import { UserGuard } from 'src/common/guards/post.guard';
 import { Request } from 'express';
 import { PostService } from './post.service';
 import { PostDto } from './post.dto';
-import { Prisma } from '@prisma/client';
+import { Post as PPost, Prisma } from '@prisma/client';
 
 /**
  * Mutation Controller
@@ -30,10 +30,10 @@ export class PostController {
    */
   @UseGuards(UserGuard)
   @Post()
-  wirtePost(@Req() req: Request, @Body() post: PostDto): any {
+  wirtePost(@Req() req: Request, @Body() post: PostDto): Promise<PPost> {
     const uid: number = req.uid; // embedded user id
     return this.postService.wirtePost({
-      author: uid,
+      author: uid, // whatever the author is signed user.
       slug: '',
       content: post.content,
     });
@@ -47,13 +47,20 @@ export class PostController {
    */
   @UseGuards(UserGuard)
   @Put()
-  updatePost(@Req() req: Request, @Body() post: PostDto): any {
+  updatePost(
+    @Req() req: Request,
+    @Body() post: PostDto,
+  ):
+    | Prisma.PrismaPromise<Prisma.BatchPayload>
+    | { code: number; message: string } {
     const uid: number = req.uid;
-    const aid: number = Number(post.author);
-    if (uid !== post.author) {
-      return { code: 403, message: 'Forbidden' };
-    }
-    return this.postService.updatePost(post);
+    const aid: number = post.author;
+    if (uid !== aid) return { code: 403, message: 'Forbidden' };
+    return this.postService.updatePost({
+      author: aid,
+      slug: '',
+      content: post.content,
+    });
   }
 
   /**
@@ -64,9 +71,12 @@ export class PostController {
    */
   @UseGuards(UserGuard)
   @Delete()
-  deletePost(@Req() req: Request, @Param('pid') pid: string): any {
+  deletePost(
+    @Req() req: Request,
+    @Param('pid') pid: string,
+  ): Prisma.PrismaPromise<Prisma.BatchPayload> {
     const uid: number = req.uid;
-    const aid: return; //this.appService.delete(uid, pid);
+    return this.postService.deletePost(uid, Number(pid));
   }
 
   /**
@@ -78,9 +88,8 @@ export class PostController {
   @UseGuards(UserGuard)
   @Post('/like')
   likePost(@Req() req: Request, @Body() post: any): any {
-    // also check if the post belongs to the user
     const uid: number = req.uid;
-    return; //this.appService.like(uid, post);
+    return this.postService.likePost(uid, post);
   }
 
   /**
@@ -92,8 +101,7 @@ export class PostController {
   @UseGuards(UserGuard)
   @Post('/unlike')
   unlikePost(@Req() req: Request, @Body() post: any): any {
-    // also check if the post belongs to the user
     const uid: number = req.uid;
-    return; //this.appService.unlike(uid, post);
+    return this.postService.unlikePost(uid, post);
   }
 }
