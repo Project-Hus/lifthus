@@ -50,28 +50,30 @@ model Comment {
 }
 
 model PostLike {
-  id        BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
   post      Post     @relation(fields: [postId], references: [id])
   postId    BigInt   @db.UnsignedBigInt
   user      BigInt   @db.UnsignedBigInt
   createdAt DateTime @default(now())
+
+  @@id([postId, user])
 }
 
 model CommentLike {
-  id        BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
   comment   Comment  @relation(fields: [commentId], references: [id])
   commentId BigInt   @db.UnsignedBigInt
   user      BigInt   @db.UnsignedBigInt
   createdAt DateTime @default(now())
+
+  @@id([commentId, user])
 }
 
 model Mention {
   id BigInt @id @default(autoincrement()) @db.UnsignedBigInt
 
   post     Post?    @relation("mentions", fields: [postId], references: [id])
-  postId   BigInt?  @db.UnsignedBigInt
+  postId   BigInt?  @unique @db.UnsignedBigInt
   coment   Comment? @relation("mentions", fields: [comentId], references: [id])
-  comentId BigInt?  @db.UnsignedBigInt
+  comentId BigInt?  @unique @db.UnsignedBigInt
 
   mentionor BigInt @db.UnsignedBigInt
   mentionee BigInt @db.UnsignedBigInt
