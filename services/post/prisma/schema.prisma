@@ -42,16 +42,15 @@ model Comment {
   post   Post   @relation(fields: [postId], references: [id])
   postId BigInt @db.UnsignedBigInt
 
-  parent   Comment? @relation("replies", fields: [parentId], references: [id])
-  parentId BigInt?  @db.UnsignedBigInt
+  parentId BigInt?   @db.UnsignedBigInt
+  parent   Comment?  @relation("replies", fields: [parentId], references: [id])
+  replies  Comment[] @relation("replies")
 
   content String @db.VarChar(531)
 
   likenum  Int           @default(0)
   mentions Mention[]     @relation("mentions")
   likes    CommentLike[]
-
-  replies Comment[] @relation("replies")
 }
 
 model PostLike {
