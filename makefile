@@ -9,6 +9,8 @@ build:
 	tsc -p services/post/tsconfig.build.json
 	cp services/post/package.json services/post/dist
 	npm --prefix services/post/dist install ./services/post/dist
+	cp services/post/prisma/schema.prisma services/post/dist-bundle
+	cp services/post/node_modules/.prisma/client/libquery_engine-rhel-openssl-1.0.x.so.node services/post/dist-bundle
 	node services/post/esbuild.js
 
 	sam build
@@ -17,7 +19,10 @@ build:
 build-win:
 	tsc -p services/post/tsconfig.build.json
 	copy "services/post/package.json" "services/post/dist"
+	copy "services/post/prisma/schema.prisma" "services/post/dist/prisma"
 	npm install --prefix ./services/post/dist ./services/post/dist
+	copy "services/post/prisma/schema.prisma" "services/post/dist-bundle"
+	copy "services/post/node_modules/.prisma/client/libquery_engine-rhel-openssl-1.0.x.so.node" "services/post/dist-bundle"
 	node services/post/esbuild.js
 
 	sam build
