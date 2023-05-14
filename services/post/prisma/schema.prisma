@@ -1,8 +1,13 @@
 // npx prisma migrate dev --name init
 // This prisma migrate dev command generates SQL files and directly runs them against the database.
+// npx prisma generate
+// This prisma generate command generates the Prisma Client JS library based on your Prisma schema.
+// or
+// or npx prisma db push
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
 datasource db {
@@ -11,15 +16,19 @@ datasource db {
 }
 
 model Post {
-  id        BigInt     @id @default(autoincrement()) @db.UnsignedBigInt
-  author    BigInt     @db.UnsignedBigInt
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  slug      String     @unique
-  content   String     @db.Text
-  mentions  Mention[]  @relation("mentions")
-  likes     PostLike[]
-  comments  Comment[]
+  id        BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  author    BigInt   @db.UnsignedBigInt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  slug    String @unique
+  content String @db.Text
+
+  mentions Mention[]  @relation("mentions")
+  likenum  Int        @default(0)
+  likes    PostLike[]
+
+  comments Comment[]
 }
 
 model Comment {
@@ -27,41 +36,47 @@ model Comment {
   author    BigInt   @db.UnsignedBigInt
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  post      Post     @relation(fields: [postId], references: [id])
-  postId    BigInt   @db.UnsignedBigInt
-  content   String   @db.VarChar(531)
+
+  post   Post   @relation(fields: [postId], references: [id])
+  postId BigInt @db.UnsignedBigInt
 
   parent   Comment? @relation("replies", fields: [parentId], references: [id])
   parentId BigInt?  @db.UnsignedBigInt
 
+  content String @db.VarChar(531)
+
+  likenum  Int           @default(0)
   mentions Mention[]     @relation("mentions")
   likes    CommentLike[]
-  replies  Comment[]     @relation("replies")
+
+  replies Comment[] @relation("replies")
 }
 
 model PostLike {
-  id        BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
   post      Post     @relation(fields: [postId], references: [id])
   postId    BigInt   @db.UnsignedBigInt
   user      BigInt   @db.UnsignedBigInt
   createdAt DateTime @default(now())
+
+  @@id([postId, user])
 }
 
 model CommentLike {
-  id        BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
-  comment   Comment  @relation(fields: [postId], references: [id])
-  postId    BigInt   @db.UnsignedBigInt
+  comment   Comment  @relation(fields: [commentId], references: [id])
+  commentId BigInt   @db.UnsignedBigInt
   user      BigInt   @db.UnsignedBigInt
   createdAt DateTime @default(now())
+
+  @@id([commentId, user])
 }
 
 model Mention {
   id BigInt @id @default(autoincrement()) @db.UnsignedBigInt
 
   post     Post?    @relation("mentions", fields: [postId], references: [id])
-  postId   BigInt?  @db.UnsignedBigInt
+  postId   BigInt?  @unique @db.UnsignedBigInt
   coment   Comment? @relation("mentions", fields: [comentId], references: [id])
-  comentId BigInt?  @db.UnsignedBigInt
+  comentId BigInt?  @unique @db.UnsignedBigInt
 
   mentionor BigInt @db.UnsignedBigInt
   mentionee BigInt @db.UnsignedBigInt

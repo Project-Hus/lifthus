@@ -1,21 +1,21 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
-import { PostService } from './post/post.service';
 import { OpenapiController } from './openapi/openapi.controller';
 import { JwtModule } from '@nestjs/jwt';
-import { PostController } from './post/post.controller';
 import { OpenapiService } from './openapi/openapi.service';
-import { GetService } from './get/get.service';
-import { GetController } from './get/get.controller';
 import { UidMiddleware } from './common/middlewares/uid.middleware';
+import { QueryModule } from './modules/query.module';
+import { MutationModule } from './modules/mutation.module';
 
 @Module({
   imports: [
     JwtModule.register({
       secret: process.env.HUS_SECRET_KEY,
     }),
+    QueryModule,
+    MutationModule,
   ],
-  controllers: [GetController, PostController, OpenapiController],
-  providers: [GetService, PostService, OpenapiService],
+  controllers: [OpenapiController],
+  providers: [OpenapiService],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
