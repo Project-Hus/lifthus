@@ -34,6 +34,7 @@ export class QueryController {
    * @param skip
    * @returns {PostQueryDto[]}
    */
+  @Get('/post/:uid')
   @Get('/post/:uid/:skip')
   async getPosts(
     @Req() req: Request,
@@ -41,6 +42,9 @@ export class QueryController {
     @Param('uid') uid: number,
     @Param('skip') skip: number,
   ): Promise<PostQueryDto[]> {
+    if (skip === undefined) {
+      skip = 0;
+    }
     return this.postQueryService.getUserPosts(uid, skip);
   }
 }
