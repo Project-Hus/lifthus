@@ -31,7 +31,7 @@ export class PostController {
   @Post()
   wirtePost(@Req() req: Request, @Body() post: CreatePostDto): Promise<PPost> {
     const uid: number = req.uid; // embedded user id
-
+    if (post.author != uid) return Promise.reject('Content is required');
     return this.postService.wirtePost({
       author: uid, // whatever the author is signed user.
       slug: '',
