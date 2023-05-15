@@ -1,8 +1,11 @@
-/**
- * @param author number
- * @param content string
- */
-export interface PostDto {
+export type CreatePostDto = {
+  userGroup?: PrimaryKey;
   author: PrimaryKey;
   content: string;
-}
+};
+
+export type UpdatePostDto = {
+  id: PrimaryKey;
+  author: PrimaryKey;
+  content: string;
+};

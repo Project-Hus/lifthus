@@ -21,10 +21,9 @@ export class PostService {
     data: Prisma.PostUpdateInput,
   ): Prisma.PrismaPromise<Prisma.BatchPayload> {
     const pid = Number(data.id);
-    const aid = Number(data.author);
     return this.prisma.post.updateMany({
       data,
-      where: { id: pid, author: aid },
+      where: { id: pid },
     });
   }
 
