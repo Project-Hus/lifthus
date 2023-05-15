@@ -24,5 +24,6 @@
     "moduleResolution":"node",
 
     "esModuleInterop": true,
+    "resolveJsonModule": true,
   }
 }
