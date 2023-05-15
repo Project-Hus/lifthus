@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getCookie, generateSlug } from './util';
+import { getCookie, generateSlug } from './utils';
 
 import testdata from './testdata/util.testdata.json';
 
