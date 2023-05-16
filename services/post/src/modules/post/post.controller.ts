@@ -31,6 +31,10 @@ export class PostController {
   @Post()
   wirtePost(@Req() req: Request, @Body() post: CreatePostDto): Promise<PPost> {
     const uid: number = req.uid; // embedded user id
+    // whatever, this endpoint is for currently signed user.
+    // it would be better to check if the author is signed user.
+    // but for now, there is no logic that deals with the uid in frontend.
+    // so just embedding the uid to the author field.
     post.author = uid;
     return this.postService.wirtePost(post);
   }
