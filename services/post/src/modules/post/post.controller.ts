@@ -70,10 +70,10 @@ export class PostController {
   @Delete()
   deletePost(
     @Req() req: Request,
-    @Body('pid') pid: string,
+    @Body('pid') pid: number,
   ): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    const uid: number = req.uid;
-    return this.postService.deletePost(uid, Number(pid));
+    const aid: number = req.uid;
+    return this.postService.deletePost(aid, pid);
   }
 
   /**
