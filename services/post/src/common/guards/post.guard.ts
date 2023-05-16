@@ -1,4 +1,9 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  Logger,
+} from '@nestjs/common';
 import { Observable } from 'rxjs';
 
 // only signed user can access with req.uid

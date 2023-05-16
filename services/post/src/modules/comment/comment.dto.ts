@@ -1,12 +1,23 @@
 export type CreateCommentDto = {
-  postId: PrimaryKey;
-  parentId?: PrimaryKey;
-  author: PrimaryKey;
+  postId: number;
+  parentId?: number;
+  author: number;
   content: string;
 };
 
 export type UpdateCommentDto = {
-  id: PrimaryKey;
-  author: PrimaryKey;
+  id: number;
+  author: number;
   content: string;
+};
+
+export type CommentDto = {
+  id: number;
+  author: number;
+  createdAt: Date;
+  updatedAt: Date;
+  postId: number;
+  parentId: number | null;
+  content: string;
+  likenum: number;
 };
