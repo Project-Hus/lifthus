@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Post, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreatePostDto } from './post.dto';
+import { CreatePostDto, UpdatePostDto } from './post.dto';
 import { slugify } from 'src/common/utils/utils';
 
 @Injectable()
@@ -40,13 +40,10 @@ export class PostService {
    * @param pid
    * @returns {count:number} only expected 0 or 1
    */
-  updatePost(
-    data: Prisma.PostUpdateInput,
-  ): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    const pid = Number(data.id);
+  updatePost(data: UpdatePostDto): Prisma.PrismaPromise<Prisma.BatchPayload> {
     return this.prisma.post.updateMany({
       data,
-      where: { id: pid },
+      where: { id: data.id },
     });
   }
 
