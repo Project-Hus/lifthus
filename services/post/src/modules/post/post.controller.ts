@@ -12,6 +12,7 @@ import { Request } from 'express';
 import { PostService } from './post.service';
 import { Post as PPost, Prisma } from '@prisma/client';
 import { CreatePostDto, UpdatePostDto } from './post.dto';
+import { slugify } from 'src/common/utils/utils';
 
 /**
  * Mutation Controller
@@ -31,9 +32,15 @@ export class PostController {
   @Post()
   wirtePost(@Req() req: Request, @Body() post: CreatePostDto): Promise<PPost> {
     const uid: number = req.uid; // embedded user id
+    const end: number = post.content.indexOf('\n');
+    let slug: string;
+    if (end == -1 || end > 30) {
+      slug = post.content.slice(0, 30);
+    }
+    slug = slugify(slug);
     return this.postService.wirtePost({
       author: uid, // whatever the author is signed user.
-      slug: '',
+      slug,
       content: post.content,
     });
   }
