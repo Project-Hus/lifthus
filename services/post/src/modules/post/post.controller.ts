@@ -85,8 +85,7 @@ export class PostController {
   @UseGuards(UserGuard)
   @Post('/like')
   likePost(@Req() req: Request, @Body('pid') pid: number): Promise<PPost> {
-    const uid: number = req.uid;
-    return this.postService.likePost(uid, { id: pid });
+    return this.postService.likePost(req.uid, pid);
   }
 
   /**
@@ -98,7 +97,6 @@ export class PostController {
   @UseGuards(UserGuard)
   @Post('/unlike')
   unlikePost(@Req() req: Request, @Body('pid') pid: number): Promise<PPost> {
-    const uid: number = req.uid;
-    return this.postService.unlikePost(uid, { id: pid });
+    return this.postService.unlikePost(req.uid, pid);
   }
 }
