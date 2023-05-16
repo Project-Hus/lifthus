@@ -17,6 +17,11 @@ import cookieParser from 'cookie-parser';
 export async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // JSON.stringify doesn't work with BigInt. so it should be treated as Number.
+  BigInt.prototype.toJSON = function () {
+    return Number(this);
+  };
+
   // set CORS
   app.enableCors({
     origin: [
