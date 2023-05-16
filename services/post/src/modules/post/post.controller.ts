@@ -54,14 +54,10 @@ export class PostController {
     | Prisma.PrismaPromise<Prisma.BatchPayload>
     | { code: number; message: string } {
     const uid: number = req.uid;
-    const aid: number = Number(post.author);
+    const aid: number = post.author;
+    // if the author is not signed user, return 403 Forbidden.
     if (uid !== aid) return { code: 403, message: 'Forbidden' };
-    return this.postService.updatePost({
-      id: post.id,
-      author: aid,
-      slug: '',
-      content: post.content,
-    });
+    return this.postService.updatePost(post);
   }
 
   /**
