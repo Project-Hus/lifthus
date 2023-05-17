@@ -59,14 +59,8 @@ export class CommentController {
   ):
     | Prisma.PrismaPromise<Prisma.BatchPayload>
     | { code: number; message: string } {
-    const uid: number = req.uid;
-    const aid: number = Number(comment.author);
-    if (uid !== aid) return { code: 403, message: 'Forbidden' };
-    return this.commentService.updateComment({
-      id: comment.id,
-      author: aid,
-      content: comment.content,
-    });
+    if (req.uid !== comment.author) return { code: 403, message: 'Forbidden' };
+    return this.commentService.updateComment(comment);
   }
 
   /**

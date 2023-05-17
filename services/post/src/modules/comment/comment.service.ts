@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Comment, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { UpdateCommentDto } from './comment.dto';
 
 @Injectable()
 export class CommentService {
@@ -18,13 +19,11 @@ export class CommentService {
    * @returns {count:number} only expected 0 or 1
    */
   updateComment(
-    data: Prisma.CommentUpdateInput,
+    data: UpdateCommentDto,
   ): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    const cid = Number(data.id);
-    const aid = Number(data.author);
     return this.prisma.comment.updateMany({
       data,
-      where: { id: cid, author: aid },
+      where: { id: data.id, author: data.author },
     });
   }
 
