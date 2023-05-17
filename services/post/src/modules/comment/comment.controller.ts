@@ -10,7 +10,8 @@ import {
 import { CommentService } from './comment.service';
 import { UserGuard } from 'src/common/guards/post.guard';
 import { CreateCommentDto, UpdateCommentDto } from './comment.dto';
-import { Comment, Prisma } from '@prisma/client';
+import { Comment, CommentLike, Prisma } from '@prisma/client';
+
 import { Request } from 'express';
 
 @Controller('/post/comment')
@@ -29,15 +30,20 @@ export class CommentController {
     @Body() comment: CreateCommentDto,
   ): Promise<Comment> {
     const uid: number = req.uid; // embedded user id
-    const createInput: Prisma.CommentCreateInput = {
+    // whatever, this endpoint is for currently signed user.
+    // it would be better to check if the author is signed user.
+    // but for now, there is no logic that deals with the uid in frontend.
+    // so just embedding the uid to the author field.
+    comment.author = uid;
+    const commentInput: Prisma.CommentCreateInput = {
       author: uid, // whatever the author is signed user.
       content: comment.content,
       post: { connect: { id: comment.postId } },
     };
     if (comment.parentId) {
-      createInput.parent = { connect: { id: comment.parentId } };
+      commentInput.parent = { connect: { id: comment.parentId } };
     }
-    return this.commentService.wirteComment(createInput);
+    return this.commentService.wirteComment(commentInput);
   }
 
   /**
@@ -54,14 +60,8 @@ export class CommentController {
   ):
     | Prisma.PrismaPromise<Prisma.BatchPayload>
     | { code: number; message: string } {
-    const uid: number = req.uid;
-    const aid: number = Number(comment.author);
-    if (uid !== aid) return { code: 403, message: 'Forbidden' };
-    return this.commentService.updateComment({
-      id: comment.id,
-      author: aid,
-      content: comment.content,
-    });
+    if (req.uid !== comment.author) return { code: 403, message: 'Forbidden' };
+    return this.commentService.updateComment(comment);
   }
 
   /**
@@ -74,10 +74,9 @@ export class CommentController {
   @Delete()
   deletePost(
     @Req() req: Request,
-    @Body('pid') pid: number,
+    @Body('cid') cid: number,
   ): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    const uid: number = req.uid;
-    return this.commentService.deleteComment(uid, pid);
+    return this.commentService.deleteComment({ cid, aid: req.uid });
   }
 
   /**
@@ -88,9 +87,11 @@ export class CommentController {
    */
   @UseGuards(UserGuard)
   @Post('/like')
-  likePost(@Req() req: Request, @Body('pid') pid: number): Promise<Comment> {
-    const uid: number = req.uid;
-    return this.commentService.likeComment(uid, { id: pid });
+  likePost(
+    @Req() req: Request,
+    @Body('cid') cid: number,
+  ): Promise<[CommentLike, Comment]> {
+    return this.commentService.likeComment(req.uid, { id: cid });
   }
 
   /**
@@ -101,8 +102,10 @@ export class CommentController {
    */
   @UseGuards(UserGuard)
   @Post('/unlike')
-  unlikePost(@Req() req: Request, @Body('pid') pid: number): Promise<Comment> {
-    const uid: number = req.uid;
-    return this.commentService.unlikeComment(uid, { id: pid });
+  unlikePost(
+    @Req() req: Request,
+    @Body('cid') cid: number,
+  ): Promise<[CommentLike, Comment]> {
+    return this.commentService.unlikeComment(req.uid, { id: cid });
   }
 }

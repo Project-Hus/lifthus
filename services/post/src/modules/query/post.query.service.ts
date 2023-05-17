@@ -13,10 +13,11 @@ export class PostQueryService {
 
   a: Prisma.PostSelect;
 
-  async getUserPosts(uid: number, skip: number): Promise<PostQueryDto[]> {
+  async getUserPosts(uid: number, skip: number): Promise<Post[]> {
     return this.prismaService.post.findMany({
       select: {
         id: true,
+        userGroup: true,
         author: true,
         createdAt: true,
         updatedAt: true,

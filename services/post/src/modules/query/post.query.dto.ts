@@ -1,6 +1,6 @@
 export interface PostQueryDto {
-  id: PrimaryKey;
-  author: PrimaryKey;
+  id: number;
+  author: number;
   createdAt: Date;
   updatedAt: Date;
   slug: string;

@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Res,
-  Req,
-  UseGuards,
-  Body,
-  Param,
-} from '@nestjs/common';
+import { Controller, Get, Res, Req, Param } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { UserGuard } from 'src/common/guards/post.guard';
 import { PostQueryService } from './post.query.service';
@@ -32,7 +24,7 @@ export class QueryController {
    * @param res
    * @param uid
    * @param skip
-   * @returns {PostQueryDto[]}
+   * @returns {Post[]}
    */
   @Get('/post/:uid')
   @Get('/post/:uid/:skip')
@@ -41,7 +33,7 @@ export class QueryController {
     @Res() res: Response,
     @Param('uid') uid: number,
     @Param('skip') skip: number,
-  ): Promise<PostQueryDto[]> {
+  ): Promise<Post[]> {
     if (skip === undefined) {
       skip = 0;
     }

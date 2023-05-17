@@ -1,5 +1,7 @@
 export {};
 
 declare global {
-  type PrimaryKey = number | bigint;
+  interface BigInt {
+    toJSON(): number;
+  }
 }

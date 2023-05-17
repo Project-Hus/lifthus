@@ -17,23 +17,30 @@ import cookieParser from 'cookie-parser';
 export async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // JSON.stringify doesn't work with BigInt. so it should be treated as Number.
+  BigInt.prototype.toJSON = function () {
+    return Number(this);
+  };
+
   // set CORS
   app.enableCors({
     origin: [
       'http://localhost:3000',
-      'https://*.lifthus.com',
+      'https://www.lifthus.com',
+      'https://auth.lifthus.com',
+      'https://api.lifthus.com',
       'https://lifthus.com',
     ],
     allowedHeaders: [
-      'origin',
-      'content-type',
-      'authorization',
-      'accept',
-      'x-requested-with',
-      'access-Control-Allow-Origin',
-      'headerAccessControlAllowHeaders',
-      'headerAccessControlAllowMethods',
-      'headerXRequestedWith',
+      'Origin',
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'X-Requested-With',
+      'Access-Control-Allow-Origin',
+      'HeaderAccessControlAllowHeaders',
+      'HeaderAccessControlAllowMethods',
+      'HeaderXRequestedWith',
     ],
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
