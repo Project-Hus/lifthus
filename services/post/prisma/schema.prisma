@@ -22,7 +22,7 @@ model Post {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  slug    String @unique
+  slug    String @unique @db.VarChar(50)
   content String @db.Text
 
   mentions Mention[]  @relation("mentions")

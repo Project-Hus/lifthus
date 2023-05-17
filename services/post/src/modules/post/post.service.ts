@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Post, PostLike, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePostDto, UpdatePostDto } from './post.dto';
+import crypto from 'crypto';
 import { slugify } from 'src/common/utils/utils';
 
 @Injectable()
@@ -21,7 +22,11 @@ export class PostService {
       slug = post.content.slice(0, slugEnd);
     }
     // get slug
-    slug = slugify(slug);
+    slug = slugify(slug) + '-' + crypto.randomBytes(8).toString('hex');
+
+    this.prisma.post.findMany({
+      where: { slug },
+    });
 
     // Post create form
     let data: Prisma.PostCreateInput = {
