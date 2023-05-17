@@ -53,10 +53,13 @@ export class PostService {
    * @param pid
    * @returns {count:number} only expected 0 or 1
    */
-  deletePost(
-    aid: number,
-    pid: number,
-  ): Prisma.PrismaPromise<Prisma.BatchPayload> {
+  deletePost({
+    aid,
+    pid,
+  }: {
+    aid: number;
+    pid: number;
+  }): Prisma.PrismaPromise<Prisma.BatchPayload> {
     return this.prisma.post.deleteMany({
       where: { id: pid, author: aid },
     });

@@ -72,8 +72,7 @@ export class PostController {
     @Req() req: Request,
     @Body('pid') pid: number,
   ): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    const aid: number = req.uid;
-    return this.postService.deletePost(aid, pid);
+    return this.postService.deletePost(req.uid, pid);
   }
 
   /**

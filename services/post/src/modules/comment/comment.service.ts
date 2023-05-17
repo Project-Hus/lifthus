@@ -33,10 +33,13 @@ export class CommentService {
    * @param cid
    * @returns {count:number} only expected 0 or 1
    */
-  deleteComment(
-    aid: number,
-    cid: number,
-  ): Prisma.PrismaPromise<Prisma.BatchPayload> {
+  deleteComment({
+    cid,
+    aid,
+  }: {
+    cid: number;
+    aid: number;
+  }): Prisma.PrismaPromise<Prisma.BatchPayload> {
     return this.prisma.post.deleteMany({
       where: { id: cid, author: aid },
     });
