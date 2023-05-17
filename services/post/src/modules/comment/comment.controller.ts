@@ -29,15 +29,20 @@ export class CommentController {
     @Body() comment: CreateCommentDto,
   ): Promise<Comment> {
     const uid: number = req.uid; // embedded user id
-    const createInput: Prisma.CommentCreateInput = {
+    // whatever, this endpoint is for currently signed user.
+    // it would be better to check if the author is signed user.
+    // but for now, there is no logic that deals with the uid in frontend.
+    // so just embedding the uid to the author field.
+    comment.author = uid;
+    const commentInput: Prisma.CommentCreateInput = {
       author: uid, // whatever the author is signed user.
       content: comment.content,
       post: { connect: { id: comment.postId } },
     };
     if (comment.parentId) {
-      createInput.parent = { connect: { id: comment.parentId } };
+      commentInput.parent = { connect: { id: comment.parentId } };
     }
-    return this.commentService.wirteComment(createInput);
+    return this.commentService.wirteComment(commentInput);
   }
 
   /**
