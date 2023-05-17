@@ -10,7 +10,7 @@ import {
 import { UserGuard } from 'src/common/guards/post.guard';
 import { Request } from 'express';
 import { PostService } from './post.service';
-import { Post as PPost, Prisma } from '@prisma/client';
+import { Post as PPost, PostLike, Prisma } from '@prisma/client';
 import { CreatePostDto, UpdatePostDto } from './post.dto';
 
 /**
@@ -84,7 +84,10 @@ export class PostController {
    */
   @UseGuards(UserGuard)
   @Post('/like')
-  likePost(@Req() req: Request, @Body('pid') pid: number): Promise<PPost> {
+  likePost(
+    @Req() req: Request,
+    @Body('pid') pid: number,
+  ): Promise<[PostLike, PPost]> {
     return this.postService.likePost(req.uid, pid);
   }
 
@@ -96,7 +99,10 @@ export class PostController {
    */
   @UseGuards(UserGuard)
   @Post('/unlike')
-  unlikePost(@Req() req: Request, @Body('pid') pid: number): Promise<PPost> {
+  unlikePost(
+    @Req() req: Request,
+    @Body('pid') pid: number,
+  ): Promise<[PostLike, PPost]> {
     return this.postService.unlikePost(req.uid, pid);
   }
 }

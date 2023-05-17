@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Post, Prisma } from '@prisma/client';
+import { Post, PostLike, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePostDto, UpdatePostDto } from './post.dto';
 import { slugify } from 'src/common/utils/utils';
@@ -62,29 +62,25 @@ export class PostService {
     });
   }
 
-  likePost(uid: number, where: Prisma.PostWhereUniqueInput): Promise<Post> {
-    return this.prisma.postLike
-      .create({
-        data: { user: uid, post: { connect: where } },
-      })
-      .then((res) => {
-        return this.prisma.post.update({
-          data: { likenum: { increment: 1 } },
-          where,
-        });
-      });
+  likePost(uid: number, pid: number): Promise<[PostLike, Post]> {
+    const likePost = this.prisma.postLike.create({
+      data: { user: uid, post: { connect: { id: pid } } },
+    });
+    const updatePostLikeNum = this.prisma.post.update({
+      data: { likenum: { increment: 1 } },
+      where: { id: pid },
+    });
+    return this.prisma.$transaction([likePost, updatePostLikeNum]);
   }
 
-  unlikePost(uid: number, where: Prisma.PostWhereUniqueInput): Promise<Post> {
-    return this.prisma.postLike
-      .delete({
-        where: { postId_user: { user: uid, postId: where.id } },
-      })
-      .then((res) => {
-        return this.prisma.post.update({
-          data: { likenum: { decrement: 1 } },
-          where,
-        });
-      });
+  unlikePost(uid: number, pid: number): Promise<[PostLike, Post]> {
+    const unlikePost = this.prisma.postLike.delete({
+      where: { postId_user: { user: uid, postId: pid } },
+    });
+    const updatePostLikeNum = this.prisma.post.update({
+      data: { likenum: { decrement: 1 } },
+      where: { id: pid },
+    });
+    return this.prisma.$transaction([unlikePost, updatePostLikeNum]);
   }
 }
