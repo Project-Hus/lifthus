@@ -10,7 +10,7 @@ import {
 import { CommentService } from './comment.service';
 import { UserGuard } from 'src/common/guards/post.guard';
 import { CreateCommentDto, UpdateCommentDto } from './comment.dto';
-import { Comment, Prisma } from '@prisma/client';
+import { Comment, CommentLike, Prisma } from '@prisma/client';
 import { Request } from 'express';
 
 @Controller('/post/comment')
@@ -86,9 +86,11 @@ export class CommentController {
    */
   @UseGuards(UserGuard)
   @Post('/like')
-  likePost(@Req() req: Request, @Body('pid') pid: number): Promise<Comment> {
-    const uid: number = req.uid;
-    return this.commentService.likeComment(uid, { id: pid });
+  likePost(
+    @Req() req: Request,
+    @Body('cid') cid: number,
+  ): Promise<[CommentLike, Comment]> {
+    return this.commentService.likeComment(req.uid, { id: cid });
   }
 
   /**
@@ -99,8 +101,10 @@ export class CommentController {
    */
   @UseGuards(UserGuard)
   @Post('/unlike')
-  unlikePost(@Req() req: Request, @Body('pid') pid: number): Promise<Comment> {
-    const uid: number = req.uid;
-    return this.commentService.unlikeComment(uid, { id: pid });
+  unlikePost(
+    @Req() req: Request,
+    @Body('cid') cid: number,
+  ): Promise<[CommentLike, Comment]> {
+    return this.commentService.unlikeComment(req.uid, { id: cid });
   }
 }

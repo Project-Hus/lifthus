@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Comment, Prisma } from '@prisma/client';
+import { Comment, CommentLike, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateCommentDto } from './comment.dto';
 
@@ -48,32 +48,28 @@ export class CommentService {
   likeComment(
     uid: number,
     where: Prisma.CommentWhereUniqueInput,
-  ): Promise<Comment> {
-    return this.prisma.commentLike
-      .create({
-        data: { user: uid, comment: { connect: where } },
-      })
-      .then((res) => {
-        return this.prisma.comment.update({
-          data: { likenum: { increment: 1 } },
-          where,
-        });
-      });
+  ): Promise<[CommentLike, Comment]> {
+    const likeComment = this.prisma.commentLike.create({
+      data: { user: uid, comment: { connect: where } },
+    });
+    const increaseCommentLikeNum = this.prisma.comment.update({
+      data: { likenum: { increment: 1 } },
+      where,
+    });
+    return this.prisma.$transaction([likeComment, increaseCommentLikeNum]);
   }
 
   unlikeComment(
     uid: number,
     where: Prisma.CommentWhereUniqueInput,
-  ): Promise<Comment> {
-    return this.prisma.commentLike
-      .delete({
-        where: { commentId_user: { user: uid, commentId: where.id } },
-      })
-      .then((res) => {
-        return this.prisma.comment.update({
-          data: { likenum: { decrement: 1 } },
-          where,
-        });
-      });
+  ): Promise<[CommentLike, Comment]> {
+    const unlikeComment = this.prisma.commentLike.delete({
+      where: { commentId_user: { user: uid, commentId: where.id } },
+    });
+    const decreaseCommnetLikeNum = this.prisma.comment.update({
+      data: { likenum: { decrement: 1 } },
+      where,
+    });
+    return this.prisma.$transaction([unlikeComment, decreaseCommnetLikeNum]);
   }
 }

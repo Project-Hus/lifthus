@@ -69,21 +69,21 @@ export class PostService {
     const likePost = this.prisma.postLike.create({
       data: { user: uid, post: { connect: { id: pid } } },
     });
-    const updatePostLikeNum = this.prisma.post.update({
+    const increasePostLikeNum = this.prisma.post.update({
       data: { likenum: { increment: 1 } },
       where: { id: pid },
     });
-    return this.prisma.$transaction([likePost, updatePostLikeNum]);
+    return this.prisma.$transaction([likePost, increasePostLikeNum]);
   }
 
   unlikePost(uid: number, pid: number): Promise<[PostLike, Post]> {
     const unlikePost = this.prisma.postLike.delete({
       where: { postId_user: { user: uid, postId: pid } },
     });
-    const updatePostLikeNum = this.prisma.post.update({
+    const decreasePostLikeNum = this.prisma.post.update({
       data: { likenum: { decrement: 1 } },
       where: { id: pid },
     });
-    return this.prisma.$transaction([unlikePost, updatePostLikeNum]);
+    return this.prisma.$transaction([unlikePost, decreasePostLikeNum]);
   }
 }
