@@ -22,6 +22,8 @@ model Post {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  images PostImage[]
+
   slug    String @unique @db.VarChar(50)
   content String @db.Text
 
@@ -30,6 +32,15 @@ model Post {
   likes    PostLike[]
 
   comments Comment[]
+}
+
+model PostImage {
+  id BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+
+  postId BigInt @db.UnsignedBigInt
+  post   Post   @relation(fields: [postId], references: [id])
+
+  url String @db.VarChar(255)
 }
 
 model Comment {

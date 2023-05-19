@@ -4,6 +4,7 @@ export interface PostQueryDto {
   createdAt: Date;
   updatedAt: Date;
   slug: string;
+  images: string[];
   content: string;
   likenum: number;
 }
