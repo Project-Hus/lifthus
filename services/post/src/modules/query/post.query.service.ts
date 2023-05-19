@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Post, Prisma } from '@prisma/client';
-import { Response } from 'express';
+import { Post } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { PostQueryDto } from './post.query.dto';
 
 @Injectable()
 export class PostQueryService {
@@ -11,21 +9,58 @@ export class PostQueryService {
     return 'Hello World!';
   }
 
-  a: Prisma.PostSelect;
-
   async getUserPosts(uid: number, skip: number): Promise<Post[]> {
     return this.prismaService.post.findMany({
-      select: {
-        id: true,
-        userGroup: true,
-        author: true,
-        createdAt: true,
-        updatedAt: true,
-        slug: true,
-        content: true,
-        likenum: true,
+      include: {
+        images: {
+          select: {
+            id: true,
+            url: true,
+          },
+          orderBy: {
+            order: 'asc',
+          },
+        },
+        comments: {
+          select: {
+            id: true,
+            author: true,
+            createdAt: true,
+            updatedAt: true,
+            content: true,
+            likenum: true,
+            mentions: {
+              select: {
+                mentionee: true,
+              },
+            },
+            replies: {
+              select: {
+                id: true,
+                author: true,
+                createdAt: true,
+                updatedAt: true,
+                content: true,
+                likenum: true,
+                mentions: {
+                  select: {
+                    mentionee: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
+        mentions: {
+          select: {
+            mentionee: true,
+          },
+        },
       },
-      where: {},
+      where: { author: uid },
       orderBy: {
         createdAt: 'desc',
       },

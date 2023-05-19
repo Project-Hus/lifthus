@@ -17,7 +17,7 @@ datasource db {
 
 model Post {
   id        BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
-  userGroup BigInt   @default(0) @db.UnsignedBigInt // 0 means no group
+  userGroup BigInt?  @db.UnsignedBigInt
   author    BigInt   @db.UnsignedBigInt
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -39,6 +39,7 @@ model PostImage {
 
   postId BigInt @db.UnsignedBigInt
   post   Post   @relation(fields: [postId], references: [id])
+  order  Int    @unique
 
   url String @db.VarChar(255)
 }
@@ -50,8 +51,8 @@ model Comment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  post   Post   @relation(fields: [postId], references: [id])
-  postId BigInt @db.UnsignedBigInt
+  post   Post?   @relation(fields: [postId], references: [id])
+  postId BigInt? @db.UnsignedBigInt
 
   parentId BigInt?   @db.UnsignedBigInt
   parent   Comment?  @relation("replies", fields: [parentId], references: [id])
