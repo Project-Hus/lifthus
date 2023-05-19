@@ -39,10 +39,10 @@ func init() {
 	userDescRegistered := userFields[1].Descriptor()
 	// user.DefaultRegistered holds the default value on creation for the registered field.
 	user.DefaultRegistered = userDescRegistered.Default.(bool)
-	// userDescCreateAt is the schema descriptor for create_at field.
-	userDescCreateAt := userFields[11].Descriptor()
-	// user.DefaultCreateAt holds the default value on creation for the create_at field.
-	user.DefaultCreateAt = userDescCreateAt.Default.(func() time.Time)
+	// userDescCreatedAt is the schema descriptor for created_at field.
+	userDescCreatedAt := userFields[11].Descriptor()
+	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
+	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescUpdatedAt is the schema descriptor for updated_at field.
 	userDescUpdatedAt := userFields[12].Descriptor()
 	// user.DefaultUpdatedAt holds the default value on creation for the updated_at field.

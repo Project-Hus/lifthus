@@ -34,7 +34,7 @@ func (User) Fields() []ent.Field {
 		// User Info in the service
 		field.Text("profile_image_url").Optional().Nillable(),
 
-		field.Time("create_at").Default(time.Now), // when the user first accessed to Lifthus with Hus session.
+		field.Time("created_at").Default(time.Now), // when the user first accessed to Lifthus with Hus session.
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
 }

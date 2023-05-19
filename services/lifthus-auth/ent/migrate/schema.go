@@ -44,7 +44,7 @@ var (
 		{Name: "family_name", Type: field.TypeString},
 		{Name: "birthdate", Type: field.TypeTime, Nullable: true},
 		{Name: "profile_image_url", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "create_at", Type: field.TypeTime},
+		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}
 	// UsersTable holds the schema information for the "users" table.

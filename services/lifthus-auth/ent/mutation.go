@@ -650,7 +650,7 @@ type UserMutation struct {
 	family_name       *string
 	birthdate         *time.Time
 	profile_image_url *string
-	create_at         *time.Time
+	created_at        *time.Time
 	updated_at        *time.Time
 	clearedFields     map[string]struct{}
 	sessions          map[uuid.UUID]struct{}
@@ -1177,40 +1177,40 @@ func (m *UserMutation) ResetProfileImageURL() {
 	delete(m.clearedFields, user.FieldProfileImageURL)
 }
 
-// SetCreateAt sets the "create_at" field.
-func (m *UserMutation) SetCreateAt(t time.Time) {
-	m.create_at = &t
+// SetCreatedAt sets the "created_at" field.
+func (m *UserMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
 }
 
-// CreateAt returns the value of the "create_at" field in the mutation.
-func (m *UserMutation) CreateAt() (r time.Time, exists bool) {
-	v := m.create_at
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *UserMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldCreateAt returns the old "create_at" field's value of the User entity.
+// OldCreatedAt returns the old "created_at" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldCreateAt(ctx context.Context) (v time.Time, err error) {
+func (m *UserMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreateAt is only allowed on UpdateOne operations")
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreateAt requires an ID field in the mutation")
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreateAt: %w", err)
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
 	}
-	return oldValue.CreateAt, nil
+	return oldValue.CreatedAt, nil
 }
 
-// ResetCreateAt resets all changes to the "create_at" field.
-func (m *UserMutation) ResetCreateAt() {
-	m.create_at = nil
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *UserMutation) ResetCreatedAt() {
+	m.created_at = nil
 }
 
 // SetUpdatedAt sets the "updated_at" field.
@@ -1368,8 +1368,8 @@ func (m *UserMutation) Fields() []string {
 	if m.profile_image_url != nil {
 		fields = append(fields, user.FieldProfileImageURL)
 	}
-	if m.create_at != nil {
-		fields = append(fields, user.FieldCreateAt)
+	if m.created_at != nil {
+		fields = append(fields, user.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, user.FieldUpdatedAt)
@@ -1402,8 +1402,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Birthdate()
 	case user.FieldProfileImageURL:
 		return m.ProfileImageURL()
-	case user.FieldCreateAt:
-		return m.CreateAt()
+	case user.FieldCreatedAt:
+		return m.CreatedAt()
 	case user.FieldUpdatedAt:
 		return m.UpdatedAt()
 	}
@@ -1435,8 +1435,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldBirthdate(ctx)
 	case user.FieldProfileImageURL:
 		return m.OldProfileImageURL(ctx)
-	case user.FieldCreateAt:
-		return m.OldCreateAt(ctx)
+	case user.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
 	case user.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
 	}
@@ -1518,12 +1518,12 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetProfileImageURL(v)
 		return nil
-	case user.FieldCreateAt:
+	case user.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetCreateAt(v)
+		m.SetCreatedAt(v)
 		return nil
 	case user.FieldUpdatedAt:
 		v, ok := value.(time.Time)
@@ -1638,8 +1638,8 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldProfileImageURL:
 		m.ResetProfileImageURL()
 		return nil
-	case user.FieldCreateAt:
-		m.ResetCreateAt()
+	case user.FieldCreatedAt:
+		m.ResetCreatedAt()
 		return nil
 	case user.FieldUpdatedAt:
 		m.ResetUpdatedAt()

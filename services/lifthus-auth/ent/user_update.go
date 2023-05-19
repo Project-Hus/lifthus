@@ -154,16 +154,16 @@ func (uu *UserUpdate) ClearProfileImageURL() *UserUpdate {
 	return uu
 }
 
-// SetCreateAt sets the "create_at" field.
-func (uu *UserUpdate) SetCreateAt(t time.Time) *UserUpdate {
-	uu.mutation.SetCreateAt(t)
+// SetCreatedAt sets the "created_at" field.
+func (uu *UserUpdate) SetCreatedAt(t time.Time) *UserUpdate {
+	uu.mutation.SetCreatedAt(t)
 	return uu
 }
 
-// SetNillableCreateAt sets the "create_at" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableCreateAt(t *time.Time) *UserUpdate {
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableCreatedAt(t *time.Time) *UserUpdate {
 	if t != nil {
-		uu.SetCreateAt(*t)
+		uu.SetCreatedAt(*t)
 	}
 	return uu
 }
@@ -302,8 +302,8 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if uu.mutation.ProfileImageURLCleared() {
 		_spec.ClearField(user.FieldProfileImageURL, field.TypeString)
 	}
-	if value, ok := uu.mutation.CreateAt(); ok {
-		_spec.SetField(user.FieldCreateAt, field.TypeTime, value)
+	if value, ok := uu.mutation.CreatedAt(); ok {
+		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
 	}
 	if value, ok := uu.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
@@ -497,16 +497,16 @@ func (uuo *UserUpdateOne) ClearProfileImageURL() *UserUpdateOne {
 	return uuo
 }
 
-// SetCreateAt sets the "create_at" field.
-func (uuo *UserUpdateOne) SetCreateAt(t time.Time) *UserUpdateOne {
-	uuo.mutation.SetCreateAt(t)
+// SetCreatedAt sets the "created_at" field.
+func (uuo *UserUpdateOne) SetCreatedAt(t time.Time) *UserUpdateOne {
+	uuo.mutation.SetCreatedAt(t)
 	return uuo
 }
 
-// SetNillableCreateAt sets the "create_at" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableCreateAt(t *time.Time) *UserUpdateOne {
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableCreatedAt(t *time.Time) *UserUpdateOne {
 	if t != nil {
-		uuo.SetCreateAt(*t)
+		uuo.SetCreatedAt(*t)
 	}
 	return uuo
 }
@@ -675,8 +675,8 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if uuo.mutation.ProfileImageURLCleared() {
 		_spec.ClearField(user.FieldProfileImageURL, field.TypeString)
 	}
-	if value, ok := uuo.mutation.CreateAt(); ok {
-		_spec.SetField(user.FieldCreateAt, field.TypeTime, value)
+	if value, ok := uuo.mutation.CreatedAt(); ok {
+		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
 	}
 	if value, ok := uuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)

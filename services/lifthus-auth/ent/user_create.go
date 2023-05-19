@@ -122,16 +122,16 @@ func (uc *UserCreate) SetNillableProfileImageURL(s *string) *UserCreate {
 	return uc
 }
 
-// SetCreateAt sets the "create_at" field.
-func (uc *UserCreate) SetCreateAt(t time.Time) *UserCreate {
-	uc.mutation.SetCreateAt(t)
+// SetCreatedAt sets the "created_at" field.
+func (uc *UserCreate) SetCreatedAt(t time.Time) *UserCreate {
+	uc.mutation.SetCreatedAt(t)
 	return uc
 }
 
-// SetNillableCreateAt sets the "create_at" field if the given value is not nil.
-func (uc *UserCreate) SetNillableCreateAt(t *time.Time) *UserCreate {
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (uc *UserCreate) SetNillableCreatedAt(t *time.Time) *UserCreate {
 	if t != nil {
-		uc.SetCreateAt(*t)
+		uc.SetCreatedAt(*t)
 	}
 	return uc
 }
@@ -210,9 +210,9 @@ func (uc *UserCreate) defaults() {
 		v := user.DefaultRegistered
 		uc.mutation.SetRegistered(v)
 	}
-	if _, ok := uc.mutation.CreateAt(); !ok {
-		v := user.DefaultCreateAt()
-		uc.mutation.SetCreateAt(v)
+	if _, ok := uc.mutation.CreatedAt(); !ok {
+		v := user.DefaultCreatedAt()
+		uc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := uc.mutation.UpdatedAt(); !ok {
 		v := user.DefaultUpdatedAt()
@@ -240,8 +240,8 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.FamilyName(); !ok {
 		return &ValidationError{Name: "family_name", err: errors.New(`ent: missing required field "User.family_name"`)}
 	}
-	if _, ok := uc.mutation.CreateAt(); !ok {
-		return &ValidationError{Name: "create_at", err: errors.New(`ent: missing required field "User.create_at"`)}
+	if _, ok := uc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
 	}
 	if _, ok := uc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "User.updated_at"`)}
@@ -318,9 +318,9 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldProfileImageURL, field.TypeString, value)
 		_node.ProfileImageURL = &value
 	}
-	if value, ok := uc.mutation.CreateAt(); ok {
-		_spec.SetField(user.FieldCreateAt, field.TypeTime, value)
-		_node.CreateAt = value
+	if value, ok := uc.mutation.CreatedAt(); ok {
+		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
 	}
 	if value, ok := uc.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)

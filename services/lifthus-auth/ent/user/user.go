@@ -34,8 +34,8 @@ const (
 	FieldBirthdate = "birthdate"
 	// FieldProfileImageURL holds the string denoting the profile_image_url field in the database.
 	FieldProfileImageURL = "profile_image_url"
-	// FieldCreateAt holds the string denoting the create_at field in the database.
-	FieldCreateAt = "create_at"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// EdgeSessions holds the string denoting the sessions edge name in mutations.
@@ -64,7 +64,7 @@ var Columns = []string{
 	FieldFamilyName,
 	FieldBirthdate,
 	FieldProfileImageURL,
-	FieldCreateAt,
+	FieldCreatedAt,
 	FieldUpdatedAt,
 }
 
@@ -81,8 +81,8 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultRegistered holds the default value on creation for the "registered" field.
 	DefaultRegistered bool
-	// DefaultCreateAt holds the default value on creation for the "create_at" field.
-	DefaultCreateAt func() time.Time
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
@@ -147,9 +147,9 @@ func ByProfileImageURL(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProfileImageURL, opts...).ToFunc()
 }
 
-// ByCreateAt orders the results by the create_at field.
-func ByCreateAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreateAt, opts...).ToFunc()
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
 // ByUpdatedAt orders the results by the updated_at field.
