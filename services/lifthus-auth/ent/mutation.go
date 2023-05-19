@@ -26,274 +26,9 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeLifthusGroup = "LifthusGroup"
-	TypeSession      = "Session"
-	TypeUser         = "User"
+	TypeSession = "Session"
+	TypeUser    = "User"
 )
-
-// LifthusGroupMutation represents an operation that mutates the LifthusGroup nodes in the graph.
-type LifthusGroupMutation struct {
-	config
-	op            Op
-	typ           string
-	id            *int
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*LifthusGroup, error)
-	predicates    []predicate.LifthusGroup
-}
-
-var _ ent.Mutation = (*LifthusGroupMutation)(nil)
-
-// lifthusgroupOption allows management of the mutation configuration using functional options.
-type lifthusgroupOption func(*LifthusGroupMutation)
-
-// newLifthusGroupMutation creates new mutation for the LifthusGroup entity.
-func newLifthusGroupMutation(c config, op Op, opts ...lifthusgroupOption) *LifthusGroupMutation {
-	m := &LifthusGroupMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeLifthusGroup,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withLifthusGroupID sets the ID field of the mutation.
-func withLifthusGroupID(id int) lifthusgroupOption {
-	return func(m *LifthusGroupMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *LifthusGroup
-		)
-		m.oldValue = func(ctx context.Context) (*LifthusGroup, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().LifthusGroup.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withLifthusGroup sets the old LifthusGroup of the mutation.
-func withLifthusGroup(node *LifthusGroup) lifthusgroupOption {
-	return func(m *LifthusGroupMutation) {
-		m.oldValue = func(context.Context) (*LifthusGroup, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m LifthusGroupMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m LifthusGroupMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *LifthusGroupMutation) ID() (id int, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *LifthusGroupMutation) IDs(ctx context.Context) ([]int, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []int{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().LifthusGroup.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// Where appends a list predicates to the LifthusGroupMutation builder.
-func (m *LifthusGroupMutation) Where(ps ...predicate.LifthusGroup) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the LifthusGroupMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *LifthusGroupMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.LifthusGroup, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *LifthusGroupMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *LifthusGroupMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (LifthusGroup).
-func (m *LifthusGroupMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *LifthusGroupMutation) Fields() []string {
-	fields := make([]string, 0, 0)
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *LifthusGroupMutation) Field(name string) (ent.Value, bool) {
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *LifthusGroupMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	return nil, fmt.Errorf("unknown LifthusGroup field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *LifthusGroupMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown LifthusGroup field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *LifthusGroupMutation) AddedFields() []string {
-	return nil
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *LifthusGroupMutation) AddedField(name string) (ent.Value, bool) {
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *LifthusGroupMutation) AddField(name string, value ent.Value) error {
-	return fmt.Errorf("unknown LifthusGroup numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *LifthusGroupMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *LifthusGroupMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *LifthusGroupMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown LifthusGroup nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *LifthusGroupMutation) ResetField(name string) error {
-	return fmt.Errorf("unknown LifthusGroup field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *LifthusGroupMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *LifthusGroupMutation) AddedIDs(name string) []ent.Value {
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *LifthusGroupMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *LifthusGroupMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *LifthusGroupMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *LifthusGroupMutation) EdgeCleared(name string) bool {
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *LifthusGroupMutation) ClearEdge(name string) error {
-	return fmt.Errorf("unknown LifthusGroup unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *LifthusGroupMutation) ResetEdge(name string) error {
-	return fmt.Errorf("unknown LifthusGroup edge %s", name)
-}
 
 // SessionMutation represents an operation that mutates the Session nodes in the graph.
 type SessionMutation struct {
@@ -902,28 +637,28 @@ func (m *SessionMutation) ResetEdge(name string) error {
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op                  Op
-	typ                 string
-	id                  *uint64
-	registered          *bool
-	registered_at       *time.Time
-	username            *string
-	email               *string
-	email_verified      *bool
-	name                *string
-	given_name          *string
-	family_name         *string
-	birthdate           *time.Time
-	profile_picture_url *string
-	created_at          *time.Time
-	updated_at          *time.Time
-	clearedFields       map[string]struct{}
-	sessions            map[uuid.UUID]struct{}
-	removedsessions     map[uuid.UUID]struct{}
-	clearedsessions     bool
-	done                bool
-	oldValue            func(context.Context) (*User, error)
-	predicates          []predicate.User
+	op                Op
+	typ               string
+	id                *uint64
+	registered        *bool
+	registered_at     *time.Time
+	username          *string
+	email             *string
+	email_verified    *bool
+	name              *string
+	given_name        *string
+	family_name       *string
+	birthdate         *time.Time
+	profile_image_url *string
+	create_at         *time.Time
+	updated_at        *time.Time
+	clearedFields     map[string]struct{}
+	sessions          map[uuid.UUID]struct{}
+	removedsessions   map[uuid.UUID]struct{}
+	clearedsessions   bool
+	done              bool
+	oldValue          func(context.Context) (*User, error)
+	predicates        []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -1393,89 +1128,89 @@ func (m *UserMutation) ResetBirthdate() {
 	delete(m.clearedFields, user.FieldBirthdate)
 }
 
-// SetProfilePictureURL sets the "profile_picture_url" field.
-func (m *UserMutation) SetProfilePictureURL(s string) {
-	m.profile_picture_url = &s
+// SetProfileImageURL sets the "profile_image_url" field.
+func (m *UserMutation) SetProfileImageURL(s string) {
+	m.profile_image_url = &s
 }
 
-// ProfilePictureURL returns the value of the "profile_picture_url" field in the mutation.
-func (m *UserMutation) ProfilePictureURL() (r string, exists bool) {
-	v := m.profile_picture_url
+// ProfileImageURL returns the value of the "profile_image_url" field in the mutation.
+func (m *UserMutation) ProfileImageURL() (r string, exists bool) {
+	v := m.profile_image_url
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProfilePictureURL returns the old "profile_picture_url" field's value of the User entity.
+// OldProfileImageURL returns the old "profile_image_url" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldProfilePictureURL(ctx context.Context) (v *string, err error) {
+func (m *UserMutation) OldProfileImageURL(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProfilePictureURL is only allowed on UpdateOne operations")
+		return v, errors.New("OldProfileImageURL is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProfilePictureURL requires an ID field in the mutation")
+		return v, errors.New("OldProfileImageURL requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProfilePictureURL: %w", err)
+		return v, fmt.Errorf("querying old value for OldProfileImageURL: %w", err)
 	}
-	return oldValue.ProfilePictureURL, nil
+	return oldValue.ProfileImageURL, nil
 }
 
-// ClearProfilePictureURL clears the value of the "profile_picture_url" field.
-func (m *UserMutation) ClearProfilePictureURL() {
-	m.profile_picture_url = nil
-	m.clearedFields[user.FieldProfilePictureURL] = struct{}{}
+// ClearProfileImageURL clears the value of the "profile_image_url" field.
+func (m *UserMutation) ClearProfileImageURL() {
+	m.profile_image_url = nil
+	m.clearedFields[user.FieldProfileImageURL] = struct{}{}
 }
 
-// ProfilePictureURLCleared returns if the "profile_picture_url" field was cleared in this mutation.
-func (m *UserMutation) ProfilePictureURLCleared() bool {
-	_, ok := m.clearedFields[user.FieldProfilePictureURL]
+// ProfileImageURLCleared returns if the "profile_image_url" field was cleared in this mutation.
+func (m *UserMutation) ProfileImageURLCleared() bool {
+	_, ok := m.clearedFields[user.FieldProfileImageURL]
 	return ok
 }
 
-// ResetProfilePictureURL resets all changes to the "profile_picture_url" field.
-func (m *UserMutation) ResetProfilePictureURL() {
-	m.profile_picture_url = nil
-	delete(m.clearedFields, user.FieldProfilePictureURL)
+// ResetProfileImageURL resets all changes to the "profile_image_url" field.
+func (m *UserMutation) ResetProfileImageURL() {
+	m.profile_image_url = nil
+	delete(m.clearedFields, user.FieldProfileImageURL)
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (m *UserMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
+// SetCreateAt sets the "create_at" field.
+func (m *UserMutation) SetCreateAt(t time.Time) {
+	m.create_at = &t
 }
 
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *UserMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
+// CreateAt returns the value of the "create_at" field in the mutation.
+func (m *UserMutation) CreateAt() (r time.Time, exists bool) {
+	v := m.create_at
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldCreatedAt returns the old "created_at" field's value of the User entity.
+// OldCreateAt returns the old "create_at" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *UserMutation) OldCreateAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+		return v, errors.New("OldCreateAt is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+		return v, errors.New("OldCreateAt requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+		return v, fmt.Errorf("querying old value for OldCreateAt: %w", err)
 	}
-	return oldValue.CreatedAt, nil
+	return oldValue.CreateAt, nil
 }
 
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *UserMutation) ResetCreatedAt() {
-	m.created_at = nil
+// ResetCreateAt resets all changes to the "create_at" field.
+func (m *UserMutation) ResetCreateAt() {
+	m.create_at = nil
 }
 
 // SetUpdatedAt sets the "updated_at" field.
@@ -1630,11 +1365,11 @@ func (m *UserMutation) Fields() []string {
 	if m.birthdate != nil {
 		fields = append(fields, user.FieldBirthdate)
 	}
-	if m.profile_picture_url != nil {
-		fields = append(fields, user.FieldProfilePictureURL)
+	if m.profile_image_url != nil {
+		fields = append(fields, user.FieldProfileImageURL)
 	}
-	if m.created_at != nil {
-		fields = append(fields, user.FieldCreatedAt)
+	if m.create_at != nil {
+		fields = append(fields, user.FieldCreateAt)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, user.FieldUpdatedAt)
@@ -1665,10 +1400,10 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.FamilyName()
 	case user.FieldBirthdate:
 		return m.Birthdate()
-	case user.FieldProfilePictureURL:
-		return m.ProfilePictureURL()
-	case user.FieldCreatedAt:
-		return m.CreatedAt()
+	case user.FieldProfileImageURL:
+		return m.ProfileImageURL()
+	case user.FieldCreateAt:
+		return m.CreateAt()
 	case user.FieldUpdatedAt:
 		return m.UpdatedAt()
 	}
@@ -1698,10 +1433,10 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldFamilyName(ctx)
 	case user.FieldBirthdate:
 		return m.OldBirthdate(ctx)
-	case user.FieldProfilePictureURL:
-		return m.OldProfilePictureURL(ctx)
-	case user.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
+	case user.FieldProfileImageURL:
+		return m.OldProfileImageURL(ctx)
+	case user.FieldCreateAt:
+		return m.OldCreateAt(ctx)
 	case user.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
 	}
@@ -1776,19 +1511,19 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetBirthdate(v)
 		return nil
-	case user.FieldProfilePictureURL:
+	case user.FieldProfileImageURL:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProfilePictureURL(v)
+		m.SetProfileImageURL(v)
 		return nil
-	case user.FieldCreatedAt:
+	case user.FieldCreateAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetCreatedAt(v)
+		m.SetCreateAt(v)
 		return nil
 	case user.FieldUpdatedAt:
 		v, ok := value.(time.Time)
@@ -1836,8 +1571,8 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldBirthdate) {
 		fields = append(fields, user.FieldBirthdate)
 	}
-	if m.FieldCleared(user.FieldProfilePictureURL) {
-		fields = append(fields, user.FieldProfilePictureURL)
+	if m.FieldCleared(user.FieldProfileImageURL) {
+		fields = append(fields, user.FieldProfileImageURL)
 	}
 	return fields
 }
@@ -1862,8 +1597,8 @@ func (m *UserMutation) ClearField(name string) error {
 	case user.FieldBirthdate:
 		m.ClearBirthdate()
 		return nil
-	case user.FieldProfilePictureURL:
-		m.ClearProfilePictureURL()
+	case user.FieldProfileImageURL:
+		m.ClearProfileImageURL()
 		return nil
 	}
 	return fmt.Errorf("unknown User nullable field %s", name)
@@ -1900,11 +1635,11 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldBirthdate:
 		m.ResetBirthdate()
 		return nil
-	case user.FieldProfilePictureURL:
-		m.ResetProfilePictureURL()
+	case user.FieldProfileImageURL:
+		m.ResetProfileImageURL()
 		return nil
-	case user.FieldCreatedAt:
-		m.ResetCreatedAt()
+	case user.FieldCreateAt:
+		m.ResetCreateAt()
 		return nil
 	case user.FieldUpdatedAt:
 		m.ResetUpdatedAt()

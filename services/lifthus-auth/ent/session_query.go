@@ -20,7 +20,7 @@ import (
 type SessionQuery struct {
 	config
 	ctx        *QueryContext
-	order      []OrderFunc
+	order      []session.OrderOption
 	inters     []Interceptor
 	predicates []predicate.Session
 	withUser   *UserQuery
@@ -55,7 +55,7 @@ func (sq *SessionQuery) Unique(unique bool) *SessionQuery {
 }
 
 // Order specifies how the records should be ordered.
-func (sq *SessionQuery) Order(o ...OrderFunc) *SessionQuery {
+func (sq *SessionQuery) Order(o ...session.OrderOption) *SessionQuery {
 	sq.order = append(sq.order, o...)
 	return sq
 }
@@ -271,7 +271,7 @@ func (sq *SessionQuery) Clone() *SessionQuery {
 	return &SessionQuery{
 		config:     sq.config,
 		ctx:        sq.ctx.Clone(),
-		order:      append([]OrderFunc{}, sq.order...),
+		order:      append([]session.OrderOption{}, sq.order...),
 		inters:     append([]Interceptor{}, sq.inters...),
 		predicates: append([]predicate.Session{}, sq.predicates...),
 		withUser:   sq.withUser.Clone(),
@@ -458,6 +458,9 @@ func (sq *SessionQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != session.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if sq.withUser != nil {
+			_spec.Node.AddColumnOnce(session.FieldUID)
 		}
 	}
 	if ps := sq.predicates; len(ps) > 0 {

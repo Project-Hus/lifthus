@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 )
@@ -28,7 +29,8 @@ type Session struct {
 	Used bool `json:"used,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SessionQuery when eager-loading is set.
-	Edges SessionEdges `json:"edges"`
+	Edges        SessionEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // SessionEdges holds the relations/edges for other nodes in the graph.
@@ -67,7 +69,7 @@ func (*Session) scanValues(columns []string) ([]any, error) {
 		case session.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type Session", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -113,9 +115,17 @@ func (s *Session) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				s.Used = value.Bool
 			}
+		default:
+			s.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
+}
+
+// Value returns the ent.Value that was dynamically selected and assigned to the Session.
+// This includes values selected through modifiers, order, etc.
+func (s *Session) Value(name string) (ent.Value, error) {
+	return s.selectValues.Get(name)
 }
 
 // QueryUser queries the "user" edge of the Session entity.

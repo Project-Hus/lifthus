@@ -108,30 +108,30 @@ func (uc *UserCreate) SetNillableBirthdate(t *time.Time) *UserCreate {
 	return uc
 }
 
-// SetProfilePictureURL sets the "profile_picture_url" field.
-func (uc *UserCreate) SetProfilePictureURL(s string) *UserCreate {
-	uc.mutation.SetProfilePictureURL(s)
+// SetProfileImageURL sets the "profile_image_url" field.
+func (uc *UserCreate) SetProfileImageURL(s string) *UserCreate {
+	uc.mutation.SetProfileImageURL(s)
 	return uc
 }
 
-// SetNillableProfilePictureURL sets the "profile_picture_url" field if the given value is not nil.
-func (uc *UserCreate) SetNillableProfilePictureURL(s *string) *UserCreate {
+// SetNillableProfileImageURL sets the "profile_image_url" field if the given value is not nil.
+func (uc *UserCreate) SetNillableProfileImageURL(s *string) *UserCreate {
 	if s != nil {
-		uc.SetProfilePictureURL(*s)
+		uc.SetProfileImageURL(*s)
 	}
 	return uc
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (uc *UserCreate) SetCreatedAt(t time.Time) *UserCreate {
-	uc.mutation.SetCreatedAt(t)
+// SetCreateAt sets the "create_at" field.
+func (uc *UserCreate) SetCreateAt(t time.Time) *UserCreate {
+	uc.mutation.SetCreateAt(t)
 	return uc
 }
 
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (uc *UserCreate) SetNillableCreatedAt(t *time.Time) *UserCreate {
+// SetNillableCreateAt sets the "create_at" field if the given value is not nil.
+func (uc *UserCreate) SetNillableCreateAt(t *time.Time) *UserCreate {
 	if t != nil {
-		uc.SetCreatedAt(*t)
+		uc.SetCreateAt(*t)
 	}
 	return uc
 }
@@ -179,7 +179,7 @@ func (uc *UserCreate) Mutation() *UserMutation {
 // Save creates the User in the database.
 func (uc *UserCreate) Save(ctx context.Context) (*User, error) {
 	uc.defaults()
-	return withHooks[*User, UserMutation](ctx, uc.sqlSave, uc.mutation, uc.hooks)
+	return withHooks(ctx, uc.sqlSave, uc.mutation, uc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -210,9 +210,9 @@ func (uc *UserCreate) defaults() {
 		v := user.DefaultRegistered
 		uc.mutation.SetRegistered(v)
 	}
-	if _, ok := uc.mutation.CreatedAt(); !ok {
-		v := user.DefaultCreatedAt()
-		uc.mutation.SetCreatedAt(v)
+	if _, ok := uc.mutation.CreateAt(); !ok {
+		v := user.DefaultCreateAt()
+		uc.mutation.SetCreateAt(v)
 	}
 	if _, ok := uc.mutation.UpdatedAt(); !ok {
 		v := user.DefaultUpdatedAt()
@@ -240,8 +240,8 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.FamilyName(); !ok {
 		return &ValidationError{Name: "family_name", err: errors.New(`ent: missing required field "User.family_name"`)}
 	}
-	if _, ok := uc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
+	if _, ok := uc.mutation.CreateAt(); !ok {
+		return &ValidationError{Name: "create_at", err: errors.New(`ent: missing required field "User.create_at"`)}
 	}
 	if _, ok := uc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "User.updated_at"`)}
@@ -314,13 +314,13 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldBirthdate, field.TypeTime, value)
 		_node.Birthdate = &value
 	}
-	if value, ok := uc.mutation.ProfilePictureURL(); ok {
-		_spec.SetField(user.FieldProfilePictureURL, field.TypeString, value)
-		_node.ProfilePictureURL = &value
+	if value, ok := uc.mutation.ProfileImageURL(); ok {
+		_spec.SetField(user.FieldProfileImageURL, field.TypeString, value)
+		_node.ProfileImageURL = &value
 	}
-	if value, ok := uc.mutation.CreatedAt(); ok {
-		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
+	if value, ok := uc.mutation.CreateAt(); ok {
+		_spec.SetField(user.FieldCreateAt, field.TypeTime, value)
+		_node.CreateAt = value
 	}
 	if value, ok := uc.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
@@ -334,10 +334,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Columns: []string{user.SessionsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: session.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(session.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -372,8 +369,8 @@ func (ucb *UserCreateBulk) Save(ctx context.Context) ([]*User, error) {
 					return nil, err
 				}
 				builder.mutation = mutation
-				nodes[i], specs[i] = builder.createSpec()
 				var err error
+				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, ucb.builders[i+1].mutation)
 				} else {

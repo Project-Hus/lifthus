@@ -4,6 +4,9 @@ package user
 
 import (
 	"time"
+
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -29,10 +32,10 @@ const (
 	FieldFamilyName = "family_name"
 	// FieldBirthdate holds the string denoting the birthdate field in the database.
 	FieldBirthdate = "birthdate"
-	// FieldProfilePictureURL holds the string denoting the profile_picture_url field in the database.
-	FieldProfilePictureURL = "profile_picture_url"
-	// FieldCreatedAt holds the string denoting the created_at field in the database.
-	FieldCreatedAt = "created_at"
+	// FieldProfileImageURL holds the string denoting the profile_image_url field in the database.
+	FieldProfileImageURL = "profile_image_url"
+	// FieldCreateAt holds the string denoting the create_at field in the database.
+	FieldCreateAt = "create_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// EdgeSessions holds the string denoting the sessions edge name in mutations.
@@ -60,8 +63,8 @@ var Columns = []string{
 	FieldGivenName,
 	FieldFamilyName,
 	FieldBirthdate,
-	FieldProfilePictureURL,
-	FieldCreatedAt,
+	FieldProfileImageURL,
+	FieldCreateAt,
 	FieldUpdatedAt,
 }
 
@@ -78,10 +81,99 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultRegistered holds the default value on creation for the "registered" field.
 	DefaultRegistered bool
-	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
-	DefaultCreatedAt func() time.Time
+	// DefaultCreateAt holds the default value on creation for the "create_at" field.
+	DefaultCreateAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
 )
+
+// OrderOption defines the ordering options for the User queries.
+type OrderOption func(*sql.Selector)
+
+// ByID orders the results by the id field.
+func ByID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByRegistered orders the results by the registered field.
+func ByRegistered(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRegistered, opts...).ToFunc()
+}
+
+// ByRegisteredAt orders the results by the registered_at field.
+func ByRegisteredAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRegisteredAt, opts...).ToFunc()
+}
+
+// ByUsername orders the results by the username field.
+func ByUsername(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUsername, opts...).ToFunc()
+}
+
+// ByEmail orders the results by the email field.
+func ByEmail(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEmail, opts...).ToFunc()
+}
+
+// ByEmailVerified orders the results by the email_verified field.
+func ByEmailVerified(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEmailVerified, opts...).ToFunc()
+}
+
+// ByName orders the results by the name field.
+func ByName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldName, opts...).ToFunc()
+}
+
+// ByGivenName orders the results by the given_name field.
+func ByGivenName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGivenName, opts...).ToFunc()
+}
+
+// ByFamilyName orders the results by the family_name field.
+func ByFamilyName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFamilyName, opts...).ToFunc()
+}
+
+// ByBirthdate orders the results by the birthdate field.
+func ByBirthdate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBirthdate, opts...).ToFunc()
+}
+
+// ByProfileImageURL orders the results by the profile_image_url field.
+func ByProfileImageURL(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProfileImageURL, opts...).ToFunc()
+}
+
+// ByCreateAt orders the results by the create_at field.
+func ByCreateAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreateAt, opts...).ToFunc()
+}
+
+// ByUpdatedAt orders the results by the updated_at field.
+func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// BySessionsCount orders the results by sessions count.
+func BySessionsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSessionsStep(), opts...)
+	}
+}
+
+// BySessions orders the results by sessions terms.
+func BySessions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSessionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newSessionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SessionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, SessionsTable, SessionsColumn),
+	)
+}

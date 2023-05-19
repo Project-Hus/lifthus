@@ -134,36 +134,36 @@ func (uu *UserUpdate) ClearBirthdate() *UserUpdate {
 	return uu
 }
 
-// SetProfilePictureURL sets the "profile_picture_url" field.
-func (uu *UserUpdate) SetProfilePictureURL(s string) *UserUpdate {
-	uu.mutation.SetProfilePictureURL(s)
+// SetProfileImageURL sets the "profile_image_url" field.
+func (uu *UserUpdate) SetProfileImageURL(s string) *UserUpdate {
+	uu.mutation.SetProfileImageURL(s)
 	return uu
 }
 
-// SetNillableProfilePictureURL sets the "profile_picture_url" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableProfilePictureURL(s *string) *UserUpdate {
+// SetNillableProfileImageURL sets the "profile_image_url" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableProfileImageURL(s *string) *UserUpdate {
 	if s != nil {
-		uu.SetProfilePictureURL(*s)
+		uu.SetProfileImageURL(*s)
 	}
 	return uu
 }
 
-// ClearProfilePictureURL clears the value of the "profile_picture_url" field.
-func (uu *UserUpdate) ClearProfilePictureURL() *UserUpdate {
-	uu.mutation.ClearProfilePictureURL()
+// ClearProfileImageURL clears the value of the "profile_image_url" field.
+func (uu *UserUpdate) ClearProfileImageURL() *UserUpdate {
+	uu.mutation.ClearProfileImageURL()
 	return uu
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (uu *UserUpdate) SetCreatedAt(t time.Time) *UserUpdate {
-	uu.mutation.SetCreatedAt(t)
+// SetCreateAt sets the "create_at" field.
+func (uu *UserUpdate) SetCreateAt(t time.Time) *UserUpdate {
+	uu.mutation.SetCreateAt(t)
 	return uu
 }
 
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableCreatedAt(t *time.Time) *UserUpdate {
+// SetNillableCreateAt sets the "create_at" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableCreateAt(t *time.Time) *UserUpdate {
 	if t != nil {
-		uu.SetCreatedAt(*t)
+		uu.SetCreateAt(*t)
 	}
 	return uu
 }
@@ -218,7 +218,7 @@ func (uu *UserUpdate) RemoveSessions(s ...*Session) *UserUpdate {
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (uu *UserUpdate) Save(ctx context.Context) (int, error) {
 	uu.defaults()
-	return withHooks[int, UserMutation](ctx, uu.sqlSave, uu.mutation, uu.hooks)
+	return withHooks(ctx, uu.sqlSave, uu.mutation, uu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -296,14 +296,14 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if uu.mutation.BirthdateCleared() {
 		_spec.ClearField(user.FieldBirthdate, field.TypeTime)
 	}
-	if value, ok := uu.mutation.ProfilePictureURL(); ok {
-		_spec.SetField(user.FieldProfilePictureURL, field.TypeString, value)
+	if value, ok := uu.mutation.ProfileImageURL(); ok {
+		_spec.SetField(user.FieldProfileImageURL, field.TypeString, value)
 	}
-	if uu.mutation.ProfilePictureURLCleared() {
-		_spec.ClearField(user.FieldProfilePictureURL, field.TypeString)
+	if uu.mutation.ProfileImageURLCleared() {
+		_spec.ClearField(user.FieldProfileImageURL, field.TypeString)
 	}
-	if value, ok := uu.mutation.CreatedAt(); ok {
-		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
+	if value, ok := uu.mutation.CreateAt(); ok {
+		_spec.SetField(user.FieldCreateAt, field.TypeTime, value)
 	}
 	if value, ok := uu.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
@@ -316,10 +316,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{user.SessionsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: session.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(session.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -332,10 +329,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{user.SessionsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: session.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(session.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -351,10 +345,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{user.SessionsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: session.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(session.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -486,36 +477,36 @@ func (uuo *UserUpdateOne) ClearBirthdate() *UserUpdateOne {
 	return uuo
 }
 
-// SetProfilePictureURL sets the "profile_picture_url" field.
-func (uuo *UserUpdateOne) SetProfilePictureURL(s string) *UserUpdateOne {
-	uuo.mutation.SetProfilePictureURL(s)
+// SetProfileImageURL sets the "profile_image_url" field.
+func (uuo *UserUpdateOne) SetProfileImageURL(s string) *UserUpdateOne {
+	uuo.mutation.SetProfileImageURL(s)
 	return uuo
 }
 
-// SetNillableProfilePictureURL sets the "profile_picture_url" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableProfilePictureURL(s *string) *UserUpdateOne {
+// SetNillableProfileImageURL sets the "profile_image_url" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableProfileImageURL(s *string) *UserUpdateOne {
 	if s != nil {
-		uuo.SetProfilePictureURL(*s)
+		uuo.SetProfileImageURL(*s)
 	}
 	return uuo
 }
 
-// ClearProfilePictureURL clears the value of the "profile_picture_url" field.
-func (uuo *UserUpdateOne) ClearProfilePictureURL() *UserUpdateOne {
-	uuo.mutation.ClearProfilePictureURL()
+// ClearProfileImageURL clears the value of the "profile_image_url" field.
+func (uuo *UserUpdateOne) ClearProfileImageURL() *UserUpdateOne {
+	uuo.mutation.ClearProfileImageURL()
 	return uuo
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (uuo *UserUpdateOne) SetCreatedAt(t time.Time) *UserUpdateOne {
-	uuo.mutation.SetCreatedAt(t)
+// SetCreateAt sets the "create_at" field.
+func (uuo *UserUpdateOne) SetCreateAt(t time.Time) *UserUpdateOne {
+	uuo.mutation.SetCreateAt(t)
 	return uuo
 }
 
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableCreatedAt(t *time.Time) *UserUpdateOne {
+// SetNillableCreateAt sets the "create_at" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableCreateAt(t *time.Time) *UserUpdateOne {
 	if t != nil {
-		uuo.SetCreatedAt(*t)
+		uuo.SetCreateAt(*t)
 	}
 	return uuo
 }
@@ -583,7 +574,7 @@ func (uuo *UserUpdateOne) Select(field string, fields ...string) *UserUpdateOne 
 // Save executes the query and returns the updated User entity.
 func (uuo *UserUpdateOne) Save(ctx context.Context) (*User, error) {
 	uuo.defaults()
-	return withHooks[*User, UserMutation](ctx, uuo.sqlSave, uuo.mutation, uuo.hooks)
+	return withHooks(ctx, uuo.sqlSave, uuo.mutation, uuo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -678,14 +669,14 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if uuo.mutation.BirthdateCleared() {
 		_spec.ClearField(user.FieldBirthdate, field.TypeTime)
 	}
-	if value, ok := uuo.mutation.ProfilePictureURL(); ok {
-		_spec.SetField(user.FieldProfilePictureURL, field.TypeString, value)
+	if value, ok := uuo.mutation.ProfileImageURL(); ok {
+		_spec.SetField(user.FieldProfileImageURL, field.TypeString, value)
 	}
-	if uuo.mutation.ProfilePictureURLCleared() {
-		_spec.ClearField(user.FieldProfilePictureURL, field.TypeString)
+	if uuo.mutation.ProfileImageURLCleared() {
+		_spec.ClearField(user.FieldProfileImageURL, field.TypeString)
 	}
-	if value, ok := uuo.mutation.CreatedAt(); ok {
-		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
+	if value, ok := uuo.mutation.CreateAt(); ok {
+		_spec.SetField(user.FieldCreateAt, field.TypeTime, value)
 	}
 	if value, ok := uuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
@@ -698,10 +689,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Columns: []string{user.SessionsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: session.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(session.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -714,10 +702,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Columns: []string{user.SessionsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: session.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(session.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -733,10 +718,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Columns: []string{user.SessionsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: session.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(session.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -100,14 +100,14 @@ func Birthdate(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldBirthdate, v))
 }
 
-// ProfilePictureURL applies equality check predicate on the "profile_picture_url" field. It's identical to ProfilePictureURLEQ.
-func ProfilePictureURL(v string) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldProfilePictureURL, v))
+// ProfileImageURL applies equality check predicate on the "profile_image_url" field. It's identical to ProfileImageURLEQ.
+func ProfileImageURL(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldProfileImageURL, v))
 }
 
-// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
-func CreatedAt(v time.Time) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldCreatedAt, v))
+// CreateAt applies equality check predicate on the "create_at" field. It's identical to CreateAtEQ.
+func CreateAt(v time.Time) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldCreateAt, v))
 }
 
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
@@ -570,119 +570,119 @@ func BirthdateNotNil() predicate.User {
 	return predicate.User(sql.FieldNotNull(FieldBirthdate))
 }
 
-// ProfilePictureURLEQ applies the EQ predicate on the "profile_picture_url" field.
-func ProfilePictureURLEQ(v string) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldProfilePictureURL, v))
+// ProfileImageURLEQ applies the EQ predicate on the "profile_image_url" field.
+func ProfileImageURLEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldProfileImageURL, v))
 }
 
-// ProfilePictureURLNEQ applies the NEQ predicate on the "profile_picture_url" field.
-func ProfilePictureURLNEQ(v string) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldProfilePictureURL, v))
+// ProfileImageURLNEQ applies the NEQ predicate on the "profile_image_url" field.
+func ProfileImageURLNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldProfileImageURL, v))
 }
 
-// ProfilePictureURLIn applies the In predicate on the "profile_picture_url" field.
-func ProfilePictureURLIn(vs ...string) predicate.User {
-	return predicate.User(sql.FieldIn(FieldProfilePictureURL, vs...))
+// ProfileImageURLIn applies the In predicate on the "profile_image_url" field.
+func ProfileImageURLIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldProfileImageURL, vs...))
 }
 
-// ProfilePictureURLNotIn applies the NotIn predicate on the "profile_picture_url" field.
-func ProfilePictureURLNotIn(vs ...string) predicate.User {
-	return predicate.User(sql.FieldNotIn(FieldProfilePictureURL, vs...))
+// ProfileImageURLNotIn applies the NotIn predicate on the "profile_image_url" field.
+func ProfileImageURLNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldProfileImageURL, vs...))
 }
 
-// ProfilePictureURLGT applies the GT predicate on the "profile_picture_url" field.
-func ProfilePictureURLGT(v string) predicate.User {
-	return predicate.User(sql.FieldGT(FieldProfilePictureURL, v))
+// ProfileImageURLGT applies the GT predicate on the "profile_image_url" field.
+func ProfileImageURLGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldProfileImageURL, v))
 }
 
-// ProfilePictureURLGTE applies the GTE predicate on the "profile_picture_url" field.
-func ProfilePictureURLGTE(v string) predicate.User {
-	return predicate.User(sql.FieldGTE(FieldProfilePictureURL, v))
+// ProfileImageURLGTE applies the GTE predicate on the "profile_image_url" field.
+func ProfileImageURLGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldProfileImageURL, v))
 }
 
-// ProfilePictureURLLT applies the LT predicate on the "profile_picture_url" field.
-func ProfilePictureURLLT(v string) predicate.User {
-	return predicate.User(sql.FieldLT(FieldProfilePictureURL, v))
+// ProfileImageURLLT applies the LT predicate on the "profile_image_url" field.
+func ProfileImageURLLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldProfileImageURL, v))
 }
 
-// ProfilePictureURLLTE applies the LTE predicate on the "profile_picture_url" field.
-func ProfilePictureURLLTE(v string) predicate.User {
-	return predicate.User(sql.FieldLTE(FieldProfilePictureURL, v))
+// ProfileImageURLLTE applies the LTE predicate on the "profile_image_url" field.
+func ProfileImageURLLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldProfileImageURL, v))
 }
 
-// ProfilePictureURLContains applies the Contains predicate on the "profile_picture_url" field.
-func ProfilePictureURLContains(v string) predicate.User {
-	return predicate.User(sql.FieldContains(FieldProfilePictureURL, v))
+// ProfileImageURLContains applies the Contains predicate on the "profile_image_url" field.
+func ProfileImageURLContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldProfileImageURL, v))
 }
 
-// ProfilePictureURLHasPrefix applies the HasPrefix predicate on the "profile_picture_url" field.
-func ProfilePictureURLHasPrefix(v string) predicate.User {
-	return predicate.User(sql.FieldHasPrefix(FieldProfilePictureURL, v))
+// ProfileImageURLHasPrefix applies the HasPrefix predicate on the "profile_image_url" field.
+func ProfileImageURLHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldProfileImageURL, v))
 }
 
-// ProfilePictureURLHasSuffix applies the HasSuffix predicate on the "profile_picture_url" field.
-func ProfilePictureURLHasSuffix(v string) predicate.User {
-	return predicate.User(sql.FieldHasSuffix(FieldProfilePictureURL, v))
+// ProfileImageURLHasSuffix applies the HasSuffix predicate on the "profile_image_url" field.
+func ProfileImageURLHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldProfileImageURL, v))
 }
 
-// ProfilePictureURLIsNil applies the IsNil predicate on the "profile_picture_url" field.
-func ProfilePictureURLIsNil() predicate.User {
-	return predicate.User(sql.FieldIsNull(FieldProfilePictureURL))
+// ProfileImageURLIsNil applies the IsNil predicate on the "profile_image_url" field.
+func ProfileImageURLIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldProfileImageURL))
 }
 
-// ProfilePictureURLNotNil applies the NotNil predicate on the "profile_picture_url" field.
-func ProfilePictureURLNotNil() predicate.User {
-	return predicate.User(sql.FieldNotNull(FieldProfilePictureURL))
+// ProfileImageURLNotNil applies the NotNil predicate on the "profile_image_url" field.
+func ProfileImageURLNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldProfileImageURL))
 }
 
-// ProfilePictureURLEqualFold applies the EqualFold predicate on the "profile_picture_url" field.
-func ProfilePictureURLEqualFold(v string) predicate.User {
-	return predicate.User(sql.FieldEqualFold(FieldProfilePictureURL, v))
+// ProfileImageURLEqualFold applies the EqualFold predicate on the "profile_image_url" field.
+func ProfileImageURLEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldProfileImageURL, v))
 }
 
-// ProfilePictureURLContainsFold applies the ContainsFold predicate on the "profile_picture_url" field.
-func ProfilePictureURLContainsFold(v string) predicate.User {
-	return predicate.User(sql.FieldContainsFold(FieldProfilePictureURL, v))
+// ProfileImageURLContainsFold applies the ContainsFold predicate on the "profile_image_url" field.
+func ProfileImageURLContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldProfileImageURL, v))
 }
 
-// CreatedAtEQ applies the EQ predicate on the "created_at" field.
-func CreatedAtEQ(v time.Time) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldCreatedAt, v))
+// CreateAtEQ applies the EQ predicate on the "create_at" field.
+func CreateAtEQ(v time.Time) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldCreateAt, v))
 }
 
-// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
-func CreatedAtNEQ(v time.Time) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldCreatedAt, v))
+// CreateAtNEQ applies the NEQ predicate on the "create_at" field.
+func CreateAtNEQ(v time.Time) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldCreateAt, v))
 }
 
-// CreatedAtIn applies the In predicate on the "created_at" field.
-func CreatedAtIn(vs ...time.Time) predicate.User {
-	return predicate.User(sql.FieldIn(FieldCreatedAt, vs...))
+// CreateAtIn applies the In predicate on the "create_at" field.
+func CreateAtIn(vs ...time.Time) predicate.User {
+	return predicate.User(sql.FieldIn(FieldCreateAt, vs...))
 }
 
-// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
-func CreatedAtNotIn(vs ...time.Time) predicate.User {
-	return predicate.User(sql.FieldNotIn(FieldCreatedAt, vs...))
+// CreateAtNotIn applies the NotIn predicate on the "create_at" field.
+func CreateAtNotIn(vs ...time.Time) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldCreateAt, vs...))
 }
 
-// CreatedAtGT applies the GT predicate on the "created_at" field.
-func CreatedAtGT(v time.Time) predicate.User {
-	return predicate.User(sql.FieldGT(FieldCreatedAt, v))
+// CreateAtGT applies the GT predicate on the "create_at" field.
+func CreateAtGT(v time.Time) predicate.User {
+	return predicate.User(sql.FieldGT(FieldCreateAt, v))
 }
 
-// CreatedAtGTE applies the GTE predicate on the "created_at" field.
-func CreatedAtGTE(v time.Time) predicate.User {
-	return predicate.User(sql.FieldGTE(FieldCreatedAt, v))
+// CreateAtGTE applies the GTE predicate on the "create_at" field.
+func CreateAtGTE(v time.Time) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldCreateAt, v))
 }
 
-// CreatedAtLT applies the LT predicate on the "created_at" field.
-func CreatedAtLT(v time.Time) predicate.User {
-	return predicate.User(sql.FieldLT(FieldCreatedAt, v))
+// CreateAtLT applies the LT predicate on the "create_at" field.
+func CreateAtLT(v time.Time) predicate.User {
+	return predicate.User(sql.FieldLT(FieldCreateAt, v))
 }
 
-// CreatedAtLTE applies the LTE predicate on the "created_at" field.
-func CreatedAtLTE(v time.Time) predicate.User {
-	return predicate.User(sql.FieldLTE(FieldCreatedAt, v))
+// CreateAtLTE applies the LTE predicate on the "create_at" field.
+func CreateAtLTE(v time.Time) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldCreateAt, v))
 }
 
 // UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
@@ -739,11 +739,7 @@ func HasSessions() predicate.User {
 // HasSessionsWith applies the HasEdge predicate on the "sessions" edge with a given conditions (other predicates).
 func HasSessionsWith(preds ...predicate.Session) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(SessionsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, SessionsTable, SessionsColumn),
-		)
+		step := newSessionsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

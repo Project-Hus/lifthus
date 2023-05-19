@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 )
 
@@ -34,15 +35,16 @@ type User struct {
 	FamilyName string `json:"family_name,omitempty"`
 	// Birthdate holds the value of the "birthdate" field.
 	Birthdate *time.Time `json:"birthdate,omitempty"`
-	// ProfilePictureURL holds the value of the "profile_picture_url" field.
-	ProfilePictureURL *string `json:"profile_picture_url,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	// ProfileImageURL holds the value of the "profile_image_url" field.
+	ProfileImageURL *string `json:"profile_image_url,omitempty"`
+	// CreateAt holds the value of the "create_at" field.
+	CreateAt time.Time `json:"create_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
-	Edges UserEdges `json:"edges"`
+	Edges        UserEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // UserEdges holds the relations/edges for other nodes in the graph.
@@ -72,12 +74,12 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case user.FieldID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldUsername, user.FieldEmail, user.FieldName, user.FieldGivenName, user.FieldFamilyName, user.FieldProfilePictureURL:
+		case user.FieldUsername, user.FieldEmail, user.FieldName, user.FieldGivenName, user.FieldFamilyName, user.FieldProfileImageURL:
 			values[i] = new(sql.NullString)
-		case user.FieldRegisteredAt, user.FieldBirthdate, user.FieldCreatedAt, user.FieldUpdatedAt:
+		case user.FieldRegisteredAt, user.FieldBirthdate, user.FieldCreateAt, user.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type User", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -154,18 +156,18 @@ func (u *User) assignValues(columns []string, values []any) error {
 				u.Birthdate = new(time.Time)
 				*u.Birthdate = value.Time
 			}
-		case user.FieldProfilePictureURL:
+		case user.FieldProfileImageURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field profile_picture_url", values[i])
+				return fmt.Errorf("unexpected type %T for field profile_image_url", values[i])
 			} else if value.Valid {
-				u.ProfilePictureURL = new(string)
-				*u.ProfilePictureURL = value.String
+				u.ProfileImageURL = new(string)
+				*u.ProfileImageURL = value.String
 			}
-		case user.FieldCreatedAt:
+		case user.FieldCreateAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+				return fmt.Errorf("unexpected type %T for field create_at", values[i])
 			} else if value.Valid {
-				u.CreatedAt = value.Time
+				u.CreateAt = value.Time
 			}
 		case user.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -173,9 +175,17 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.UpdatedAt = value.Time
 			}
+		default:
+			u.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
+}
+
+// Value returns the ent.Value that was dynamically selected and assigned to the User.
+// This includes values selected through modifiers, order, etc.
+func (u *User) Value(name string) (ent.Value, error) {
+	return u.selectValues.Get(name)
 }
 
 // QuerySessions queries the "sessions" edge of the User entity.
@@ -239,13 +249,13 @@ func (u *User) String() string {
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
-	if v := u.ProfilePictureURL; v != nil {
-		builder.WriteString("profile_picture_url=")
+	if v := u.ProfileImageURL; v != nil {
+		builder.WriteString("profile_image_url=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(u.CreatedAt.Format(time.ANSIC))
+	builder.WriteString("create_at=")
+	builder.WriteString(u.CreateAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(u.UpdatedAt.Format(time.ANSIC))

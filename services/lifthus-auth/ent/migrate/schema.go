@@ -9,16 +9,6 @@ import (
 )
 
 var (
-	// LifthusGroupsColumns holds the columns for the "lifthus_groups" table.
-	LifthusGroupsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-	}
-	// LifthusGroupsTable holds the schema information for the "lifthus_groups" table.
-	LifthusGroupsTable = &schema.Table{
-		Name:       "lifthus_groups",
-		Columns:    LifthusGroupsColumns,
-		PrimaryKey: []*schema.Column{LifthusGroupsColumns[0]},
-	}
 	// SessionsColumns holds the columns for the "sessions" table.
 	SessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -53,8 +43,8 @@ var (
 		{Name: "given_name", Type: field.TypeString},
 		{Name: "family_name", Type: field.TypeString},
 		{Name: "birthdate", Type: field.TypeTime, Nullable: true},
-		{Name: "profile_picture_url", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "created_at", Type: field.TypeTime},
+		{Name: "profile_image_url", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "create_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}
 	// UsersTable holds the schema information for the "users" table.
@@ -65,7 +55,6 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		LifthusGroupsTable,
 		SessionsTable,
 		UsersTable,
 	}
