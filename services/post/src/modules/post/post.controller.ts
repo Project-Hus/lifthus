@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Param,
   Post,
   Put,
   Req,
@@ -67,10 +68,10 @@ export class PostController {
    * @returns
    */
   @UseGuards(UserGuard)
-  @Delete()
+  @Delete('/:pid')
   deletePost(
     @Req() req: Request,
-    @Body('pid') pid: number,
+    @Param('pid') pid: number,
   ): Prisma.PrismaPromise<Prisma.BatchPayload> {
     return this.postService.deletePost({ aid: req.uid, pid });
   }
@@ -82,10 +83,10 @@ export class PostController {
    * @returns
    */
   @UseGuards(UserGuard)
-  @Post('/like')
+  @Post('/like/:pid')
   likePost(
     @Req() req: Request,
-    @Body('pid') pid: number,
+    @Param('pid') pid: number,
   ): Promise<[PostLike, PPost]> {
     return this.postService.likePost(req.uid, pid);
   }
@@ -97,10 +98,10 @@ export class PostController {
    * @returns
    */
   @UseGuards(UserGuard)
-  @Post('/unlike')
+  @Post('/unlik/:pid')
   unlikePost(
     @Req() req: Request,
-    @Body('pid') pid: number,
+    @Param('pid') pid: number,
   ): Promise<[PostLike, PPost]> {
     return this.postService.unlikePost(req.uid, pid);
   }

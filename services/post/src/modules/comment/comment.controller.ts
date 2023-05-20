@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Param,
   Post,
   Put,
   Req,
@@ -71,10 +72,10 @@ export class CommentController {
    * @returns
    */
   @UseGuards(UserGuard)
-  @Delete()
+  @Delete('/:cid')
   deleteComment(
     @Req() req: Request,
-    @Body('cid') cid: number,
+    @Param('cid') cid: number,
   ): Prisma.PrismaPromise<Prisma.BatchPayload> {
     return this.commentService.deleteComment({ cid, aid: req.uid });
   }
@@ -86,10 +87,10 @@ export class CommentController {
    * @returns
    */
   @UseGuards(UserGuard)
-  @Post('/like')
+  @Post('/like/:cid')
   likeComment(
     @Req() req: Request,
-    @Body('cid') cid: number,
+    @Param('cid') cid: number,
   ): Promise<[CommentLike, Comment]> {
     return this.commentService.likeComment(req.uid, { id: cid });
   }
@@ -101,10 +102,10 @@ export class CommentController {
    * @returns
    */
   @UseGuards(UserGuard)
-  @Post('/unlike')
+  @Post('/unlike/:cid')
   unlikeComment(
     @Req() req: Request,
-    @Body('cid') cid: number,
+    @Param('cid') cid: number,
   ): Promise<[CommentLike, Comment]> {
     return this.commentService.unlikeComment(req.uid, { id: cid });
   }
