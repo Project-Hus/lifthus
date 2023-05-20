@@ -72,7 +72,7 @@ export class CommentController {
    */
   @UseGuards(UserGuard)
   @Delete()
-  deletePost(
+  deleteComment(
     @Req() req: Request,
     @Body('cid') cid: number,
   ): Prisma.PrismaPromise<Prisma.BatchPayload> {
@@ -87,7 +87,7 @@ export class CommentController {
    */
   @UseGuards(UserGuard)
   @Post('/like')
-  likePost(
+  likeComment(
     @Req() req: Request,
     @Body('cid') cid: number,
   ): Promise<[CommentLike, Comment]> {
@@ -102,7 +102,7 @@ export class CommentController {
    */
   @UseGuards(UserGuard)
   @Post('/unlike')
-  unlikePost(
+  unlikeComment(
     @Req() req: Request,
     @Body('cid') cid: number,
   ): Promise<[CommentLike, Comment]> {
