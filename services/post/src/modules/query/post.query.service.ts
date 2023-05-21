@@ -24,6 +24,7 @@ export class PostQueryService {
         comments: {
           select: {
             id: true,
+            postId: true,
             author: true,
             createdAt: true,
             updatedAt: true,
@@ -37,6 +38,7 @@ export class PostQueryService {
             replies: {
               select: {
                 id: true,
+                parentId: true,
                 author: true,
                 createdAt: true,
                 updatedAt: true,
