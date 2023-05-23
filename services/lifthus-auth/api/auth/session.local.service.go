@@ -3,12 +3,11 @@ package auth
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"lifthus-auth/common"
 	"lifthus-auth/common/lifthus"
 	"lifthus-auth/db"
 	"lifthus-auth/helper"
 	"strconv"
+	"strings"
 
 	"lifthus-auth/service/session"
 	"log"
@@ -20,59 +19,32 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// NewSessionHandler godoc
-// @Router       /session/new [get]
-// @Summary      accepts tokens in cookie, parse and validate them, and returns tokens depending on the token's status.
-// @Description  case A: no session, return newly generated session token with 201.
-// @Description  case B-1: signed but expired, reset session info(used, signed_at, uid) except SID and return new session token with 201.
-// @Description case B-2: not signed and expired, return new session token keeping SID with 201.
-// @Description case C-1: valid and signed, just return with 200.
-// @Description case C-2: valid and not signed, return with 201 to tell client to check Hus session.
-// @Tags         auth
-// @Success      200 "if valid session exists, return uid"
-// @Success      201 "if there's no session or existing session is expired, return new session token"
-// @Failure      500 "failed to create new session"
-func (ac authApiController) NewSessionHandler(c echo.Context) error {
-	origin := c.Request().Header.Get("Origin")
-	if origin == "http://localhost:3000" {
-		return ac.newSessionHandler(c)
-	}
-
-	lifthus_pst, err := c.Cookie("lifthus_pst")
-	if err != nil && err != http.ErrNoCookie {
-		log.Println(err)
-		return c.String(http.StatusInternalServerError, err.Error())
-	}
-	lifthus_st, err := c.Cookie("lifthus_st")
-	if err != nil && err != http.ErrNoCookie {
-		log.Println(err)
-		return c.String(http.StatusInternalServerError, err.Error())
-	}
+// NewSessionHandler is a local
+func (ac authApiController) newSessionHandler(c echo.Context) error {
+	// get token from Authorization header
+	authorizationHeader := c.Request().Header.Get("Authorization")
 
 	var sid, stSigned, uid string
 	var exp bool
+	var err error
 
 	// case A: no session, create new session
-	if lifthus_st == nil || lifthus_st.Value == "" {
-		// revoke psid if psid exists
-		if lifthus_pst != nil && lifthus_pst.Value != "" {
-			err := session.RevokeSessionToken(c.Request().Context(), ac.dbClient, lifthus_pst.Value)
-			if err != nil {
-				log.Println(err)
-				return c.String(http.StatusInternalServerError, err.Error())
-			}
-		}
+	if authorizationHeader == "" {
 		// create new session
 		sid, stSigned, err = session.CreateSession(c.Request().Context(), ac.dbClient)
 		if err != nil {
 			log.Println(err)
 			return c.String(http.StatusInternalServerError, err.Error())
 		}
-
 		// case B,C: if session token exists, validate it.
 	} else {
+		if !strings.HasPrefix(authorizationHeader, "Bearer ") {
+			return c.String(http.StatusBadRequest, "invalid authorization header")
+		}
+		lifthus_st := authorizationHeader[7:]
+
 		// ValidateSessionToken validates the token for case B,C, and updates the db for case B-1.
-		sid, uid, exp, err = session.ValidateSession(c.Request().Context(), ac.dbClient, lifthus_st.Value)
+		sid, uid, exp, err = session.ValidateSession(c.Request().Context(), ac.dbClient, lifthus_st)
 		if err != nil {
 			log.Println(err)
 			return c.String(http.StatusInternalServerError, err.Error())
@@ -114,6 +86,8 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 				}
 				return c.JSONBlob(http.StatusOK, keepRespJSON)
 			} else { // case C-2
+
+				c.Response().Header().Set("Authorization", "Bearer "+lifthus_st)
 				return c.String(http.StatusCreated, sid)
 			}
 		}
@@ -147,74 +121,7 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 	return c.String(http.StatusCreated, sid)
 }
 
-// HusSessionHandler godoc
-// @Router       /hus/session/sign [patch]
-// @Summary      gets Hus id token and sets the session token to be signed in after updating the info.
-// @Description Hus sends id token and Lifthus sets the session info to be signed in with specific uid.
-// @Description and if the user is not registered, Lifthus will register the user.
-// @Description Hus user info's change will be reflected as well.
-// @Tags         auth
-// @Success      200 "session signing success"
-// @Failure      500 "failed to set the login session"
-func (ac authApiController) HusSessionHandler(c echo.Context) error {
-	body, err := io.ReadAll(c.Request().Body)
-	if err != nil {
-		err = fmt.Errorf("reading request body failed:%w", err)
-		log.Println(err)
-		return c.String(http.StatusInternalServerError, err.Error())
-	}
-	hscb := string(body)
-
-	hscbParsed, exp, err := helper.ParseJWTwithHMAC(hscb)
-	if err != nil {
-		log.Println(err)
-		return c.String(http.StatusInternalServerError, err.Error())
-	} else if exp {
-		err = fmt.Errorf("token is expired")
-		log.Println(err)
-		return c.String(http.StatusInternalServerError, err.Error())
-	}
-
-	// from request body json, get sid string and uid string
-	scbd := common.HusSessionCheckBody{
-		Sid:           hscbParsed["sid"].(string),
-		Uid:           hscbParsed["uid"].(string),
-		Email:         hscbParsed["email"].(string),
-		EmailVerified: hscbParsed["email_verified"].(bool),
-		Name:          hscbParsed["name"].(string),
-		GivenName:     hscbParsed["given_name"].(string),
-		FamilyName:    hscbParsed["family_name"].(string),
-		Birthdate:     hscbParsed["birthdate"].(string),
-	}
-
-	// Query if the user exists in the database
-	scbdUidUint64, err := strconv.ParseUint(scbd.Uid, 10, 64)
-	if err != nil {
-		log.Println(err)
-		return c.String(http.StatusInternalServerError, err.Error())
-	}
-	u, err := db.QueryUserByUID(c.Request().Context(), ac.dbClient, scbdUidUint64)
-	if err != nil {
-		log.Println(err)
-		return c.String(http.StatusInternalServerError, err.Error())
-	}
-	if u == nil {
-		// create new user if the user does not exist.
-		_, err = db.CreateNewLifthusUser(c.Request().Context(), ac.dbClient, scbd)
-		if err != nil {
-			log.Println(err)
-			return c.String(http.StatusInternalServerError, err.Error())
-		}
-	}
-
-	err = session.SignSession(c.Request().Context(), ac.dbClient, scbd.Sid, scbdUidUint64)
-	if err != nil {
-		log.Println(err)
-		return c.String(http.StatusInternalServerError, err.Error())
-	}
-
-	return c.String(http.StatusOK, "session signing success")
-}
+// HusSessionHandler doesn't need local version.
 
 // SessionSignHandler godoc
 // @Router       /session/sign [get]
@@ -225,12 +132,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 // @Success      200 "session successfully signed"
 // @Failure      401 "unauthorized"
 // @Failure      500 "internal server error"
-func (ac authApiController) SessionSignHandler(c echo.Context) error {
-	origin := c.Request().Header.Get("Origin")
-	if origin == "http://localhost:3000" {
-		return ac.sessionSignHandler(c)
-	}
-
+func (ac authApiController) sessionSignHandler(c echo.Context) error {
 	// get lifthus_st from cookie
 	lifthus_st, err := c.Cookie("lifthus_st")
 	if err != nil {
@@ -314,8 +216,8 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 
 	// make struct with UID and Name
 	signResp := struct {
-		UID  string `json:"uid"`
-		Name string `json:"username"`
+		UID  string `json:"user_id"`
+		Name string `json:"user_name"`
 	}{
 		UID:  strconv.FormatUint(*ls.UID, 10),
 		Name: lsu.Name,
