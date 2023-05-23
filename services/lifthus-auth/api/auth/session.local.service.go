@@ -85,6 +85,7 @@ func (ac authApiController) newSessionHandler(c echo.Context) error {
 					log.Println(err)
 					return c.String(http.StatusInternalServerError, err.Error())
 				}
+				c.Response().Header().Set("Authorization", "Bearer "+lifthus_st)
 				return c.JSONBlob(http.StatusOK, keepRespJSON)
 			} else { // case C-2
 
@@ -119,6 +120,7 @@ func (ac authApiController) newSessionHandler(c echo.Context) error {
 	}
 	c.SetCookie(cookie2)
 
+	c.Response().Header().Set("Authorization", "Bearer "+stSigned)
 	return c.String(http.StatusCreated, sid)
 }
 

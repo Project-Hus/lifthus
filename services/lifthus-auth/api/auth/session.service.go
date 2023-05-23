@@ -34,7 +34,9 @@ import (
 // @Failure      500 "failed to create new session"
 func (ac authApiController) NewSessionHandler(c echo.Context) error {
 	origin := c.Request().Header.Get("Origin")
+	fmt.Println("CHK 1")
 	if origin == "http://localhost:3000" {
+		fmt.Println("CHK 2")
 		return ac.newSessionHandler(c)
 	}
 
