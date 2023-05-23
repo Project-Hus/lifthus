@@ -19,7 +19,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// NewSessionHandler is a local
+// newSessionHandler is a local development version of NewSessionHandler.
+// which uses Authorization header instead of cookie.
 func (ac authApiController) newSessionHandler(c echo.Context) error {
 	// get token from Authorization header
 	authorizationHeader := c.Request().Header.Get("Authorization")
@@ -122,25 +123,19 @@ func (ac authApiController) newSessionHandler(c echo.Context) error {
 }
 
 // HusSessionHandler doesn't need local version.
+// it only communicates between servers.
 
-// SessionSignHandler godoc
-// @Router       /session/sign [get]
-// @Summary      gets lifthus sid in cookie from client, and signs the lifthus token.
-// @Description  Hus told lifthus that the client with specific SID is signed in.
-// @Description so now we can sign the token which is owned by the client who has verified sid.
-// @Tags         auth
-// @Success      200 "session successfully signed"
-// @Failure      401 "unauthorized"
-// @Failure      500 "internal server error"
+// sessionSignHandler is a local development version of SessionSignHandler.
+// which uses Authorization header instead of cookie.
 func (ac authApiController) sessionSignHandler(c echo.Context) error {
-	// get lifthus_st from cookie
-	lifthus_st, err := c.Cookie("lifthus_st")
-	if err != nil {
-		return c.String(http.StatusUnauthorized, err.Error())
+	authorizationHeader := c.Request().Header.Get("Authorization")
+	if !strings.HasPrefix(authorizationHeader, "Bearer ") || len(authorizationHeader) < 7 {
+		return c.String(http.StatusBadRequest, "invalid authorization header")
 	}
+	lifthus_st := authorizationHeader[7:]
 
 	// parse lifthus_st if it exists.
-	lst, exp, err := helper.ParseJWTwithHMAC(lifthus_st.Value)
+	lst, exp, err := helper.ParseJWTwithHMAC(lifthus_st)
 	if err != nil {
 		log.Println(err)
 		return c.String(http.StatusUnauthorized, err.Error())
@@ -196,16 +191,8 @@ func (ac authApiController) sessionSignHandler(c echo.Context) error {
 		err = fmt.Errorf("signing accessToekn failed:%w", err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
-	nstCookie := &http.Cookie{
-		Name:     "lifthus_st",
-		Value:    nstSigned,
-		Path:     "/",
-		Secure:   false,
-		HttpOnly: true,
-		Domain:   lifthus.CookieDomain,
-		SameSite: http.SameSiteLaxMode,
-	}
-	c.SetCookie(nstCookie)
+
+	c.Response().Header().Set("Authorization", "Bearer "+nstSigned)
 
 	// get user's Name from database using ls.UID
 	lsu, err := db.QueryUserByUID(c.Request().Context(), ac.dbClient, *ls.UID)
@@ -216,8 +203,8 @@ func (ac authApiController) sessionSignHandler(c echo.Context) error {
 
 	// make struct with UID and Name
 	signResp := struct {
-		UID  string `json:"user_id"`
-		Name string `json:"user_name"`
+		UID  string `json:"uid"`
+		Name string `json:"username"`
 	}{
 		UID:  strconv.FormatUint(*ls.UID, 10),
 		Name: lsu.Name,
