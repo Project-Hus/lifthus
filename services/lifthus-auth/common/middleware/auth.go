@@ -37,11 +37,11 @@ func UidSetter(dbClient *ent.Client) echo.MiddlewareFunc {
 				}
 				lifthus_st = authCookie.Value
 			}
-			_, uid, _, err := session.ValidateSession(c.Request().Context(), dbClient, lifthus_st)
+			_, uid, exp, err := session.ValidateSession(c.Request().Context(), dbClient, lifthus_st)
 			if err != nil {
 				return c.String(http.StatusInternalServerError, err.Error())
 			}
-			if uid != "" {
+			if uid != "" && !exp {
 				uidInUInt64, err := strconv.ParseUint(uid, 10, 64)
 				if err != nil {
 					return c.String(http.StatusInternalServerError, err.Error())
