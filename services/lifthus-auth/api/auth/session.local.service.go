@@ -3,13 +3,13 @@ package auth
 import (
 	"encoding/json"
 	"fmt"
+	"lifthus-auth/common/helper"
 	"lifthus-auth/common/lifthus"
 	"lifthus-auth/db"
-	"lifthus-auth/helper"
 	"strconv"
 	"strings"
 
-	"lifthus-auth/service/session"
+	"lifthus-auth/common/service/session"
 	"log"
 	"net/http"
 	"time"

@@ -6,9 +6,9 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
-	"strings"
 	"time"
+
+	lmw "lifthus-auth/common/middleware"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -18,7 +18,6 @@ import (
 	envbyjson "github.com/lifthus/envbyjson/go"
 
 	"lifthus-auth/ent"
-	"lifthus-auth/service/session"
 
 	"lifthus-auth/common/lifthus"
 	"lifthus-auth/db"
@@ -109,44 +108,7 @@ func main() {
 	}))
 
 	// set uid to context if the user is signed
-	e.Pre(func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-
-			var lifthus_st string
-
-			org := c.Request().Header.Get("Origin")
-			// local authentication
-			if org == "http://localhost:3000" {
-				// get authorization from req
-				authHeader := c.Request().Header.Get("Authorization")
-				if !strings.HasPrefix(authHeader, "Bearer ") {
-					return next(c)
-				}
-				lifthus_st = authHeader[7:]
-			} else { // production authentication
-				authCookie, err := c.Request().Cookie("lifthus_st")
-				if err != nil {
-					if err == http.ErrNoCookie {
-						return next(c)
-					}
-					return c.String(http.StatusInternalServerError, err.Error())
-				}
-				lifthus_st = authCookie.Value
-			}
-			_, uid, _, err := session.ValidateSession(c.Request().Context(), dbClient, lifthus_st)
-			if err != nil {
-				return c.String(http.StatusInternalServerError, err.Error())
-			}
-			if uid != "" {
-				uidInUInt64, err := strconv.ParseUint(uid, 10, 64)
-				if err != nil {
-					return c.String(http.StatusInternalServerError, err.Error())
-				}
-				c.Set("uid", uidInUInt64)
-			}
-			return next(c)
-		}
-	})
+	e.Pre(lmw.UidSetter(dbClient))
 
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
