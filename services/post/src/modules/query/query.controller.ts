@@ -1,10 +1,8 @@
 import { Controller, Get, Res, Req, Param } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { UserGuard } from 'src/common/guards/post.guard';
 import { PostQueryService } from './post.query.service';
 import { CommentQueryService } from './comment.query.service';
-import { Post, Prisma } from '@prisma/client';
-import { PostQueryDto } from './post.query.dto';
+import { Post } from '@prisma/client';
 
 @Controller('/post/query')
 export class QueryController {

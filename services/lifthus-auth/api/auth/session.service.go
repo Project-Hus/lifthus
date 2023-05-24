@@ -33,6 +33,12 @@ import (
 // @Success      201 "if there's no session or existing session is expired, return new session token"
 // @Failure      500 "failed to create new session"
 func (ac authApiController) NewSessionHandler(c echo.Context) error {
+	origin := c.Request().Header.Get("Origin")
+	fmt.Println("CHK 1")
+	if origin == "http://localhost:3000" {
+		fmt.Println("CHK 2")
+		return ac.newSessionHandler(c)
+	}
 
 	lifthus_pst, err := c.Cookie("lifthus_pst")
 	if err != nil && err != http.ErrNoCookie {
@@ -97,8 +103,8 @@ func (ac authApiController) NewSessionHandler(c echo.Context) error {
 				}
 				// make struct with UID and Name
 				keepResp := struct {
-					UID  string `json:"user_id"`
-					Name string `json:"user_name"`
+					UID  string `json:"uid"`
+					Name string `json:"username"`
 				}{
 					UID:  strconv.FormatUint(ls.ID, 10),
 					Name: ls.Name,
@@ -222,6 +228,11 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 // @Failure      401 "unauthorized"
 // @Failure      500 "internal server error"
 func (ac authApiController) SessionSignHandler(c echo.Context) error {
+	origin := c.Request().Header.Get("Origin")
+	if origin == "http://localhost:3000" {
+		return ac.sessionSignHandler(c)
+	}
+
 	// get lifthus_st from cookie
 	lifthus_st, err := c.Cookie("lifthus_st")
 	if err != nil {
@@ -305,8 +316,8 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 
 	// make struct with UID and Name
 	signResp := struct {
-		UID  string `json:"user_id"`
-		Name string `json:"user_name"`
+		UID  string `json:"uid"`
+		Name string `json:"username"`
 	}{
 		UID:  strconv.FormatUint(*ls.UID, 10),
 		Name: lsu.Name,
