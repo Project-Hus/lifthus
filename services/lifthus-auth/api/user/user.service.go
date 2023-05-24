@@ -11,7 +11,7 @@ import (
 )
 
 // GetUserInfo godoc
-// @Router       /auth/user/{uid} [get]
+// @Router       /user/{uid} [get]
 // @Param uid path string true "user id"
 // @Summary      gets uid from path param and returns user info
 // @Description  if the signed user is the same as the requested user, returns all info while hiding sensitive info if different.
