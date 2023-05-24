@@ -17,6 +17,7 @@ func CreateNewLifthusUser(c context.Context, client *ent.Client, nu common.HusSe
 		return nil, fmt.Errorf("!!parsing uid failed:%w", err)
 	}
 	lu := client.User.Create().SetID(nuUid).
+		SetProfileImageURL(nu.ProfileImageURL).
 		SetEmail(nu.Email).
 		SetEmailVerified(nu.EmailVerified).
 		SetName(nu.Name).
