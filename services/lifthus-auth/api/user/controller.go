@@ -1,7 +1,7 @@
 package user
 
 import (
-	"lifthus-auth/common/guards"
+	"lifthus-auth/common/guard"
 	"lifthus-auth/ent"
 	"net/http"
 
@@ -17,7 +17,7 @@ type UserApiControllerParams struct {
 func NewUserApiController(userApi *echo.Echo, params UserApiControllerParams) *echo.Echo {
 	userApiController := newUserApiController(params)
 
-	userApi.GET("/auth/user/:uid", guards.UserGuard(userApiController.GetUserInfo))
+	userApi.GET("/auth/user/:uid", userApiController.GetUserInfo, guard.UserGuard)
 
 	return userApi
 }
