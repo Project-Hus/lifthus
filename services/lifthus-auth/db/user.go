@@ -3,14 +3,14 @@ package db
 import (
 	"context"
 	"fmt"
-	"lifthus-auth/common"
+	"lifthus-auth/common/dto"
 	"lifthus-auth/ent"
 	"lifthus-auth/ent/user"
 	"strconv"
 	"time"
 )
 
-func CreateNewLifthusUser(c context.Context, client *ent.Client, nu common.HusSessionCheckBody) (*ent.User, error) {
+func CreateNewLifthusUser(c context.Context, client *ent.Client, nu dto.HusSessionCheckBody) (*ent.User, error) {
 	// create new lifthus user
 	nuUid, err := strconv.ParseUint(nu.Uid, 10, 64)
 	if err != nil {

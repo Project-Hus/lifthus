@@ -25,6 +25,38 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/user/{uid}": {
+            "get": {
+                "description": "if the signed user is the same as the requested user, returns all info while hiding sensitive info if different.",
+                "tags": [
+                    "user"
+                ],
+                "summary": "gets uid from path param and returns user info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user id",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns user info as json"
+                    },
+                    "400": {
+                        "description": "invalid uid"
+                    },
+                    "404": {
+                        "description": "user not found"
+                    },
+                    "500": {
+                        "description": "failed to create new session"
+                    }
+                }
+            }
+        },
         "/hus/session/sign": {
             "patch": {
                 "description": "Hus sends id token and Lifthus sets the session info to be signed in with specific uid.\nand if the user is not registered, Lifthus will register the user.\nHus user info's change will be reflected as well.",

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"lifthus-auth/common"
+	"lifthus-auth/common/dto"
 	"lifthus-auth/common/helper"
 	"lifthus-auth/common/lifthus"
 	"lifthus-auth/db"
@@ -179,15 +179,16 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	}
 
 	// from request body json, get sid string and uid string
-	scbd := common.HusSessionCheckBody{
-		Sid:           hscbParsed["sid"].(string),
-		Uid:           hscbParsed["uid"].(string),
-		Email:         hscbParsed["email"].(string),
-		EmailVerified: hscbParsed["email_verified"].(bool),
-		Name:          hscbParsed["name"].(string),
-		GivenName:     hscbParsed["given_name"].(string),
-		FamilyName:    hscbParsed["family_name"].(string),
-		Birthdate:     hscbParsed["birthdate"].(string),
+	scbd := dto.HusSessionCheckBody{
+		Sid:             hscbParsed["sid"].(string),
+		Uid:             hscbParsed["uid"].(string),
+		ProfileImageURL: hscbParsed["profile_image_url"].(string),
+		Email:           hscbParsed["email"].(string),
+		EmailVerified:   hscbParsed["email_verified"].(bool),
+		Name:            hscbParsed["name"].(string),
+		GivenName:       hscbParsed["given_name"].(string),
+		FamilyName:      hscbParsed["family_name"].(string),
+		Birthdate:       hscbParsed["birthdate"].(string),
 	}
 
 	// Query if the user exists in the database
