@@ -6,6 +6,7 @@ import (
 	"lifthus-auth/db"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -73,4 +74,25 @@ func (uc userApiController) GetUserInfo(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, udto)
+}
+
+// SetUsername godoc
+// @Router       /user/{uid} [put]
+// @Param uid path string true "user id"
+// @Param userinfo body UpdateUserInfoDto true "user info"
+// @Summary      gets uid from path param and updates user info
+// @Description  it gets uid from path param and updates user info
+// @Tags         user
+// @Success      200 "returns user info as json"
+// @Failure      400 "invalid uid"
+// @Failure      404 "user not found"
+// @Failure      500 "failed to create new session"
+func (uc userApiController) SetUserInfo(c echo.Context) error {
+	return nil
+}
+
+type UpdateUserInfoDto struct {
+	Uid       uint64     `json:"uid,omitempty"`
+	Username  *string    `json:"username,omitempty"`
+	Birthdate *time.Time `json:"birthdate,omitempty"`
 }

@@ -112,7 +112,51 @@ const docTemplate = `{
                         "description": "failed to create new session"
                     }
                 }
+            },
+            "put": {
+                "description": "it gets uid from path param and updates user info",
+                "tags": [
+                    "user"
+                ],
+                "summary": "gets uid from path param and updates user info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user id",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "user info",
+                        "name": "userinfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.UpdateUserInfoDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns user info as json"
+                    },
+                    "400": {
+                        "description": "invalid uid"
+                    },
+                    "404": {
+                        "description": "user not found"
+                    },
+                    "500": {
+                        "description": "failed to create new session"
+                    }
+                }
             }
+        }
+    },
+    "definitions": {
+        "user.UpdateUserInfoDto": {
+            "type": "object"
         }
     }
 }`

@@ -17,7 +17,10 @@ type UserApiControllerParams struct {
 func NewUserApiController(userApi *echo.Echo, params UserApiControllerParams) *echo.Echo {
 	userApiController := newUserApiController(params)
 
-	userApi.GET("/auth/user/:uid", userApiController.GetUserInfo, guard.UserGuard)
+	userApi.POST("/auth/user", userApiController.RegisterUser, guard.UserGuard)
+
+	userApi.GET("/auth/user/:uid", userApiController.GetUserInfo)
+	userApi.PUT("/auth/user/:uid", userApiController.SetUserInfo, guard.UserGuard)
 
 	return userApi
 }
@@ -36,4 +39,7 @@ type userApiController struct {
 // authApis interface defines what auth api has to handle
 type userApis interface {
 	GetUserInfo(c echo.Context) error
+	SetUserInfo(c echo.Context) error
+
+	RegisterUser(c echo.Context) error
 }

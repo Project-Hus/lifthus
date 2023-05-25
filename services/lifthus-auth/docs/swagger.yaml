@@ -1,4 +1,7 @@
 basePath: /auth
+definitions:
+  user.UpdateUserInfoDto:
+    type: object
 host: auth.lifthus.com
 info:
   contact:
@@ -83,6 +86,32 @@ paths:
         "500":
           description: failed to create new session
       summary: gets uid from path param and returns user info
+      tags:
+      - user
+    put:
+      description: it gets uid from path param and updates user info
+      parameters:
+      - description: user id
+        in: path
+        name: uid
+        required: true
+        type: string
+      - description: user info
+        in: body
+        name: userinfo
+        required: true
+        schema:
+          $ref: '#/definitions/user.UpdateUserInfoDto'
+      responses:
+        "200":
+          description: returns user info as json
+        "400":
+          description: invalid uid
+        "404":
+          description: user not found
+        "500":
+          description: failed to create new session
+      summary: gets uid from path param and updates user info
       tags:
       - user
 swagger: "2.0"
