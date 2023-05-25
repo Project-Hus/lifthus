@@ -33,24 +33,24 @@ export class UidMiddleware implements NestMiddleware {
             req.uid = parseInt(lst.uid);
           }
         } catch (e) {}
-      } else {
-        if (req.cookies['lifthus_st']) {
-          // set uid to req with cookie lifthus_st
-          const lstSigned = req.cookies['lifthus_st'];
-          try {
-            const lst =
-              await this.jwtService.verifyAsync<LifthusSessionJWTPayload>(
-                lstSigned,
-              );
-            // if lifthus session token is valid, set uid to req
-            // lst.uid to number
-            if (lst.uid) {
-              req.uid = parseInt(lst.uid);
-            }
-          } catch (e) {}
-        }
       }
-      next();
+    } else {
+      if (req.cookies['lifthus_st']) {
+        // set uid to req with cookie lifthus_st
+        const lstSigned = req.cookies['lifthus_st'];
+        try {
+          const lst =
+            await this.jwtService.verifyAsync<LifthusSessionJWTPayload>(
+              lstSigned,
+            );
+          // if lifthus session token is valid, set uid to req
+          // lst.uid to number
+          if (lst.uid) {
+            req.uid = parseInt(lst.uid);
+          }
+        } catch (e) {}
+      }
     }
+    next();
   }
 }
