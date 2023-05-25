@@ -1,4 +1,31 @@
 basePath: /auth
+definitions:
+  dto.UpdateUserInfoDto:
+    properties:
+      birthdate:
+        type: string
+      uid:
+        type: integer
+      username:
+        type: string
+    type: object
+  user.RegisterInfoDto:
+    properties:
+      benchpress:
+        type: number
+      bodyWeight:
+        type: number
+      deadlift:
+        type: number
+      height:
+        type: number
+      squat:
+        type: number
+      trainingType:
+        type: string
+      uid:
+        type: integer
+    type: object
 host: auth.lifthus.com
 info:
   contact:
@@ -63,4 +90,92 @@ paths:
       summary: gets lifthus sid in cookie from client, and signs the lifthus token.
       tags:
       - auth
+  /user:
+    post:
+      description: it gets register info and registers user to lifthus
+      parameters:
+      - description: user register info
+        in: body
+        name: userinfo
+        required: true
+        schema:
+          $ref: '#/definitions/user.RegisterInfoDto'
+      responses:
+        "200":
+          description: returns register info as json
+        "400":
+          description: invalid body
+        "401":
+          description: unauthorized
+      summary: gets user register info and registers user
+      tags:
+      - user
+    put:
+      description: it gets uid from path param and updates user info
+      parameters:
+      - description: user id
+        in: path
+        name: uid
+        required: true
+        type: string
+      - description: user info
+        in: body
+        name: userinfo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateUserInfoDto'
+      responses:
+        "200":
+          description: returns user info as json
+        "400":
+          description: invalid uid
+        "404":
+          description: user not found
+        "500":
+          description: failed to create new session
+      summary: gets uid from path param and updates user info
+      tags:
+      - user
+  /user/{uid}:
+    get:
+      description: if the signed user is the same as the requested user, returns all
+        info while hiding sensitive info if different.
+      parameters:
+      - description: user id
+        in: path
+        name: uid
+        required: true
+        type: string
+      responses:
+        "200":
+          description: returns user info as json
+        "400":
+          description: invalid uid
+        "404":
+          description: user not found
+        "500":
+          description: failed to create new session
+      summary: gets uid from path param and returns user info
+      tags:
+      - user
+  /username/{username}:
+    get:
+      description: if the signed user is the same as the requested user, returns all
+        info while hiding sensitive info if different.
+      parameters:
+      - description: user id
+        in: path
+        name: username
+        required: true
+        type: string
+      responses:
+        "200":
+          description: returns user info as json
+        "404":
+          description: user not found
+        "500":
+          description: failed to create new session
+      summary: gets username from path param and returns user info
+      tags:
+      - user
 swagger: "2.0"

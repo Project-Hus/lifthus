@@ -71,9 +71,9 @@ export class PostController {
   @Delete('/:pid')
   deletePost(
     @Req() req: Request,
-    @Param('pid') pid: number,
+    @Param('pid') pid: any,
   ): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    return this.postService.deletePost({ aid: req.uid, pid });
+    return this.postService.deletePost({ aid: req.uid, pid: Number(pid) });
   }
 
   /**

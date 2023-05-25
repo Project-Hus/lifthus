@@ -1,4 +1,4 @@
-import { Controller, Get, Res, Req, Param } from '@nestjs/common';
+import { Controller, Get, Res, Req, Param, Logger } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { PostQueryService } from './post.query.service';
 import { CommentQueryService } from './comment.query.service';
@@ -24,17 +24,9 @@ export class QueryController {
    * @param skip
    * @returns {Post[]}
    */
-  @Get('/post/:uid')
   @Get('/post/:uid/:skip')
-  async getPosts(
-    @Req() req: Request,
-    @Res() res: Response,
-    @Param('uid') uid: number,
-    @Param('skip') skip: number,
-  ): Promise<Post[]> {
-    if (skip === undefined) {
-      skip = 0;
-    }
-    return this.postQueryService.getUserPosts(uid, skip);
+  getPosts(@Param('uid') uid: any, @Param('skip') skip: any): Promise<Post[]> {
+    skip = skip || 0;
+    return this.postQueryService.getUserPosts(Number(uid), Number(skip));
   }
 }

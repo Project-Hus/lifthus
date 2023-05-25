@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"lifthus-auth/common"
+
+	"lifthus-auth/common/dto"
+	"lifthus-auth/common/helper"
 	"lifthus-auth/common/lifthus"
 	"lifthus-auth/db"
-	"lifthus-auth/helper"
 	"strconv"
 
-	"lifthus-auth/service/session"
+	"lifthus-auth/common/service/session"
 	"log"
 	"net/http"
 	"time"
@@ -34,9 +35,7 @@ import (
 // @Failure      500 "failed to create new session"
 func (ac authApiController) NewSessionHandler(c echo.Context) error {
 	origin := c.Request().Header.Get("Origin")
-	fmt.Println("CHK 1")
 	if origin == "http://localhost:3000" {
-		fmt.Println("CHK 2")
 		return ac.newSessionHandler(c)
 	}
 
@@ -178,15 +177,16 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	}
 
 	// from request body json, get sid string and uid string
-	scbd := common.HusSessionCheckBody{
-		Sid:           hscbParsed["sid"].(string),
-		Uid:           hscbParsed["uid"].(string),
-		Email:         hscbParsed["email"].(string),
-		EmailVerified: hscbParsed["email_verified"].(bool),
-		Name:          hscbParsed["name"].(string),
-		GivenName:     hscbParsed["given_name"].(string),
-		FamilyName:    hscbParsed["family_name"].(string),
-		Birthdate:     hscbParsed["birthdate"].(string),
+	scbd := dto.HusSessionCheckBody{
+		Sid:             hscbParsed["sid"].(string),
+		Uid:             hscbParsed["uid"].(string),
+		ProfileImageURL: hscbParsed["profile_image_url"].(string),
+		Email:           hscbParsed["email"].(string),
+		EmailVerified:   hscbParsed["email_verified"].(bool),
+		Name:            hscbParsed["name"].(string),
+		GivenName:       hscbParsed["given_name"].(string),
+		FamilyName:      hscbParsed["family_name"].(string),
+		Birthdate:       hscbParsed["birthdate"].(string),
 	}
 
 	// Query if the user exists in the database
