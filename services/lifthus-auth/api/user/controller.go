@@ -18,9 +18,9 @@ func NewUserApiController(userApi *echo.Echo, params UserApiControllerParams) *e
 	userApiController := newUserApiController(params)
 
 	userApi.POST("/auth/user", userApiController.RegisterUser, guard.UserGuard)
+	userApi.PUT("/auth/user", userApiController.SetUserInfo, guard.UserGuard)
 
 	userApi.GET("/auth/user/:uid", userApiController.GetUserInfo)
-	userApi.PUT("/auth/user/:uid", userApiController.SetUserInfo, guard.UserGuard)
 
 	return userApi
 }

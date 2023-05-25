@@ -6,7 +6,6 @@ import (
 	"lifthus-auth/db"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -76,10 +75,10 @@ func (uc userApiController) GetUserInfo(c echo.Context) error {
 	return c.JSON(http.StatusOK, udto)
 }
 
-// SetUsername godoc
-// @Router       /user/{uid} [put]
+// SetUserInfo godoc
+// @Router       /user [put]
 // @Param uid path string true "user id"
-// @Param userinfo body UpdateUserInfoDto true "user info"
+// @Param userinfo body dto.UpdateUserInfoDto true "user info"
 // @Summary      gets uid from path param and updates user info
 // @Description  it gets uid from path param and updates user info
 // @Tags         user
@@ -88,11 +87,34 @@ func (uc userApiController) GetUserInfo(c echo.Context) error {
 // @Failure      404 "user not found"
 // @Failure      500 "failed to create new session"
 func (uc userApiController) SetUserInfo(c echo.Context) error {
-	return nil
-}
+	uid := c.Get("uid").(uint64)
+	userInfo := new(dto.UpdateUserInfoDto)
+	if err := c.Bind(userInfo); err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+	if userInfo.Uid != uid {
+		return c.String(http.StatusUnauthorized, "Unauthorized")
+	}
+	user, err := db.UpdateUserInfo(c.Request().Context(), uc.dbClient, *userInfo)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
 
-type UpdateUserInfoDto struct {
-	Uid       uint64     `json:"uid,omitempty"`
-	Username  *string    `json:"username,omitempty"`
-	Birthdate *time.Time `json:"birthdate,omitempty"`
+	qu := &dto.QueryUserDto{
+		ID:              user.ID,
+		Registered:      user.Registered,
+		RegisteredAt:    user.RegisteredAt,
+		Username:        user.Username,
+		Email:           &user.Email,
+		EmailVerified:   &user.EmailVerified,
+		Name:            &user.Name,
+		GivenName:       &user.GivenName,
+		FamilyName:      &user.FamilyName,
+		Birthdate:       user.Birthdate,
+		ProfileImageURL: *user.ProfileImageURL,
+		CreatedAt:       user.CreatedAt,
+		UpdatedAt:       user.UpdatedAt,
+	}
+
+	return c.JSON(http.StatusOK, qu)
 }

@@ -84,3 +84,14 @@ func QueryUserByUID(c context.Context, client *ent.Client, uid uint64) (*ent.Use
 // 	}
 // 	return u, nil
 // }
+
+func UpdateUserInfo(c context.Context, client *ent.Client, userInfo dto.UpdateUserInfoDto) (*ent.User, error) {
+	u, err := client.User.UpdateOneID(userInfo.Uid).
+		SetNillableUsername(userInfo.Username).
+		SetNillableBirthdate(userInfo.Birthdate).
+		Save(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("!!updating user info failed:%w", err)
+	}
+	return u, nil
+}

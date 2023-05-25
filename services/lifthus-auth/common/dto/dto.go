@@ -29,3 +29,9 @@ type QueryUserDto struct {
 	CreatedAt       time.Time  `json:"created_at,omitempty"`
 	UpdatedAt       time.Time  `json:"updated_at,omitempty"`
 }
+
+type UpdateUserInfoDto struct {
+	Uid       uint64     `json:"uid,omitempty"`
+	Username  *string    `json:"username,omitempty"`
+	Birthdate *time.Time `json:"birthdate,omitempty"`
+}
