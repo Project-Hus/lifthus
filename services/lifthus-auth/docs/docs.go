@@ -183,6 +183,35 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/username/{username}": {
+            "get": {
+                "description": "if the signed user is the same as the requested user, returns all info while hiding sensitive info if different.",
+                "tags": [
+                    "user"
+                ],
+                "summary": "gets username from path param and returns user info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user id",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns user info as json"
+                    },
+                    "404": {
+                        "description": "user not found"
+                    },
+                    "500": {
+                        "description": "failed to create new session"
+                    }
+                }
+            }
         }
     },
     "definitions": {

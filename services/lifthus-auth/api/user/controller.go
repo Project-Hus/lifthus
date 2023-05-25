@@ -21,6 +21,7 @@ func NewUserApiController(userApi *echo.Echo, params UserApiControllerParams) *e
 	userApi.PUT("/auth/user", userApiController.SetUserInfo, guard.UserGuard)
 
 	userApi.GET("/auth/user/:uid", userApiController.GetUserInfo)
+	userApi.GET("/auth/username/:username", userApiController.GetUserInfoByUsername)
 
 	return userApi
 }
@@ -39,6 +40,7 @@ type userApiController struct {
 // authApis interface defines what auth api has to handle
 type userApis interface {
 	GetUserInfo(c echo.Context) error
+	GetUserInfoByUsername(c echo.Context) error
 	SetUserInfo(c echo.Context) error
 
 	RegisterUser(c echo.Context) error

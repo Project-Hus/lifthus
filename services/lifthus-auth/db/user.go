@@ -72,6 +72,14 @@ func QueryUserByUID(c context.Context, client *ent.Client, uid uint64) (*ent.Use
 	return u, nil
 }
 
+func QueryUserByUsername(c context.Context, client *ent.Client, username string) (*ent.User, error) {
+	u, err := client.User.Query().Where(user.Username(username)).Only(context.Background())
+	if err != nil && !ent.IsNotFound(err) {
+		return nil, fmt.Errorf("!!getting user by username failed:%w", err)
+	}
+	return u, nil
+}
+
 // UUID version
 // func QueryUserByUID(c context.Context, client *ent.Client, uid string) (*ent.User, error) {
 // 	uid_uuid, err := uuid.Parse(uid)
