@@ -1,15 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { Comment, CommentLike, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UpdateCommentDto } from './comment.dto';
+import { CreateCommentDto, UpdateCommentDto } from './comment.dto';
 
 @Injectable()
 export class CommentService {
   constructor(private readonly prisma: PrismaService) {}
 
-  wirteComment(data: Prisma.CommentCreateInput): Promise<Comment> {
+  createComment(comment: CreateCommentDto): Promise<Comment> {
+    const newComment: Prisma.CommentCreateInput = {
+      author: comment.author, // whatever the author is signed user.
+      content: comment.content,
+    };
+    if (comment.postId) {
+      newComment.post = { connect: { id: comment.postId } };
+    } else if (comment.parentId) {
+      newComment.parent = { connect: { id: comment.parentId } };
+    }
+
     return this.prisma.comment.create({
-      data,
+      data: newComment,
     });
   }
 

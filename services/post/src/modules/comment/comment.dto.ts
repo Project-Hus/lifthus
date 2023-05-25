@@ -1,5 +1,5 @@
 export type CreateCommentDto = {
-  postId: number;
+  postId?: number;
   parentId?: number;
   author: number;
   content: string;
