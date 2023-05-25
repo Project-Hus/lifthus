@@ -1,7 +1,9 @@
 package user
 
 import (
+	"context"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -25,6 +27,14 @@ func (uc userApiController) RegisterUser(c echo.Context) error {
 	if registerInfo.Uid != uid {
 		return c.String(http.StatusUnauthorized, "Unauthorized")
 	}
+	_, err := uc.dbClient.User.UpdateOneID(uid).
+		SetRegistered(true).
+		SetRegisteredAt(time.Now()).
+		Save(context.Background())
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+
 	/* TODO: register info to Rec Service */
 	return c.JSON(http.StatusOK, registerInfo)
 }
