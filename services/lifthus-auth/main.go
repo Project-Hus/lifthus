@@ -112,13 +112,11 @@ func main() {
 
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			// get request host and path
-			hst := c.Request().Host
-			// get path from req
-			pth := c.Request().URL.Path
-			// get origin from req
+			// get request ip address
+			rip := c.RealIP()
 			org := c.Request().Header.Get("Origin")
-			fmt.Println("REQUEST==========", hst, pth, org)
+			fmt.Println("REQUEST from Origin", org, rip)
+			fmt.Println(c.Request())
 			return next(c)
 		}
 	})
@@ -140,12 +138,10 @@ func main() {
 
 func Handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
 	resp, err := echoLambda.ProxyWithContext(ctx, req)
-	hst := req.Headers["Host"]
-	pth := req.RequestContext.HTTP.Path
-
+	rip := req.RequestContext.HTTP.SourceIP
 	org := req.Headers["Origin"]
-	fmt.Println("RESPONSE==========", hst, pth, org)
-	fmt.Println(fmt.Sprintf("%+v", resp))
+	fmt.Println("RESPONSE to Origin", org, rip)
+	fmt.Println(resp)
 	fmt.Println("err:", err)
 	return resp, err
 }

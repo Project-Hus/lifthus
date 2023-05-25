@@ -82,6 +82,76 @@ const docTemplate = `{
                 }
             }
         },
+        "/user": {
+            "put": {
+                "description": "it gets uid from path param and updates user info",
+                "tags": [
+                    "user"
+                ],
+                "summary": "gets uid from path param and updates user info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user id",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "user info",
+                        "name": "userinfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateUserInfoDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns user info as json"
+                    },
+                    "400": {
+                        "description": "invalid uid"
+                    },
+                    "404": {
+                        "description": "user not found"
+                    },
+                    "500": {
+                        "description": "failed to create new session"
+                    }
+                }
+            },
+            "post": {
+                "description": "it gets register info and registers user to lifthus",
+                "tags": [
+                    "user"
+                ],
+                "summary": "gets user register info and registers user",
+                "parameters": [
+                    {
+                        "description": "user register info",
+                        "name": "userinfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.RegisterInfoDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns register info as json"
+                    },
+                    "400": {
+                        "description": "invalid body"
+                    },
+                    "401": {
+                        "description": "unauthorized"
+                    }
+                }
+            }
+        },
         "/user/{uid}": {
             "get": {
                 "description": "if the signed user is the same as the requested user, returns all info while hiding sensitive info if different.",
@@ -112,51 +182,49 @@ const docTemplate = `{
                         "description": "failed to create new session"
                     }
                 }
-            },
-            "put": {
-                "description": "it gets uid from path param and updates user info",
-                "tags": [
-                    "user"
-                ],
-                "summary": "gets uid from path param and updates user info",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "user id",
-                        "name": "uid",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "user info",
-                        "name": "userinfo",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/user.UpdateUserInfoDto"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "returns user info as json"
-                    },
-                    "400": {
-                        "description": "invalid uid"
-                    },
-                    "404": {
-                        "description": "user not found"
-                    },
-                    "500": {
-                        "description": "failed to create new session"
-                    }
-                }
             }
         }
     },
     "definitions": {
-        "user.UpdateUserInfoDto": {
-            "type": "object"
+        "dto.UpdateUserInfoDto": {
+            "type": "object",
+            "properties": {
+                "birthdate": {
+                    "type": "string"
+                },
+                "uid": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "user.RegisterInfoDto": {
+            "type": "object",
+            "properties": {
+                "benchpress": {
+                    "type": "number"
+                },
+                "bodyWeight": {
+                    "type": "number"
+                },
+                "deadlift": {
+                    "type": "number"
+                },
+                "height": {
+                    "type": "number"
+                },
+                "squat": {
+                    "type": "number"
+                },
+                "trainingType": {
+                    "type": "string"
+                },
+                "uid": {
+                    "type": "integer"
+                }
+            }
         }
     }
 }`
