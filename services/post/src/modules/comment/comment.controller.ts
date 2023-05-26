@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Logger,
   Param,
   Post,
   Put,
@@ -63,7 +64,7 @@ export class CommentController {
   @Delete('/:cid')
   deleteComment(
     @Req() req: Request,
-    @Param('cid') cid: number,
+    @Param('cid') cid: any,
   ): Prisma.PrismaPromise<Prisma.BatchPayload> {
     return this.commentService.deleteComment({
       cid: Number(cid),

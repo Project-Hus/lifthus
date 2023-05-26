@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Comment, CommentLike, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCommentDto, UpdateCommentDto } from './comment.dto';
@@ -50,7 +50,8 @@ export class CommentService {
     cid: number;
     aid: number;
   }): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    return this.prisma.post.deleteMany({
+    Logger.log(`del!3ete comment ${cid} ${aid} monna`);
+    return this.prisma.comment.deleteMany({
       where: { id: cid, author: aid },
     });
   }

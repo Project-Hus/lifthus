@@ -51,11 +51,11 @@ model Comment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  post   Post?   @relation(fields: [postId], references: [id])
+  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId BigInt? @db.UnsignedBigInt
 
   parentId BigInt?   @db.UnsignedBigInt
-  parent   Comment?  @relation("replies", fields: [parentId], references: [id])
+  parent   Comment?  @relation("replies", fields: [parentId], references: [id], onDelete: Cascade)
   replies  Comment[] @relation("replies")
 
   content String @db.VarChar(531)
@@ -66,7 +66,7 @@ model Comment {
 }
 
 model PostLike {
-  post      Post     @relation(fields: [postId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId    BigInt   @db.UnsignedBigInt
   user      BigInt   @db.UnsignedBigInt
   createdAt DateTime @default(now())
@@ -75,7 +75,7 @@ model PostLike {
 }
 
 model CommentLike {
-  comment   Comment  @relation(fields: [commentId], references: [id])
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
   commentId BigInt   @db.UnsignedBigInt
   user      BigInt   @db.UnsignedBigInt
   createdAt DateTime @default(now())
@@ -86,9 +86,9 @@ model CommentLike {
 model Mention {
   id BigInt @id @default(autoincrement()) @db.UnsignedBigInt
 
-  post     Post?    @relation("mentions", fields: [postId], references: [id])
+  post     Post?    @relation("mentions", fields: [postId], references: [id], onDelete: Cascade)
   postId   BigInt?  @unique @db.UnsignedBigInt
-  coment   Comment? @relation("mentions", fields: [comentId], references: [id])
+  coment   Comment? @relation("mentions", fields: [comentId], references: [id], onDelete: Cascade)
   comentId BigInt?  @unique @db.UnsignedBigInt
 
   mentionor BigInt @db.UnsignedBigInt
