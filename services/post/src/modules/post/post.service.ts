@@ -9,7 +9,7 @@ import { slugify } from 'src/common/utils/utils';
 export class PostService {
   constructor(private readonly prisma: PrismaService) {}
 
-  wirtePost(post: CreatePostDto): Promise<Post> {
+  createPost(post: CreatePostDto): Promise<Post> {
     let slug: string;
     // get slugEnd by the first '\n'.
     const slugEnd: number = post.content.indexOf('\n');

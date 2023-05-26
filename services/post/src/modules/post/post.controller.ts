@@ -37,7 +37,7 @@ export class PostController {
     // but for now, there is no logic that deals with the uid in frontend.
     // so just embedding the uid to the author field.
     post.author = uid;
-    return this.postService.wirtePost(post);
+    return this.postService.createPost(post);
   }
 
   /**
