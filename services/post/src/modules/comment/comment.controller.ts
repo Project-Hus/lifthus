@@ -65,7 +65,10 @@ export class CommentController {
     @Req() req: Request,
     @Param('cid') cid: number,
   ): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    return this.commentService.deleteComment({ cid, aid: req.uid });
+    return this.commentService.deleteComment({
+      cid: Number(cid),
+      aid: req.uid,
+    });
   }
 
   /**
