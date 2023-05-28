@@ -79,7 +79,7 @@ func (rc relationApiController) GetUserFollowers(c echo.Context) error {
 // @Failure      404 "user not found"
 // @Failure      500 "failed to get user following list"
 func (rc relationApiController) FollowUser(c echo.Context) error {
-	signedUser := c.Get("user").(uint64)
+	signedUser := c.Get("uid").(uint64)
 	uid, err := strconv.ParseUint(c.Param("uid"), 10, 64)
 	if err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
@@ -103,8 +103,8 @@ func (rc relationApiController) FollowUser(c echo.Context) error {
 				// unfollowed successfully
 				goto SUCC
 			}
-			return c.String(http.StatusInternalServerError, err.Error())
 		}
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 SUCC:
 	return c.String(http.StatusOK, "followed or unfollowed successfully")
