@@ -56,7 +56,7 @@ paths:
       tags:
       - auth
   /relation/follow/{uid}:
-    get:
+    post:
       parameters:
       - description: user id
         in: path

@@ -70,7 +70,7 @@ func (rc relationApiController) GetUserFollowers(c echo.Context) error {
 }
 
 // FollowUser godoc
-// @Router       /relation/follow/{uid} [get]
+// @Router       /relation/follow/{uid} [post]
 // @Param uid path string true "user id"
 // @Summary      gets uid from path param and makes signed user follow the given user
 // @Tags         relation

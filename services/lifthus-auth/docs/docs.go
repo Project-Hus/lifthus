@@ -43,7 +43,7 @@ const docTemplate = `{
             }
         },
         "/relation/follow/{uid}": {
-            "get": {
+            "post": {
                 "tags": [
                     "relation"
                 ],
