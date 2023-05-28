@@ -16,6 +16,11 @@ export class QueryController {
     return this.postQueryService.getHello();
   }
 
+  @Get('/post/all')
+  getAllPosts(): Promise<Post[]> {
+    return this.postQueryService.getAllPosts();
+  }
+
   /**
    * gets user ID and skip number from url params and returns 10 posts from the skip number.
    * @param req
@@ -24,8 +29,11 @@ export class QueryController {
    * @param skip
    * @returns {Post[]}
    */
-  @Get('/post/:uid/:skip')
-  getPosts(@Param('uid') uid: any, @Param('skip') skip: any): Promise<Post[]> {
+  @Get('/post/user/:uid/:skip')
+  getUserPosts(
+    @Param('uid') uid: any,
+    @Param('skip') skip: any,
+  ): Promise<Post[]> {
     skip = skip || 0;
     return this.postQueryService.getUserPosts(Number(uid), Number(skip));
   }

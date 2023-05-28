@@ -9,6 +9,10 @@ export class PostQueryService {
     return 'Hello World!';
   }
 
+  getAllPosts(): Promise<Post[]> {
+    return Promise.reject('not implemented');
+  }
+
   async getUserPosts(uid: number, skip: number): Promise<Post[]> {
     return this.prismaService.post.findMany({
       include: {
