@@ -16,9 +16,10 @@ export class QueryController {
     return this.postQueryService.getHello();
   }
 
-  @Get('/post/all')
-  getAllPosts(): Promise<Post[]> {
-    return this.postQueryService.getAllPosts();
+  @Get('/post/all/:skip')
+  getAllPosts(@Param('skip') skip: any): Promise<Post[]> {
+    skip = skip || 0;
+    return this.postQueryService.getAllPosts(Number(skip));
   }
 
   /**

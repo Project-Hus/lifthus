@@ -9,7 +9,7 @@ export class PostQueryService {
     return 'Hello World!';
   }
 
-  getAllPosts(): Promise<Post[]> {
+  getAllPosts(skip: number): Promise<Post[]> {
     return Promise.reject('not implemented');
   }
 
