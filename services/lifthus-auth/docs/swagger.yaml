@@ -74,7 +74,7 @@ paths:
           description: failed to get user following list
       summary: gets uid from path param and makes signed user follow the given user
       tags:
-      - user
+      - relation
   /relation/followers/{uid}:
     get:
       parameters:
@@ -94,7 +94,7 @@ paths:
           description: failed to get user follower list
       summary: gets uid from path param and returns user's follower list
       tags:
-      - user
+      - relation
   /relation/following/{uid}:
     get:
       parameters:
@@ -114,7 +114,7 @@ paths:
           description: failed to get user following list
       summary: gets uid from path param and returns user's following list
       tags:
-      - user
+      - relation
   /session/new:
     get:
       description: |-

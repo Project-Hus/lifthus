@@ -13,7 +13,7 @@ import (
 // @Router       /relation/following/{uid} [get]
 // @Param uid path string true "user id"
 // @Summary      gets uid from path param and returns user's following list
-// @Tags         user
+// @Tags         relation
 // @Success      200 "returns following list as list of number"
 // @Failure      400 "invalid uid"
 // @Failure      404 "user not found"
@@ -43,7 +43,7 @@ func (rc relationApiController) GetUserFollowing(c echo.Context) error {
 // @Router       /relation/followers/{uid} [get]
 // @Param uid path string true "user id"
 // @Summary      gets uid from path param and returns user's follower list
-// @Tags         user
+// @Tags         relation
 // @Success      200 "returns follower list as list of number"
 // @Failure      400 "invalid uid"
 // @Failure      404 "user not found"
@@ -73,7 +73,7 @@ func (rc relationApiController) GetUserFollowers(c echo.Context) error {
 // @Router       /relation/follow/{uid} [get]
 // @Param uid path string true "user id"
 // @Summary      gets uid from path param and makes signed user follow the given user
-// @Tags         user
+// @Tags         relation
 // @Success      200 "signed user now follows the given user"
 // @Failure      400 "invalid uid"
 // @Failure      404 "user not found"

@@ -45,7 +45,7 @@ const docTemplate = `{
         "/relation/follow/{uid}": {
             "get": {
                 "tags": [
-                    "user"
+                    "relation"
                 ],
                 "summary": "gets uid from path param and makes signed user follow the given user",
                 "parameters": [
@@ -76,7 +76,7 @@ const docTemplate = `{
         "/relation/followers/{uid}": {
             "get": {
                 "tags": [
-                    "user"
+                    "relation"
                 ],
                 "summary": "gets uid from path param and returns user's follower list",
                 "parameters": [
@@ -107,7 +107,7 @@ const docTemplate = `{
         "/relation/following/{uid}": {
             "get": {
                 "tags": [
-                    "user"
+                    "relation"
                 ],
                 "summary": "gets uid from path param and returns user's following list",
                 "parameters": [
