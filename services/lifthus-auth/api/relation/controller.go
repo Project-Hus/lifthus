@@ -1,6 +1,7 @@
 package relation
 
 import (
+	"lifthus-auth/common/guard"
 	"lifthus-auth/ent"
 	"net/http"
 
@@ -19,7 +20,7 @@ func NewRelationApiController(relationApi *echo.Echo, params RelationApiControll
 	relationApi.GET("/auth/relation/following/:uid", relationApiController.GetUserFollowing)
 	relationApi.GET("/auth/relation/followers/:uid", relationApiController.GetUserFollowers)
 
-	relationApi.POST("/auth/relation/follow/:uid", relationApiController.FollowUser)
+	relationApi.POST("/auth/relation/follow/:uid", relationApiController.FollowUser, guard.UserGuard)
 
 	return relationApi
 }

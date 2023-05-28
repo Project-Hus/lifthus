@@ -2,6 +2,7 @@ package relation
 
 import (
 	"lifthus-auth/db"
+	"lifthus-auth/ent"
 	"net/http"
 	"strconv"
 
@@ -78,5 +79,33 @@ func (rc relationApiController) GetUserFollowers(c echo.Context) error {
 // @Failure      404 "user not found"
 // @Failure      500 "failed to get user following list"
 func (rc relationApiController) FollowUser(c echo.Context) error {
-	return c.String(http.StatusOK, "Hello, Follower!")
+	signedUser := c.Get("user").(uint64)
+	uid, err := strconv.ParseUint(c.Param("uid"), 10, 64)
+	if err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	u, err := db.QueryUserByUID(c.Request().Context(), rc.dbClient, uid)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	} else if u == nil {
+		return c.String(http.StatusNotFound, "user not found")
+	}
+
+	// try adding the follower
+	_, err = u.Update().AddFollowerIDs(signedUser).Save(c.Request().Context())
+	if err != nil {
+		// maybe already following
+		if ent.IsConstraintError(err) {
+			// then try unfollowing
+			_, err = u.Update().RemoveFollowerIDs(signedUser).Save(c.Request().Context())
+			if err == nil {
+				// unfollowed successfully
+				goto SUCC
+			}
+			return c.String(http.StatusInternalServerError, err.Error())
+		}
+	}
+SUCC:
+	return c.String(http.StatusOK, "followed or unfollowed successfully")
 }
