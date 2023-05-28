@@ -135,6 +135,37 @@ const docTemplate = `{
                 }
             }
         },
+        "/relation/unfollow/{uid}": {
+            "delete": {
+                "tags": [
+                    "relation"
+                ],
+                "summary": "gets uid from path param and makes signed user unfollow the given user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user id",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "signed user now doesn't follows the given user"
+                    },
+                    "400": {
+                        "description": "invalid uid"
+                    },
+                    "404": {
+                        "description": "user not found"
+                    },
+                    "500": {
+                        "description": "failed to get user following list"
+                    }
+                }
+            }
+        },
         "/session/new": {
             "get": {
                 "description": "case A: no session, return newly generated session token with 201.\ncase B-1: signed but expired, reset session info(used, signed_at, uid) except SID and return new session token with 201.\ncase B-2: not signed and expired, return new session token keeping SID with 201.\ncase C-1: valid and signed, just return with 200.\ncase C-2: valid and not signed, return with 201 to tell client to check Hus session.",

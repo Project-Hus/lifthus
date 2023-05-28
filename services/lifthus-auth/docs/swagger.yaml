@@ -115,6 +115,26 @@ paths:
       summary: gets uid from path param and returns user's following list
       tags:
       - relation
+  /relation/unfollow/{uid}:
+    delete:
+      parameters:
+      - description: user id
+        in: path
+        name: uid
+        required: true
+        type: string
+      responses:
+        "200":
+          description: signed user now doesn't follows the given user
+        "400":
+          description: invalid uid
+        "404":
+          description: user not found
+        "500":
+          description: failed to get user following list
+      summary: gets uid from path param and makes signed user unfollow the given user
+      tags:
+      - relation
   /session/new:
     get:
       description: |-
