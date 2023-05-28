@@ -1,18 +1,82 @@
 package relation
 
 import (
+	"lifthus-auth/db"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
 
-func (rc relationApiController) GetUserFollowings(c echo.Context) error {
-	return c.String(http.StatusOK, "Hello, Follower!")
-}
-func (rc relationApiController) GetUserFollowers(c echo.Context) error {
-	return c.String(http.StatusOK, "Hello, Follower!")
+// GetUserFollowing godoc
+// @Router       /relation/following/{uid} [get]
+// @Param uid path string true "user id"
+// @Summary      gets uid from path param and returns user's following list
+// @Tags         user
+// @Success      200 "returns following list as list of number"
+// @Failure      400 "invalid uid"
+// @Failure      404 "user not found"
+// @Failure      500 "failed to get user following list"
+func (rc relationApiController) GetUserFollowing(c echo.Context) error {
+	uid, err := strconv.ParseUint(c.Param("uid"), 10, 64)
+	if err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	u, err := db.QueryUserByUID(c.Request().Context(), rc.dbClient, uid)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	} else if u == nil {
+		return c.String(http.StatusNotFound, "user not found")
+	}
+
+	following, err := u.QueryFollowing().IDs(c.Request().Context())
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, following)
 }
 
+// GetUserFollowers godoc
+// @Router       /relation/followers/{uid} [get]
+// @Param uid path string true "user id"
+// @Summary      gets uid from path param and returns user's follower list
+// @Tags         user
+// @Success      200 "returns follower list as list of number"
+// @Failure      400 "invalid uid"
+// @Failure      404 "user not found"
+// @Failure      500 "failed to get user follower list"
+func (rc relationApiController) GetUserFollowers(c echo.Context) error {
+	uid, err := strconv.ParseUint(c.Param("uid"), 10, 64)
+	if err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	u, err := db.QueryUserByUID(c.Request().Context(), rc.dbClient, uid)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	} else if u == nil {
+		return c.String(http.StatusNotFound, "user not found")
+	}
+
+	followers, err := u.QueryFollowers().IDs(c.Request().Context())
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, followers)
+}
+
+// FollowUser godoc
+// @Router       /relation/follow/{uid} [get]
+// @Param uid path string true "user id"
+// @Summary      gets uid from path param and makes signed user follow the given user
+// @Tags         user
+// @Success      200 "signed user now follows the given user"
+// @Failure      400 "invalid uid"
+// @Failure      404 "user not found"
+// @Failure      500 "failed to get user following list"
 func (rc relationApiController) FollowUser(c echo.Context) error {
 	return c.String(http.StatusOK, "Hello, Follower!")
 }

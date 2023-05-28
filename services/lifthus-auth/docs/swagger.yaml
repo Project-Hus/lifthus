@@ -55,6 +55,66 @@ paths:
         updating the info.
       tags:
       - auth
+  /relation/follow/{uid}:
+    get:
+      parameters:
+      - description: user id
+        in: path
+        name: uid
+        required: true
+        type: string
+      responses:
+        "200":
+          description: signed user now follows the given user
+        "400":
+          description: invalid uid
+        "404":
+          description: user not found
+        "500":
+          description: failed to get user following list
+      summary: gets uid from path param and makes signed user follow the given user
+      tags:
+      - user
+  /relation/followers/{uid}:
+    get:
+      parameters:
+      - description: user id
+        in: path
+        name: uid
+        required: true
+        type: string
+      responses:
+        "200":
+          description: returns follower list as list of number
+        "400":
+          description: invalid uid
+        "404":
+          description: user not found
+        "500":
+          description: failed to get user follower list
+      summary: gets uid from path param and returns user's follower list
+      tags:
+      - user
+  /relation/following/{uid}:
+    get:
+      parameters:
+      - description: user id
+        in: path
+        name: uid
+        required: true
+        type: string
+      responses:
+        "200":
+          description: returns following list as list of number
+        "400":
+          description: invalid uid
+        "404":
+          description: user not found
+        "500":
+          description: failed to get user following list
+      summary: gets uid from path param and returns user's following list
+      tags:
+      - user
   /session/new:
     get:
       description: |-
@@ -132,7 +192,7 @@ paths:
         "404":
           description: user not found
         "500":
-          description: failed to create new session
+          description: failed to set user info
       summary: gets uid from path param and updates user info
       tags:
       - user
@@ -154,7 +214,7 @@ paths:
         "404":
           description: user not found
         "500":
-          description: failed to create new session
+          description: failed to get user info
       summary: gets uid from path param and returns user info
       tags:
       - user
@@ -174,7 +234,7 @@ paths:
         "404":
           description: user not found
         "500":
-          description: failed to create new session
+          description: failed to get user info
       summary: gets username from path param and returns user info
       tags:
       - user

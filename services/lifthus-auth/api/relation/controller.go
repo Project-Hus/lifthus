@@ -14,11 +14,12 @@ type RelationApiControllerParams struct {
 
 // NewRelationApiController returns Echo comprising of auth api routes. instance to main.
 func NewRelationApiController(relationApi *echo.Echo, params RelationApiControllerParams) *echo.Echo {
-	_ = newRelationApiController(params)
+	relationApiController := newRelationApiController(params)
 
-	relationApi.GET("/auth/relation", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, Follower!")
-	})
+	relationApi.GET("/auth/relation/following/:uid", relationApiController.GetUserFollowing)
+	relationApi.GET("/auth/relation/followers/:uid", relationApiController.GetUserFollowers)
+
+	relationApi.POST("/auth/relation/follow/:uid", relationApiController.FollowUser)
 
 	return relationApi
 }
@@ -36,7 +37,7 @@ type relationApiController struct {
 
 // authApis interface defines what auth api has to handle
 type relationApis interface {
-	GetUserFollowings(c echo.Context) error
+	GetUserFollowing(c echo.Context) error
 	GetUserFollowers(c echo.Context) error
 
 	// Unfollowing can be done with Follow endpoint.
