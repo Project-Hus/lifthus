@@ -36,4 +36,9 @@ type relationApiController struct {
 
 // authApis interface defines what auth api has to handle
 type relationApis interface {
+	GetUserFollowings(c echo.Context) error
+	GetUserFollowers(c echo.Context) error
+
+	// Unfollowing can be done with Follow endpoint.
+	FollowUser(c echo.Context) error
 }
