@@ -92,7 +92,7 @@ func (rc relationApiController) FollowUser(c echo.Context) error {
 	}
 
 	// try adding the follower
-	_, err = u.Update().AddFollowingIDs(signedUser).Save(c.Request().Context())
+	_, err = u.Update().AddFollowerIDs(signedUser).Save(c.Request().Context())
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -123,7 +123,7 @@ func (rc relationApiController) UnfollowUser(c echo.Context) error {
 	}
 
 	// try adding the follower
-	_, err = u.Update().RemoveFollowingIDs(signedUser).Save(c.Request().Context())
+	_, err = u.Update().RemoveFollowerIDs(signedUser).Save(c.Request().Context())
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}

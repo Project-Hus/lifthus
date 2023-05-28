@@ -51,10 +51,10 @@ type User struct {
 type UserEdges struct {
 	// Sessions holds the value of the sessions edge.
 	Sessions []*Session `json:"sessions,omitempty"`
-	// Followers holds the value of the followers edge.
-	Followers []*User `json:"followers,omitempty"`
 	// Following holds the value of the following edge.
 	Following []*User `json:"following,omitempty"`
+	// Followers holds the value of the followers edge.
+	Followers []*User `json:"followers,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -69,22 +69,22 @@ func (e UserEdges) SessionsOrErr() ([]*Session, error) {
 	return nil, &NotLoadedError{edge: "sessions"}
 }
 
-// FollowersOrErr returns the Followers value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) FollowersOrErr() ([]*User, error) {
-	if e.loadedTypes[1] {
-		return e.Followers, nil
-	}
-	return nil, &NotLoadedError{edge: "followers"}
-}
-
 // FollowingOrErr returns the Following value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) FollowingOrErr() ([]*User, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		return e.Following, nil
 	}
 	return nil, &NotLoadedError{edge: "following"}
+}
+
+// FollowersOrErr returns the Followers value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) FollowersOrErr() ([]*User, error) {
+	if e.loadedTypes[2] {
+		return e.Followers, nil
+	}
+	return nil, &NotLoadedError{edge: "followers"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -215,14 +215,14 @@ func (u *User) QuerySessions() *SessionQuery {
 	return NewUserClient(u.config).QuerySessions(u)
 }
 
-// QueryFollowers queries the "followers" edge of the User entity.
-func (u *User) QueryFollowers() *UserQuery {
-	return NewUserClient(u.config).QueryFollowers(u)
-}
-
 // QueryFollowing queries the "following" edge of the User entity.
 func (u *User) QueryFollowing() *UserQuery {
 	return NewUserClient(u.config).QueryFollowing(u)
+}
+
+// QueryFollowers queries the "followers" edge of the User entity.
+func (u *User) QueryFollowers() *UserQuery {
+	return NewUserClient(u.config).QueryFollowers(u)
 }
 
 // Update returns a builder for updating this User.

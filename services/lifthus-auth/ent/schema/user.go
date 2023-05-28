@@ -44,7 +44,7 @@ func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("sessions", Session.Type),
 
-		edge.To("following", User.Type).
-			From("followers"),
+		edge.To("followers", User.Type).
+			From("following"),
 	}
 }

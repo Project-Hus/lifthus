@@ -53,26 +53,26 @@ var (
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 	}
-	// UserFollowingColumns holds the columns for the "user_following" table.
-	UserFollowingColumns = []*schema.Column{
+	// UserFollowersColumns holds the columns for the "user_followers" table.
+	UserFollowersColumns = []*schema.Column{
 		{Name: "user_id", Type: field.TypeUint64},
-		{Name: "follower_id", Type: field.TypeUint64},
+		{Name: "following_id", Type: field.TypeUint64},
 	}
-	// UserFollowingTable holds the schema information for the "user_following" table.
-	UserFollowingTable = &schema.Table{
-		Name:       "user_following",
-		Columns:    UserFollowingColumns,
-		PrimaryKey: []*schema.Column{UserFollowingColumns[0], UserFollowingColumns[1]},
+	// UserFollowersTable holds the schema information for the "user_followers" table.
+	UserFollowersTable = &schema.Table{
+		Name:       "user_followers",
+		Columns:    UserFollowersColumns,
+		PrimaryKey: []*schema.Column{UserFollowersColumns[0], UserFollowersColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "user_following_user_id",
-				Columns:    []*schema.Column{UserFollowingColumns[0]},
+				Symbol:     "user_followers_user_id",
+				Columns:    []*schema.Column{UserFollowersColumns[0]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "user_following_follower_id",
-				Columns:    []*schema.Column{UserFollowingColumns[1]},
+				Symbol:     "user_followers_following_id",
+				Columns:    []*schema.Column{UserFollowersColumns[1]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -82,7 +82,7 @@ var (
 	Tables = []*schema.Table{
 		SessionsTable,
 		UsersTable,
-		UserFollowingTable,
+		UserFollowersTable,
 	}
 )
 
@@ -91,6 +91,6 @@ func init() {
 	SessionsTable.Annotation = &entsql.Annotation{
 		Options: "ENGINE=MEMORY",
 	}
-	UserFollowingTable.ForeignKeys[0].RefTable = UsersTable
-	UserFollowingTable.ForeignKeys[1].RefTable = UsersTable
+	UserFollowersTable.ForeignKeys[0].RefTable = UsersTable
+	UserFollowersTable.ForeignKeys[1].RefTable = UsersTable
 }
