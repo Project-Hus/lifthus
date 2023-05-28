@@ -21,6 +21,7 @@ func NewRelationApiController(relationApi *echo.Echo, params RelationApiControll
 	relationApi.GET("/auth/relation/followers/:uid", relationApiController.GetUserFollowers)
 
 	relationApi.POST("/auth/relation/follow/:uid", relationApiController.FollowUser, guard.UserGuard)
+	relationApi.DELETE("/auth/relation/unfollow/:uid", relationApiController.UnfollowUser, guard.UserGuard)
 
 	return relationApi
 }
@@ -43,4 +44,5 @@ type relationApis interface {
 
 	// Unfollowing can be done with Follow endpoint.
 	FollowUser(c echo.Context) error
+	UnfollowUser(c echo.Context) error
 }

@@ -43,7 +43,7 @@ const docTemplate = `{
             }
         },
         "/relation/follow/{uid}": {
-            "get": {
+            "post": {
                 "tags": [
                     "relation"
                 ],
@@ -122,6 +122,37 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "returns following list as list of number"
+                    },
+                    "400": {
+                        "description": "invalid uid"
+                    },
+                    "404": {
+                        "description": "user not found"
+                    },
+                    "500": {
+                        "description": "failed to get user following list"
+                    }
+                }
+            }
+        },
+        "/relation/unfollow/{uid}": {
+            "delete": {
+                "tags": [
+                    "relation"
+                ],
+                "summary": "gets uid from path param and makes signed user unfollow the given user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user id",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "signed user now doesn't follows the given user"
                     },
                     "400": {
                         "description": "invalid uid"
