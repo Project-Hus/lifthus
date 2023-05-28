@@ -23,6 +23,7 @@ import (
 	"lifthus-auth/db"
 
 	"lifthus-auth/api/auth"
+	"lifthus-auth/api/relation"
 	"lifthus-auth/api/user"
 
 	_ "lifthus-auth/docs"
@@ -76,14 +77,6 @@ func main() {
 	authHttpClient := &http.Client{
 		Timeout: time.Second * 5,
 	}
-	authApiControllerParams := auth.AuthApiControllerParams{
-		DbClient:   dbClient,
-		HttpClient: authHttpClient,
-	}
-	userApiControllerParams := user.UserApiControllerParams{
-		DbClient:   dbClient,
-		HttpClient: authHttpClient,
-	}
 
 	// create echo web server instance and set CORS headers
 	e := echo.New()
@@ -121,8 +114,22 @@ func main() {
 		}
 	})
 
+	authApiControllerParams := auth.AuthApiControllerParams{
+		DbClient:   dbClient,
+		HttpClient: authHttpClient,
+	}
+	userApiControllerParams := user.UserApiControllerParams{
+		DbClient:   dbClient,
+		HttpClient: authHttpClient,
+	}
+	relationApiControllerParams := relation.RelationApiControllerParams{
+		DbClient:   dbClient,
+		HttpClient: authHttpClient,
+	}
+
 	e = auth.NewAuthApiController(e, authApiControllerParams)
 	e = user.NewUserApiController(e, userApiControllerParams)
+	e = relation.NewRelationApiController(e, relationApiControllerParams)
 
 	e.GET("/auth/openapi/*", echoSwagger.WrapHandler)
 

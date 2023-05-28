@@ -19,7 +19,7 @@ import (
 // @Success      200 "returns user info as json"
 // @Failure      400 "invalid uid"
 // @Failure      404 "user not found"
-// @Failure      500 "failed to create new session"
+// @Failure      500 "failed to get user info"
 func (uc userApiController) GetUserInfo(c echo.Context) error {
 	signedUser, ok := c.Get("uid").(uint64)
 
@@ -83,7 +83,7 @@ func (uc userApiController) GetUserInfo(c echo.Context) error {
 // @Tags         user
 // @Success      200 "returns user info as json"
 // @Failure      404 "user not found"
-// @Failure      500 "failed to create new session"
+// @Failure      500 "failed to get user info"
 func (uc userApiController) GetUserInfoByUsername(c echo.Context) error {
 	signedUser, ok := c.Get("uid").(uint64)
 
@@ -146,7 +146,7 @@ func (uc userApiController) GetUserInfoByUsername(c echo.Context) error {
 // @Success      200 "returns user info as json"
 // @Failure      400 "invalid uid"
 // @Failure      404 "user not found"
-// @Failure      500 "failed to create new session"
+// @Failure      500 "failed to set user info"
 func (uc userApiController) SetUserInfo(c echo.Context) error {
 	uid := c.Get("uid").(uint64)
 	userInfo := new(dto.UpdateUserInfoDto)

@@ -171,6 +171,36 @@ func (uc *UserCreate) AddSessions(s ...*Session) *UserCreate {
 	return uc.AddSessionIDs(ids...)
 }
 
+// AddFollowerIDs adds the "followers" edge to the User entity by IDs.
+func (uc *UserCreate) AddFollowerIDs(ids ...uint64) *UserCreate {
+	uc.mutation.AddFollowerIDs(ids...)
+	return uc
+}
+
+// AddFollowers adds the "followers" edges to the User entity.
+func (uc *UserCreate) AddFollowers(u ...*User) *UserCreate {
+	ids := make([]uint64, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return uc.AddFollowerIDs(ids...)
+}
+
+// AddFollowingIDs adds the "following" edge to the User entity by IDs.
+func (uc *UserCreate) AddFollowingIDs(ids ...uint64) *UserCreate {
+	uc.mutation.AddFollowingIDs(ids...)
+	return uc
+}
+
+// AddFollowing adds the "following" edges to the User entity.
+func (uc *UserCreate) AddFollowing(u ...*User) *UserCreate {
+	ids := make([]uint64, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return uc.AddFollowingIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uc *UserCreate) Mutation() *UserMutation {
 	return uc.mutation
@@ -335,6 +365,38 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(session.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.FollowersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.FollowersTable,
+			Columns: user.FollowersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.FollowingIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.FollowingTable,
+			Columns: user.FollowingPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {
