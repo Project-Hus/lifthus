@@ -93,12 +93,12 @@ func (rc relationApiController) FollowUser(c echo.Context) error {
 	}
 
 	// try adding the follower
-	_, err = u.Update().AddFollowerIDs(signedUser).Save(c.Request().Context())
+	_, err = u.Update().AddFollowingIDs(signedUser).Save(c.Request().Context())
 	if err != nil {
 		// maybe already following
 		if ent.IsConstraintError(err) {
 			// then try unfollowing
-			_, err = u.Update().RemoveFollowerIDs(signedUser).Save(c.Request().Context())
+			_, err = u.Update().RemoveFollowingIDs(signedUser).Save(c.Request().Context())
 			if err == nil {
 				// unfollowed successfully
 				goto SUCC
