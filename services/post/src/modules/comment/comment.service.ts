@@ -84,6 +84,9 @@ export class CommentService {
           .then((res) => {
             // if unliking is successful, return the new likenum
             return res[1].likenum;
+          })
+          .catch((err) => {
+            return err;
           });
       });
   }

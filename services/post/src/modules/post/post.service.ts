@@ -98,6 +98,9 @@ export class PostService {
           .then((res) => {
             // if unliking is successful, return the new likenum
             return res[1].likenum;
+          })
+          .catch((err) => {
+            return Promise.reject(err);
           });
       });
   }
