@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Logger,
   Param,
   Post,
   Put,
@@ -83,25 +84,22 @@ export class PostController {
    */
   @UseGuards(UserGuard)
   @Post('/like/:pid')
-  likePost(
-    @Req() req: Request,
-    @Param('pid') pid: number,
-  ): Promise<[PostLike, PPost]> {
-    return this.postService.likePost(req.uid, pid);
+  likePost(@Req() req: Request, @Param('pid') pid: any): Promise<number> {
+    return this.postService.likePost({ uid: req.uid, pid: Number(pid) });
   }
 
-  /**
-   * unlikes the post by the pid in the body if the user is signed.
-   * @param req
-   * @param post
-   * @returns
-   */
-  @UseGuards(UserGuard)
-  @Post('/unlik/:pid')
-  unlikePost(
-    @Req() req: Request,
-    @Param('pid') pid: number,
-  ): Promise<[PostLike, PPost]> {
-    return this.postService.unlikePost(req.uid, pid);
-  }
+  // /**
+  //  * unlikes the post by the pid in the body if the user is signed.
+  //  * @param req
+  //  * @param post
+  //  * @returns
+  //  */
+  // @UseGuards(UserGuard)
+  // @Post('/unlike/:pid')
+  // unlikePost(
+  //   @Req() req: Request,
+  //   @Param('pid') pid: number,
+  // ): Promise<[PostLike, PPost]> {
+  //   return this.postService.unlikePost(req.uid, pid);
+  // }
 }

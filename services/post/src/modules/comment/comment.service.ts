@@ -56,31 +56,38 @@ export class CommentService {
     });
   }
 
-  likeComment(
-    uid: number,
-    where: Prisma.CommentWhereUniqueInput,
-  ): Promise<[CommentLike, Comment]> {
+  likeComment({ uid, cid }: { uid: number; cid: number }): Promise<number> {
     const likeComment = this.prisma.commentLike.create({
-      data: { user: uid, comment: { connect: where } },
+      data: { user: uid, comment: { connect: { id: cid } } },
     });
     const increaseCommentLikeNum = this.prisma.comment.update({
       data: { likenum: { increment: 1 } },
-      where,
+      where: { id: cid },
     });
-    return this.prisma.$transaction([likeComment, increaseCommentLikeNum]);
-  }
-
-  unlikeComment(
-    uid: number,
-    where: Prisma.CommentWhereUniqueInput,
-  ): Promise<[CommentLike, Comment]> {
-    const unlikeComment = this.prisma.commentLike.delete({
-      where: { commentId_user: { user: uid, commentId: where.id } },
-    });
-    const decreaseCommnetLikeNum = this.prisma.comment.update({
-      data: { likenum: { decrement: 1 } },
-      where,
-    });
-    return this.prisma.$transaction([unlikeComment, decreaseCommnetLikeNum]);
+    return this.prisma
+      .$transaction([likeComment, increaseCommentLikeNum])
+      .then((res) => {
+        // if liking is successful, return the new likenum
+        return res[1].likenum;
+      })
+      .catch((err) => {
+        // if failed try unliking
+        const unlikeComment = this.prisma.commentLike.delete({
+          where: { commentId_user: { user: uid, commentId: cid } },
+        });
+        const decreaseCommnetLikeNum = this.prisma.comment.update({
+          data: { likenum: { decrement: 1 } },
+          where: { id: cid },
+        });
+        return this.prisma
+          .$transaction([unlikeComment, decreaseCommnetLikeNum])
+          .then((res) => {
+            // if unliking is successful, return the new likenum
+            return res[1].likenum;
+          })
+          .catch((err) => {
+            return err;
+          });
+      });
   }
 }

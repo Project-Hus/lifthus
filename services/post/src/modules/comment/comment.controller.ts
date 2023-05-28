@@ -80,25 +80,22 @@ export class CommentController {
    */
   @UseGuards(UserGuard)
   @Post('/like/:cid')
-  likeComment(
-    @Req() req: Request,
-    @Param('cid') cid: number,
-  ): Promise<[CommentLike, Comment]> {
-    return this.commentService.likeComment(req.uid, { id: cid });
+  likeComment(@Req() req: Request, @Param('cid') cid: any): Promise<number> {
+    return this.commentService.likeComment({ uid: req.uid, cid: Number(cid) });
   }
 
-  /**
-   * unlikes the post by the pid in the body if the user is signed.
-   * @param req
-   * @param post
-   * @returns
-   */
-  @UseGuards(UserGuard)
-  @Post('/unlike/:cid')
-  unlikeComment(
-    @Req() req: Request,
-    @Param('cid') cid: number,
-  ): Promise<[CommentLike, Comment]> {
-    return this.commentService.unlikeComment(req.uid, { id: cid });
-  }
+  // /**
+  //  * unlikes the post by the pid in the body if the user is signed.
+  //  * @param req
+  //  * @param post
+  //  * @returns
+  //  */
+  // @UseGuards(UserGuard)
+  // @Post('/unlike/:cid')
+  // unlikeComment(
+  //   @Req() req: Request,
+  //   @Param('cid') cid: number,
+  // ): Promise<[CommentLike, Comment]> {
+  //   return this.commentService.unlikeComment(req.uid, { id: cid });
+  // }
 }
