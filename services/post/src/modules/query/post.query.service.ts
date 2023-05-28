@@ -56,9 +56,6 @@ export class PostQueryService {
               },
             },
           },
-          orderBy: {
-            createdAt: 'desc',
-          },
         },
         mentions: {
           select: {
