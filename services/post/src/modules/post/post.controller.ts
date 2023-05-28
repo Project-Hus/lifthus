@@ -97,7 +97,7 @@ export class PostController {
    * @returns
    */
   @UseGuards(UserGuard)
-  @Post('/unlik/:pid')
+  @Post('/unlike/:pid')
   unlikePost(
     @Req() req: Request,
     @Param('pid') pid: number,
