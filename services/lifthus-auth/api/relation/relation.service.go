@@ -73,30 +73,36 @@ func (rc relationApiController) GetUserFollowers(c echo.Context) error {
 // @Param uid path string true "user id"
 // @Summary      gets uid from path param and makes signed user follow the given user
 // @Tags         relation
-// @Success      200 "signed user now follows the given user"
+// @Success      200 "new following list"
 // @Failure      400 "invalid uid"
 // @Failure      404 "user not found"
 // @Failure      500 "failed to get user following list"
 func (rc relationApiController) FollowUser(c echo.Context) error {
-	signedUser := c.Get("uid").(uint64)
+	signedUid := c.Get("uid").(uint64)
 	uid, err := strconv.ParseUint(c.Param("uid"), 10, 64)
 	if err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	u, err := db.QueryUserByUID(c.Request().Context(), rc.dbClient, uid)
+	signedUser, err := db.QueryUserByUID(c.Request().Context(), rc.dbClient, signedUid)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
-	} else if u == nil {
+	} else if signedUser == nil {
 		return c.String(http.StatusNotFound, "user not found")
 	}
 
 	// try adding the follower
-	_, err = u.Update().AddFollowerIDs(signedUser).Save(c.Request().Context())
+	signedUser, err = signedUser.Update().AddFollowingIDs(uid).Save(c.Request().Context())
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
-	return c.String(http.StatusOK, "followed successfully")
+
+	following, err := signedUser.QueryFollowing().IDs(c.Request().Context())
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, following)
 }
 
 // UnfollowUser godoc
@@ -104,28 +110,34 @@ func (rc relationApiController) FollowUser(c echo.Context) error {
 // @Param uid path string true "user id"
 // @Summary      gets uid from path param and makes signed user unfollow the given user
 // @Tags         relation
-// @Success      200 "signed user now doesn't follows the given user"
+// @Success      200 "new following list"
 // @Failure      400 "invalid uid"
 // @Failure      404 "user not found"
 // @Failure      500 "failed to get user following list"
 func (rc relationApiController) UnfollowUser(c echo.Context) error {
-	signedUser := c.Get("uid").(uint64)
+	signedUid := c.Get("uid").(uint64)
 	uid, err := strconv.ParseUint(c.Param("uid"), 10, 64)
 	if err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	u, err := db.QueryUserByUID(c.Request().Context(), rc.dbClient, uid)
+	signedUser, err := db.QueryUserByUID(c.Request().Context(), rc.dbClient, signedUid)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
-	} else if u == nil {
+	} else if signedUser == nil {
 		return c.String(http.StatusNotFound, "user not found")
 	}
 
 	// try adding the follower
-	_, err = u.Update().RemoveFollowerIDs(signedUser).Save(c.Request().Context())
+	signedUser, err = signedUser.Update().RemoveFollowingIDs(uid).Save(c.Request().Context())
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
-	return c.String(http.StatusOK, "unfollowed successfully")
+
+	following, err := signedUser.QueryFollowing().IDs(c.Request().Context())
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, following)
 }
