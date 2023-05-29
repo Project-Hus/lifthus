@@ -6,6 +6,7 @@ import envbyjson from 'envbyjson';
 
 import cookieParser from 'cookie-parser';
 
+/* swagger not working in lambda environment */
 // import SwaggerUi from 'swagger-ui-express';
 // import { OpenapiModule } from './openapi/openapi.module';
 
@@ -45,9 +46,10 @@ export async function bootstrap() {
 
   app.use(cookieParser());
 
-  //const openapi = await NestFactory.create(OpenapiModule);
-  //const openapiDoc = await setupSwagger(openapi);
-  //app.use('/post/openapi', SwaggerUi.serve, SwaggerUi.setup(openapiDoc));
+  /* swagger not working in lambda environment */
+  // const openapi = await NestFactory.create(OpenapiModule);
+  // const openapiDoc = await setupSwagger(openapi);
+  // app.use('/post/openapi', SwaggerUi.serve, SwaggerUi.setup(openapiDoc));
 
   await app.init();
 
