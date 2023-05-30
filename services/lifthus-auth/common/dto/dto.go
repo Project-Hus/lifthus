@@ -28,10 +28,19 @@ type QueryUserDto struct {
 	ProfileImageURL string     `json:"profile_image_url,omitempty"`
 	CreatedAt       time.Time  `json:"created_at,omitempty"`
 	UpdatedAt       time.Time  `json:"updated_at,omitempty"`
+
+	Usercode string  `json:"usercode,omitempty"`
+	Company  *string `json:"company,omitempty"`
+	Location *string `json:"location,omitempty"`
+	Contact  *string `json:"contact,omitempty"`
 }
 
 type UpdateUserInfoDto struct {
 	Uid       uint64     `json:"uid,omitempty"`
 	Username  *string    `json:"username,omitempty"`
 	Birthdate *time.Time `json:"birthdate,omitempty"`
+
+	Company  *string `json:"company,omitempty"`
+	Location *string `json:"location,omitempty"`
+	Contact  *string `json:"contact,omitempty"`
 }

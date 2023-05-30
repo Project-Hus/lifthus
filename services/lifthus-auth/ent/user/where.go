@@ -865,6 +865,16 @@ func CompanyHasSuffix(v string) predicate.User {
 	return predicate.User(sql.FieldHasSuffix(FieldCompany, v))
 }
 
+// CompanyIsNil applies the IsNil predicate on the "company" field.
+func CompanyIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldCompany))
+}
+
+// CompanyNotNil applies the NotNil predicate on the "company" field.
+func CompanyNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldCompany))
+}
+
 // CompanyEqualFold applies the EqualFold predicate on the "company" field.
 func CompanyEqualFold(v string) predicate.User {
 	return predicate.User(sql.FieldEqualFold(FieldCompany, v))
@@ -930,6 +940,16 @@ func LocationHasSuffix(v string) predicate.User {
 	return predicate.User(sql.FieldHasSuffix(FieldLocation, v))
 }
 
+// LocationIsNil applies the IsNil predicate on the "location" field.
+func LocationIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldLocation))
+}
+
+// LocationNotNil applies the NotNil predicate on the "location" field.
+func LocationNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldLocation))
+}
+
 // LocationEqualFold applies the EqualFold predicate on the "location" field.
 func LocationEqualFold(v string) predicate.User {
 	return predicate.User(sql.FieldEqualFold(FieldLocation, v))
@@ -993,6 +1013,16 @@ func ContactHasPrefix(v string) predicate.User {
 // ContactHasSuffix applies the HasSuffix predicate on the "contact" field.
 func ContactHasSuffix(v string) predicate.User {
 	return predicate.User(sql.FieldHasSuffix(FieldContact, v))
+}
+
+// ContactIsNil applies the IsNil predicate on the "contact" field.
+func ContactIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldContact))
+}
+
+// ContactNotNil applies the NotNil predicate on the "contact" field.
+func ContactNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldContact))
 }
 
 // ContactEqualFold applies the EqualFold predicate on the "contact" field.

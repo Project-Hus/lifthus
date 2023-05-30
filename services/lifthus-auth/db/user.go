@@ -97,6 +97,9 @@ func UpdateUserInfo(c context.Context, client *ent.Client, userInfo dto.UpdateUs
 	u, err := client.User.UpdateOneID(userInfo.Uid).
 		SetNillableUsername(userInfo.Username).
 		SetNillableBirthdate(userInfo.Birthdate).
+		SetNillableCompany(userInfo.Company).
+		SetNillableLocation(userInfo.Location).
+		SetNillableContact(userInfo.Contact).
 		Save(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("!!updating user info failed:%w", err)

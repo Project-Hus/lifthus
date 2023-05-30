@@ -44,11 +44,11 @@ type User struct {
 	// Usercode holds the value of the "usercode" field.
 	Usercode string `json:"usercode,omitempty"`
 	// Company holds the value of the "company" field.
-	Company string `json:"company,omitempty"`
+	Company *string `json:"company,omitempty"`
 	// Location holds the value of the "location" field.
-	Location string `json:"location,omitempty"`
+	Location *string `json:"location,omitempty"`
 	// Contact holds the value of the "contact" field.
-	Contact string `json:"contact,omitempty"`
+	Contact *string `json:"contact,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -215,19 +215,22 @@ func (u *User) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field company", values[i])
 			} else if value.Valid {
-				u.Company = value.String
+				u.Company = new(string)
+				*u.Company = value.String
 			}
 		case user.FieldLocation:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field location", values[i])
 			} else if value.Valid {
-				u.Location = value.String
+				u.Location = new(string)
+				*u.Location = value.String
 			}
 		case user.FieldContact:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field contact", values[i])
 			} else if value.Valid {
-				u.Contact = value.String
+				u.Contact = new(string)
+				*u.Contact = value.String
 			}
 		default:
 			u.selectValues.Set(columns[i], values[i])
@@ -327,14 +330,20 @@ func (u *User) String() string {
 	builder.WriteString("usercode=")
 	builder.WriteString(u.Usercode)
 	builder.WriteString(", ")
-	builder.WriteString("company=")
-	builder.WriteString(u.Company)
+	if v := u.Company; v != nil {
+		builder.WriteString("company=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
-	builder.WriteString("location=")
-	builder.WriteString(u.Location)
+	if v := u.Location; v != nil {
+		builder.WriteString("location=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
-	builder.WriteString("contact=")
-	builder.WriteString(u.Contact)
+	if v := u.Contact; v != nil {
+		builder.WriteString("contact=")
+		builder.WriteString(*v)
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

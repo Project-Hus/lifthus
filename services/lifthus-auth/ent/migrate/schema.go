@@ -47,9 +47,9 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "usercode", Type: field.TypeString, Unique: true},
-		{Name: "company", Type: field.TypeString, Default: "🏋️"},
-		{Name: "location", Type: field.TypeString, Default: "🌏"},
-		{Name: "contact", Type: field.TypeString, Default: "💌"},
+		{Name: "company", Type: field.TypeString, Nullable: true, Default: "🏋️"},
+		{Name: "location", Type: field.TypeString, Nullable: true, Default: "🌏"},
+		{Name: "contact", Type: field.TypeString, Nullable: true, Default: "💌"},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{

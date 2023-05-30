@@ -42,9 +42,9 @@ func (User) Fields() []ent.Field {
 
 		// contact info
 		field.String("usercode").DefaultFunc(randomHex).Unique(),
-		field.String("company").Default("🏋️"),
-		field.String("location").Default("🌏"),
-		field.String("contact").Default("💌"),
+		field.String("company").Default("🏋️").Optional().Nillable(),
+		field.String("location").Default("🌏").Optional().Nillable(),
+		field.String("contact").Default("💌").Optional().Nillable(),
 	}
 }
 

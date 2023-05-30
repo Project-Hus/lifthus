@@ -351,15 +351,6 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.Usercode(); !ok {
 		return &ValidationError{Name: "usercode", err: errors.New(`ent: missing required field "User.usercode"`)}
 	}
-	if _, ok := uc.mutation.Company(); !ok {
-		return &ValidationError{Name: "company", err: errors.New(`ent: missing required field "User.company"`)}
-	}
-	if _, ok := uc.mutation.Location(); !ok {
-		return &ValidationError{Name: "location", err: errors.New(`ent: missing required field "User.location"`)}
-	}
-	if _, ok := uc.mutation.Contact(); !ok {
-		return &ValidationError{Name: "contact", err: errors.New(`ent: missing required field "User.contact"`)}
-	}
 	return nil
 }
 
@@ -446,15 +437,15 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := uc.mutation.Company(); ok {
 		_spec.SetField(user.FieldCompany, field.TypeString, value)
-		_node.Company = value
+		_node.Company = &value
 	}
 	if value, ok := uc.mutation.Location(); ok {
 		_spec.SetField(user.FieldLocation, field.TypeString, value)
-		_node.Location = value
+		_node.Location = &value
 	}
 	if value, ok := uc.mutation.Contact(); ok {
 		_spec.SetField(user.FieldContact, field.TypeString, value)
-		_node.Contact = value
+		_node.Contact = &value
 	}
 	if nodes := uc.mutation.SessionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

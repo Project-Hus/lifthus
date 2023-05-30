@@ -53,6 +53,11 @@ func (uc userApiController) GetUserInfo(c echo.Context) error {
 			ProfileImageURL: *user.ProfileImageURL,
 			CreatedAt:       user.CreatedAt,
 			UpdatedAt:       user.UpdatedAt,
+
+			Usercode: user.Usercode,
+			Company:  user.Company,
+			Location: user.Location,
+			Contact:  user.Contact,
 		}
 	} else {
 		udto = &dto.QueryUserDto{
@@ -69,6 +74,11 @@ func (uc userApiController) GetUserInfo(c echo.Context) error {
 			ProfileImageURL: *user.ProfileImageURL,
 			CreatedAt:       user.CreatedAt,
 			UpdatedAt:       user.UpdatedAt,
+
+			Usercode: user.Usercode,
+			Company:  user.Company,
+			Location: user.Location,
+			Contact:  user.Contact,
 		}
 	}
 
@@ -114,6 +124,11 @@ func (uc userApiController) GetUserInfoByUsername(c echo.Context) error {
 			ProfileImageURL: *user.ProfileImageURL,
 			CreatedAt:       user.CreatedAt,
 			UpdatedAt:       user.UpdatedAt,
+
+			Usercode: user.Usercode,
+			Company:  user.Company,
+			Location: user.Location,
+			Contact:  user.Contact,
 		}
 	} else {
 		udto = &dto.QueryUserDto{
@@ -130,6 +145,11 @@ func (uc userApiController) GetUserInfoByUsername(c echo.Context) error {
 			ProfileImageURL: *user.ProfileImageURL,
 			CreatedAt:       user.CreatedAt,
 			UpdatedAt:       user.UpdatedAt,
+
+			Usercode: user.Usercode,
+			Company:  user.Company,
+			Location: user.Location,
+			Contact:  user.Contact,
 		}
 	}
 
@@ -175,6 +195,11 @@ func (uc userApiController) SetUserInfo(c echo.Context) error {
 		ProfileImageURL: *user.ProfileImageURL,
 		CreatedAt:       user.CreatedAt,
 		UpdatedAt:       user.UpdatedAt,
+
+		Usercode: user.Usercode,
+		Company:  user.Company,
+		Location: user.Location,
+		Contact:  user.Contact,
 	}
 
 	return c.JSON(http.StatusOK, qu)
