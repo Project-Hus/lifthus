@@ -158,7 +158,6 @@ func (uc userApiController) GetUserInfoByUsername(c echo.Context) error {
 
 // SetUserInfo godoc
 // @Router       /user [put]
-// @Param uid path string true "user id"
 // @Param userinfo body dto.UpdateUserInfoDto true "user info"
 // @Summary      gets uid from path param and updates user info
 // @Description  it gets uid from path param and updates user info
