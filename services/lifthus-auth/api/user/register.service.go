@@ -35,6 +35,9 @@ func (uc userApiController) RegisterUser(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
+	// following lifthus automatically (remove later)
+	_, _ = uc.dbClient.User.UpdateOneID(1).AddFollowerIDs(uid).Save(context.Background())
+
 	/* TODO: register info to Rec Service */
 	return c.JSON(http.StatusOK, registerInfo)
 }
