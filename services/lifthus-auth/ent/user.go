@@ -41,6 +41,14 @@ type User struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Usercode holds the value of the "usercode" field.
+	Usercode string `json:"usercode,omitempty"`
+	// Company holds the value of the "company" field.
+	Company *string `json:"company,omitempty"`
+	// Location holds the value of the "location" field.
+	Location *string `json:"location,omitempty"`
+	// Contact holds the value of the "contact" field.
+	Contact *string `json:"contact,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -96,7 +104,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case user.FieldID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldUsername, user.FieldEmail, user.FieldName, user.FieldGivenName, user.FieldFamilyName, user.FieldProfileImageURL:
+		case user.FieldUsername, user.FieldEmail, user.FieldName, user.FieldGivenName, user.FieldFamilyName, user.FieldProfileImageURL, user.FieldUsercode, user.FieldCompany, user.FieldLocation, user.FieldContact:
 			values[i] = new(sql.NullString)
 		case user.FieldRegisteredAt, user.FieldBirthdate, user.FieldCreatedAt, user.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -197,6 +205,33 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.UpdatedAt = value.Time
 			}
+		case user.FieldUsercode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field usercode", values[i])
+			} else if value.Valid {
+				u.Usercode = value.String
+			}
+		case user.FieldCompany:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field company", values[i])
+			} else if value.Valid {
+				u.Company = new(string)
+				*u.Company = value.String
+			}
+		case user.FieldLocation:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field location", values[i])
+			} else if value.Valid {
+				u.Location = new(string)
+				*u.Location = value.String
+			}
+		case user.FieldContact:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field contact", values[i])
+			} else if value.Valid {
+				u.Contact = new(string)
+				*u.Contact = value.String
+			}
 		default:
 			u.selectValues.Set(columns[i], values[i])
 		}
@@ -291,6 +326,24 @@ func (u *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(u.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("usercode=")
+	builder.WriteString(u.Usercode)
+	builder.WriteString(", ")
+	if v := u.Company; v != nil {
+		builder.WriteString("company=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := u.Location; v != nil {
+		builder.WriteString("location=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := u.Contact; v != nil {
+		builder.WriteString("contact=")
+		builder.WriteString(*v)
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -652,6 +652,10 @@ type UserMutation struct {
 	profile_image_url *string
 	created_at        *time.Time
 	updated_at        *time.Time
+	usercode          *string
+	company           *string
+	location          *string
+	contact           *string
 	clearedFields     map[string]struct{}
 	sessions          map[uuid.UUID]struct{}
 	removedsessions   map[uuid.UUID]struct{}
@@ -1255,6 +1259,189 @@ func (m *UserMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// SetUsercode sets the "usercode" field.
+func (m *UserMutation) SetUsercode(s string) {
+	m.usercode = &s
+}
+
+// Usercode returns the value of the "usercode" field in the mutation.
+func (m *UserMutation) Usercode() (r string, exists bool) {
+	v := m.usercode
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUsercode returns the old "usercode" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldUsercode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUsercode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUsercode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUsercode: %w", err)
+	}
+	return oldValue.Usercode, nil
+}
+
+// ResetUsercode resets all changes to the "usercode" field.
+func (m *UserMutation) ResetUsercode() {
+	m.usercode = nil
+}
+
+// SetCompany sets the "company" field.
+func (m *UserMutation) SetCompany(s string) {
+	m.company = &s
+}
+
+// Company returns the value of the "company" field in the mutation.
+func (m *UserMutation) Company() (r string, exists bool) {
+	v := m.company
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCompany returns the old "company" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldCompany(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCompany is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCompany requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCompany: %w", err)
+	}
+	return oldValue.Company, nil
+}
+
+// ClearCompany clears the value of the "company" field.
+func (m *UserMutation) ClearCompany() {
+	m.company = nil
+	m.clearedFields[user.FieldCompany] = struct{}{}
+}
+
+// CompanyCleared returns if the "company" field was cleared in this mutation.
+func (m *UserMutation) CompanyCleared() bool {
+	_, ok := m.clearedFields[user.FieldCompany]
+	return ok
+}
+
+// ResetCompany resets all changes to the "company" field.
+func (m *UserMutation) ResetCompany() {
+	m.company = nil
+	delete(m.clearedFields, user.FieldCompany)
+}
+
+// SetLocation sets the "location" field.
+func (m *UserMutation) SetLocation(s string) {
+	m.location = &s
+}
+
+// Location returns the value of the "location" field in the mutation.
+func (m *UserMutation) Location() (r string, exists bool) {
+	v := m.location
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLocation returns the old "location" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldLocation(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLocation is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLocation requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLocation: %w", err)
+	}
+	return oldValue.Location, nil
+}
+
+// ClearLocation clears the value of the "location" field.
+func (m *UserMutation) ClearLocation() {
+	m.location = nil
+	m.clearedFields[user.FieldLocation] = struct{}{}
+}
+
+// LocationCleared returns if the "location" field was cleared in this mutation.
+func (m *UserMutation) LocationCleared() bool {
+	_, ok := m.clearedFields[user.FieldLocation]
+	return ok
+}
+
+// ResetLocation resets all changes to the "location" field.
+func (m *UserMutation) ResetLocation() {
+	m.location = nil
+	delete(m.clearedFields, user.FieldLocation)
+}
+
+// SetContact sets the "contact" field.
+func (m *UserMutation) SetContact(s string) {
+	m.contact = &s
+}
+
+// Contact returns the value of the "contact" field in the mutation.
+func (m *UserMutation) Contact() (r string, exists bool) {
+	v := m.contact
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContact returns the old "contact" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldContact(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContact is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContact requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContact: %w", err)
+	}
+	return oldValue.Contact, nil
+}
+
+// ClearContact clears the value of the "contact" field.
+func (m *UserMutation) ClearContact() {
+	m.contact = nil
+	m.clearedFields[user.FieldContact] = struct{}{}
+}
+
+// ContactCleared returns if the "contact" field was cleared in this mutation.
+func (m *UserMutation) ContactCleared() bool {
+	_, ok := m.clearedFields[user.FieldContact]
+	return ok
+}
+
+// ResetContact resets all changes to the "contact" field.
+func (m *UserMutation) ResetContact() {
+	m.contact = nil
+	delete(m.clearedFields, user.FieldContact)
+}
+
 // AddSessionIDs adds the "sessions" edge to the Session entity by ids.
 func (m *UserMutation) AddSessionIDs(ids ...uuid.UUID) {
 	if m.sessions == nil {
@@ -1451,7 +1638,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 16)
 	if m.registered != nil {
 		fields = append(fields, user.FieldRegistered)
 	}
@@ -1488,6 +1675,18 @@ func (m *UserMutation) Fields() []string {
 	if m.updated_at != nil {
 		fields = append(fields, user.FieldUpdatedAt)
 	}
+	if m.usercode != nil {
+		fields = append(fields, user.FieldUsercode)
+	}
+	if m.company != nil {
+		fields = append(fields, user.FieldCompany)
+	}
+	if m.location != nil {
+		fields = append(fields, user.FieldLocation)
+	}
+	if m.contact != nil {
+		fields = append(fields, user.FieldContact)
+	}
 	return fields
 }
 
@@ -1520,6 +1719,14 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case user.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case user.FieldUsercode:
+		return m.Usercode()
+	case user.FieldCompany:
+		return m.Company()
+	case user.FieldLocation:
+		return m.Location()
+	case user.FieldContact:
+		return m.Contact()
 	}
 	return nil, false
 }
@@ -1553,6 +1760,14 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldCreatedAt(ctx)
 	case user.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case user.FieldUsercode:
+		return m.OldUsercode(ctx)
+	case user.FieldCompany:
+		return m.OldCompany(ctx)
+	case user.FieldLocation:
+		return m.OldLocation(ctx)
+	case user.FieldContact:
+		return m.OldContact(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -1646,6 +1861,34 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUpdatedAt(v)
 		return nil
+	case user.FieldUsercode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUsercode(v)
+		return nil
+	case user.FieldCompany:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCompany(v)
+		return nil
+	case user.FieldLocation:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLocation(v)
+		return nil
+	case user.FieldContact:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContact(v)
+		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
 }
@@ -1688,6 +1931,15 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldProfileImageURL) {
 		fields = append(fields, user.FieldProfileImageURL)
 	}
+	if m.FieldCleared(user.FieldCompany) {
+		fields = append(fields, user.FieldCompany)
+	}
+	if m.FieldCleared(user.FieldLocation) {
+		fields = append(fields, user.FieldLocation)
+	}
+	if m.FieldCleared(user.FieldContact) {
+		fields = append(fields, user.FieldContact)
+	}
 	return fields
 }
 
@@ -1713,6 +1965,15 @@ func (m *UserMutation) ClearField(name string) error {
 		return nil
 	case user.FieldProfileImageURL:
 		m.ClearProfileImageURL()
+		return nil
+	case user.FieldCompany:
+		m.ClearCompany()
+		return nil
+	case user.FieldLocation:
+		m.ClearLocation()
+		return nil
+	case user.FieldContact:
+		m.ClearContact()
 		return nil
 	}
 	return fmt.Errorf("unknown User nullable field %s", name)
@@ -1757,6 +2018,18 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldUpdatedAt:
 		m.ResetUpdatedAt()
+		return nil
+	case user.FieldUsercode:
+		m.ResetUsercode()
+		return nil
+	case user.FieldCompany:
+		m.ResetCompany()
+		return nil
+	case user.FieldLocation:
+		m.ResetLocation()
+		return nil
+	case user.FieldContact:
+		m.ResetContact()
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
