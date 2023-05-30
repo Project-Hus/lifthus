@@ -49,4 +49,20 @@ func init() {
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	user.UpdateDefaultUpdatedAt = userDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// userDescUsercode is the schema descriptor for usercode field.
+	userDescUsercode := userFields[13].Descriptor()
+	// user.DefaultUsercode holds the default value on creation for the usercode field.
+	user.DefaultUsercode = userDescUsercode.Default.(func() string)
+	// userDescCompany is the schema descriptor for company field.
+	userDescCompany := userFields[14].Descriptor()
+	// user.DefaultCompany holds the default value on creation for the company field.
+	user.DefaultCompany = userDescCompany.Default.(string)
+	// userDescLocation is the schema descriptor for location field.
+	userDescLocation := userFields[15].Descriptor()
+	// user.DefaultLocation holds the default value on creation for the location field.
+	user.DefaultLocation = userDescLocation.Default.(string)
+	// userDescContact is the schema descriptor for contact field.
+	userDescContact := userFields[16].Descriptor()
+	// user.DefaultContact holds the default value on creation for the contact field.
+	user.DefaultContact = userDescContact.Default.(string)
 }

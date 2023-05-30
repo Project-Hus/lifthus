@@ -17,11 +17,15 @@ type UserApiControllerParams struct {
 func NewUserApiController(userApi *echo.Echo, params UserApiControllerParams) *echo.Echo {
 	userApiController := newUserApiController(params)
 
+	// Register endpoints
 	userApi.POST("/auth/user", userApiController.RegisterUser, guard.UserGuard)
+
+	// Userinfo mutation endpoints
 	userApi.PUT("/auth/user", userApiController.SetUserInfo, guard.UserGuard)
 
-	userApi.GET("/auth/user/:uid", userApiController.GetUserInfo)
-	userApi.GET("/auth/username/:username", userApiController.GetUserInfoByUsername)
+	// Userinfo query endpoints
+	userApi.GET("/auth/user/info/:uid", userApiController.GetUserInfo)
+	userApi.GET("/auth/username/info/:username", userApiController.GetUserInfoByUsername)
 
 	return userApi
 }

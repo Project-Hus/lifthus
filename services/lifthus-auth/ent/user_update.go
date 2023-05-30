@@ -174,6 +174,62 @@ func (uu *UserUpdate) SetUpdatedAt(t time.Time) *UserUpdate {
 	return uu
 }
 
+// SetUsercode sets the "usercode" field.
+func (uu *UserUpdate) SetUsercode(s string) *UserUpdate {
+	uu.mutation.SetUsercode(s)
+	return uu
+}
+
+// SetNillableUsercode sets the "usercode" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableUsercode(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetUsercode(*s)
+	}
+	return uu
+}
+
+// SetCompany sets the "company" field.
+func (uu *UserUpdate) SetCompany(s string) *UserUpdate {
+	uu.mutation.SetCompany(s)
+	return uu
+}
+
+// SetNillableCompany sets the "company" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableCompany(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetCompany(*s)
+	}
+	return uu
+}
+
+// SetLocation sets the "location" field.
+func (uu *UserUpdate) SetLocation(s string) *UserUpdate {
+	uu.mutation.SetLocation(s)
+	return uu
+}
+
+// SetNillableLocation sets the "location" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableLocation(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetLocation(*s)
+	}
+	return uu
+}
+
+// SetContact sets the "contact" field.
+func (uu *UserUpdate) SetContact(s string) *UserUpdate {
+	uu.mutation.SetContact(s)
+	return uu
+}
+
+// SetNillableContact sets the "contact" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableContact(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetContact(*s)
+	}
+	return uu
+}
+
 // AddSessionIDs adds the "sessions" edge to the Session entity by IDs.
 func (uu *UserUpdate) AddSessionIDs(ids ...uuid.UUID) *UserUpdate {
 	uu.mutation.AddSessionIDs(ids...)
@@ -379,6 +435,18 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := uu.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := uu.mutation.Usercode(); ok {
+		_spec.SetField(user.FieldUsercode, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.Company(); ok {
+		_spec.SetField(user.FieldCompany, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.Location(); ok {
+		_spec.SetField(user.FieldLocation, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.Contact(); ok {
+		_spec.SetField(user.FieldContact, field.TypeString, value)
 	}
 	if uu.mutation.SessionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -679,6 +747,62 @@ func (uuo *UserUpdateOne) SetUpdatedAt(t time.Time) *UserUpdateOne {
 	return uuo
 }
 
+// SetUsercode sets the "usercode" field.
+func (uuo *UserUpdateOne) SetUsercode(s string) *UserUpdateOne {
+	uuo.mutation.SetUsercode(s)
+	return uuo
+}
+
+// SetNillableUsercode sets the "usercode" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableUsercode(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetUsercode(*s)
+	}
+	return uuo
+}
+
+// SetCompany sets the "company" field.
+func (uuo *UserUpdateOne) SetCompany(s string) *UserUpdateOne {
+	uuo.mutation.SetCompany(s)
+	return uuo
+}
+
+// SetNillableCompany sets the "company" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableCompany(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetCompany(*s)
+	}
+	return uuo
+}
+
+// SetLocation sets the "location" field.
+func (uuo *UserUpdateOne) SetLocation(s string) *UserUpdateOne {
+	uuo.mutation.SetLocation(s)
+	return uuo
+}
+
+// SetNillableLocation sets the "location" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableLocation(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetLocation(*s)
+	}
+	return uuo
+}
+
+// SetContact sets the "contact" field.
+func (uuo *UserUpdateOne) SetContact(s string) *UserUpdateOne {
+	uuo.mutation.SetContact(s)
+	return uuo
+}
+
+// SetNillableContact sets the "contact" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableContact(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetContact(*s)
+	}
+	return uuo
+}
+
 // AddSessionIDs adds the "sessions" edge to the Session entity by IDs.
 func (uuo *UserUpdateOne) AddSessionIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.AddSessionIDs(ids...)
@@ -914,6 +1038,18 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if value, ok := uuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := uuo.mutation.Usercode(); ok {
+		_spec.SetField(user.FieldUsercode, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.Company(); ok {
+		_spec.SetField(user.FieldCompany, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.Location(); ok {
+		_spec.SetField(user.FieldLocation, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.Contact(); ok {
+		_spec.SetField(user.FieldContact, field.TypeString, value)
 	}
 	if uuo.mutation.SessionsCleared() {
 		edge := &sqlgraph.EdgeSpec{

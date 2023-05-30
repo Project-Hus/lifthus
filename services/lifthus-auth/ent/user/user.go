@@ -38,6 +38,14 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldUsercode holds the string denoting the usercode field in the database.
+	FieldUsercode = "usercode"
+	// FieldCompany holds the string denoting the company field in the database.
+	FieldCompany = "company"
+	// FieldLocation holds the string denoting the location field in the database.
+	FieldLocation = "location"
+	// FieldContact holds the string denoting the contact field in the database.
+	FieldContact = "contact"
 	// EdgeSessions holds the string denoting the sessions edge name in mutations.
 	EdgeSessions = "sessions"
 	// EdgeFollowing holds the string denoting the following edge name in mutations.
@@ -74,6 +82,10 @@ var Columns = []string{
 	FieldProfileImageURL,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldUsercode,
+	FieldCompany,
+	FieldLocation,
+	FieldContact,
 }
 
 var (
@@ -104,6 +116,14 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultUsercode holds the default value on creation for the "usercode" field.
+	DefaultUsercode func() string
+	// DefaultCompany holds the default value on creation for the "company" field.
+	DefaultCompany string
+	// DefaultLocation holds the default value on creation for the "location" field.
+	DefaultLocation string
+	// DefaultContact holds the default value on creation for the "contact" field.
+	DefaultContact string
 )
 
 // OrderOption defines the ordering options for the User queries.
@@ -172,6 +192,26 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByUsercode orders the results by the usercode field.
+func ByUsercode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUsercode, opts...).ToFunc()
+}
+
+// ByCompany orders the results by the company field.
+func ByCompany(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCompany, opts...).ToFunc()
+}
+
+// ByLocation orders the results by the location field.
+func ByLocation(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLocation, opts...).ToFunc()
+}
+
+// ByContact orders the results by the contact field.
+func ByContact(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldContact, opts...).ToFunc()
 }
 
 // BySessionsCount orders the results by sessions count.

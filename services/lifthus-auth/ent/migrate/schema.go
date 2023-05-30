@@ -46,6 +46,10 @@ var (
 		{Name: "profile_image_url", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "usercode", Type: field.TypeString, Unique: true},
+		{Name: "company", Type: field.TypeString, Default: "🏋️"},
+		{Name: "location", Type: field.TypeString, Default: "🌏"},
+		{Name: "contact", Type: field.TypeString, Default: "💌"},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{

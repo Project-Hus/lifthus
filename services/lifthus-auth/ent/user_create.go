@@ -150,6 +150,62 @@ func (uc *UserCreate) SetNillableUpdatedAt(t *time.Time) *UserCreate {
 	return uc
 }
 
+// SetUsercode sets the "usercode" field.
+func (uc *UserCreate) SetUsercode(s string) *UserCreate {
+	uc.mutation.SetUsercode(s)
+	return uc
+}
+
+// SetNillableUsercode sets the "usercode" field if the given value is not nil.
+func (uc *UserCreate) SetNillableUsercode(s *string) *UserCreate {
+	if s != nil {
+		uc.SetUsercode(*s)
+	}
+	return uc
+}
+
+// SetCompany sets the "company" field.
+func (uc *UserCreate) SetCompany(s string) *UserCreate {
+	uc.mutation.SetCompany(s)
+	return uc
+}
+
+// SetNillableCompany sets the "company" field if the given value is not nil.
+func (uc *UserCreate) SetNillableCompany(s *string) *UserCreate {
+	if s != nil {
+		uc.SetCompany(*s)
+	}
+	return uc
+}
+
+// SetLocation sets the "location" field.
+func (uc *UserCreate) SetLocation(s string) *UserCreate {
+	uc.mutation.SetLocation(s)
+	return uc
+}
+
+// SetNillableLocation sets the "location" field if the given value is not nil.
+func (uc *UserCreate) SetNillableLocation(s *string) *UserCreate {
+	if s != nil {
+		uc.SetLocation(*s)
+	}
+	return uc
+}
+
+// SetContact sets the "contact" field.
+func (uc *UserCreate) SetContact(s string) *UserCreate {
+	uc.mutation.SetContact(s)
+	return uc
+}
+
+// SetNillableContact sets the "contact" field if the given value is not nil.
+func (uc *UserCreate) SetNillableContact(s *string) *UserCreate {
+	if s != nil {
+		uc.SetContact(*s)
+	}
+	return uc
+}
+
 // SetID sets the "id" field.
 func (uc *UserCreate) SetID(u uint64) *UserCreate {
 	uc.mutation.SetID(u)
@@ -248,6 +304,22 @@ func (uc *UserCreate) defaults() {
 		v := user.DefaultUpdatedAt()
 		uc.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := uc.mutation.Usercode(); !ok {
+		v := user.DefaultUsercode()
+		uc.mutation.SetUsercode(v)
+	}
+	if _, ok := uc.mutation.Company(); !ok {
+		v := user.DefaultCompany
+		uc.mutation.SetCompany(v)
+	}
+	if _, ok := uc.mutation.Location(); !ok {
+		v := user.DefaultLocation
+		uc.mutation.SetLocation(v)
+	}
+	if _, ok := uc.mutation.Contact(); !ok {
+		v := user.DefaultContact
+		uc.mutation.SetContact(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -275,6 +347,18 @@ func (uc *UserCreate) check() error {
 	}
 	if _, ok := uc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "User.updated_at"`)}
+	}
+	if _, ok := uc.mutation.Usercode(); !ok {
+		return &ValidationError{Name: "usercode", err: errors.New(`ent: missing required field "User.usercode"`)}
+	}
+	if _, ok := uc.mutation.Company(); !ok {
+		return &ValidationError{Name: "company", err: errors.New(`ent: missing required field "User.company"`)}
+	}
+	if _, ok := uc.mutation.Location(); !ok {
+		return &ValidationError{Name: "location", err: errors.New(`ent: missing required field "User.location"`)}
+	}
+	if _, ok := uc.mutation.Contact(); !ok {
+		return &ValidationError{Name: "contact", err: errors.New(`ent: missing required field "User.contact"`)}
 	}
 	return nil
 }
@@ -355,6 +439,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if value, ok := uc.mutation.Usercode(); ok {
+		_spec.SetField(user.FieldUsercode, field.TypeString, value)
+		_node.Usercode = value
+	}
+	if value, ok := uc.mutation.Company(); ok {
+		_spec.SetField(user.FieldCompany, field.TypeString, value)
+		_node.Company = value
+	}
+	if value, ok := uc.mutation.Location(); ok {
+		_spec.SetField(user.FieldLocation, field.TypeString, value)
+		_node.Location = value
+	}
+	if value, ok := uc.mutation.Contact(); ok {
+		_spec.SetField(user.FieldContact, field.TypeString, value)
+		_node.Contact = value
 	}
 	if nodes := uc.mutation.SessionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

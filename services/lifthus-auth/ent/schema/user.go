@@ -1,6 +1,9 @@
 package schema
 
 import (
+	"crypto/rand"
+	"encoding/hex"
+	"fmt"
 	"time"
 
 	"entgo.io/ent"
@@ -36,6 +39,12 @@ func (User) Fields() []ent.Field {
 
 		field.Time("created_at").Default(time.Now), // when the user first accessed to Lifthus with Hus session.
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
+
+		// contact info
+		field.String("usercode").DefaultFunc(randomHex).Unique(),
+		field.String("company").Default("🏋️"),
+		field.String("location").Default("🌏"),
+		field.String("contact").Default("💌"),
 	}
 }
 
@@ -47,4 +56,13 @@ func (User) Edges() []ent.Edge {
 		edge.To("followers", User.Type).
 			From("following"),
 	}
+}
+
+func randomHex() string {
+	bytes := make([]byte, 4)
+	if _, err := rand.Read(bytes); err != nil {
+		fmt.Println(err)
+		return ""
+	}
+	return hex.EncodeToString(bytes)
 }
