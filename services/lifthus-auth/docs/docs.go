@@ -59,7 +59,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "signed user now follows the given user"
+                        "description": "new following list"
                     },
                     "400": {
                         "description": "invalid uid"
@@ -152,7 +152,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "signed user now doesn't follows the given user"
+                        "description": "new following list"
                     },
                     "400": {
                         "description": "invalid uid"
@@ -214,13 +214,6 @@ const docTemplate = `{
                 ],
                 "summary": "gets uid from path param and updates user info",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "user id",
-                        "name": "uid",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "user info",
                         "name": "userinfo",
@@ -343,6 +336,15 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "birthdate": {
+                    "type": "string"
+                },
+                "company": {
+                    "type": "string"
+                },
+                "contact": {
+                    "type": "string"
+                },
+                "location": {
                     "type": "string"
                 },
                 "uid": {
