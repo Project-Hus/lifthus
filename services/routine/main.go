@@ -14,6 +14,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	envbyjson "github.com/lifthus/envbyjson/go"
+
+	lmw "lifthus-auth/common/middleware"
 )
 
 var echoLambda *echoadapter.EchoLambdaV2
@@ -77,4 +79,7 @@ func main() {
 			http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete, http.MethodOptions, http.MethodPatch,
 		},
 	}))
+
+	// set uid to context if the user is signed
+	e.Pre(lmw.UidSetter(dbClient))
 }
