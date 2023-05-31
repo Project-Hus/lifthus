@@ -1,21 +1,26 @@
 package main
 
 import (
+	"context"
 	"lifthus-auth/common/lifthus"
 	"net/http"
 	"time"
 
 	"log"
 	"os"
+	"routine/api/routine"
 	"routine/common/db"
 	"routine/ent"
 
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
 	echoadapter "github.com/awslabs/aws-lambda-go-api-proxy/echo"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	envbyjson "github.com/lifthus/envbyjson/go"
+	echoSwagger "github.com/swaggo/echo-swagger"
 
-	lmw "lifthus-auth/common/middleware"
+	rmw "routine/common/middleware"
 )
 
 var echoLambda *echoadapter.EchoLambdaV2
@@ -81,5 +86,49 @@ func main() {
 	}))
 
 	// set uid to context if the user is signed
-	e.Pre(lmw.UidSetter(dbClient))
+	e.Pre(rmw.UidSetter())
+
+	// REQUEST LOGGER
+	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			// get request ip address
+			rip := c.RealIP()
+			org := c.Request().Header.Get("Origin")
+			log.Println("REQUEST from Origin", org, rip)
+			log.Println(c.Request())
+			return next(c)
+		}
+	})
+
+	routineApiControllerParams := routine.RoutineApiControllerParams{
+		DbClient:   dbClient,
+		HttpClient: routineHttpClient,
+	}
+
+	e = routine.NewRoutineApiController(e, routineApiControllerParams)
+
+	// swagger
+	e.GET("/routine/openapi/*", echoSwagger.WrapHandler)
+
+	// if the environment is native, run the echo server.
+	if husenv == "native" {
+		e.Logger.Fatal(e.Start(":" + os.Getenv("ROUTINE_PORT")))
+	} else {
+		// if it's lambda environment, run lambda.Start
+		echoLambda = echoadapter.NewV2(e)
+		lambda.Start(Handler)
+	}
+}
+
+func Handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
+	resp, err := echoLambda.ProxyWithContext(ctx, req)
+
+	// RESPONSE LOGGER
+	rip := req.RequestContext.HTTP.SourceIP
+	org := req.Headers["Origin"]
+	log.Println("RESPONSE to Origin", org, rip)
+	log.Println(resp)
+	log.Println("err:", err)
+
+	return resp, err
 }

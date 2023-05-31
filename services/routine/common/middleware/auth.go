@@ -5,12 +5,11 @@ import (
 	"strings"
 
 	"routine/common/helper"
-	"routine/ent"
 
 	"github.com/labstack/echo/v4"
 )
 
-func UidSetter(dbClient *ent.Client) echo.MiddlewareFunc {
+func UidSetter() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			var lifthus_st string
