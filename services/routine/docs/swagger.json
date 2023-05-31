@@ -1,0 +1,21 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is Project-Hus's subservice Lifthus's routine management server.",
+        "title": "Lifthus routine server",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "url": "lifthus531@gmail.com",
+            "email": "lifthus531@gmail.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "0.0.0"
+    },
+    "host": "auth.lifthus.com",
+    "basePath": "/routine",
+    "paths": {}
+}

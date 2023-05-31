@@ -145,7 +145,35 @@ Resources:
     #       - "cache-manager"
     #       - "class-transformer"
     #       - "class-validator"
-
+  # lifthus routine service
+  LifthusRoutineService:
+    Type: AWS::Serverless::Function
+    Properties:
+      MemorySize: 128
+      # !! SAM esbuild (not working properly)
+      #CodeUri: services/post/
+      #Handler: src/lambda.handler
+      # SAM tsc esbuild bundle
+      CodeUri: services/routine
+      Handler: routine
+      Runtime: go1.x
+      Architectures:
+        - x86_64
+      Events:
+        LifthusRoutineServiceRoot:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: LifthusApi
+            Path: /routine
+            Method: ANY
+        LifthusRoutineServiceProxy:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: LifthusApi
+            Path: /routine/{proxy+}
+            Method: ANY
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group
     Properties:

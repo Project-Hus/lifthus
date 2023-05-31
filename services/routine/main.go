@@ -20,6 +20,10 @@ import (
 	envbyjson "github.com/lifthus/envbyjson/go"
 	echoSwagger "github.com/swaggo/echo-swagger"
 
+	_ "routine/docs"
+
+	_ "github.com/go-sql-driver/mysql"
+
 	rmw "routine/common/middleware"
 )
 
