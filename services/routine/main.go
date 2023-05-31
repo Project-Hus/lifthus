@@ -2,12 +2,17 @@ package main
 
 import (
 	"lifthus-auth/common/lifthus"
+	"net/http"
+	"time"
 
 	"log"
 	"os"
+	"routine/common/db"
 	"routine/ent"
 
 	echoadapter "github.com/awslabs/aws-lambda-go-api-proxy/echo"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	envbyjson "github.com/lifthus/envbyjson/go"
 )
 
@@ -41,4 +46,35 @@ func main() {
 
 	// initialize lIfthus common variables
 	lifthus.InitLifthusVars(husenv, nil)
+
+	// connect to lifthus_routine_db
+	dbClient, err := db.ConnectToLifthusRoutine()
+	if err != nil {
+		log.Fatalf("[F]connecting db failed:%v", err)
+	}
+	defer dbClient.Close()
+
+	// create new http.Client from routineApi
+	routineHttpClient := &http.Client{
+		Timeout: time.Second * 5,
+	}
+
+	// create echo web server instance an set CORS headers
+	e := echo.New()
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: lifthus.Origins,
+		AllowHeaders: []string{
+			echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept,
+			echo.HeaderAuthorization, echo.HeaderAccessControlAllowOrigin,
+			echo.HeaderAccessControlAllowHeaders, echo.HeaderAccessControlAllowMethods,
+			echo.HeaderXRequestedWith,
+		},
+		ExposeHeaders: []string{
+			echo.HeaderAuthorization,
+		},
+		AllowCredentials: true,
+		AllowMethods: []string{
+			http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete, http.MethodOptions, http.MethodPatch,
+		},
+	}))
 }
