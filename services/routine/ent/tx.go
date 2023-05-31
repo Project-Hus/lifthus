@@ -14,8 +14,16 @@ type Tx struct {
 	config
 	// Act is the client for interacting with the Act builders.
 	Act *ActClient
+	// DailyRoutine is the client for interacting with the DailyRoutine builders.
+	DailyRoutine *DailyRoutineClient
 	// Program is the client for interacting with the Program builders.
 	Program *ProgramClient
+	// RoutineAct is the client for interacting with the RoutineAct builders.
+	RoutineAct *RoutineActClient
+	// Tag is the client for interacting with the Tag builders.
+	Tag *TagClient
+	// WeeklyRoutine is the client for interacting with the WeeklyRoutine builders.
+	WeeklyRoutine *WeeklyRoutineClient
 
 	// lazily loaded.
 	client     *Client
@@ -148,7 +156,11 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Act = NewActClient(tx.config)
+	tx.DailyRoutine = NewDailyRoutineClient(tx.config)
 	tx.Program = NewProgramClient(tx.config)
+	tx.RoutineAct = NewRoutineActClient(tx.config)
+	tx.Tag = NewTagClient(tx.config)
+	tx.WeeklyRoutine = NewWeeklyRoutineClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

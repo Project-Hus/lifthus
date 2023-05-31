@@ -9,5 +9,17 @@ import (
 // Act is the predicate function for act builders.
 type Act func(*sql.Selector)
 
+// DailyRoutine is the predicate function for dailyroutine builders.
+type DailyRoutine func(*sql.Selector)
+
 // Program is the predicate function for program builders.
 type Program func(*sql.Selector)
+
+// RoutineAct is the predicate function for routineact builders.
+type RoutineAct func(*sql.Selector)
+
+// Tag is the predicate function for tag builders.
+type Tag func(*sql.Selector)
+
+// WeeklyRoutine is the predicate function for weeklyroutine builders.
+type WeeklyRoutine func(*sql.Selector)

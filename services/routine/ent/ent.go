@@ -8,7 +8,11 @@ import (
 	"fmt"
 	"reflect"
 	"routine/ent/act"
+	"routine/ent/dailyroutine"
 	"routine/ent/program"
+	"routine/ent/routineact"
+	"routine/ent/tag"
+	"routine/ent/weeklyroutine"
 	"sync"
 
 	"entgo.io/ent"
@@ -74,8 +78,12 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			act.Table:     act.ValidColumn,
-			program.Table: program.ValidColumn,
+			act.Table:           act.ValidColumn,
+			dailyroutine.Table:  dailyroutine.ValidColumn,
+			program.Table:       program.ValidColumn,
+			routineact.Table:    routineact.ValidColumn,
+			tag.Table:           tag.ValidColumn,
+			weeklyroutine.Table: weeklyroutine.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

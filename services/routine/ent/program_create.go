@@ -6,7 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"routine/ent/dailyroutine"
 	"routine/ent/program"
+	"routine/ent/tag"
+	"routine/ent/weeklyroutine"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -69,6 +72,51 @@ func (pc *ProgramCreate) SetNillableDescription(s *string) *ProgramCreate {
 func (pc *ProgramCreate) SetID(u uint64) *ProgramCreate {
 	pc.mutation.SetID(u)
 	return pc
+}
+
+// AddTagIDs adds the "tags" edge to the Tag entity by IDs.
+func (pc *ProgramCreate) AddTagIDs(ids ...uint64) *ProgramCreate {
+	pc.mutation.AddTagIDs(ids...)
+	return pc
+}
+
+// AddTags adds the "tags" edges to the Tag entity.
+func (pc *ProgramCreate) AddTags(t ...*Tag) *ProgramCreate {
+	ids := make([]uint64, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return pc.AddTagIDs(ids...)
+}
+
+// AddWeeklyRoutineIDs adds the "weekly_routines" edge to the WeeklyRoutine entity by IDs.
+func (pc *ProgramCreate) AddWeeklyRoutineIDs(ids ...uint64) *ProgramCreate {
+	pc.mutation.AddWeeklyRoutineIDs(ids...)
+	return pc
+}
+
+// AddWeeklyRoutines adds the "weekly_routines" edges to the WeeklyRoutine entity.
+func (pc *ProgramCreate) AddWeeklyRoutines(w ...*WeeklyRoutine) *ProgramCreate {
+	ids := make([]uint64, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return pc.AddWeeklyRoutineIDs(ids...)
+}
+
+// AddDailyRoutineIDs adds the "daily_routines" edge to the DailyRoutine entity by IDs.
+func (pc *ProgramCreate) AddDailyRoutineIDs(ids ...uint64) *ProgramCreate {
+	pc.mutation.AddDailyRoutineIDs(ids...)
+	return pc
+}
+
+// AddDailyRoutines adds the "daily_routines" edges to the DailyRoutine entity.
+func (pc *ProgramCreate) AddDailyRoutines(d ...*DailyRoutine) *ProgramCreate {
+	ids := make([]uint64, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return pc.AddDailyRoutineIDs(ids...)
 }
 
 // Mutation returns the ProgramMutation object of the builder.
@@ -175,6 +223,54 @@ func (pc *ProgramCreate) createSpec() (*Program, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.Description(); ok {
 		_spec.SetField(program.FieldDescription, field.TypeString, value)
 		_node.Description = &value
+	}
+	if nodes := pc.mutation.TagsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   program.TagsTable,
+			Columns: program.TagsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.WeeklyRoutinesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   program.WeeklyRoutinesTable,
+			Columns: program.WeeklyRoutinesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(weeklyroutine.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.DailyRoutinesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   program.DailyRoutinesTable,
+			Columns: program.DailyRoutinesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutine.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

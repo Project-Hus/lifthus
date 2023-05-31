@@ -4,8 +4,12 @@ package ent
 
 import (
 	"routine/ent/act"
+	"routine/ent/dailyroutine"
 	"routine/ent/program"
+	"routine/ent/routineact"
 	"routine/ent/schema"
+	"routine/ent/tag"
+	"routine/ent/weeklyroutine"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -18,10 +22,42 @@ func init() {
 	actDescName := actFields[1].Descriptor()
 	// act.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	act.NameValidator = actDescName.Validators[0].(func(string) error)
+	dailyroutineFields := schema.DailyRoutine{}.Fields()
+	_ = dailyroutineFields
+	// dailyroutineDescDay is the schema descriptor for day field.
+	dailyroutineDescDay := dailyroutineFields[3].Descriptor()
+	// dailyroutine.DayValidator is a validator for the "day" field. It is called by the builders before save.
+	dailyroutine.DayValidator = dailyroutineDescDay.Validators[0].(func(int) error)
 	programFields := schema.Program{}.Fields()
 	_ = programFields
 	// programDescTitle is the schema descriptor for title field.
 	programDescTitle := programFields[1].Descriptor()
 	// program.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	program.TitleValidator = programDescTitle.Validators[0].(func(string) error)
+	routineactFields := schema.RoutineAct{}.Fields()
+	_ = routineactFields
+	// routineactDescOrder is the schema descriptor for order field.
+	routineactDescOrder := routineactFields[3].Descriptor()
+	// routineact.OrderValidator is a validator for the "order" field. It is called by the builders before save.
+	routineact.OrderValidator = routineactDescOrder.Validators[0].(func(int) error)
+	// routineactDescReps is the schema descriptor for reps field.
+	routineactDescReps := routineactFields[4].Descriptor()
+	// routineact.RepsValidator is a validator for the "reps" field. It is called by the builders before save.
+	routineact.RepsValidator = routineactDescReps.Validators[0].(func(int) error)
+	// routineactDescLap is the schema descriptor for lap field.
+	routineactDescLap := routineactFields[5].Descriptor()
+	// routineact.LapValidator is a validator for the "lap" field. It is called by the builders before save.
+	routineact.LapValidator = routineactDescLap.Validators[0].(func(int) error)
+	tagFields := schema.Tag{}.Fields()
+	_ = tagFields
+	// tagDescTag is the schema descriptor for tag field.
+	tagDescTag := tagFields[1].Descriptor()
+	// tag.TagValidator is a validator for the "tag" field. It is called by the builders before save.
+	tag.TagValidator = tagDescTag.Validators[0].(func(string) error)
+	weeklyroutineFields := schema.WeeklyRoutine{}.Fields()
+	_ = weeklyroutineFields
+	// weeklyroutineDescWeek is the schema descriptor for week field.
+	weeklyroutineDescWeek := weeklyroutineFields[2].Descriptor()
+	// weeklyroutine.WeekValidator is a validator for the "week" field. It is called by the builders before save.
+	weeklyroutine.WeekValidator = weeklyroutineDescWeek.Validators[0].(func(int) error)
 }

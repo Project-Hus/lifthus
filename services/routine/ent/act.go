@@ -25,8 +25,40 @@ type Act struct {
 	// Image holds the value of the "image" field.
 	Image *string `json:"image,omitempty"`
 	// Description holds the value of the "description" field.
-	Description  *string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the ActQuery when eager-loading is set.
+	Edges        ActEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// ActEdges holds the relations/edges for other nodes in the graph.
+type ActEdges struct {
+	// Tags holds the value of the tags edge.
+	Tags []*Tag `json:"tags,omitempty"`
+	// RoutineActs holds the value of the routine_acts edge.
+	RoutineActs []*RoutineAct `json:"routine_acts,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [2]bool
+}
+
+// TagsOrErr returns the Tags value or an error if the edge
+// was not loaded in eager-loading.
+func (e ActEdges) TagsOrErr() ([]*Tag, error) {
+	if e.loadedTypes[0] {
+		return e.Tags, nil
+	}
+	return nil, &NotLoadedError{edge: "tags"}
+}
+
+// RoutineActsOrErr returns the RoutineActs value or an error if the edge
+// was not loaded in eager-loading.
+func (e ActEdges) RoutineActsOrErr() ([]*RoutineAct, error) {
+	if e.loadedTypes[1] {
+		return e.RoutineActs, nil
+	}
+	return nil, &NotLoadedError{edge: "routine_acts"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -103,6 +135,16 @@ func (a *Act) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (a *Act) Value(name string) (ent.Value, error) {
 	return a.selectValues.Get(name)
+}
+
+// QueryTags queries the "tags" edge of the Act entity.
+func (a *Act) QueryTags() *TagQuery {
+	return NewActClient(a.config).QueryTags(a)
+}
+
+// QueryRoutineActs queries the "routine_acts" edge of the Act entity.
+func (a *Act) QueryRoutineActs() *RoutineActQuery {
+	return NewActClient(a.config).QueryRoutineActs(a)
 }
 
 // Update returns a builder for updating this Act.

@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -23,8 +24,24 @@ const (
 	FieldImage = "image"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
+	// EdgeTags holds the string denoting the tags edge name in mutations.
+	EdgeTags = "tags"
+	// EdgeRoutineActs holds the string denoting the routine_acts edge name in mutations.
+	EdgeRoutineActs = "routine_acts"
 	// Table holds the table name of the act in the database.
 	Table = "acts"
+	// TagsTable is the table that holds the tags relation/edge. The primary key declared below.
+	TagsTable = "tag_acts"
+	// TagsInverseTable is the table name for the Tag entity.
+	// It exists in this package in order to avoid circular dependency with the "tag" package.
+	TagsInverseTable = "tags"
+	// RoutineActsTable is the table that holds the routine_acts relation/edge.
+	RoutineActsTable = "routine_acts"
+	// RoutineActsInverseTable is the table name for the RoutineAct entity.
+	// It exists in this package in order to avoid circular dependency with the "routineact" package.
+	RoutineActsInverseTable = "routine_acts"
+	// RoutineActsColumn is the table column denoting the routine_acts relation/edge.
+	RoutineActsColumn = "act_routine_acts"
 )
 
 // Columns holds all SQL columns for act fields.
@@ -36,6 +53,12 @@ var Columns = []string{
 	FieldImage,
 	FieldDescription,
 }
+
+var (
+	// TagsPrimaryKey and TagsColumn2 are the table columns denoting the
+	// primary key for the tags relation (M2M).
+	TagsPrimaryKey = []string{"tag_id", "act_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -106,4 +129,46 @@ func ByImage(opts ...sql.OrderTermOption) OrderOption {
 // ByDescription orders the results by the description field.
 func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
+}
+
+// ByTagsCount orders the results by tags count.
+func ByTagsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTagsStep(), opts...)
+	}
+}
+
+// ByTags orders the results by tags terms.
+func ByTags(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTagsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByRoutineActsCount orders the results by routine_acts count.
+func ByRoutineActsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newRoutineActsStep(), opts...)
+	}
+}
+
+// ByRoutineActs orders the results by routine_acts terms.
+func ByRoutineActs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRoutineActsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newTagsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TagsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, TagsTable, TagsPrimaryKey...),
+	)
+}
+func newRoutineActsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RoutineActsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, RoutineActsTable, RoutineActsColumn),
+	)
 }

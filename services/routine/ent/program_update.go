@@ -6,8 +6,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"routine/ent/dailyroutine"
 	"routine/ent/predicate"
 	"routine/ent/program"
+	"routine/ent/tag"
+	"routine/ent/weeklyroutine"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -92,9 +95,117 @@ func (pu *ProgramUpdate) ClearDescription() *ProgramUpdate {
 	return pu
 }
 
+// AddTagIDs adds the "tags" edge to the Tag entity by IDs.
+func (pu *ProgramUpdate) AddTagIDs(ids ...uint64) *ProgramUpdate {
+	pu.mutation.AddTagIDs(ids...)
+	return pu
+}
+
+// AddTags adds the "tags" edges to the Tag entity.
+func (pu *ProgramUpdate) AddTags(t ...*Tag) *ProgramUpdate {
+	ids := make([]uint64, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return pu.AddTagIDs(ids...)
+}
+
+// AddWeeklyRoutineIDs adds the "weekly_routines" edge to the WeeklyRoutine entity by IDs.
+func (pu *ProgramUpdate) AddWeeklyRoutineIDs(ids ...uint64) *ProgramUpdate {
+	pu.mutation.AddWeeklyRoutineIDs(ids...)
+	return pu
+}
+
+// AddWeeklyRoutines adds the "weekly_routines" edges to the WeeklyRoutine entity.
+func (pu *ProgramUpdate) AddWeeklyRoutines(w ...*WeeklyRoutine) *ProgramUpdate {
+	ids := make([]uint64, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return pu.AddWeeklyRoutineIDs(ids...)
+}
+
+// AddDailyRoutineIDs adds the "daily_routines" edge to the DailyRoutine entity by IDs.
+func (pu *ProgramUpdate) AddDailyRoutineIDs(ids ...uint64) *ProgramUpdate {
+	pu.mutation.AddDailyRoutineIDs(ids...)
+	return pu
+}
+
+// AddDailyRoutines adds the "daily_routines" edges to the DailyRoutine entity.
+func (pu *ProgramUpdate) AddDailyRoutines(d ...*DailyRoutine) *ProgramUpdate {
+	ids := make([]uint64, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return pu.AddDailyRoutineIDs(ids...)
+}
+
 // Mutation returns the ProgramMutation object of the builder.
 func (pu *ProgramUpdate) Mutation() *ProgramMutation {
 	return pu.mutation
+}
+
+// ClearTags clears all "tags" edges to the Tag entity.
+func (pu *ProgramUpdate) ClearTags() *ProgramUpdate {
+	pu.mutation.ClearTags()
+	return pu
+}
+
+// RemoveTagIDs removes the "tags" edge to Tag entities by IDs.
+func (pu *ProgramUpdate) RemoveTagIDs(ids ...uint64) *ProgramUpdate {
+	pu.mutation.RemoveTagIDs(ids...)
+	return pu
+}
+
+// RemoveTags removes "tags" edges to Tag entities.
+func (pu *ProgramUpdate) RemoveTags(t ...*Tag) *ProgramUpdate {
+	ids := make([]uint64, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return pu.RemoveTagIDs(ids...)
+}
+
+// ClearWeeklyRoutines clears all "weekly_routines" edges to the WeeklyRoutine entity.
+func (pu *ProgramUpdate) ClearWeeklyRoutines() *ProgramUpdate {
+	pu.mutation.ClearWeeklyRoutines()
+	return pu
+}
+
+// RemoveWeeklyRoutineIDs removes the "weekly_routines" edge to WeeklyRoutine entities by IDs.
+func (pu *ProgramUpdate) RemoveWeeklyRoutineIDs(ids ...uint64) *ProgramUpdate {
+	pu.mutation.RemoveWeeklyRoutineIDs(ids...)
+	return pu
+}
+
+// RemoveWeeklyRoutines removes "weekly_routines" edges to WeeklyRoutine entities.
+func (pu *ProgramUpdate) RemoveWeeklyRoutines(w ...*WeeklyRoutine) *ProgramUpdate {
+	ids := make([]uint64, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return pu.RemoveWeeklyRoutineIDs(ids...)
+}
+
+// ClearDailyRoutines clears all "daily_routines" edges to the DailyRoutine entity.
+func (pu *ProgramUpdate) ClearDailyRoutines() *ProgramUpdate {
+	pu.mutation.ClearDailyRoutines()
+	return pu
+}
+
+// RemoveDailyRoutineIDs removes the "daily_routines" edge to DailyRoutine entities by IDs.
+func (pu *ProgramUpdate) RemoveDailyRoutineIDs(ids ...uint64) *ProgramUpdate {
+	pu.mutation.RemoveDailyRoutineIDs(ids...)
+	return pu
+}
+
+// RemoveDailyRoutines removes "daily_routines" edges to DailyRoutine entities.
+func (pu *ProgramUpdate) RemoveDailyRoutines(d ...*DailyRoutine) *ProgramUpdate {
+	ids := make([]uint64, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return pu.RemoveDailyRoutineIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -174,6 +285,141 @@ func (pu *ProgramUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if pu.mutation.DescriptionCleared() {
 		_spec.ClearField(program.FieldDescription, field.TypeString)
+	}
+	if pu.mutation.TagsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   program.TagsTable,
+			Columns: program.TagsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedTagsIDs(); len(nodes) > 0 && !pu.mutation.TagsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   program.TagsTable,
+			Columns: program.TagsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.TagsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   program.TagsTable,
+			Columns: program.TagsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pu.mutation.WeeklyRoutinesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   program.WeeklyRoutinesTable,
+			Columns: program.WeeklyRoutinesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(weeklyroutine.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedWeeklyRoutinesIDs(); len(nodes) > 0 && !pu.mutation.WeeklyRoutinesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   program.WeeklyRoutinesTable,
+			Columns: program.WeeklyRoutinesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(weeklyroutine.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.WeeklyRoutinesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   program.WeeklyRoutinesTable,
+			Columns: program.WeeklyRoutinesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(weeklyroutine.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pu.mutation.DailyRoutinesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   program.DailyRoutinesTable,
+			Columns: program.DailyRoutinesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutine.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedDailyRoutinesIDs(); len(nodes) > 0 && !pu.mutation.DailyRoutinesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   program.DailyRoutinesTable,
+			Columns: program.DailyRoutinesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutine.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.DailyRoutinesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   program.DailyRoutinesTable,
+			Columns: program.DailyRoutinesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutine.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -260,9 +506,117 @@ func (puo *ProgramUpdateOne) ClearDescription() *ProgramUpdateOne {
 	return puo
 }
 
+// AddTagIDs adds the "tags" edge to the Tag entity by IDs.
+func (puo *ProgramUpdateOne) AddTagIDs(ids ...uint64) *ProgramUpdateOne {
+	puo.mutation.AddTagIDs(ids...)
+	return puo
+}
+
+// AddTags adds the "tags" edges to the Tag entity.
+func (puo *ProgramUpdateOne) AddTags(t ...*Tag) *ProgramUpdateOne {
+	ids := make([]uint64, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return puo.AddTagIDs(ids...)
+}
+
+// AddWeeklyRoutineIDs adds the "weekly_routines" edge to the WeeklyRoutine entity by IDs.
+func (puo *ProgramUpdateOne) AddWeeklyRoutineIDs(ids ...uint64) *ProgramUpdateOne {
+	puo.mutation.AddWeeklyRoutineIDs(ids...)
+	return puo
+}
+
+// AddWeeklyRoutines adds the "weekly_routines" edges to the WeeklyRoutine entity.
+func (puo *ProgramUpdateOne) AddWeeklyRoutines(w ...*WeeklyRoutine) *ProgramUpdateOne {
+	ids := make([]uint64, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return puo.AddWeeklyRoutineIDs(ids...)
+}
+
+// AddDailyRoutineIDs adds the "daily_routines" edge to the DailyRoutine entity by IDs.
+func (puo *ProgramUpdateOne) AddDailyRoutineIDs(ids ...uint64) *ProgramUpdateOne {
+	puo.mutation.AddDailyRoutineIDs(ids...)
+	return puo
+}
+
+// AddDailyRoutines adds the "daily_routines" edges to the DailyRoutine entity.
+func (puo *ProgramUpdateOne) AddDailyRoutines(d ...*DailyRoutine) *ProgramUpdateOne {
+	ids := make([]uint64, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return puo.AddDailyRoutineIDs(ids...)
+}
+
 // Mutation returns the ProgramMutation object of the builder.
 func (puo *ProgramUpdateOne) Mutation() *ProgramMutation {
 	return puo.mutation
+}
+
+// ClearTags clears all "tags" edges to the Tag entity.
+func (puo *ProgramUpdateOne) ClearTags() *ProgramUpdateOne {
+	puo.mutation.ClearTags()
+	return puo
+}
+
+// RemoveTagIDs removes the "tags" edge to Tag entities by IDs.
+func (puo *ProgramUpdateOne) RemoveTagIDs(ids ...uint64) *ProgramUpdateOne {
+	puo.mutation.RemoveTagIDs(ids...)
+	return puo
+}
+
+// RemoveTags removes "tags" edges to Tag entities.
+func (puo *ProgramUpdateOne) RemoveTags(t ...*Tag) *ProgramUpdateOne {
+	ids := make([]uint64, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return puo.RemoveTagIDs(ids...)
+}
+
+// ClearWeeklyRoutines clears all "weekly_routines" edges to the WeeklyRoutine entity.
+func (puo *ProgramUpdateOne) ClearWeeklyRoutines() *ProgramUpdateOne {
+	puo.mutation.ClearWeeklyRoutines()
+	return puo
+}
+
+// RemoveWeeklyRoutineIDs removes the "weekly_routines" edge to WeeklyRoutine entities by IDs.
+func (puo *ProgramUpdateOne) RemoveWeeklyRoutineIDs(ids ...uint64) *ProgramUpdateOne {
+	puo.mutation.RemoveWeeklyRoutineIDs(ids...)
+	return puo
+}
+
+// RemoveWeeklyRoutines removes "weekly_routines" edges to WeeklyRoutine entities.
+func (puo *ProgramUpdateOne) RemoveWeeklyRoutines(w ...*WeeklyRoutine) *ProgramUpdateOne {
+	ids := make([]uint64, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return puo.RemoveWeeklyRoutineIDs(ids...)
+}
+
+// ClearDailyRoutines clears all "daily_routines" edges to the DailyRoutine entity.
+func (puo *ProgramUpdateOne) ClearDailyRoutines() *ProgramUpdateOne {
+	puo.mutation.ClearDailyRoutines()
+	return puo
+}
+
+// RemoveDailyRoutineIDs removes the "daily_routines" edge to DailyRoutine entities by IDs.
+func (puo *ProgramUpdateOne) RemoveDailyRoutineIDs(ids ...uint64) *ProgramUpdateOne {
+	puo.mutation.RemoveDailyRoutineIDs(ids...)
+	return puo
+}
+
+// RemoveDailyRoutines removes "daily_routines" edges to DailyRoutine entities.
+func (puo *ProgramUpdateOne) RemoveDailyRoutines(d ...*DailyRoutine) *ProgramUpdateOne {
+	ids := make([]uint64, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return puo.RemoveDailyRoutineIDs(ids...)
 }
 
 // Where appends a list predicates to the ProgramUpdate builder.
@@ -372,6 +726,141 @@ func (puo *ProgramUpdateOne) sqlSave(ctx context.Context) (_node *Program, err e
 	}
 	if puo.mutation.DescriptionCleared() {
 		_spec.ClearField(program.FieldDescription, field.TypeString)
+	}
+	if puo.mutation.TagsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   program.TagsTable,
+			Columns: program.TagsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedTagsIDs(); len(nodes) > 0 && !puo.mutation.TagsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   program.TagsTable,
+			Columns: program.TagsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.TagsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   program.TagsTable,
+			Columns: program.TagsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.WeeklyRoutinesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   program.WeeklyRoutinesTable,
+			Columns: program.WeeklyRoutinesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(weeklyroutine.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedWeeklyRoutinesIDs(); len(nodes) > 0 && !puo.mutation.WeeklyRoutinesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   program.WeeklyRoutinesTable,
+			Columns: program.WeeklyRoutinesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(weeklyroutine.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.WeeklyRoutinesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   program.WeeklyRoutinesTable,
+			Columns: program.WeeklyRoutinesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(weeklyroutine.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.DailyRoutinesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   program.DailyRoutinesTable,
+			Columns: program.DailyRoutinesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutine.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedDailyRoutinesIDs(); len(nodes) > 0 && !puo.mutation.DailyRoutinesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   program.DailyRoutinesTable,
+			Columns: program.DailyRoutinesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutine.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.DailyRoutinesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   program.DailyRoutinesTable,
+			Columns: program.DailyRoutinesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutine.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Program{config: puo.config}
 	_spec.Assign = _node.assignValues

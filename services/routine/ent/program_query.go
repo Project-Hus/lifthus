@@ -4,10 +4,14 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
+	"routine/ent/dailyroutine"
 	"routine/ent/predicate"
 	"routine/ent/program"
+	"routine/ent/tag"
+	"routine/ent/weeklyroutine"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -17,10 +21,13 @@ import (
 // ProgramQuery is the builder for querying Program entities.
 type ProgramQuery struct {
 	config
-	ctx        *QueryContext
-	order      []program.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Program
+	ctx                *QueryContext
+	order              []program.OrderOption
+	inters             []Interceptor
+	predicates         []predicate.Program
+	withTags           *TagQuery
+	withWeeklyRoutines *WeeklyRoutineQuery
+	withDailyRoutines  *DailyRoutineQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -55,6 +62,72 @@ func (pq *ProgramQuery) Unique(unique bool) *ProgramQuery {
 func (pq *ProgramQuery) Order(o ...program.OrderOption) *ProgramQuery {
 	pq.order = append(pq.order, o...)
 	return pq
+}
+
+// QueryTags chains the current query on the "tags" edge.
+func (pq *ProgramQuery) QueryTags() *TagQuery {
+	query := (&TagClient{config: pq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(program.Table, program.FieldID, selector),
+			sqlgraph.To(tag.Table, tag.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, program.TagsTable, program.TagsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryWeeklyRoutines chains the current query on the "weekly_routines" edge.
+func (pq *ProgramQuery) QueryWeeklyRoutines() *WeeklyRoutineQuery {
+	query := (&WeeklyRoutineClient{config: pq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(program.Table, program.FieldID, selector),
+			sqlgraph.To(weeklyroutine.Table, weeklyroutine.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, program.WeeklyRoutinesTable, program.WeeklyRoutinesPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDailyRoutines chains the current query on the "daily_routines" edge.
+func (pq *ProgramQuery) QueryDailyRoutines() *DailyRoutineQuery {
+	query := (&DailyRoutineClient{config: pq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(program.Table, program.FieldID, selector),
+			sqlgraph.To(dailyroutine.Table, dailyroutine.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, program.DailyRoutinesTable, program.DailyRoutinesPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Program entity from the query.
@@ -244,15 +317,51 @@ func (pq *ProgramQuery) Clone() *ProgramQuery {
 		return nil
 	}
 	return &ProgramQuery{
-		config:     pq.config,
-		ctx:        pq.ctx.Clone(),
-		order:      append([]program.OrderOption{}, pq.order...),
-		inters:     append([]Interceptor{}, pq.inters...),
-		predicates: append([]predicate.Program{}, pq.predicates...),
+		config:             pq.config,
+		ctx:                pq.ctx.Clone(),
+		order:              append([]program.OrderOption{}, pq.order...),
+		inters:             append([]Interceptor{}, pq.inters...),
+		predicates:         append([]predicate.Program{}, pq.predicates...),
+		withTags:           pq.withTags.Clone(),
+		withWeeklyRoutines: pq.withWeeklyRoutines.Clone(),
+		withDailyRoutines:  pq.withDailyRoutines.Clone(),
 		// clone intermediate query.
 		sql:  pq.sql.Clone(),
 		path: pq.path,
 	}
+}
+
+// WithTags tells the query-builder to eager-load the nodes that are connected to
+// the "tags" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *ProgramQuery) WithTags(opts ...func(*TagQuery)) *ProgramQuery {
+	query := (&TagClient{config: pq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	pq.withTags = query
+	return pq
+}
+
+// WithWeeklyRoutines tells the query-builder to eager-load the nodes that are connected to
+// the "weekly_routines" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *ProgramQuery) WithWeeklyRoutines(opts ...func(*WeeklyRoutineQuery)) *ProgramQuery {
+	query := (&WeeklyRoutineClient{config: pq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	pq.withWeeklyRoutines = query
+	return pq
+}
+
+// WithDailyRoutines tells the query-builder to eager-load the nodes that are connected to
+// the "daily_routines" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *ProgramQuery) WithDailyRoutines(opts ...func(*DailyRoutineQuery)) *ProgramQuery {
+	query := (&DailyRoutineClient{config: pq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	pq.withDailyRoutines = query
+	return pq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -331,8 +440,13 @@ func (pq *ProgramQuery) prepareQuery(ctx context.Context) error {
 
 func (pq *ProgramQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Program, error) {
 	var (
-		nodes = []*Program{}
-		_spec = pq.querySpec()
+		nodes       = []*Program{}
+		_spec       = pq.querySpec()
+		loadedTypes = [3]bool{
+			pq.withTags != nil,
+			pq.withWeeklyRoutines != nil,
+			pq.withDailyRoutines != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Program).scanValues(nil, columns)
@@ -340,6 +454,7 @@ func (pq *ProgramQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Prog
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Program{config: pq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -351,7 +466,212 @@ func (pq *ProgramQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Prog
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := pq.withTags; query != nil {
+		if err := pq.loadTags(ctx, query, nodes,
+			func(n *Program) { n.Edges.Tags = []*Tag{} },
+			func(n *Program, e *Tag) { n.Edges.Tags = append(n.Edges.Tags, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := pq.withWeeklyRoutines; query != nil {
+		if err := pq.loadWeeklyRoutines(ctx, query, nodes,
+			func(n *Program) { n.Edges.WeeklyRoutines = []*WeeklyRoutine{} },
+			func(n *Program, e *WeeklyRoutine) { n.Edges.WeeklyRoutines = append(n.Edges.WeeklyRoutines, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := pq.withDailyRoutines; query != nil {
+		if err := pq.loadDailyRoutines(ctx, query, nodes,
+			func(n *Program) { n.Edges.DailyRoutines = []*DailyRoutine{} },
+			func(n *Program, e *DailyRoutine) { n.Edges.DailyRoutines = append(n.Edges.DailyRoutines, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (pq *ProgramQuery) loadTags(ctx context.Context, query *TagQuery, nodes []*Program, init func(*Program), assign func(*Program, *Tag)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uint64]*Program)
+	nids := make(map[uint64]map[*Program]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(program.TagsTable)
+		s.Join(joinT).On(s.C(tag.FieldID), joinT.C(program.TagsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(program.TagsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(program.TagsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := uint64(values[0].(*sql.NullInt64).Int64)
+				inValue := uint64(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Program]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Tag](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "tags" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (pq *ProgramQuery) loadWeeklyRoutines(ctx context.Context, query *WeeklyRoutineQuery, nodes []*Program, init func(*Program), assign func(*Program, *WeeklyRoutine)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uint64]*Program)
+	nids := make(map[uint64]map[*Program]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(program.WeeklyRoutinesTable)
+		s.Join(joinT).On(s.C(weeklyroutine.FieldID), joinT.C(program.WeeklyRoutinesPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(program.WeeklyRoutinesPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(program.WeeklyRoutinesPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := uint64(values[0].(*sql.NullInt64).Int64)
+				inValue := uint64(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Program]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*WeeklyRoutine](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "weekly_routines" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (pq *ProgramQuery) loadDailyRoutines(ctx context.Context, query *DailyRoutineQuery, nodes []*Program, init func(*Program), assign func(*Program, *DailyRoutine)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uint64]*Program)
+	nids := make(map[uint64]map[*Program]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(program.DailyRoutinesTable)
+		s.Join(joinT).On(s.C(dailyroutine.FieldID), joinT.C(program.DailyRoutinesPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(program.DailyRoutinesPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(program.DailyRoutinesPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := uint64(values[0].(*sql.NullInt64).Int64)
+				inValue := uint64(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Program]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*DailyRoutine](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "daily_routines" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
 }
 
 func (pq *ProgramQuery) sqlCount(ctx context.Context) (int, error) {

@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"routine/ent/act"
+	"routine/ent/routineact"
+	"routine/ent/tag"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -77,6 +79,36 @@ func (ac *ActCreate) SetNillableDescription(s *string) *ActCreate {
 func (ac *ActCreate) SetID(u uint64) *ActCreate {
 	ac.mutation.SetID(u)
 	return ac
+}
+
+// AddTagIDs adds the "tags" edge to the Tag entity by IDs.
+func (ac *ActCreate) AddTagIDs(ids ...uint64) *ActCreate {
+	ac.mutation.AddTagIDs(ids...)
+	return ac
+}
+
+// AddTags adds the "tags" edges to the Tag entity.
+func (ac *ActCreate) AddTags(t ...*Tag) *ActCreate {
+	ids := make([]uint64, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return ac.AddTagIDs(ids...)
+}
+
+// AddRoutineActIDs adds the "routine_acts" edge to the RoutineAct entity by IDs.
+func (ac *ActCreate) AddRoutineActIDs(ids ...uint64) *ActCreate {
+	ac.mutation.AddRoutineActIDs(ids...)
+	return ac
+}
+
+// AddRoutineActs adds the "routine_acts" edges to the RoutineAct entity.
+func (ac *ActCreate) AddRoutineActs(r ...*RoutineAct) *ActCreate {
+	ids := make([]uint64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return ac.AddRoutineActIDs(ids...)
 }
 
 // Mutation returns the ActMutation object of the builder.
@@ -180,6 +212,38 @@ func (ac *ActCreate) createSpec() (*Act, *sqlgraph.CreateSpec) {
 	if value, ok := ac.mutation.Description(); ok {
 		_spec.SetField(act.FieldDescription, field.TypeString, value)
 		_node.Description = &value
+	}
+	if nodes := ac.mutation.TagsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   act.TagsTable,
+			Columns: act.TagsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ac.mutation.RoutineActsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.RoutineActsTable,
+			Columns: []string{act.RoutineActsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

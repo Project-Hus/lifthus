@@ -3,6 +3,7 @@ package schema
 import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -28,5 +29,9 @@ func (Program) Fields() []ent.Field {
 
 // Edges of the Program.
 func (Program) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.From("tags", Tag.Type).Ref("programs"),
+		edge.To("weekly_routines", WeeklyRoutine.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+		edge.To("daily_routines", DailyRoutine.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+	}
 }

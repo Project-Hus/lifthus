@@ -25,8 +25,51 @@ type Program struct {
 	// Image holds the value of the "image" field.
 	Image *string `json:"image,omitempty"`
 	// Description holds the value of the "description" field.
-	Description  *string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the ProgramQuery when eager-loading is set.
+	Edges        ProgramEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// ProgramEdges holds the relations/edges for other nodes in the graph.
+type ProgramEdges struct {
+	// Tags holds the value of the tags edge.
+	Tags []*Tag `json:"tags,omitempty"`
+	// WeeklyRoutines holds the value of the weekly_routines edge.
+	WeeklyRoutines []*WeeklyRoutine `json:"weekly_routines,omitempty"`
+	// DailyRoutines holds the value of the daily_routines edge.
+	DailyRoutines []*DailyRoutine `json:"daily_routines,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [3]bool
+}
+
+// TagsOrErr returns the Tags value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProgramEdges) TagsOrErr() ([]*Tag, error) {
+	if e.loadedTypes[0] {
+		return e.Tags, nil
+	}
+	return nil, &NotLoadedError{edge: "tags"}
+}
+
+// WeeklyRoutinesOrErr returns the WeeklyRoutines value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProgramEdges) WeeklyRoutinesOrErr() ([]*WeeklyRoutine, error) {
+	if e.loadedTypes[1] {
+		return e.WeeklyRoutines, nil
+	}
+	return nil, &NotLoadedError{edge: "weekly_routines"}
+}
+
+// DailyRoutinesOrErr returns the DailyRoutines value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProgramEdges) DailyRoutinesOrErr() ([]*DailyRoutine, error) {
+	if e.loadedTypes[2] {
+		return e.DailyRoutines, nil
+	}
+	return nil, &NotLoadedError{edge: "daily_routines"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -102,6 +145,21 @@ func (pr *Program) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (pr *Program) Value(name string) (ent.Value, error) {
 	return pr.selectValues.Get(name)
+}
+
+// QueryTags queries the "tags" edge of the Program entity.
+func (pr *Program) QueryTags() *TagQuery {
+	return NewProgramClient(pr.config).QueryTags(pr)
+}
+
+// QueryWeeklyRoutines queries the "weekly_routines" edge of the Program entity.
+func (pr *Program) QueryWeeklyRoutines() *WeeklyRoutineQuery {
+	return NewProgramClient(pr.config).QueryWeeklyRoutines(pr)
+}
+
+// QueryDailyRoutines queries the "daily_routines" edge of the Program entity.
+func (pr *Program) QueryDailyRoutines() *DailyRoutineQuery {
+	return NewProgramClient(pr.config).QueryDailyRoutines(pr)
 }
 
 // Update returns a builder for updating this Program.

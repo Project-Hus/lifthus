@@ -6,6 +6,7 @@ import (
 	"routine/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // ID filters vertices based on their ID field.
@@ -346,6 +347,75 @@ func DescriptionEqualFold(v string) predicate.Program {
 // DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
 func DescriptionContainsFold(v string) predicate.Program {
 	return predicate.Program(sql.FieldContainsFold(FieldDescription, v))
+}
+
+// HasTags applies the HasEdge predicate on the "tags" edge.
+func HasTags() predicate.Program {
+	return predicate.Program(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, TagsTable, TagsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTagsWith applies the HasEdge predicate on the "tags" edge with a given conditions (other predicates).
+func HasTagsWith(preds ...predicate.Tag) predicate.Program {
+	return predicate.Program(func(s *sql.Selector) {
+		step := newTagsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasWeeklyRoutines applies the HasEdge predicate on the "weekly_routines" edge.
+func HasWeeklyRoutines() predicate.Program {
+	return predicate.Program(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, WeeklyRoutinesTable, WeeklyRoutinesPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasWeeklyRoutinesWith applies the HasEdge predicate on the "weekly_routines" edge with a given conditions (other predicates).
+func HasWeeklyRoutinesWith(preds ...predicate.WeeklyRoutine) predicate.Program {
+	return predicate.Program(func(s *sql.Selector) {
+		step := newWeeklyRoutinesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasDailyRoutines applies the HasEdge predicate on the "daily_routines" edge.
+func HasDailyRoutines() predicate.Program {
+	return predicate.Program(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, DailyRoutinesTable, DailyRoutinesPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDailyRoutinesWith applies the HasEdge predicate on the "daily_routines" edge with a given conditions (other predicates).
+func HasDailyRoutinesWith(preds ...predicate.DailyRoutine) predicate.Program {
+	return predicate.Program(func(s *sql.Selector) {
+		step := newDailyRoutinesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

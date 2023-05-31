@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"routine/ent/act"
 	"routine/ent/predicate"
+	"routine/ent/routineact"
+	"routine/ent/tag"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -106,9 +108,81 @@ func (au *ActUpdate) ClearDescription() *ActUpdate {
 	return au
 }
 
+// AddTagIDs adds the "tags" edge to the Tag entity by IDs.
+func (au *ActUpdate) AddTagIDs(ids ...uint64) *ActUpdate {
+	au.mutation.AddTagIDs(ids...)
+	return au
+}
+
+// AddTags adds the "tags" edges to the Tag entity.
+func (au *ActUpdate) AddTags(t ...*Tag) *ActUpdate {
+	ids := make([]uint64, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return au.AddTagIDs(ids...)
+}
+
+// AddRoutineActIDs adds the "routine_acts" edge to the RoutineAct entity by IDs.
+func (au *ActUpdate) AddRoutineActIDs(ids ...uint64) *ActUpdate {
+	au.mutation.AddRoutineActIDs(ids...)
+	return au
+}
+
+// AddRoutineActs adds the "routine_acts" edges to the RoutineAct entity.
+func (au *ActUpdate) AddRoutineActs(r ...*RoutineAct) *ActUpdate {
+	ids := make([]uint64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return au.AddRoutineActIDs(ids...)
+}
+
 // Mutation returns the ActMutation object of the builder.
 func (au *ActUpdate) Mutation() *ActMutation {
 	return au.mutation
+}
+
+// ClearTags clears all "tags" edges to the Tag entity.
+func (au *ActUpdate) ClearTags() *ActUpdate {
+	au.mutation.ClearTags()
+	return au
+}
+
+// RemoveTagIDs removes the "tags" edge to Tag entities by IDs.
+func (au *ActUpdate) RemoveTagIDs(ids ...uint64) *ActUpdate {
+	au.mutation.RemoveTagIDs(ids...)
+	return au
+}
+
+// RemoveTags removes "tags" edges to Tag entities.
+func (au *ActUpdate) RemoveTags(t ...*Tag) *ActUpdate {
+	ids := make([]uint64, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return au.RemoveTagIDs(ids...)
+}
+
+// ClearRoutineActs clears all "routine_acts" edges to the RoutineAct entity.
+func (au *ActUpdate) ClearRoutineActs() *ActUpdate {
+	au.mutation.ClearRoutineActs()
+	return au
+}
+
+// RemoveRoutineActIDs removes the "routine_acts" edge to RoutineAct entities by IDs.
+func (au *ActUpdate) RemoveRoutineActIDs(ids ...uint64) *ActUpdate {
+	au.mutation.RemoveRoutineActIDs(ids...)
+	return au
+}
+
+// RemoveRoutineActs removes "routine_acts" edges to RoutineAct entities.
+func (au *ActUpdate) RemoveRoutineActs(r ...*RoutineAct) *ActUpdate {
+	ids := make([]uint64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return au.RemoveRoutineActIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -191,6 +265,96 @@ func (au *ActUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if au.mutation.DescriptionCleared() {
 		_spec.ClearField(act.FieldDescription, field.TypeString)
+	}
+	if au.mutation.TagsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   act.TagsTable,
+			Columns: act.TagsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.RemovedTagsIDs(); len(nodes) > 0 && !au.mutation.TagsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   act.TagsTable,
+			Columns: act.TagsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.TagsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   act.TagsTable,
+			Columns: act.TagsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if au.mutation.RoutineActsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.RoutineActsTable,
+			Columns: []string{act.RoutineActsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.RemovedRoutineActsIDs(); len(nodes) > 0 && !au.mutation.RoutineActsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.RoutineActsTable,
+			Columns: []string{act.RoutineActsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.RoutineActsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.RoutineActsTable,
+			Columns: []string{act.RoutineActsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -291,9 +455,81 @@ func (auo *ActUpdateOne) ClearDescription() *ActUpdateOne {
 	return auo
 }
 
+// AddTagIDs adds the "tags" edge to the Tag entity by IDs.
+func (auo *ActUpdateOne) AddTagIDs(ids ...uint64) *ActUpdateOne {
+	auo.mutation.AddTagIDs(ids...)
+	return auo
+}
+
+// AddTags adds the "tags" edges to the Tag entity.
+func (auo *ActUpdateOne) AddTags(t ...*Tag) *ActUpdateOne {
+	ids := make([]uint64, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return auo.AddTagIDs(ids...)
+}
+
+// AddRoutineActIDs adds the "routine_acts" edge to the RoutineAct entity by IDs.
+func (auo *ActUpdateOne) AddRoutineActIDs(ids ...uint64) *ActUpdateOne {
+	auo.mutation.AddRoutineActIDs(ids...)
+	return auo
+}
+
+// AddRoutineActs adds the "routine_acts" edges to the RoutineAct entity.
+func (auo *ActUpdateOne) AddRoutineActs(r ...*RoutineAct) *ActUpdateOne {
+	ids := make([]uint64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return auo.AddRoutineActIDs(ids...)
+}
+
 // Mutation returns the ActMutation object of the builder.
 func (auo *ActUpdateOne) Mutation() *ActMutation {
 	return auo.mutation
+}
+
+// ClearTags clears all "tags" edges to the Tag entity.
+func (auo *ActUpdateOne) ClearTags() *ActUpdateOne {
+	auo.mutation.ClearTags()
+	return auo
+}
+
+// RemoveTagIDs removes the "tags" edge to Tag entities by IDs.
+func (auo *ActUpdateOne) RemoveTagIDs(ids ...uint64) *ActUpdateOne {
+	auo.mutation.RemoveTagIDs(ids...)
+	return auo
+}
+
+// RemoveTags removes "tags" edges to Tag entities.
+func (auo *ActUpdateOne) RemoveTags(t ...*Tag) *ActUpdateOne {
+	ids := make([]uint64, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return auo.RemoveTagIDs(ids...)
+}
+
+// ClearRoutineActs clears all "routine_acts" edges to the RoutineAct entity.
+func (auo *ActUpdateOne) ClearRoutineActs() *ActUpdateOne {
+	auo.mutation.ClearRoutineActs()
+	return auo
+}
+
+// RemoveRoutineActIDs removes the "routine_acts" edge to RoutineAct entities by IDs.
+func (auo *ActUpdateOne) RemoveRoutineActIDs(ids ...uint64) *ActUpdateOne {
+	auo.mutation.RemoveRoutineActIDs(ids...)
+	return auo
+}
+
+// RemoveRoutineActs removes "routine_acts" edges to RoutineAct entities.
+func (auo *ActUpdateOne) RemoveRoutineActs(r ...*RoutineAct) *ActUpdateOne {
+	ids := make([]uint64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return auo.RemoveRoutineActIDs(ids...)
 }
 
 // Where appends a list predicates to the ActUpdate builder.
@@ -406,6 +642,96 @@ func (auo *ActUpdateOne) sqlSave(ctx context.Context) (_node *Act, err error) {
 	}
 	if auo.mutation.DescriptionCleared() {
 		_spec.ClearField(act.FieldDescription, field.TypeString)
+	}
+	if auo.mutation.TagsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   act.TagsTable,
+			Columns: act.TagsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.RemovedTagsIDs(); len(nodes) > 0 && !auo.mutation.TagsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   act.TagsTable,
+			Columns: act.TagsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.TagsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   act.TagsTable,
+			Columns: act.TagsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if auo.mutation.RoutineActsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.RoutineActsTable,
+			Columns: []string{act.RoutineActsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.RemovedRoutineActsIDs(); len(nodes) > 0 && !auo.mutation.RoutineActsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.RoutineActsTable,
+			Columns: []string{act.RoutineActsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.RoutineActsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.RoutineActsTable,
+			Columns: []string{act.RoutineActsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Act{config: auo.config}
 	_spec.Assign = _node.assignValues

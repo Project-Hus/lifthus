@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -24,5 +25,8 @@ func (RoutineAct) Fields() []ent.Field {
 
 // Edges of the RoutineAct.
 func (RoutineAct) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.From("act", Act.Type).Ref("routine_acts").Required().Unique(),
+		edge.From("daily_routine", DailyRoutine.Type).Ref("routine_acts").Required().Unique(),
+	}
 }
