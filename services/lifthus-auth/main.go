@@ -63,7 +63,7 @@ func main() {
 	}
 
 	// initialize Lifthus common variables
-	lifthus.InitLifthusVars(husenv, dbClient)
+	lifthus.InitLifthusVars(husenv, nil)
 
 	// connecting to lifthus_user_db with ent
 	dbClient, err := db.ConnectToLifthusAuth()
