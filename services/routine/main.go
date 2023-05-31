@@ -1,7 +1,7 @@
 package main
 
 import (
-	"lifthus-auth/ent"
+	"routine/ent"
 
 	echoadapter "github.com/awslabs/aws-lambda-go-api-proxy/echo"
 )
