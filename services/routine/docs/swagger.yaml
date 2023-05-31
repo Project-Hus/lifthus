@@ -1,0 +1,16 @@
+basePath: /routine
+host: auth.lifthus.com
+info:
+  contact:
+    email: lifthus531@gmail.com
+    name: API Support
+    url: lifthus531@gmail.com
+  description: This is Project-Hus's subservice Lifthus's routine management server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Lifthus routine server
+  version: 0.0.0
+paths: {}
+swagger: "2.0"

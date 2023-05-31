@@ -28,6 +28,12 @@ Globals:
         LIFTHUS_POST_DB_HOST: "{{resolve:ssm:LIFTHUS_POST_DB_HOST:1}}"
         LIFTHUS_POST_DB_PORT: "{{resolve:ssm:LIFTHUS_POST_DB_PORT:1}}"
 
+        LIFTHUS_ROUTINE_DB_NAME: "{{resolve:ssm:LIFTHUS_ROUTINE_DB_NAME:1}}"
+        LIFTHUS_ROUTINE_DB_USER: "{{resolve:ssm:LIFTHUS_ROUTINE_DB_USER:1}}"
+        LIFTHUS_ROUTINE_DB_PASSWORD: "{{resolve:ssm:LIFTHUS_ROUTINE_DB_PASSWORD:1}}"
+        LIFTHUS_ROUTINE_DB_HOST: "{{resolve:ssm:LIFTHUS_ROUTINE_DB_HOST:1}}"
+        LIFTHUS_ROUTINE_DB_PORT: "{{resolve:ssm:LIFTHUS_ROUTINE_DB_PORT:1}}"
+
         HUS_SECRET_KEY: "{{resolve:ssm:HUS_SECRET_KEY:1}}"
         HUS_ENV: "{{resolve:ssm:HUS_ENV:1}}"
   Api:
@@ -139,7 +145,35 @@ Resources:
     #       - "cache-manager"
     #       - "class-transformer"
     #       - "class-validator"
-
+  # lifthus routine service
+  LifthusRoutineService:
+    Type: AWS::Serverless::Function
+    Properties:
+      MemorySize: 128
+      # !! SAM esbuild (not working properly)
+      #CodeUri: services/post/
+      #Handler: src/lambda.handler
+      # SAM tsc esbuild bundle
+      CodeUri: services/routine
+      Handler: routine
+      Runtime: go1.x
+      Architectures:
+        - x86_64
+      Events:
+        LifthusRoutineServiceRoot:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: LifthusApi
+            Path: /routine
+            Method: ANY
+        LifthusRoutineServiceProxy:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: LifthusApi
+            Path: /routine/{proxy+}
+            Method: ANY
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group
     Properties:

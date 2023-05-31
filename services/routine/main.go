@@ -2,43 +2,37 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"log"
+	"lifthus-auth/common/lifthus"
 	"net/http"
-	"os"
 	"time"
 
-	lmw "lifthus-auth/common/middleware"
+	"log"
+	"os"
+	"routine/api/routine"
+	"routine/common/db"
+	"routine/ent"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	_ "github.com/go-sql-driver/mysql"
+	echoadapter "github.com/awslabs/aws-lambda-go-api-proxy/echo"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	envbyjson "github.com/lifthus/envbyjson/go"
-
-	"lifthus-auth/ent"
-
-	"lifthus-auth/common/lifthus"
-	"lifthus-auth/db"
-
-	"lifthus-auth/api/auth"
-	"lifthus-auth/api/relation"
-	"lifthus-auth/api/user"
-
-	_ "lifthus-auth/docs"
-
 	echoSwagger "github.com/swaggo/echo-swagger"
 
-	echoadapter "github.com/awslabs/aws-lambda-go-api-proxy/echo"
+	_ "routine/docs"
+
+	_ "github.com/go-sql-driver/mysql"
+
+	rmw "routine/common/middleware"
 )
 
 var echoLambda *echoadapter.EchoLambdaV2
 var dbClient *ent.Client
 
-// @title Lifthus user server
+// @title Lifthus routine server
 // @version 0.0.0
-// @description This is Project-Hus's subservice Lifthus's user management server.
+// @description This is Project-Hus's subservice Lifthus's routine management server.
 // @termsOfService http://swagger.io/terms/
 // @contact.name API Support
 // @contact.url lifthus531@gmail.com
@@ -46,7 +40,7 @@ var dbClient *ent.Client
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 // @host auth.lifthus.com
-// @BasePath /auth
+// @BasePath /routine
 func main() {
 	// HUS_ENV
 	// production : production for aws lambda
@@ -56,39 +50,34 @@ func main() {
 	if !heok {
 		log.Fatal("environment variable HUS_ENV must be set(production|development|native)")
 	}
-
 	// if husenv is native, load env.json with envbyjson
 	if husenv == "native" {
 		envbyjson.LoadProp("../../env.json", "Parameters")
 	}
 
-	// initialize Lifthus common variables
+	// initialize lIfthus common variables
 	lifthus.InitLifthusVars(husenv, nil)
 
-	// connecting to lifthus_user_db with ent
-	dbClient, err := db.ConnectToLifthusAuth()
+	// connect to lifthus_routine_db
+	dbClient, err := db.ConnectToLifthusRoutine()
 	if err != nil {
 		log.Fatalf("[F]connecting db failed:%v", err)
 	}
-	// main's defer in lambda environment is actually not executed.
 	defer dbClient.Close()
 
-	// create new http.Client for authApi
-	authHttpClient := &http.Client{
+	// create new http.Client from routineApi
+	routineHttpClient := &http.Client{
 		Timeout: time.Second * 5,
 	}
 
-	// create echo web server instance and set CORS headers
+	// create echo web server instance an set CORS headers
 	e := echo.New()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		// If your Backend is deployed in AWS and using API Gateway to call through,
-		// then all these headers need to be applied in API Gateway level also.
 		AllowOrigins: lifthus.Origins,
-
-		// to allow all headers
 		AllowHeaders: []string{
-			echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization,
-			echo.HeaderAccessControlAllowOrigin, echo.HeaderAccessControlAllowHeaders, echo.HeaderAccessControlAllowMethods,
+			echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept,
+			echo.HeaderAuthorization, echo.HeaderAccessControlAllowOrigin,
+			echo.HeaderAccessControlAllowHeaders, echo.HeaderAccessControlAllowMethods,
 			echo.HeaderXRequestedWith,
 		},
 		ExposeHeaders: []string{
@@ -101,43 +90,35 @@ func main() {
 	}))
 
 	// set uid to context if the user is signed
-	e.Pre(lmw.UidSetter(dbClient))
+	e.Pre(rmw.UidSetter())
 
+	// REQUEST LOGGER
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			// get request ip address
 			rip := c.RealIP()
 			org := c.Request().Header.Get("Origin")
-			fmt.Println("REQUEST from Origin", org, rip)
-			fmt.Println(c.Request())
+			log.Println("REQUEST from Origin", org, rip)
+			log.Println(c.Request())
 			return next(c)
 		}
 	})
 
-	authApiControllerParams := auth.AuthApiControllerParams{
+	routineApiControllerParams := routine.RoutineApiControllerParams{
 		DbClient:   dbClient,
-		HttpClient: authHttpClient,
-	}
-	userApiControllerParams := user.UserApiControllerParams{
-		DbClient:   dbClient,
-		HttpClient: authHttpClient,
-	}
-	relationApiControllerParams := relation.RelationApiControllerParams{
-		DbClient:   dbClient,
-		HttpClient: authHttpClient,
+		HttpClient: routineHttpClient,
 	}
 
-	e = auth.NewAuthApiController(e, authApiControllerParams)
-	e = user.NewUserApiController(e, userApiControllerParams)
-	e = relation.NewRelationApiController(e, relationApiControllerParams)
+	e = routine.NewRoutineApiController(e, routineApiControllerParams)
 
-	e.GET("/auth/openapi/*", echoSwagger.WrapHandler)
+	// swagger
+	e.GET("/routine/openapi/*", echoSwagger.WrapHandler)
 
 	// if the environment is native, run the echo server.
 	if husenv == "native" {
-		e.Logger.Fatal(e.Start(":" + os.Getenv("AUTH_PORT")))
+		e.Logger.Fatal(e.Start(":" + os.Getenv("ROUTINE_PORT")))
 	} else {
-		// if it's in lambda environment, run lambda.Start.
+		// if it's lambda environment, run lambda.Start
 		echoLambda = echoadapter.NewV2(e)
 		lambda.Start(Handler)
 	}
@@ -145,10 +126,13 @@ func main() {
 
 func Handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
 	resp, err := echoLambda.ProxyWithContext(ctx, req)
+
+	// RESPONSE LOGGER
 	rip := req.RequestContext.HTTP.SourceIP
 	org := req.Headers["Origin"]
-	fmt.Println("RESPONSE to Origin", org, rip)
-	fmt.Println(resp)
-	fmt.Println("err:", err)
+	log.Println("RESPONSE to Origin", org, rip)
+	log.Println(resp)
+	log.Println("err:", err)
+
 	return resp, err
 }
