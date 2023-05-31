@@ -10,6 +10,7 @@ import (
 	"routine/ent/schema"
 	"routine/ent/tag"
 	"routine/ent/weeklyroutine"
+	"time"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -22,18 +23,48 @@ func init() {
 	actDescName := actFields[1].Descriptor()
 	// act.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	act.NameValidator = actDescName.Validators[0].(func(string) error)
+	// actDescCreatedAt is the schema descriptor for created_at field.
+	actDescCreatedAt := actFields[6].Descriptor()
+	// act.DefaultCreatedAt holds the default value on creation for the created_at field.
+	act.DefaultCreatedAt = actDescCreatedAt.Default.(func() time.Time)
+	// actDescUpdatedAt is the schema descriptor for updated_at field.
+	actDescUpdatedAt := actFields[7].Descriptor()
+	// act.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	act.DefaultUpdatedAt = actDescUpdatedAt.Default.(func() time.Time)
+	// act.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	act.UpdateDefaultUpdatedAt = actDescUpdatedAt.UpdateDefault.(func() time.Time)
 	dailyroutineFields := schema.DailyRoutine{}.Fields()
 	_ = dailyroutineFields
 	// dailyroutineDescDay is the schema descriptor for day field.
 	dailyroutineDescDay := dailyroutineFields[3].Descriptor()
 	// dailyroutine.DayValidator is a validator for the "day" field. It is called by the builders before save.
 	dailyroutine.DayValidator = dailyroutineDescDay.Validators[0].(func(int) error)
+	// dailyroutineDescCreatedAt is the schema descriptor for created_at field.
+	dailyroutineDescCreatedAt := dailyroutineFields[4].Descriptor()
+	// dailyroutine.DefaultCreatedAt holds the default value on creation for the created_at field.
+	dailyroutine.DefaultCreatedAt = dailyroutineDescCreatedAt.Default.(func() time.Time)
+	// dailyroutineDescUpdatedAt is the schema descriptor for updated_at field.
+	dailyroutineDescUpdatedAt := dailyroutineFields[5].Descriptor()
+	// dailyroutine.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	dailyroutine.DefaultUpdatedAt = dailyroutineDescUpdatedAt.Default.(func() time.Time)
+	// dailyroutine.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	dailyroutine.UpdateDefaultUpdatedAt = dailyroutineDescUpdatedAt.UpdateDefault.(func() time.Time)
 	programFields := schema.Program{}.Fields()
 	_ = programFields
 	// programDescTitle is the schema descriptor for title field.
 	programDescTitle := programFields[1].Descriptor()
 	// program.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	program.TitleValidator = programDescTitle.Validators[0].(func(string) error)
+	// programDescCreatedAt is the schema descriptor for created_at field.
+	programDescCreatedAt := programFields[6].Descriptor()
+	// program.DefaultCreatedAt holds the default value on creation for the created_at field.
+	program.DefaultCreatedAt = programDescCreatedAt.Default.(func() time.Time)
+	// programDescUpdatedAt is the schema descriptor for updated_at field.
+	programDescUpdatedAt := programFields[7].Descriptor()
+	// program.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	program.DefaultUpdatedAt = programDescUpdatedAt.Default.(func() time.Time)
+	// program.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	program.UpdateDefaultUpdatedAt = programDescUpdatedAt.UpdateDefault.(func() time.Time)
 	routineactFields := schema.RoutineAct{}.Fields()
 	_ = routineactFields
 	// routineactDescOrder is the schema descriptor for order field.
@@ -48,6 +79,16 @@ func init() {
 	routineactDescLap := routineactFields[5].Descriptor()
 	// routineact.LapValidator is a validator for the "lap" field. It is called by the builders before save.
 	routineact.LapValidator = routineactDescLap.Validators[0].(func(int) error)
+	// routineactDescCreatedAt is the schema descriptor for created_at field.
+	routineactDescCreatedAt := routineactFields[6].Descriptor()
+	// routineact.DefaultCreatedAt holds the default value on creation for the created_at field.
+	routineact.DefaultCreatedAt = routineactDescCreatedAt.Default.(func() time.Time)
+	// routineactDescUpdatedAt is the schema descriptor for updated_at field.
+	routineactDescUpdatedAt := routineactFields[7].Descriptor()
+	// routineact.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	routineact.DefaultUpdatedAt = routineactDescUpdatedAt.Default.(func() time.Time)
+	// routineact.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	routineact.UpdateDefaultUpdatedAt = routineactDescUpdatedAt.UpdateDefault.(func() time.Time)
 	tagFields := schema.Tag{}.Fields()
 	_ = tagFields
 	// tagDescTag is the schema descriptor for tag field.
@@ -60,4 +101,14 @@ func init() {
 	weeklyroutineDescWeek := weeklyroutineFields[2].Descriptor()
 	// weeklyroutine.WeekValidator is a validator for the "week" field. It is called by the builders before save.
 	weeklyroutine.WeekValidator = weeklyroutineDescWeek.Validators[0].(func(int) error)
+	// weeklyroutineDescCreatedAt is the schema descriptor for created_at field.
+	weeklyroutineDescCreatedAt := weeklyroutineFields[3].Descriptor()
+	// weeklyroutine.DefaultCreatedAt holds the default value on creation for the created_at field.
+	weeklyroutine.DefaultCreatedAt = weeklyroutineDescCreatedAt.Default.(func() time.Time)
+	// weeklyroutineDescUpdatedAt is the schema descriptor for updated_at field.
+	weeklyroutineDescUpdatedAt := weeklyroutineFields[4].Descriptor()
+	// weeklyroutine.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	weeklyroutine.DefaultUpdatedAt = weeklyroutineDescUpdatedAt.Default.(func() time.Time)
+	// weeklyroutine.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	weeklyroutine.UpdateDefaultUpdatedAt = weeklyroutineDescUpdatedAt.UpdateDefault.(func() time.Time)
 }

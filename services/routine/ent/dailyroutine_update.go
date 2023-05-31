@@ -11,6 +11,7 @@ import (
 	"routine/ent/program"
 	"routine/ent/routineact"
 	"routine/ent/weeklyroutine"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -94,6 +95,12 @@ func (dru *DailyRoutineUpdate) SetDay(i int) *DailyRoutineUpdate {
 // AddDay adds i to the "day" field.
 func (dru *DailyRoutineUpdate) AddDay(i int) *DailyRoutineUpdate {
 	dru.mutation.AddDay(i)
+	return dru
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (dru *DailyRoutineUpdate) SetUpdatedAt(t time.Time) *DailyRoutineUpdate {
+	dru.mutation.SetUpdatedAt(t)
 	return dru
 }
 
@@ -212,6 +219,7 @@ func (dru *DailyRoutineUpdate) RemoveRoutineActs(r ...*RoutineAct) *DailyRoutine
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (dru *DailyRoutineUpdate) Save(ctx context.Context) (int, error) {
+	dru.defaults()
 	return withHooks(ctx, dru.sqlSave, dru.mutation, dru.hooks)
 }
 
@@ -234,6 +242,14 @@ func (dru *DailyRoutineUpdate) Exec(ctx context.Context) error {
 func (dru *DailyRoutineUpdate) ExecX(ctx context.Context) {
 	if err := dru.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (dru *DailyRoutineUpdate) defaults() {
+	if _, ok := dru.mutation.UpdatedAt(); !ok {
+		v := dailyroutine.UpdateDefaultUpdatedAt()
+		dru.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -282,6 +298,9 @@ func (dru *DailyRoutineUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := dru.mutation.AddedDay(); ok {
 		_spec.AddField(dailyroutine.FieldDay, field.TypeInt, value)
+	}
+	if value, ok := dru.mutation.UpdatedAt(); ok {
+		_spec.SetField(dailyroutine.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if dru.mutation.ProgramCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -505,6 +524,12 @@ func (druo *DailyRoutineUpdateOne) AddDay(i int) *DailyRoutineUpdateOne {
 	return druo
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (druo *DailyRoutineUpdateOne) SetUpdatedAt(t time.Time) *DailyRoutineUpdateOne {
+	druo.mutation.SetUpdatedAt(t)
+	return druo
+}
+
 // AddProgramIDs adds the "program" edge to the Program entity by IDs.
 func (druo *DailyRoutineUpdateOne) AddProgramIDs(ids ...uint64) *DailyRoutineUpdateOne {
 	druo.mutation.AddProgramIDs(ids...)
@@ -633,6 +658,7 @@ func (druo *DailyRoutineUpdateOne) Select(field string, fields ...string) *Daily
 
 // Save executes the query and returns the updated DailyRoutine entity.
 func (druo *DailyRoutineUpdateOne) Save(ctx context.Context) (*DailyRoutine, error) {
+	druo.defaults()
 	return withHooks(ctx, druo.sqlSave, druo.mutation, druo.hooks)
 }
 
@@ -655,6 +681,14 @@ func (druo *DailyRoutineUpdateOne) Exec(ctx context.Context) error {
 func (druo *DailyRoutineUpdateOne) ExecX(ctx context.Context) {
 	if err := druo.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (druo *DailyRoutineUpdateOne) defaults() {
+	if _, ok := druo.mutation.UpdatedAt(); !ok {
+		v := dailyroutine.UpdateDefaultUpdatedAt()
+		druo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -720,6 +754,9 @@ func (druo *DailyRoutineUpdateOne) sqlSave(ctx context.Context) (_node *DailyRou
 	}
 	if value, ok := druo.mutation.AddedDay(); ok {
 		_spec.AddField(dailyroutine.FieldDay, field.TypeInt, value)
+	}
+	if value, ok := druo.mutation.UpdatedAt(); ok {
+		_spec.SetField(dailyroutine.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if druo.mutation.ProgramCleared() {
 		edge := &sqlgraph.EdgeSpec{

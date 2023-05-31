@@ -9,6 +9,7 @@ import (
 	"routine/ent/dailyroutine"
 	"routine/ent/program"
 	"routine/ent/weeklyroutine"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -30,6 +31,34 @@ func (wrc *WeeklyRoutineCreate) SetProgramID(u uint64) *WeeklyRoutineCreate {
 // SetWeek sets the "week" field.
 func (wrc *WeeklyRoutineCreate) SetWeek(i int) *WeeklyRoutineCreate {
 	wrc.mutation.SetWeek(i)
+	return wrc
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (wrc *WeeklyRoutineCreate) SetCreatedAt(t time.Time) *WeeklyRoutineCreate {
+	wrc.mutation.SetCreatedAt(t)
+	return wrc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (wrc *WeeklyRoutineCreate) SetNillableCreatedAt(t *time.Time) *WeeklyRoutineCreate {
+	if t != nil {
+		wrc.SetCreatedAt(*t)
+	}
+	return wrc
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (wrc *WeeklyRoutineCreate) SetUpdatedAt(t time.Time) *WeeklyRoutineCreate {
+	wrc.mutation.SetUpdatedAt(t)
+	return wrc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (wrc *WeeklyRoutineCreate) SetNillableUpdatedAt(t *time.Time) *WeeklyRoutineCreate {
+	if t != nil {
+		wrc.SetUpdatedAt(*t)
+	}
 	return wrc
 }
 
@@ -76,6 +105,7 @@ func (wrc *WeeklyRoutineCreate) Mutation() *WeeklyRoutineMutation {
 
 // Save creates the WeeklyRoutine in the database.
 func (wrc *WeeklyRoutineCreate) Save(ctx context.Context) (*WeeklyRoutine, error) {
+	wrc.defaults()
 	return withHooks(ctx, wrc.sqlSave, wrc.mutation, wrc.hooks)
 }
 
@@ -101,6 +131,18 @@ func (wrc *WeeklyRoutineCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (wrc *WeeklyRoutineCreate) defaults() {
+	if _, ok := wrc.mutation.CreatedAt(); !ok {
+		v := weeklyroutine.DefaultCreatedAt()
+		wrc.mutation.SetCreatedAt(v)
+	}
+	if _, ok := wrc.mutation.UpdatedAt(); !ok {
+		v := weeklyroutine.DefaultUpdatedAt()
+		wrc.mutation.SetUpdatedAt(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (wrc *WeeklyRoutineCreate) check() error {
 	if _, ok := wrc.mutation.ProgramID(); !ok {
@@ -113,6 +155,12 @@ func (wrc *WeeklyRoutineCreate) check() error {
 		if err := weeklyroutine.WeekValidator(v); err != nil {
 			return &ValidationError{Name: "week", err: fmt.Errorf(`ent: validator failed for field "WeeklyRoutine.week": %w`, err)}
 		}
+	}
+	if _, ok := wrc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "WeeklyRoutine.created_at"`)}
+	}
+	if _, ok := wrc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "WeeklyRoutine.updated_at"`)}
 	}
 	return nil
 }
@@ -153,6 +201,14 @@ func (wrc *WeeklyRoutineCreate) createSpec() (*WeeklyRoutine, *sqlgraph.CreateSp
 	if value, ok := wrc.mutation.Week(); ok {
 		_spec.SetField(weeklyroutine.FieldWeek, field.TypeInt, value)
 		_node.Week = value
+	}
+	if value, ok := wrc.mutation.CreatedAt(); ok {
+		_spec.SetField(weeklyroutine.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := wrc.mutation.UpdatedAt(); ok {
+		_spec.SetField(weeklyroutine.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
 	}
 	if nodes := wrc.mutation.ProgramIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -203,6 +259,7 @@ func (wrcb *WeeklyRoutineCreateBulk) Save(ctx context.Context) ([]*WeeklyRoutine
 	for i := range wrcb.builders {
 		func(i int, root context.Context) {
 			builder := wrcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*WeeklyRoutineMutation)
 				if !ok {

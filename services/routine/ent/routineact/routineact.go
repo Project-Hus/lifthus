@@ -3,6 +3,8 @@
 package routineact
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 )
@@ -22,6 +24,10 @@ const (
 	FieldReps = "reps"
 	// FieldLap holds the string denoting the lap field in the database.
 	FieldLap = "lap"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 	// EdgeAct holds the string denoting the act edge name in mutations.
 	EdgeAct = "act"
 	// EdgeDailyRoutine holds the string denoting the daily_routine edge name in mutations.
@@ -52,6 +58,8 @@ var Columns = []string{
 	FieldOrder,
 	FieldReps,
 	FieldLap,
+	FieldCreatedAt,
+	FieldUpdatedAt,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "routine_acts"
@@ -83,6 +91,12 @@ var (
 	RepsValidator func(int) error
 	// LapValidator is a validator for the "lap" field. It is called by the builders before save.
 	LapValidator func(int) error
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
+	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
+	UpdateDefaultUpdatedAt func() time.Time
 )
 
 // OrderOption defines the ordering options for the RoutineAct queries.
@@ -116,6 +130,16 @@ func ByReps(opts ...sql.OrderTermOption) OrderOption {
 // ByLap orders the results by the lap field.
 func ByLap(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLap, opts...).ToFunc()
+}
+
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByUpdatedAt orders the results by the updated_at field.
+func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
 // ByActField orders the results by act field.

@@ -10,6 +10,7 @@ import (
 	"routine/ent/dailyroutine"
 	"routine/ent/predicate"
 	"routine/ent/routineact"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -122,6 +123,12 @@ func (rau *RoutineActUpdate) ClearLap() *RoutineActUpdate {
 	return rau
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (rau *RoutineActUpdate) SetUpdatedAt(t time.Time) *RoutineActUpdate {
+	rau.mutation.SetUpdatedAt(t)
+	return rau
+}
+
 // SetActID sets the "act" edge to the Act entity by ID.
 func (rau *RoutineActUpdate) SetActID(id uint64) *RoutineActUpdate {
 	rau.mutation.SetActID(id)
@@ -163,6 +170,7 @@ func (rau *RoutineActUpdate) ClearDailyRoutine() *RoutineActUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (rau *RoutineActUpdate) Save(ctx context.Context) (int, error) {
+	rau.defaults()
 	return withHooks(ctx, rau.sqlSave, rau.mutation, rau.hooks)
 }
 
@@ -185,6 +193,14 @@ func (rau *RoutineActUpdate) Exec(ctx context.Context) error {
 func (rau *RoutineActUpdate) ExecX(ctx context.Context) {
 	if err := rau.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (rau *RoutineActUpdate) defaults() {
+	if _, ok := rau.mutation.UpdatedAt(); !ok {
+		v := routineact.UpdateDefaultUpdatedAt()
+		rau.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -261,6 +277,9 @@ func (rau *RoutineActUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if rau.mutation.LapCleared() {
 		_spec.ClearField(routineact.FieldLap, field.TypeInt)
+	}
+	if value, ok := rau.mutation.UpdatedAt(); ok {
+		_spec.SetField(routineact.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if rau.mutation.ActCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -433,6 +452,12 @@ func (rauo *RoutineActUpdateOne) ClearLap() *RoutineActUpdateOne {
 	return rauo
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (rauo *RoutineActUpdateOne) SetUpdatedAt(t time.Time) *RoutineActUpdateOne {
+	rauo.mutation.SetUpdatedAt(t)
+	return rauo
+}
+
 // SetActID sets the "act" edge to the Act entity by ID.
 func (rauo *RoutineActUpdateOne) SetActID(id uint64) *RoutineActUpdateOne {
 	rauo.mutation.SetActID(id)
@@ -487,6 +512,7 @@ func (rauo *RoutineActUpdateOne) Select(field string, fields ...string) *Routine
 
 // Save executes the query and returns the updated RoutineAct entity.
 func (rauo *RoutineActUpdateOne) Save(ctx context.Context) (*RoutineAct, error) {
+	rauo.defaults()
 	return withHooks(ctx, rauo.sqlSave, rauo.mutation, rauo.hooks)
 }
 
@@ -509,6 +535,14 @@ func (rauo *RoutineActUpdateOne) Exec(ctx context.Context) error {
 func (rauo *RoutineActUpdateOne) ExecX(ctx context.Context) {
 	if err := rauo.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (rauo *RoutineActUpdateOne) defaults() {
+	if _, ok := rauo.mutation.UpdatedAt(); !ok {
+		v := routineact.UpdateDefaultUpdatedAt()
+		rauo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -602,6 +636,9 @@ func (rauo *RoutineActUpdateOne) sqlSave(ctx context.Context) (_node *RoutineAct
 	}
 	if rauo.mutation.LapCleared() {
 		_spec.ClearField(routineact.FieldLap, field.TypeInt)
+	}
+	if value, ok := rauo.mutation.UpdatedAt(); ok {
+		_spec.SetField(routineact.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if rauo.mutation.ActCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -9,6 +9,7 @@ import (
 	"routine/ent/act"
 	"routine/ent/dailyroutine"
 	"routine/ent/routineact"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -67,6 +68,34 @@ func (rac *RoutineActCreate) SetNillableLap(i *int) *RoutineActCreate {
 	return rac
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (rac *RoutineActCreate) SetCreatedAt(t time.Time) *RoutineActCreate {
+	rac.mutation.SetCreatedAt(t)
+	return rac
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (rac *RoutineActCreate) SetNillableCreatedAt(t *time.Time) *RoutineActCreate {
+	if t != nil {
+		rac.SetCreatedAt(*t)
+	}
+	return rac
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (rac *RoutineActCreate) SetUpdatedAt(t time.Time) *RoutineActCreate {
+	rac.mutation.SetUpdatedAt(t)
+	return rac
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (rac *RoutineActCreate) SetNillableUpdatedAt(t *time.Time) *RoutineActCreate {
+	if t != nil {
+		rac.SetUpdatedAt(*t)
+	}
+	return rac
+}
+
 // SetID sets the "id" field.
 func (rac *RoutineActCreate) SetID(u uint64) *RoutineActCreate {
 	rac.mutation.SetID(u)
@@ -102,6 +131,7 @@ func (rac *RoutineActCreate) Mutation() *RoutineActMutation {
 
 // Save creates the RoutineAct in the database.
 func (rac *RoutineActCreate) Save(ctx context.Context) (*RoutineAct, error) {
+	rac.defaults()
 	return withHooks(ctx, rac.sqlSave, rac.mutation, rac.hooks)
 }
 
@@ -124,6 +154,18 @@ func (rac *RoutineActCreate) Exec(ctx context.Context) error {
 func (rac *RoutineActCreate) ExecX(ctx context.Context) {
 	if err := rac.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (rac *RoutineActCreate) defaults() {
+	if _, ok := rac.mutation.CreatedAt(); !ok {
+		v := routineact.DefaultCreatedAt()
+		rac.mutation.SetCreatedAt(v)
+	}
+	if _, ok := rac.mutation.UpdatedAt(); !ok {
+		v := routineact.DefaultUpdatedAt()
+		rac.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -152,6 +194,12 @@ func (rac *RoutineActCreate) check() error {
 		if err := routineact.LapValidator(v); err != nil {
 			return &ValidationError{Name: "lap", err: fmt.Errorf(`ent: validator failed for field "RoutineAct.lap": %w`, err)}
 		}
+	}
+	if _, ok := rac.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "RoutineAct.created_at"`)}
+	}
+	if _, ok := rac.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "RoutineAct.updated_at"`)}
 	}
 	if _, ok := rac.mutation.ActID(); !ok {
 		return &ValidationError{Name: "act", err: errors.New(`ent: missing required edge "RoutineAct.act"`)}
@@ -211,6 +259,14 @@ func (rac *RoutineActCreate) createSpec() (*RoutineAct, *sqlgraph.CreateSpec) {
 		_spec.SetField(routineact.FieldLap, field.TypeInt, value)
 		_node.Lap = &value
 	}
+	if value, ok := rac.mutation.CreatedAt(); ok {
+		_spec.SetField(routineact.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := rac.mutation.UpdatedAt(); ok {
+		_spec.SetField(routineact.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
 	if nodes := rac.mutation.ActIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -262,6 +318,7 @@ func (racb *RoutineActCreateBulk) Save(ctx context.Context) ([]*RoutineAct, erro
 	for i := range racb.builders {
 		func(i int, root context.Context) {
 			builder := racb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*RoutineActMutation)
 				if !ok {

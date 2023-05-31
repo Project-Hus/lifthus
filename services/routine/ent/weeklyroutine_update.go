@@ -10,6 +10,7 @@ import (
 	"routine/ent/predicate"
 	"routine/ent/program"
 	"routine/ent/weeklyroutine"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -52,6 +53,12 @@ func (wru *WeeklyRoutineUpdate) SetWeek(i int) *WeeklyRoutineUpdate {
 // AddWeek adds i to the "week" field.
 func (wru *WeeklyRoutineUpdate) AddWeek(i int) *WeeklyRoutineUpdate {
 	wru.mutation.AddWeek(i)
+	return wru
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (wru *WeeklyRoutineUpdate) SetUpdatedAt(t time.Time) *WeeklyRoutineUpdate {
+	wru.mutation.SetUpdatedAt(t)
 	return wru
 }
 
@@ -134,6 +141,7 @@ func (wru *WeeklyRoutineUpdate) RemoveDailyRoutines(d ...*DailyRoutine) *WeeklyR
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (wru *WeeklyRoutineUpdate) Save(ctx context.Context) (int, error) {
+	wru.defaults()
 	return withHooks(ctx, wru.sqlSave, wru.mutation, wru.hooks)
 }
 
@@ -156,6 +164,14 @@ func (wru *WeeklyRoutineUpdate) Exec(ctx context.Context) error {
 func (wru *WeeklyRoutineUpdate) ExecX(ctx context.Context) {
 	if err := wru.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (wru *WeeklyRoutineUpdate) defaults() {
+	if _, ok := wru.mutation.UpdatedAt(); !ok {
+		v := weeklyroutine.UpdateDefaultUpdatedAt()
+		wru.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -192,6 +208,9 @@ func (wru *WeeklyRoutineUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	}
 	if value, ok := wru.mutation.AddedWeek(); ok {
 		_spec.AddField(weeklyroutine.FieldWeek, field.TypeInt, value)
+	}
+	if value, ok := wru.mutation.UpdatedAt(); ok {
+		_spec.SetField(weeklyroutine.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if wru.mutation.ProgramCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -329,6 +348,12 @@ func (wruo *WeeklyRoutineUpdateOne) AddWeek(i int) *WeeklyRoutineUpdateOne {
 	return wruo
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (wruo *WeeklyRoutineUpdateOne) SetUpdatedAt(t time.Time) *WeeklyRoutineUpdateOne {
+	wruo.mutation.SetUpdatedAt(t)
+	return wruo
+}
+
 // AddProgramIDs adds the "program" edge to the Program entity by IDs.
 func (wruo *WeeklyRoutineUpdateOne) AddProgramIDs(ids ...uint64) *WeeklyRoutineUpdateOne {
 	wruo.mutation.AddProgramIDs(ids...)
@@ -421,6 +446,7 @@ func (wruo *WeeklyRoutineUpdateOne) Select(field string, fields ...string) *Week
 
 // Save executes the query and returns the updated WeeklyRoutine entity.
 func (wruo *WeeklyRoutineUpdateOne) Save(ctx context.Context) (*WeeklyRoutine, error) {
+	wruo.defaults()
 	return withHooks(ctx, wruo.sqlSave, wruo.mutation, wruo.hooks)
 }
 
@@ -443,6 +469,14 @@ func (wruo *WeeklyRoutineUpdateOne) Exec(ctx context.Context) error {
 func (wruo *WeeklyRoutineUpdateOne) ExecX(ctx context.Context) {
 	if err := wruo.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (wruo *WeeklyRoutineUpdateOne) defaults() {
+	if _, ok := wruo.mutation.UpdatedAt(); !ok {
+		v := weeklyroutine.UpdateDefaultUpdatedAt()
+		wruo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -496,6 +530,9 @@ func (wruo *WeeklyRoutineUpdateOne) sqlSave(ctx context.Context) (_node *WeeklyR
 	}
 	if value, ok := wruo.mutation.AddedWeek(); ok {
 		_spec.AddField(weeklyroutine.FieldWeek, field.TypeInt, value)
+	}
+	if value, ok := wruo.mutation.UpdatedAt(); ok {
+		_spec.SetField(weeklyroutine.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if wruo.mutation.ProgramCleared() {
 		edge := &sqlgraph.EdgeSpec{

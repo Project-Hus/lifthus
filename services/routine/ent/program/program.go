@@ -4,6 +4,7 @@ package program
 
 import (
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -24,6 +25,10 @@ const (
 	FieldImage = "image"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 	// EdgeTags holds the string denoting the tags edge name in mutations.
 	EdgeTags = "tags"
 	// EdgeWeeklyRoutines holds the string denoting the weekly_routines edge name in mutations.
@@ -57,6 +62,8 @@ var Columns = []string{
 	FieldAuthor,
 	FieldImage,
 	FieldDescription,
+	FieldCreatedAt,
+	FieldUpdatedAt,
 }
 
 var (
@@ -84,6 +91,12 @@ func ValidColumn(column string) bool {
 var (
 	// TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	TitleValidator func(string) error
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
+	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
+	UpdateDefaultUpdatedAt func() time.Time
 )
 
 // Type defines the type for the "type" enum field.
@@ -140,6 +153,16 @@ func ByImage(opts ...sql.OrderTermOption) OrderOption {
 // ByDescription orders the results by the description field.
 func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
+}
+
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByUpdatedAt orders the results by the updated_at field.
+func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
 // ByTagsCount orders the results by tags count.

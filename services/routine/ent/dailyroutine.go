@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"routine/ent/dailyroutine"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -22,6 +23,10 @@ type DailyRoutine struct {
 	WeekID *uint64 `json:"week_id,omitempty"`
 	// Day holds the value of the "day" field.
 	Day int `json:"day,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DailyRoutineQuery when eager-loading is set.
 	Edges        DailyRoutineEdges `json:"edges"`
@@ -75,6 +80,8 @@ func (*DailyRoutine) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case dailyroutine.FieldID, dailyroutine.FieldProgramID, dailyroutine.FieldWeekID, dailyroutine.FieldDay:
 			values[i] = new(sql.NullInt64)
+		case dailyroutine.FieldCreatedAt, dailyroutine.FieldUpdatedAt:
+			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -115,6 +122,18 @@ func (dr *DailyRoutine) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field day", values[i])
 			} else if value.Valid {
 				dr.Day = int(value.Int64)
+			}
+		case dailyroutine.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				dr.CreatedAt = value.Time
+			}
+		case dailyroutine.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				dr.UpdatedAt = value.Time
 			}
 		default:
 			dr.selectValues.Set(columns[i], values[i])
@@ -179,6 +198,12 @@ func (dr *DailyRoutine) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("day=")
 	builder.WriteString(fmt.Sprintf("%v", dr.Day))
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(dr.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(dr.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

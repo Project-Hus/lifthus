@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
@@ -24,6 +26,9 @@ func (Act) Fields() []ent.Field {
 		field.Uint64("author"),
 		field.String("image").Nillable().Optional(),
 		field.String("description").Nillable().Optional().Annotations(entsql.Annotation{Size: 5000}),
+
+		field.Time("created_at").Default(time.Now).Immutable(),
+		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
 }
 

@@ -3,6 +3,8 @@
 package weeklyroutine
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 )
@@ -16,6 +18,10 @@ const (
 	FieldProgramID = "program_id"
 	// FieldWeek holds the string denoting the week field in the database.
 	FieldWeek = "week"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 	// EdgeProgram holds the string denoting the program edge name in mutations.
 	EdgeProgram = "program"
 	// EdgeDailyRoutines holds the string denoting the daily_routines edge name in mutations.
@@ -39,6 +45,8 @@ var Columns = []string{
 	FieldID,
 	FieldProgramID,
 	FieldWeek,
+	FieldCreatedAt,
+	FieldUpdatedAt,
 }
 
 var (
@@ -63,6 +71,12 @@ func ValidColumn(column string) bool {
 var (
 	// WeekValidator is a validator for the "week" field. It is called by the builders before save.
 	WeekValidator func(int) error
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
+	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
+	UpdateDefaultUpdatedAt func() time.Time
 )
 
 // OrderOption defines the ordering options for the WeeklyRoutine queries.
@@ -81,6 +95,16 @@ func ByProgramID(opts ...sql.OrderTermOption) OrderOption {
 // ByWeek orders the results by the week field.
 func ByWeek(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldWeek, opts...).ToFunc()
+}
+
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByUpdatedAt orders the results by the updated_at field.
+func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
 // ByProgramCount orders the results by program count.

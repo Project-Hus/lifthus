@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
@@ -18,6 +20,9 @@ func (WeeklyRoutine) Fields() []ent.Field {
 		field.Uint64("id").Unique(),
 		field.Uint64("program_id"),
 		field.Int("week").Min(1),
+
+		field.Time("created_at").Default(time.Now).Immutable(),
+		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
 }
 

@@ -11,6 +11,7 @@ import (
 	"routine/ent/program"
 	"routine/ent/tag"
 	"routine/ent/weeklyroutine"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -92,6 +93,12 @@ func (pu *ProgramUpdate) SetNillableDescription(s *string) *ProgramUpdate {
 // ClearDescription clears the value of the "description" field.
 func (pu *ProgramUpdate) ClearDescription() *ProgramUpdate {
 	pu.mutation.ClearDescription()
+	return pu
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (pu *ProgramUpdate) SetUpdatedAt(t time.Time) *ProgramUpdate {
+	pu.mutation.SetUpdatedAt(t)
 	return pu
 }
 
@@ -210,6 +217,7 @@ func (pu *ProgramUpdate) RemoveDailyRoutines(d ...*DailyRoutine) *ProgramUpdate 
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (pu *ProgramUpdate) Save(ctx context.Context) (int, error) {
+	pu.defaults()
 	return withHooks(ctx, pu.sqlSave, pu.mutation, pu.hooks)
 }
 
@@ -232,6 +240,14 @@ func (pu *ProgramUpdate) Exec(ctx context.Context) error {
 func (pu *ProgramUpdate) ExecX(ctx context.Context) {
 	if err := pu.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (pu *ProgramUpdate) defaults() {
+	if _, ok := pu.mutation.UpdatedAt(); !ok {
+		v := program.UpdateDefaultUpdatedAt()
+		pu.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -285,6 +301,9 @@ func (pu *ProgramUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if pu.mutation.DescriptionCleared() {
 		_spec.ClearField(program.FieldDescription, field.TypeString)
+	}
+	if value, ok := pu.mutation.UpdatedAt(); ok {
+		_spec.SetField(program.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if pu.mutation.TagsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -506,6 +525,12 @@ func (puo *ProgramUpdateOne) ClearDescription() *ProgramUpdateOne {
 	return puo
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (puo *ProgramUpdateOne) SetUpdatedAt(t time.Time) *ProgramUpdateOne {
+	puo.mutation.SetUpdatedAt(t)
+	return puo
+}
+
 // AddTagIDs adds the "tags" edge to the Tag entity by IDs.
 func (puo *ProgramUpdateOne) AddTagIDs(ids ...uint64) *ProgramUpdateOne {
 	puo.mutation.AddTagIDs(ids...)
@@ -634,6 +659,7 @@ func (puo *ProgramUpdateOne) Select(field string, fields ...string) *ProgramUpda
 
 // Save executes the query and returns the updated Program entity.
 func (puo *ProgramUpdateOne) Save(ctx context.Context) (*Program, error) {
+	puo.defaults()
 	return withHooks(ctx, puo.sqlSave, puo.mutation, puo.hooks)
 }
 
@@ -656,6 +682,14 @@ func (puo *ProgramUpdateOne) Exec(ctx context.Context) error {
 func (puo *ProgramUpdateOne) ExecX(ctx context.Context) {
 	if err := puo.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (puo *ProgramUpdateOne) defaults() {
+	if _, ok := puo.mutation.UpdatedAt(); !ok {
+		v := program.UpdateDefaultUpdatedAt()
+		puo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -726,6 +760,9 @@ func (puo *ProgramUpdateOne) sqlSave(ctx context.Context) (_node *Program, err e
 	}
 	if puo.mutation.DescriptionCleared() {
 		_spec.ClearField(program.FieldDescription, field.TypeString)
+	}
+	if value, ok := puo.mutation.UpdatedAt(); ok {
+		_spec.SetField(program.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if puo.mutation.TagsCleared() {
 		edge := &sqlgraph.EdgeSpec{

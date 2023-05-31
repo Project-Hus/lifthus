@@ -10,6 +10,7 @@ import (
 	"routine/ent/program"
 	"routine/ent/tag"
 	"routine/ent/weeklyroutine"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -64,6 +65,34 @@ func (pc *ProgramCreate) SetDescription(s string) *ProgramCreate {
 func (pc *ProgramCreate) SetNillableDescription(s *string) *ProgramCreate {
 	if s != nil {
 		pc.SetDescription(*s)
+	}
+	return pc
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (pc *ProgramCreate) SetCreatedAt(t time.Time) *ProgramCreate {
+	pc.mutation.SetCreatedAt(t)
+	return pc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (pc *ProgramCreate) SetNillableCreatedAt(t *time.Time) *ProgramCreate {
+	if t != nil {
+		pc.SetCreatedAt(*t)
+	}
+	return pc
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (pc *ProgramCreate) SetUpdatedAt(t time.Time) *ProgramCreate {
+	pc.mutation.SetUpdatedAt(t)
+	return pc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (pc *ProgramCreate) SetNillableUpdatedAt(t *time.Time) *ProgramCreate {
+	if t != nil {
+		pc.SetUpdatedAt(*t)
 	}
 	return pc
 }
@@ -126,6 +155,7 @@ func (pc *ProgramCreate) Mutation() *ProgramMutation {
 
 // Save creates the Program in the database.
 func (pc *ProgramCreate) Save(ctx context.Context) (*Program, error) {
+	pc.defaults()
 	return withHooks(ctx, pc.sqlSave, pc.mutation, pc.hooks)
 }
 
@@ -151,6 +181,18 @@ func (pc *ProgramCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (pc *ProgramCreate) defaults() {
+	if _, ok := pc.mutation.CreatedAt(); !ok {
+		v := program.DefaultCreatedAt()
+		pc.mutation.SetCreatedAt(v)
+	}
+	if _, ok := pc.mutation.UpdatedAt(); !ok {
+		v := program.DefaultUpdatedAt()
+		pc.mutation.SetUpdatedAt(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (pc *ProgramCreate) check() error {
 	if _, ok := pc.mutation.Title(); !ok {
@@ -171,6 +213,12 @@ func (pc *ProgramCreate) check() error {
 	}
 	if _, ok := pc.mutation.Author(); !ok {
 		return &ValidationError{Name: "author", err: errors.New(`ent: missing required field "Program.author"`)}
+	}
+	if _, ok := pc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Program.created_at"`)}
+	}
+	if _, ok := pc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Program.updated_at"`)}
 	}
 	return nil
 }
@@ -223,6 +271,14 @@ func (pc *ProgramCreate) createSpec() (*Program, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.Description(); ok {
 		_spec.SetField(program.FieldDescription, field.TypeString, value)
 		_node.Description = &value
+	}
+	if value, ok := pc.mutation.CreatedAt(); ok {
+		_spec.SetField(program.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := pc.mutation.UpdatedAt(); ok {
+		_spec.SetField(program.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
 	}
 	if nodes := pc.mutation.TagsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -289,6 +345,7 @@ func (pcb *ProgramCreateBulk) Save(ctx context.Context) ([]*Program, error) {
 	for i := range pcb.builders {
 		func(i int, root context.Context) {
 			builder := pcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ProgramMutation)
 				if !ok {

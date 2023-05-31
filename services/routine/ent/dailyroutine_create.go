@@ -10,6 +10,7 @@ import (
 	"routine/ent/program"
 	"routine/ent/routineact"
 	"routine/ent/weeklyroutine"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -53,6 +54,34 @@ func (drc *DailyRoutineCreate) SetNillableWeekID(u *uint64) *DailyRoutineCreate 
 // SetDay sets the "day" field.
 func (drc *DailyRoutineCreate) SetDay(i int) *DailyRoutineCreate {
 	drc.mutation.SetDay(i)
+	return drc
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (drc *DailyRoutineCreate) SetCreatedAt(t time.Time) *DailyRoutineCreate {
+	drc.mutation.SetCreatedAt(t)
+	return drc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (drc *DailyRoutineCreate) SetNillableCreatedAt(t *time.Time) *DailyRoutineCreate {
+	if t != nil {
+		drc.SetCreatedAt(*t)
+	}
+	return drc
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (drc *DailyRoutineCreate) SetUpdatedAt(t time.Time) *DailyRoutineCreate {
+	drc.mutation.SetUpdatedAt(t)
+	return drc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (drc *DailyRoutineCreate) SetNillableUpdatedAt(t *time.Time) *DailyRoutineCreate {
+	if t != nil {
+		drc.SetUpdatedAt(*t)
+	}
 	return drc
 }
 
@@ -114,6 +143,7 @@ func (drc *DailyRoutineCreate) Mutation() *DailyRoutineMutation {
 
 // Save creates the DailyRoutine in the database.
 func (drc *DailyRoutineCreate) Save(ctx context.Context) (*DailyRoutine, error) {
+	drc.defaults()
 	return withHooks(ctx, drc.sqlSave, drc.mutation, drc.hooks)
 }
 
@@ -139,6 +169,18 @@ func (drc *DailyRoutineCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (drc *DailyRoutineCreate) defaults() {
+	if _, ok := drc.mutation.CreatedAt(); !ok {
+		v := dailyroutine.DefaultCreatedAt()
+		drc.mutation.SetCreatedAt(v)
+	}
+	if _, ok := drc.mutation.UpdatedAt(); !ok {
+		v := dailyroutine.DefaultUpdatedAt()
+		drc.mutation.SetUpdatedAt(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (drc *DailyRoutineCreate) check() error {
 	if _, ok := drc.mutation.Day(); !ok {
@@ -148,6 +190,12 @@ func (drc *DailyRoutineCreate) check() error {
 		if err := dailyroutine.DayValidator(v); err != nil {
 			return &ValidationError{Name: "day", err: fmt.Errorf(`ent: validator failed for field "DailyRoutine.day": %w`, err)}
 		}
+	}
+	if _, ok := drc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "DailyRoutine.created_at"`)}
+	}
+	if _, ok := drc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "DailyRoutine.updated_at"`)}
 	}
 	return nil
 }
@@ -192,6 +240,14 @@ func (drc *DailyRoutineCreate) createSpec() (*DailyRoutine, *sqlgraph.CreateSpec
 	if value, ok := drc.mutation.Day(); ok {
 		_spec.SetField(dailyroutine.FieldDay, field.TypeInt, value)
 		_node.Day = value
+	}
+	if value, ok := drc.mutation.CreatedAt(); ok {
+		_spec.SetField(dailyroutine.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := drc.mutation.UpdatedAt(); ok {
+		_spec.SetField(dailyroutine.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
 	}
 	if nodes := drc.mutation.ProgramIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -258,6 +314,7 @@ func (drcb *DailyRoutineCreateBulk) Save(ctx context.Context) ([]*DailyRoutine, 
 	for i := range drcb.builders {
 		func(i int, root context.Context) {
 			builder := drcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*DailyRoutineMutation)
 				if !ok {

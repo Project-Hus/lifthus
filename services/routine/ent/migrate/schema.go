@@ -16,6 +16,8 @@ var (
 		{Name: "author", Type: field.TypeUint64},
 		{Name: "image", Type: field.TypeString, Nullable: true},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 5000},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 	}
 	// ActsTable holds the schema information for the "acts" table.
 	ActsTable = &schema.Table{
@@ -29,6 +31,8 @@ var (
 		{Name: "program_id", Type: field.TypeUint64, Nullable: true},
 		{Name: "week_id", Type: field.TypeUint64, Nullable: true},
 		{Name: "day", Type: field.TypeInt},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 	}
 	// DailyRoutinesTable holds the schema information for the "daily_routines" table.
 	DailyRoutinesTable = &schema.Table{
@@ -44,6 +48,8 @@ var (
 		{Name: "author", Type: field.TypeUint64},
 		{Name: "image", Type: field.TypeString, Nullable: true},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 5000},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 	}
 	// ProgramsTable holds the schema information for the "programs" table.
 	ProgramsTable = &schema.Table{
@@ -59,6 +65,8 @@ var (
 		{Name: "order", Type: field.TypeInt},
 		{Name: "reps", Type: field.TypeInt, Nullable: true},
 		{Name: "lap", Type: field.TypeInt, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "act_routine_acts", Type: field.TypeUint64},
 		{Name: "daily_routine_routine_acts", Type: field.TypeUint64},
 	}
@@ -70,13 +78,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "routine_acts_acts_routine_acts",
-				Columns:    []*schema.Column{RoutineActsColumns[6]},
+				Columns:    []*schema.Column{RoutineActsColumns[8]},
 				RefColumns: []*schema.Column{ActsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "routine_acts_daily_routines_routine_acts",
-				Columns:    []*schema.Column{RoutineActsColumns[7]},
+				Columns:    []*schema.Column{RoutineActsColumns[9]},
 				RefColumns: []*schema.Column{DailyRoutinesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -98,6 +106,8 @@ var (
 		{Name: "id", Type: field.TypeUint64, Increment: true},
 		{Name: "program_id", Type: field.TypeUint64},
 		{Name: "week", Type: field.TypeInt},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 	}
 	// WeeklyRoutinesTable holds the schema information for the "weekly_routines" table.
 	WeeklyRoutinesTable = &schema.Table{

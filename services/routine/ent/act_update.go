@@ -10,6 +10,7 @@ import (
 	"routine/ent/predicate"
 	"routine/ent/routineact"
 	"routine/ent/tag"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -108,6 +109,12 @@ func (au *ActUpdate) ClearDescription() *ActUpdate {
 	return au
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (au *ActUpdate) SetUpdatedAt(t time.Time) *ActUpdate {
+	au.mutation.SetUpdatedAt(t)
+	return au
+}
+
 // AddTagIDs adds the "tags" edge to the Tag entity by IDs.
 func (au *ActUpdate) AddTagIDs(ids ...uint64) *ActUpdate {
 	au.mutation.AddTagIDs(ids...)
@@ -187,6 +194,7 @@ func (au *ActUpdate) RemoveRoutineActs(r ...*RoutineAct) *ActUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (au *ActUpdate) Save(ctx context.Context) (int, error) {
+	au.defaults()
 	return withHooks(ctx, au.sqlSave, au.mutation, au.hooks)
 }
 
@@ -209,6 +217,14 @@ func (au *ActUpdate) Exec(ctx context.Context) error {
 func (au *ActUpdate) ExecX(ctx context.Context) {
 	if err := au.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (au *ActUpdate) defaults() {
+	if _, ok := au.mutation.UpdatedAt(); !ok {
+		v := act.UpdateDefaultUpdatedAt()
+		au.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -265,6 +281,9 @@ func (au *ActUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if au.mutation.DescriptionCleared() {
 		_spec.ClearField(act.FieldDescription, field.TypeString)
+	}
+	if value, ok := au.mutation.UpdatedAt(); ok {
+		_spec.SetField(act.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if au.mutation.TagsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -455,6 +474,12 @@ func (auo *ActUpdateOne) ClearDescription() *ActUpdateOne {
 	return auo
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (auo *ActUpdateOne) SetUpdatedAt(t time.Time) *ActUpdateOne {
+	auo.mutation.SetUpdatedAt(t)
+	return auo
+}
+
 // AddTagIDs adds the "tags" edge to the Tag entity by IDs.
 func (auo *ActUpdateOne) AddTagIDs(ids ...uint64) *ActUpdateOne {
 	auo.mutation.AddTagIDs(ids...)
@@ -547,6 +572,7 @@ func (auo *ActUpdateOne) Select(field string, fields ...string) *ActUpdateOne {
 
 // Save executes the query and returns the updated Act entity.
 func (auo *ActUpdateOne) Save(ctx context.Context) (*Act, error) {
+	auo.defaults()
 	return withHooks(ctx, auo.sqlSave, auo.mutation, auo.hooks)
 }
 
@@ -569,6 +595,14 @@ func (auo *ActUpdateOne) Exec(ctx context.Context) error {
 func (auo *ActUpdateOne) ExecX(ctx context.Context) {
 	if err := auo.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (auo *ActUpdateOne) defaults() {
+	if _, ok := auo.mutation.UpdatedAt(); !ok {
+		v := act.UpdateDefaultUpdatedAt()
+		auo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -642,6 +676,9 @@ func (auo *ActUpdateOne) sqlSave(ctx context.Context) (_node *Act, err error) {
 	}
 	if auo.mutation.DescriptionCleared() {
 		_spec.ClearField(act.FieldDescription, field.TypeString)
+	}
+	if value, ok := auo.mutation.UpdatedAt(); ok {
+		_spec.SetField(act.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if auo.mutation.TagsCleared() {
 		edge := &sqlgraph.EdgeSpec{

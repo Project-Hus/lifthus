@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"routine/ent/program"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -26,6 +27,10 @@ type Program struct {
 	Image *string `json:"image,omitempty"`
 	// Description holds the value of the "description" field.
 	Description *string `json:"description,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProgramQuery when eager-loading is set.
 	Edges        ProgramEdges `json:"edges"`
@@ -81,6 +86,8 @@ func (*Program) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case program.FieldTitle, program.FieldType, program.FieldImage, program.FieldDescription:
 			values[i] = new(sql.NullString)
+		case program.FieldCreatedAt, program.FieldUpdatedAt:
+			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -133,6 +140,18 @@ func (pr *Program) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pr.Description = new(string)
 				*pr.Description = value.String
+			}
+		case program.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				pr.CreatedAt = value.Time
+			}
+		case program.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				pr.UpdatedAt = value.Time
 			}
 		default:
 			pr.selectValues.Set(columns[i], values[i])
@@ -203,6 +222,12 @@ func (pr *Program) String() string {
 		builder.WriteString("description=")
 		builder.WriteString(*v)
 	}
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(pr.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(pr.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

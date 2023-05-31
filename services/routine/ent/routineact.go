@@ -8,6 +8,7 @@ import (
 	"routine/ent/dailyroutine"
 	"routine/ent/routineact"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -28,6 +29,10 @@ type RoutineAct struct {
 	Reps *int `json:"reps,omitempty"`
 	// Lap holds the value of the "lap" field.
 	Lap *int `json:"lap,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RoutineActQuery when eager-loading is set.
 	Edges                      RoutineActEdges `json:"edges"`
@@ -80,6 +85,8 @@ func (*RoutineAct) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case routineact.FieldID, routineact.FieldDailyRoutineID, routineact.FieldActID, routineact.FieldOrder, routineact.FieldReps, routineact.FieldLap:
 			values[i] = new(sql.NullInt64)
+		case routineact.FieldCreatedAt, routineact.FieldUpdatedAt:
+			values[i] = new(sql.NullTime)
 		case routineact.ForeignKeys[0]: // act_routine_acts
 			values[i] = new(sql.NullInt64)
 		case routineact.ForeignKeys[1]: // daily_routine_routine_acts
@@ -136,6 +143,18 @@ func (ra *RoutineAct) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				ra.Lap = new(int)
 				*ra.Lap = int(value.Int64)
+			}
+		case routineact.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				ra.CreatedAt = value.Time
+			}
+		case routineact.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				ra.UpdatedAt = value.Time
 			}
 		case routineact.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -215,6 +234,12 @@ func (ra *RoutineAct) String() string {
 		builder.WriteString("lap=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(ra.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(ra.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

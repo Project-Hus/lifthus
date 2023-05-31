@@ -14,6 +14,7 @@ import (
 	"routine/ent/tag"
 	"routine/ent/weeklyroutine"
 	"sync"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -48,6 +49,8 @@ type ActMutation struct {
 	addauthor           *int64
 	image               *string
 	description         *string
+	created_at          *time.Time
+	updated_at          *time.Time
 	clearedFields       map[string]struct{}
 	tags                map[uint64]struct{}
 	removedtags         map[uint64]struct{}
@@ -403,6 +406,78 @@ func (m *ActMutation) ResetDescription() {
 	delete(m.clearedFields, act.FieldDescription)
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (m *ActMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *ActMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Act entity.
+// If the Act object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *ActMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *ActMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *ActMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Act entity.
+// If the Act object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *ActMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
 // AddTagIDs adds the "tags" edge to the Tag entity by ids.
 func (m *ActMutation) AddTagIDs(ids ...uint64) {
 	if m.tags == nil {
@@ -545,7 +620,7 @@ func (m *ActMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ActMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 7)
 	if m.name != nil {
 		fields = append(fields, act.FieldName)
 	}
@@ -560,6 +635,12 @@ func (m *ActMutation) Fields() []string {
 	}
 	if m.description != nil {
 		fields = append(fields, act.FieldDescription)
+	}
+	if m.created_at != nil {
+		fields = append(fields, act.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, act.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -579,6 +660,10 @@ func (m *ActMutation) Field(name string) (ent.Value, bool) {
 		return m.Image()
 	case act.FieldDescription:
 		return m.Description()
+	case act.FieldCreatedAt:
+		return m.CreatedAt()
+	case act.FieldUpdatedAt:
+		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -598,6 +683,10 @@ func (m *ActMutation) OldField(ctx context.Context, name string) (ent.Value, err
 		return m.OldImage(ctx)
 	case act.FieldDescription:
 		return m.OldDescription(ctx)
+	case act.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case act.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Act field %s", name)
 }
@@ -641,6 +730,20 @@ func (m *ActMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDescription(v)
+		return nil
+	case act.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case act.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Act field %s", name)
@@ -741,6 +844,12 @@ func (m *ActMutation) ResetField(name string) error {
 		return nil
 	case act.FieldDescription:
 		m.ResetDescription()
+		return nil
+	case act.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case act.FieldUpdatedAt:
+		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Act field %s", name)
@@ -868,6 +977,8 @@ type DailyRoutineMutation struct {
 	addweek_id            *int64
 	day                   *int
 	addday                *int
+	created_at            *time.Time
+	updated_at            *time.Time
 	clearedFields         map[string]struct{}
 	program               map[uint64]struct{}
 	removedprogram        map[uint64]struct{}
@@ -1183,6 +1294,78 @@ func (m *DailyRoutineMutation) ResetDay() {
 	m.addday = nil
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (m *DailyRoutineMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *DailyRoutineMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the DailyRoutine entity.
+// If the DailyRoutine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyRoutineMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *DailyRoutineMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *DailyRoutineMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *DailyRoutineMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the DailyRoutine entity.
+// If the DailyRoutine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyRoutineMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *DailyRoutineMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
 // AddProgramIDs adds the "program" edge to the Program entity by ids.
 func (m *DailyRoutineMutation) AddProgramIDs(ids ...uint64) {
 	if m.program == nil {
@@ -1379,7 +1562,7 @@ func (m *DailyRoutineMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DailyRoutineMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 5)
 	if m.program_id != nil {
 		fields = append(fields, dailyroutine.FieldProgramID)
 	}
@@ -1388,6 +1571,12 @@ func (m *DailyRoutineMutation) Fields() []string {
 	}
 	if m.day != nil {
 		fields = append(fields, dailyroutine.FieldDay)
+	}
+	if m.created_at != nil {
+		fields = append(fields, dailyroutine.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, dailyroutine.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -1403,6 +1592,10 @@ func (m *DailyRoutineMutation) Field(name string) (ent.Value, bool) {
 		return m.WeekID()
 	case dailyroutine.FieldDay:
 		return m.Day()
+	case dailyroutine.FieldCreatedAt:
+		return m.CreatedAt()
+	case dailyroutine.FieldUpdatedAt:
+		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -1418,6 +1611,10 @@ func (m *DailyRoutineMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldWeekID(ctx)
 	case dailyroutine.FieldDay:
 		return m.OldDay(ctx)
+	case dailyroutine.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case dailyroutine.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown DailyRoutine field %s", name)
 }
@@ -1447,6 +1644,20 @@ func (m *DailyRoutineMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDay(v)
+		return nil
+	case dailyroutine.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case dailyroutine.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown DailyRoutine field %s", name)
@@ -1559,6 +1770,12 @@ func (m *DailyRoutineMutation) ResetField(name string) error {
 		return nil
 	case dailyroutine.FieldDay:
 		m.ResetDay()
+		return nil
+	case dailyroutine.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case dailyroutine.FieldUpdatedAt:
+		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown DailyRoutine field %s", name)
@@ -1712,6 +1929,8 @@ type ProgramMutation struct {
 	addauthor              *int64
 	image                  *string
 	description            *string
+	created_at             *time.Time
+	updated_at             *time.Time
 	clearedFields          map[string]struct{}
 	tags                   map[uint64]struct{}
 	removedtags            map[uint64]struct{}
@@ -2057,6 +2276,78 @@ func (m *ProgramMutation) ResetDescription() {
 	delete(m.clearedFields, program.FieldDescription)
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (m *ProgramMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *ProgramMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Program entity.
+// If the Program object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProgramMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *ProgramMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *ProgramMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *ProgramMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Program entity.
+// If the Program object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProgramMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *ProgramMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
 // AddTagIDs adds the "tags" edge to the Tag entity by ids.
 func (m *ProgramMutation) AddTagIDs(ids ...uint64) {
 	if m.tags == nil {
@@ -2253,7 +2544,7 @@ func (m *ProgramMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ProgramMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 7)
 	if m.title != nil {
 		fields = append(fields, program.FieldTitle)
 	}
@@ -2268,6 +2559,12 @@ func (m *ProgramMutation) Fields() []string {
 	}
 	if m.description != nil {
 		fields = append(fields, program.FieldDescription)
+	}
+	if m.created_at != nil {
+		fields = append(fields, program.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, program.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -2287,6 +2584,10 @@ func (m *ProgramMutation) Field(name string) (ent.Value, bool) {
 		return m.Image()
 	case program.FieldDescription:
 		return m.Description()
+	case program.FieldCreatedAt:
+		return m.CreatedAt()
+	case program.FieldUpdatedAt:
+		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -2306,6 +2607,10 @@ func (m *ProgramMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldImage(ctx)
 	case program.FieldDescription:
 		return m.OldDescription(ctx)
+	case program.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case program.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Program field %s", name)
 }
@@ -2349,6 +2654,20 @@ func (m *ProgramMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDescription(v)
+		return nil
+	case program.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case program.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Program field %s", name)
@@ -2443,6 +2762,12 @@ func (m *ProgramMutation) ResetField(name string) error {
 		return nil
 	case program.FieldDescription:
 		m.ResetDescription()
+		return nil
+	case program.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case program.FieldUpdatedAt:
+		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Program field %s", name)
@@ -2600,6 +2925,8 @@ type RoutineActMutation struct {
 	addreps              *int
 	lap                  *int
 	addlap               *int
+	created_at           *time.Time
+	updated_at           *time.Time
 	clearedFields        map[string]struct{}
 	act                  *uint64
 	clearedact           bool
@@ -3022,6 +3349,78 @@ func (m *RoutineActMutation) ResetLap() {
 	delete(m.clearedFields, routineact.FieldLap)
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (m *RoutineActMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *RoutineActMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the RoutineAct entity.
+// If the RoutineAct object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RoutineActMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *RoutineActMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *RoutineActMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *RoutineActMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the RoutineAct entity.
+// If the RoutineAct object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RoutineActMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *RoutineActMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
 // SetActID sets the "act" edge to the Act entity by id.
 func (m *RoutineActMutation) SetActID(id uint64) {
 	m.act = &id
@@ -3134,7 +3533,7 @@ func (m *RoutineActMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RoutineActMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 7)
 	if m.daily_routine_id != nil {
 		fields = append(fields, routineact.FieldDailyRoutineID)
 	}
@@ -3149,6 +3548,12 @@ func (m *RoutineActMutation) Fields() []string {
 	}
 	if m.lap != nil {
 		fields = append(fields, routineact.FieldLap)
+	}
+	if m.created_at != nil {
+		fields = append(fields, routineact.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, routineact.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -3168,6 +3573,10 @@ func (m *RoutineActMutation) Field(name string) (ent.Value, bool) {
 		return m.Reps()
 	case routineact.FieldLap:
 		return m.Lap()
+	case routineact.FieldCreatedAt:
+		return m.CreatedAt()
+	case routineact.FieldUpdatedAt:
+		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -3187,6 +3596,10 @@ func (m *RoutineActMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldReps(ctx)
 	case routineact.FieldLap:
 		return m.OldLap(ctx)
+	case routineact.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case routineact.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown RoutineAct field %s", name)
 }
@@ -3230,6 +3643,20 @@ func (m *RoutineActMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetLap(v)
+		return nil
+	case routineact.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case routineact.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown RoutineAct field %s", name)
@@ -3372,6 +3799,12 @@ func (m *RoutineActMutation) ResetField(name string) error {
 		return nil
 	case routineact.FieldLap:
 		m.ResetLap()
+		return nil
+	case routineact.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case routineact.FieldUpdatedAt:
+		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown RoutineAct field %s", name)
@@ -3987,6 +4420,8 @@ type WeeklyRoutineMutation struct {
 	addprogram_id         *int64
 	week                  *int
 	addweek               *int
+	created_at            *time.Time
+	updated_at            *time.Time
 	clearedFields         map[string]struct{}
 	program               map[uint64]struct{}
 	removedprogram        map[uint64]struct{}
@@ -4215,6 +4650,78 @@ func (m *WeeklyRoutineMutation) ResetWeek() {
 	m.addweek = nil
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (m *WeeklyRoutineMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *WeeklyRoutineMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the WeeklyRoutine entity.
+// If the WeeklyRoutine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeeklyRoutineMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *WeeklyRoutineMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *WeeklyRoutineMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *WeeklyRoutineMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the WeeklyRoutine entity.
+// If the WeeklyRoutine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeeklyRoutineMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *WeeklyRoutineMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
 // AddProgramIDs adds the "program" edge to the Program entity by ids.
 func (m *WeeklyRoutineMutation) AddProgramIDs(ids ...uint64) {
 	if m.program == nil {
@@ -4357,12 +4864,18 @@ func (m *WeeklyRoutineMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *WeeklyRoutineMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 4)
 	if m.program_id != nil {
 		fields = append(fields, weeklyroutine.FieldProgramID)
 	}
 	if m.week != nil {
 		fields = append(fields, weeklyroutine.FieldWeek)
+	}
+	if m.created_at != nil {
+		fields = append(fields, weeklyroutine.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, weeklyroutine.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -4376,6 +4889,10 @@ func (m *WeeklyRoutineMutation) Field(name string) (ent.Value, bool) {
 		return m.ProgramID()
 	case weeklyroutine.FieldWeek:
 		return m.Week()
+	case weeklyroutine.FieldCreatedAt:
+		return m.CreatedAt()
+	case weeklyroutine.FieldUpdatedAt:
+		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -4389,6 +4906,10 @@ func (m *WeeklyRoutineMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldProgramID(ctx)
 	case weeklyroutine.FieldWeek:
 		return m.OldWeek(ctx)
+	case weeklyroutine.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case weeklyroutine.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown WeeklyRoutine field %s", name)
 }
@@ -4411,6 +4932,20 @@ func (m *WeeklyRoutineMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetWeek(v)
+		return nil
+	case weeklyroutine.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case weeklyroutine.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown WeeklyRoutine field %s", name)
@@ -4493,6 +5028,12 @@ func (m *WeeklyRoutineMutation) ResetField(name string) error {
 		return nil
 	case weeklyroutine.FieldWeek:
 		m.ResetWeek()
+		return nil
+	case weeklyroutine.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case weeklyroutine.FieldUpdatedAt:
+		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown WeeklyRoutine field %s", name)

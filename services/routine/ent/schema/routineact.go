@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -20,6 +22,9 @@ func (RoutineAct) Fields() []ent.Field {
 		field.Int("order").Min(1),
 		field.Int("reps").Min(1).Nillable().Optional(),
 		field.Int("lap").Min(1).Nillable().Optional(),
+
+		field.Time("created_at").Default(time.Now).Immutable(),
+		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
 }
 
