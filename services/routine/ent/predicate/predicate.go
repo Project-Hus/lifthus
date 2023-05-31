@@ -8,3 +8,6 @@ import (
 
 // Act is the predicate function for act builders.
 type Act func(*sql.Selector)
+
+// Program is the predicate function for program builders.
+type Program func(*sql.Selector)

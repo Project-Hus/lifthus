@@ -81,8 +81,8 @@ func (aq *ActQuery) FirstX(ctx context.Context) *Act {
 
 // FirstID returns the first Act ID from the query.
 // Returns a *NotFoundError when no Act ID was found.
-func (aq *ActQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (aq *ActQuery) FirstID(ctx context.Context) (id uint64, err error) {
+	var ids []uint64
 	if ids, err = aq.Limit(1).IDs(setContextOp(ctx, aq.ctx, "FirstID")); err != nil {
 		return
 	}
@@ -94,7 +94,7 @@ func (aq *ActQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (aq *ActQuery) FirstIDX(ctx context.Context) int {
+func (aq *ActQuery) FirstIDX(ctx context.Context) uint64 {
 	id, err := aq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -132,8 +132,8 @@ func (aq *ActQuery) OnlyX(ctx context.Context) *Act {
 // OnlyID is like Only, but returns the only Act ID in the query.
 // Returns a *NotSingularError when more than one Act ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (aq *ActQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (aq *ActQuery) OnlyID(ctx context.Context) (id uint64, err error) {
+	var ids []uint64
 	if ids, err = aq.Limit(2).IDs(setContextOp(ctx, aq.ctx, "OnlyID")); err != nil {
 		return
 	}
@@ -149,7 +149,7 @@ func (aq *ActQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (aq *ActQuery) OnlyIDX(ctx context.Context) int {
+func (aq *ActQuery) OnlyIDX(ctx context.Context) uint64 {
 	id, err := aq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -177,7 +177,7 @@ func (aq *ActQuery) AllX(ctx context.Context) []*Act {
 }
 
 // IDs executes the query and returns a list of Act IDs.
-func (aq *ActQuery) IDs(ctx context.Context) (ids []int, err error) {
+func (aq *ActQuery) IDs(ctx context.Context) (ids []uint64, err error) {
 	if aq.ctx.Unique == nil && aq.path != nil {
 		aq.Unique(true)
 	}
@@ -189,7 +189,7 @@ func (aq *ActQuery) IDs(ctx context.Context) (ids []int, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (aq *ActQuery) IDsX(ctx context.Context) []int {
+func (aq *ActQuery) IDsX(ctx context.Context) []uint64 {
 	ids, err := aq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -257,6 +257,18 @@ func (aq *ActQuery) Clone() *ActQuery {
 
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
+//
+// Example:
+//
+//	var v []struct {
+//		Name string `json:"name,omitempty"`
+//		Count int `json:"count,omitempty"`
+//	}
+//
+//	client.Act.Query().
+//		GroupBy(act.FieldName).
+//		Aggregate(ent.Count()).
+//		Scan(ctx, &v)
 func (aq *ActQuery) GroupBy(field string, fields ...string) *ActGroupBy {
 	aq.ctx.Fields = append([]string{field}, fields...)
 	grbuild := &ActGroupBy{build: aq}
@@ -268,6 +280,16 @@ func (aq *ActQuery) GroupBy(field string, fields ...string) *ActGroupBy {
 
 // Select allows the selection one or more fields/columns for the given query,
 // instead of selecting all fields in the entity.
+//
+// Example:
+//
+//	var v []struct {
+//		Name string `json:"name,omitempty"`
+//	}
+//
+//	client.Act.Query().
+//		Select(act.FieldName).
+//		Scan(ctx, &v)
 func (aq *ActQuery) Select(fields ...string) *ActSelect {
 	aq.ctx.Fields = append(aq.ctx.Fields, fields...)
 	sbuild := &ActSelect{ActQuery: aq}
@@ -342,7 +364,7 @@ func (aq *ActQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (aq *ActQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(act.Table, act.Columns, sqlgraph.NewFieldSpec(act.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(act.Table, act.Columns, sqlgraph.NewFieldSpec(act.FieldID, field.TypeUint64))
 	_spec.From = aq.sql
 	if unique := aq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

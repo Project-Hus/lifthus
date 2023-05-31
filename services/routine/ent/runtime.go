@@ -2,8 +2,26 @@
 
 package ent
 
+import (
+	"routine/ent/act"
+	"routine/ent/program"
+	"routine/ent/schema"
+)
+
 // The init function reads all schema descriptors with runtime code
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	actFields := schema.Act{}.Fields()
+	_ = actFields
+	// actDescName is the schema descriptor for name field.
+	actDescName := actFields[1].Descriptor()
+	// act.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	act.NameValidator = actDescName.Validators[0].(func(string) error)
+	programFields := schema.Program{}.Fields()
+	_ = programFields
+	// programDescTitle is the schema descriptor for title field.
+	programDescTitle := programFields[1].Descriptor()
+	// program.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	program.TitleValidator = programDescTitle.Validators[0].(func(string) error)
 }

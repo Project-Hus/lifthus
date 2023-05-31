@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Act is the client for interacting with the Act builders.
 	Act *ActClient
+	// Program is the client for interacting with the Program builders.
+	Program *ProgramClient
 
 	// lazily loaded.
 	client     *Client
@@ -146,6 +148,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Act = NewActClient(tx.config)
+	tx.Program = NewProgramClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

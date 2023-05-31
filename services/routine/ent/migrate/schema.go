@@ -10,7 +10,12 @@ import (
 var (
 	// ActsColumns holds the columns for the "acts" table.
 	ActsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "name", Type: field.TypeString, Size: 50},
+		{Name: "type", Type: field.TypeEnum, Nullable: true, Enums: []string{"rep", "lap"}},
+		{Name: "author", Type: field.TypeUint64},
+		{Name: "image", Type: field.TypeString, Nullable: true},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 5000},
 	}
 	// ActsTable holds the schema information for the "acts" table.
 	ActsTable = &schema.Table{
@@ -18,9 +23,25 @@ var (
 		Columns:    ActsColumns,
 		PrimaryKey: []*schema.Column{ActsColumns[0]},
 	}
+	// ProgramsColumns holds the columns for the "programs" table.
+	ProgramsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "title", Type: field.TypeString, Size: 50},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"weekly", "daily"}},
+		{Name: "author", Type: field.TypeUint64},
+		{Name: "image", Type: field.TypeString, Nullable: true},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 5000},
+	}
+	// ProgramsTable holds the schema information for the "programs" table.
+	ProgramsTable = &schema.Table{
+		Name:       "programs",
+		Columns:    ProgramsColumns,
+		PrimaryKey: []*schema.Column{ProgramsColumns[0]},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ActsTable,
+		ProgramsTable,
 	}
 )
 

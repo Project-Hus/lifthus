@@ -20,6 +20,18 @@ func (f ActFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ActMutation", m)
 }
 
+// The ProgramFunc type is an adapter to allow the use of ordinary
+// function as Program mutator.
+type ProgramFunc func(context.Context, *ent.ProgramMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProgramFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ProgramMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProgramMutation", m)
+}
+
 // Condition is a hook condition function.
 type Condition func(context.Context, ent.Mutation) bool
 

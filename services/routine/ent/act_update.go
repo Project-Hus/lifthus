@@ -27,6 +27,85 @@ func (au *ActUpdate) Where(ps ...predicate.Act) *ActUpdate {
 	return au
 }
 
+// SetName sets the "name" field.
+func (au *ActUpdate) SetName(s string) *ActUpdate {
+	au.mutation.SetName(s)
+	return au
+}
+
+// SetType sets the "type" field.
+func (au *ActUpdate) SetType(a act.Type) *ActUpdate {
+	au.mutation.SetType(a)
+	return au
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (au *ActUpdate) SetNillableType(a *act.Type) *ActUpdate {
+	if a != nil {
+		au.SetType(*a)
+	}
+	return au
+}
+
+// ClearType clears the value of the "type" field.
+func (au *ActUpdate) ClearType() *ActUpdate {
+	au.mutation.ClearType()
+	return au
+}
+
+// SetAuthor sets the "author" field.
+func (au *ActUpdate) SetAuthor(u uint64) *ActUpdate {
+	au.mutation.ResetAuthor()
+	au.mutation.SetAuthor(u)
+	return au
+}
+
+// AddAuthor adds u to the "author" field.
+func (au *ActUpdate) AddAuthor(u int64) *ActUpdate {
+	au.mutation.AddAuthor(u)
+	return au
+}
+
+// SetImage sets the "image" field.
+func (au *ActUpdate) SetImage(s string) *ActUpdate {
+	au.mutation.SetImage(s)
+	return au
+}
+
+// SetNillableImage sets the "image" field if the given value is not nil.
+func (au *ActUpdate) SetNillableImage(s *string) *ActUpdate {
+	if s != nil {
+		au.SetImage(*s)
+	}
+	return au
+}
+
+// ClearImage clears the value of the "image" field.
+func (au *ActUpdate) ClearImage() *ActUpdate {
+	au.mutation.ClearImage()
+	return au
+}
+
+// SetDescription sets the "description" field.
+func (au *ActUpdate) SetDescription(s string) *ActUpdate {
+	au.mutation.SetDescription(s)
+	return au
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (au *ActUpdate) SetNillableDescription(s *string) *ActUpdate {
+	if s != nil {
+		au.SetDescription(*s)
+	}
+	return au
+}
+
+// ClearDescription clears the value of the "description" field.
+func (au *ActUpdate) ClearDescription() *ActUpdate {
+	au.mutation.ClearDescription()
+	return au
+}
+
 // Mutation returns the ActMutation object of the builder.
 func (au *ActUpdate) Mutation() *ActMutation {
 	return au.mutation
@@ -59,14 +138,59 @@ func (au *ActUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (au *ActUpdate) check() error {
+	if v, ok := au.mutation.Name(); ok {
+		if err := act.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Act.name": %w`, err)}
+		}
+	}
+	if v, ok := au.mutation.GetType(); ok {
+		if err := act.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Act.type": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (au *ActUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := sqlgraph.NewUpdateSpec(act.Table, act.Columns, sqlgraph.NewFieldSpec(act.FieldID, field.TypeInt))
+	if err := au.check(); err != nil {
+		return n, err
+	}
+	_spec := sqlgraph.NewUpdateSpec(act.Table, act.Columns, sqlgraph.NewFieldSpec(act.FieldID, field.TypeUint64))
 	if ps := au.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := au.mutation.Name(); ok {
+		_spec.SetField(act.FieldName, field.TypeString, value)
+	}
+	if value, ok := au.mutation.GetType(); ok {
+		_spec.SetField(act.FieldType, field.TypeEnum, value)
+	}
+	if au.mutation.TypeCleared() {
+		_spec.ClearField(act.FieldType, field.TypeEnum)
+	}
+	if value, ok := au.mutation.Author(); ok {
+		_spec.SetField(act.FieldAuthor, field.TypeUint64, value)
+	}
+	if value, ok := au.mutation.AddedAuthor(); ok {
+		_spec.AddField(act.FieldAuthor, field.TypeUint64, value)
+	}
+	if value, ok := au.mutation.Image(); ok {
+		_spec.SetField(act.FieldImage, field.TypeString, value)
+	}
+	if au.mutation.ImageCleared() {
+		_spec.ClearField(act.FieldImage, field.TypeString)
+	}
+	if value, ok := au.mutation.Description(); ok {
+		_spec.SetField(act.FieldDescription, field.TypeString, value)
+	}
+	if au.mutation.DescriptionCleared() {
+		_spec.ClearField(act.FieldDescription, field.TypeString)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -86,6 +210,85 @@ type ActUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *ActMutation
+}
+
+// SetName sets the "name" field.
+func (auo *ActUpdateOne) SetName(s string) *ActUpdateOne {
+	auo.mutation.SetName(s)
+	return auo
+}
+
+// SetType sets the "type" field.
+func (auo *ActUpdateOne) SetType(a act.Type) *ActUpdateOne {
+	auo.mutation.SetType(a)
+	return auo
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (auo *ActUpdateOne) SetNillableType(a *act.Type) *ActUpdateOne {
+	if a != nil {
+		auo.SetType(*a)
+	}
+	return auo
+}
+
+// ClearType clears the value of the "type" field.
+func (auo *ActUpdateOne) ClearType() *ActUpdateOne {
+	auo.mutation.ClearType()
+	return auo
+}
+
+// SetAuthor sets the "author" field.
+func (auo *ActUpdateOne) SetAuthor(u uint64) *ActUpdateOne {
+	auo.mutation.ResetAuthor()
+	auo.mutation.SetAuthor(u)
+	return auo
+}
+
+// AddAuthor adds u to the "author" field.
+func (auo *ActUpdateOne) AddAuthor(u int64) *ActUpdateOne {
+	auo.mutation.AddAuthor(u)
+	return auo
+}
+
+// SetImage sets the "image" field.
+func (auo *ActUpdateOne) SetImage(s string) *ActUpdateOne {
+	auo.mutation.SetImage(s)
+	return auo
+}
+
+// SetNillableImage sets the "image" field if the given value is not nil.
+func (auo *ActUpdateOne) SetNillableImage(s *string) *ActUpdateOne {
+	if s != nil {
+		auo.SetImage(*s)
+	}
+	return auo
+}
+
+// ClearImage clears the value of the "image" field.
+func (auo *ActUpdateOne) ClearImage() *ActUpdateOne {
+	auo.mutation.ClearImage()
+	return auo
+}
+
+// SetDescription sets the "description" field.
+func (auo *ActUpdateOne) SetDescription(s string) *ActUpdateOne {
+	auo.mutation.SetDescription(s)
+	return auo
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (auo *ActUpdateOne) SetNillableDescription(s *string) *ActUpdateOne {
+	if s != nil {
+		auo.SetDescription(*s)
+	}
+	return auo
+}
+
+// ClearDescription clears the value of the "description" field.
+func (auo *ActUpdateOne) ClearDescription() *ActUpdateOne {
+	auo.mutation.ClearDescription()
+	return auo
 }
 
 // Mutation returns the ActMutation object of the builder.
@@ -133,8 +336,26 @@ func (auo *ActUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (auo *ActUpdateOne) check() error {
+	if v, ok := auo.mutation.Name(); ok {
+		if err := act.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Act.name": %w`, err)}
+		}
+	}
+	if v, ok := auo.mutation.GetType(); ok {
+		if err := act.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Act.type": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (auo *ActUpdateOne) sqlSave(ctx context.Context) (_node *Act, err error) {
-	_spec := sqlgraph.NewUpdateSpec(act.Table, act.Columns, sqlgraph.NewFieldSpec(act.FieldID, field.TypeInt))
+	if err := auo.check(); err != nil {
+		return _node, err
+	}
+	_spec := sqlgraph.NewUpdateSpec(act.Table, act.Columns, sqlgraph.NewFieldSpec(act.FieldID, field.TypeUint64))
 	id, ok := auo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Act.id" for update`)}
@@ -158,6 +379,33 @@ func (auo *ActUpdateOne) sqlSave(ctx context.Context) (_node *Act, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := auo.mutation.Name(); ok {
+		_spec.SetField(act.FieldName, field.TypeString, value)
+	}
+	if value, ok := auo.mutation.GetType(); ok {
+		_spec.SetField(act.FieldType, field.TypeEnum, value)
+	}
+	if auo.mutation.TypeCleared() {
+		_spec.ClearField(act.FieldType, field.TypeEnum)
+	}
+	if value, ok := auo.mutation.Author(); ok {
+		_spec.SetField(act.FieldAuthor, field.TypeUint64, value)
+	}
+	if value, ok := auo.mutation.AddedAuthor(); ok {
+		_spec.AddField(act.FieldAuthor, field.TypeUint64, value)
+	}
+	if value, ok := auo.mutation.Image(); ok {
+		_spec.SetField(act.FieldImage, field.TypeString, value)
+	}
+	if auo.mutation.ImageCleared() {
+		_spec.ClearField(act.FieldImage, field.TypeString)
+	}
+	if value, ok := auo.mutation.Description(); ok {
+		_spec.SetField(act.FieldDescription, field.TypeString, value)
+	}
+	if auo.mutation.DescriptionCleared() {
+		_spec.ClearField(act.FieldDescription, field.TypeString)
 	}
 	_node = &Act{config: auo.config}
 	_spec.Assign = _node.assignValues

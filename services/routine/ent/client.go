@@ -11,6 +11,7 @@ import (
 	"routine/ent/migrate"
 
 	"routine/ent/act"
+	"routine/ent/program"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
@@ -24,6 +25,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Act is the client for interacting with the Act builders.
 	Act *ActClient
+	// Program is the client for interacting with the Program builders.
+	Program *ProgramClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -38,6 +41,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Act = NewActClient(c.config)
+	c.Program = NewProgramClient(c.config)
 }
 
 type (
@@ -118,9 +122,10 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		Act:    NewActClient(cfg),
+		ctx:     ctx,
+		config:  cfg,
+		Act:     NewActClient(cfg),
+		Program: NewProgramClient(cfg),
 	}, nil
 }
 
@@ -138,9 +143,10 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		Act:    NewActClient(cfg),
+		ctx:     ctx,
+		config:  cfg,
+		Act:     NewActClient(cfg),
+		Program: NewProgramClient(cfg),
 	}, nil
 }
 
@@ -170,12 +176,14 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.Act.Use(hooks...)
+	c.Program.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.Act.Intercept(interceptors...)
+	c.Program.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
@@ -183,6 +191,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *ActMutation:
 		return c.Act.mutate(ctx, m)
+	case *ProgramMutation:
+		return c.Program.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -234,7 +244,7 @@ func (c *ActClient) UpdateOne(a *Act) *ActUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ActClient) UpdateOneID(id int) *ActUpdateOne {
+func (c *ActClient) UpdateOneID(id uint64) *ActUpdateOne {
 	mutation := newActMutation(c.config, OpUpdateOne, withActID(id))
 	return &ActUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -251,7 +261,7 @@ func (c *ActClient) DeleteOne(a *Act) *ActDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ActClient) DeleteOneID(id int) *ActDeleteOne {
+func (c *ActClient) DeleteOneID(id uint64) *ActDeleteOne {
 	builder := c.Delete().Where(act.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -268,12 +278,12 @@ func (c *ActClient) Query() *ActQuery {
 }
 
 // Get returns a Act entity by its id.
-func (c *ActClient) Get(ctx context.Context, id int) (*Act, error) {
+func (c *ActClient) Get(ctx context.Context, id uint64) (*Act, error) {
 	return c.Query().Where(act.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ActClient) GetX(ctx context.Context, id int) *Act {
+func (c *ActClient) GetX(ctx context.Context, id uint64) *Act {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -306,12 +316,130 @@ func (c *ActClient) mutate(ctx context.Context, m *ActMutation) (Value, error) {
 	}
 }
 
+// ProgramClient is a client for the Program schema.
+type ProgramClient struct {
+	config
+}
+
+// NewProgramClient returns a client for the Program from the given config.
+func NewProgramClient(c config) *ProgramClient {
+	return &ProgramClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `program.Hooks(f(g(h())))`.
+func (c *ProgramClient) Use(hooks ...Hook) {
+	c.hooks.Program = append(c.hooks.Program, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `program.Intercept(f(g(h())))`.
+func (c *ProgramClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Program = append(c.inters.Program, interceptors...)
+}
+
+// Create returns a builder for creating a Program entity.
+func (c *ProgramClient) Create() *ProgramCreate {
+	mutation := newProgramMutation(c.config, OpCreate)
+	return &ProgramCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Program entities.
+func (c *ProgramClient) CreateBulk(builders ...*ProgramCreate) *ProgramCreateBulk {
+	return &ProgramCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Program.
+func (c *ProgramClient) Update() *ProgramUpdate {
+	mutation := newProgramMutation(c.config, OpUpdate)
+	return &ProgramUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ProgramClient) UpdateOne(pr *Program) *ProgramUpdateOne {
+	mutation := newProgramMutation(c.config, OpUpdateOne, withProgram(pr))
+	return &ProgramUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ProgramClient) UpdateOneID(id uint64) *ProgramUpdateOne {
+	mutation := newProgramMutation(c.config, OpUpdateOne, withProgramID(id))
+	return &ProgramUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Program.
+func (c *ProgramClient) Delete() *ProgramDelete {
+	mutation := newProgramMutation(c.config, OpDelete)
+	return &ProgramDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ProgramClient) DeleteOne(pr *Program) *ProgramDeleteOne {
+	return c.DeleteOneID(pr.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ProgramClient) DeleteOneID(id uint64) *ProgramDeleteOne {
+	builder := c.Delete().Where(program.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ProgramDeleteOne{builder}
+}
+
+// Query returns a query builder for Program.
+func (c *ProgramClient) Query() *ProgramQuery {
+	return &ProgramQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeProgram},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Program entity by its id.
+func (c *ProgramClient) Get(ctx context.Context, id uint64) (*Program, error) {
+	return c.Query().Where(program.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ProgramClient) GetX(ctx context.Context, id uint64) *Program {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *ProgramClient) Hooks() []Hook {
+	return c.hooks.Program
+}
+
+// Interceptors returns the client interceptors.
+func (c *ProgramClient) Interceptors() []Interceptor {
+	return c.inters.Program
+}
+
+func (c *ProgramClient) mutate(ctx context.Context, m *ProgramMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ProgramCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ProgramUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ProgramUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ProgramDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Program mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Act []ent.Hook
+		Act, Program []ent.Hook
 	}
 	inters struct {
-		Act []ent.Interceptor
+		Act, Program []ent.Interceptor
 	}
 )

@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"routine/ent/act"
 
@@ -16,6 +17,66 @@ type ActCreate struct {
 	config
 	mutation *ActMutation
 	hooks    []Hook
+}
+
+// SetName sets the "name" field.
+func (ac *ActCreate) SetName(s string) *ActCreate {
+	ac.mutation.SetName(s)
+	return ac
+}
+
+// SetType sets the "type" field.
+func (ac *ActCreate) SetType(a act.Type) *ActCreate {
+	ac.mutation.SetType(a)
+	return ac
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (ac *ActCreate) SetNillableType(a *act.Type) *ActCreate {
+	if a != nil {
+		ac.SetType(*a)
+	}
+	return ac
+}
+
+// SetAuthor sets the "author" field.
+func (ac *ActCreate) SetAuthor(u uint64) *ActCreate {
+	ac.mutation.SetAuthor(u)
+	return ac
+}
+
+// SetImage sets the "image" field.
+func (ac *ActCreate) SetImage(s string) *ActCreate {
+	ac.mutation.SetImage(s)
+	return ac
+}
+
+// SetNillableImage sets the "image" field if the given value is not nil.
+func (ac *ActCreate) SetNillableImage(s *string) *ActCreate {
+	if s != nil {
+		ac.SetImage(*s)
+	}
+	return ac
+}
+
+// SetDescription sets the "description" field.
+func (ac *ActCreate) SetDescription(s string) *ActCreate {
+	ac.mutation.SetDescription(s)
+	return ac
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (ac *ActCreate) SetNillableDescription(s *string) *ActCreate {
+	if s != nil {
+		ac.SetDescription(*s)
+	}
+	return ac
+}
+
+// SetID sets the "id" field.
+func (ac *ActCreate) SetID(u uint64) *ActCreate {
+	ac.mutation.SetID(u)
+	return ac
 }
 
 // Mutation returns the ActMutation object of the builder.
@@ -52,6 +113,22 @@ func (ac *ActCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ac *ActCreate) check() error {
+	if _, ok := ac.mutation.Name(); !ok {
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Act.name"`)}
+	}
+	if v, ok := ac.mutation.Name(); ok {
+		if err := act.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Act.name": %w`, err)}
+		}
+	}
+	if v, ok := ac.mutation.GetType(); ok {
+		if err := act.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Act.type": %w`, err)}
+		}
+	}
+	if _, ok := ac.mutation.Author(); !ok {
+		return &ValidationError{Name: "author", err: errors.New(`ent: missing required field "Act.author"`)}
+	}
 	return nil
 }
 
@@ -66,8 +143,10 @@ func (ac *ActCreate) sqlSave(ctx context.Context) (*Act, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != _node.ID {
+		id := _spec.ID.Value.(int64)
+		_node.ID = uint64(id)
+	}
 	ac.mutation.id = &_node.ID
 	ac.mutation.done = true
 	return _node, nil
@@ -76,8 +155,32 @@ func (ac *ActCreate) sqlSave(ctx context.Context) (*Act, error) {
 func (ac *ActCreate) createSpec() (*Act, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Act{config: ac.config}
-		_spec = sqlgraph.NewCreateSpec(act.Table, sqlgraph.NewFieldSpec(act.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(act.Table, sqlgraph.NewFieldSpec(act.FieldID, field.TypeUint64))
 	)
+	if id, ok := ac.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
+	if value, ok := ac.mutation.Name(); ok {
+		_spec.SetField(act.FieldName, field.TypeString, value)
+		_node.Name = value
+	}
+	if value, ok := ac.mutation.GetType(); ok {
+		_spec.SetField(act.FieldType, field.TypeEnum, value)
+		_node.Type = &value
+	}
+	if value, ok := ac.mutation.Author(); ok {
+		_spec.SetField(act.FieldAuthor, field.TypeUint64, value)
+		_node.Author = value
+	}
+	if value, ok := ac.mutation.Image(); ok {
+		_spec.SetField(act.FieldImage, field.TypeString, value)
+		_node.Image = &value
+	}
+	if value, ok := ac.mutation.Description(); ok {
+		_spec.SetField(act.FieldDescription, field.TypeString, value)
+		_node.Description = &value
+	}
 	return _node, _spec
 }
 
@@ -121,9 +224,9 @@ func (acb *ActCreateBulk) Save(ctx context.Context) ([]*Act, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
+				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
 					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
+					nodes[i].ID = uint64(id)
 				}
 				mutation.done = true
 				return nodes[i], nil

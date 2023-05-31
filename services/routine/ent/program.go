@@ -4,22 +4,22 @@ package ent
 
 import (
 	"fmt"
-	"routine/ent/act"
+	"routine/ent/program"
 	"strings"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 )
 
-// Act is the model entity for the Act schema.
-type Act struct {
+// Program is the model entity for the Program schema.
+type Program struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uint64 `json:"id,omitempty"`
-	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	// Title holds the value of the "title" field.
+	Title string `json:"title,omitempty"`
 	// Type holds the value of the "type" field.
-	Type *act.Type `json:"type,omitempty"`
+	Type program.Type `json:"type,omitempty"`
 	// Author holds the value of the "author" field.
 	Author uint64 `json:"author,omitempty"`
 	// Image holds the value of the "image" field.
@@ -30,13 +30,13 @@ type Act struct {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Act) scanValues(columns []string) ([]any, error) {
+func (*Program) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case act.FieldID, act.FieldAuthor:
+		case program.FieldID, program.FieldAuthor:
 			values[i] = new(sql.NullInt64)
-		case act.FieldName, act.FieldType, act.FieldImage, act.FieldDescription:
+		case program.FieldTitle, program.FieldType, program.FieldImage, program.FieldDescription:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -46,105 +46,102 @@ func (*Act) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the Act fields.
-func (a *Act) assignValues(columns []string, values []any) error {
+// to the Program fields.
+func (pr *Program) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case act.FieldID:
+		case program.FieldID:
 			value, ok := values[i].(*sql.NullInt64)
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			a.ID = uint64(value.Int64)
-		case act.FieldName:
+			pr.ID = uint64(value.Int64)
+		case program.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field name", values[i])
+				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
-				a.Name = value.String
+				pr.Title = value.String
 			}
-		case act.FieldType:
+		case program.FieldType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field type", values[i])
 			} else if value.Valid {
-				a.Type = new(act.Type)
-				*a.Type = act.Type(value.String)
+				pr.Type = program.Type(value.String)
 			}
-		case act.FieldAuthor:
+		case program.FieldAuthor:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field author", values[i])
 			} else if value.Valid {
-				a.Author = uint64(value.Int64)
+				pr.Author = uint64(value.Int64)
 			}
-		case act.FieldImage:
+		case program.FieldImage:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field image", values[i])
 			} else if value.Valid {
-				a.Image = new(string)
-				*a.Image = value.String
+				pr.Image = new(string)
+				*pr.Image = value.String
 			}
-		case act.FieldDescription:
+		case program.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				a.Description = new(string)
-				*a.Description = value.String
+				pr.Description = new(string)
+				*pr.Description = value.String
 			}
 		default:
-			a.selectValues.Set(columns[i], values[i])
+			pr.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the Act.
+// Value returns the ent.Value that was dynamically selected and assigned to the Program.
 // This includes values selected through modifiers, order, etc.
-func (a *Act) Value(name string) (ent.Value, error) {
-	return a.selectValues.Get(name)
+func (pr *Program) Value(name string) (ent.Value, error) {
+	return pr.selectValues.Get(name)
 }
 
-// Update returns a builder for updating this Act.
-// Note that you need to call Act.Unwrap() before calling this method if this Act
+// Update returns a builder for updating this Program.
+// Note that you need to call Program.Unwrap() before calling this method if this Program
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (a *Act) Update() *ActUpdateOne {
-	return NewActClient(a.config).UpdateOne(a)
+func (pr *Program) Update() *ProgramUpdateOne {
+	return NewProgramClient(pr.config).UpdateOne(pr)
 }
 
-// Unwrap unwraps the Act entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the Program entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (a *Act) Unwrap() *Act {
-	_tx, ok := a.config.driver.(*txDriver)
+func (pr *Program) Unwrap() *Program {
+	_tx, ok := pr.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: Act is not a transactional entity")
+		panic("ent: Program is not a transactional entity")
 	}
-	a.config.driver = _tx.drv
-	return a
+	pr.config.driver = _tx.drv
+	return pr
 }
 
 // String implements the fmt.Stringer.
-func (a *Act) String() string {
+func (pr *Program) String() string {
 	var builder strings.Builder
-	builder.WriteString("Act(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", a.ID))
-	builder.WriteString("name=")
-	builder.WriteString(a.Name)
+	builder.WriteString("Program(")
+	builder.WriteString(fmt.Sprintf("id=%v, ", pr.ID))
+	builder.WriteString("title=")
+	builder.WriteString(pr.Title)
 	builder.WriteString(", ")
-	if v := a.Type; v != nil {
-		builder.WriteString("type=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
+	builder.WriteString("type=")
+	builder.WriteString(fmt.Sprintf("%v", pr.Type))
 	builder.WriteString(", ")
 	builder.WriteString("author=")
-	builder.WriteString(fmt.Sprintf("%v", a.Author))
+	builder.WriteString(fmt.Sprintf("%v", pr.Author))
 	builder.WriteString(", ")
-	if v := a.Image; v != nil {
+	if v := pr.Image; v != nil {
 		builder.WriteString("image=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	if v := a.Description; v != nil {
+	if v := pr.Description; v != nil {
 		builder.WriteString("description=")
 		builder.WriteString(*v)
 	}
@@ -152,5 +149,5 @@ func (a *Act) String() string {
 	return builder.String()
 }
 
-// Acts is a parsable slice of Act.
-type Acts []*Act
+// Programs is a parsable slice of Program.
+type Programs []*Program

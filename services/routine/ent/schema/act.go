@@ -1,6 +1,10 @@
 package schema
 
-import "entgo.io/ent"
+import (
+	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema/field"
+)
 
 // Act holds the schema definition for the Act entity.
 type Act struct {
@@ -8,8 +12,18 @@ type Act struct {
 }
 
 // Fields of the Act.
+// Which represents a single act like squat, running, or even taking rest.
 func (Act) Fields() []ent.Field {
-	return nil
+	return []ent.Field{
+		field.Uint64("id").Unique(), // user id from Hus
+
+		field.String("name").NotEmpty().Annotations(entsql.Annotation{Size: 50}),
+		field.Enum("type").Values("rep", "lap").Nillable().Optional(),
+
+		field.Uint64("author"),
+		field.String("image").Nillable().Optional(),
+		field.String("description").Nillable().Optional().Annotations(entsql.Annotation{Size: 5000}),
+	}
 }
 
 // Edges of the Act.
