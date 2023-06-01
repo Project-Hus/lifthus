@@ -31,29 +31,15 @@ func (rau *RoutineActUpdate) Where(ps ...predicate.RoutineAct) *RoutineActUpdate
 	return rau
 }
 
-// SetDailyRoutineID sets the "daily_routine_id" field.
-func (rau *RoutineActUpdate) SetDailyRoutineID(u uint64) *RoutineActUpdate {
-	rau.mutation.ResetDailyRoutineID()
-	rau.mutation.SetDailyRoutineID(u)
-	return rau
-}
-
-// AddDailyRoutineID adds u to the "daily_routine_id" field.
-func (rau *RoutineActUpdate) AddDailyRoutineID(u int64) *RoutineActUpdate {
-	rau.mutation.AddDailyRoutineID(u)
-	return rau
-}
-
 // SetActID sets the "act_id" field.
 func (rau *RoutineActUpdate) SetActID(u uint64) *RoutineActUpdate {
-	rau.mutation.ResetActID()
 	rau.mutation.SetActID(u)
 	return rau
 }
 
-// AddActID adds u to the "act_id" field.
-func (rau *RoutineActUpdate) AddActID(u int64) *RoutineActUpdate {
-	rau.mutation.AddActID(u)
+// SetDailyRoutineID sets the "daily_routine_id" field.
+func (rau *RoutineActUpdate) SetDailyRoutineID(u uint64) *RoutineActUpdate {
+	rau.mutation.SetDailyRoutineID(u)
 	return rau
 }
 
@@ -124,27 +110,29 @@ func (rau *RoutineActUpdate) ClearLap() *RoutineActUpdate {
 	return rau
 }
 
+// SetWarmup sets the "warmup" field.
+func (rau *RoutineActUpdate) SetWarmup(b bool) *RoutineActUpdate {
+	rau.mutation.SetWarmup(b)
+	return rau
+}
+
+// SetNillableWarmup sets the "warmup" field if the given value is not nil.
+func (rau *RoutineActUpdate) SetNillableWarmup(b *bool) *RoutineActUpdate {
+	if b != nil {
+		rau.SetWarmup(*b)
+	}
+	return rau
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (rau *RoutineActUpdate) SetUpdatedAt(t time.Time) *RoutineActUpdate {
 	rau.mutation.SetUpdatedAt(t)
 	return rau
 }
 
-// SetActID sets the "act" edge to the Act entity by ID.
-func (rau *RoutineActUpdate) SetActID(id uint64) *RoutineActUpdate {
-	rau.mutation.SetActID(id)
-	return rau
-}
-
 // SetAct sets the "act" edge to the Act entity.
 func (rau *RoutineActUpdate) SetAct(a *Act) *RoutineActUpdate {
 	return rau.SetActID(a.ID)
-}
-
-// SetDailyRoutineID sets the "daily_routine" edge to the DailyRoutine entity by ID.
-func (rau *RoutineActUpdate) SetDailyRoutineID(id uint64) *RoutineActUpdate {
-	rau.mutation.SetDailyRoutineID(id)
-	return rau
 }
 
 // SetDailyRoutine sets the "daily_routine" edge to the DailyRoutine entity.
@@ -279,18 +267,6 @@ func (rau *RoutineActUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := rau.mutation.DailyRoutineID(); ok {
-		_spec.SetField(routineact.FieldDailyRoutineID, field.TypeUint64, value)
-	}
-	if value, ok := rau.mutation.AddedDailyRoutineID(); ok {
-		_spec.AddField(routineact.FieldDailyRoutineID, field.TypeUint64, value)
-	}
-	if value, ok := rau.mutation.ActID(); ok {
-		_spec.SetField(routineact.FieldActID, field.TypeUint64, value)
-	}
-	if value, ok := rau.mutation.AddedActID(); ok {
-		_spec.AddField(routineact.FieldActID, field.TypeUint64, value)
-	}
 	if value, ok := rau.mutation.Order(); ok {
 		_spec.SetField(routineact.FieldOrder, field.TypeInt, value)
 	}
@@ -314,6 +290,9 @@ func (rau *RoutineActUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if rau.mutation.LapCleared() {
 		_spec.ClearField(routineact.FieldLap, field.TypeInt)
+	}
+	if value, ok := rau.mutation.Warmup(); ok {
+		_spec.SetField(routineact.FieldWarmup, field.TypeBool, value)
 	}
 	if value, ok := rau.mutation.UpdatedAt(); ok {
 		_spec.SetField(routineact.FieldUpdatedAt, field.TypeTime, value)
@@ -441,29 +420,15 @@ type RoutineActUpdateOne struct {
 	mutation *RoutineActMutation
 }
 
-// SetDailyRoutineID sets the "daily_routine_id" field.
-func (rauo *RoutineActUpdateOne) SetDailyRoutineID(u uint64) *RoutineActUpdateOne {
-	rauo.mutation.ResetDailyRoutineID()
-	rauo.mutation.SetDailyRoutineID(u)
-	return rauo
-}
-
-// AddDailyRoutineID adds u to the "daily_routine_id" field.
-func (rauo *RoutineActUpdateOne) AddDailyRoutineID(u int64) *RoutineActUpdateOne {
-	rauo.mutation.AddDailyRoutineID(u)
-	return rauo
-}
-
 // SetActID sets the "act_id" field.
 func (rauo *RoutineActUpdateOne) SetActID(u uint64) *RoutineActUpdateOne {
-	rauo.mutation.ResetActID()
 	rauo.mutation.SetActID(u)
 	return rauo
 }
 
-// AddActID adds u to the "act_id" field.
-func (rauo *RoutineActUpdateOne) AddActID(u int64) *RoutineActUpdateOne {
-	rauo.mutation.AddActID(u)
+// SetDailyRoutineID sets the "daily_routine_id" field.
+func (rauo *RoutineActUpdateOne) SetDailyRoutineID(u uint64) *RoutineActUpdateOne {
+	rauo.mutation.SetDailyRoutineID(u)
 	return rauo
 }
 
@@ -534,27 +499,29 @@ func (rauo *RoutineActUpdateOne) ClearLap() *RoutineActUpdateOne {
 	return rauo
 }
 
+// SetWarmup sets the "warmup" field.
+func (rauo *RoutineActUpdateOne) SetWarmup(b bool) *RoutineActUpdateOne {
+	rauo.mutation.SetWarmup(b)
+	return rauo
+}
+
+// SetNillableWarmup sets the "warmup" field if the given value is not nil.
+func (rauo *RoutineActUpdateOne) SetNillableWarmup(b *bool) *RoutineActUpdateOne {
+	if b != nil {
+		rauo.SetWarmup(*b)
+	}
+	return rauo
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (rauo *RoutineActUpdateOne) SetUpdatedAt(t time.Time) *RoutineActUpdateOne {
 	rauo.mutation.SetUpdatedAt(t)
 	return rauo
 }
 
-// SetActID sets the "act" edge to the Act entity by ID.
-func (rauo *RoutineActUpdateOne) SetActID(id uint64) *RoutineActUpdateOne {
-	rauo.mutation.SetActID(id)
-	return rauo
-}
-
 // SetAct sets the "act" edge to the Act entity.
 func (rauo *RoutineActUpdateOne) SetAct(a *Act) *RoutineActUpdateOne {
 	return rauo.SetActID(a.ID)
-}
-
-// SetDailyRoutineID sets the "daily_routine" edge to the DailyRoutine entity by ID.
-func (rauo *RoutineActUpdateOne) SetDailyRoutineID(id uint64) *RoutineActUpdateOne {
-	rauo.mutation.SetDailyRoutineID(id)
-	return rauo
 }
 
 // SetDailyRoutine sets the "daily_routine" edge to the DailyRoutine entity.
@@ -719,18 +686,6 @@ func (rauo *RoutineActUpdateOne) sqlSave(ctx context.Context) (_node *RoutineAct
 			}
 		}
 	}
-	if value, ok := rauo.mutation.DailyRoutineID(); ok {
-		_spec.SetField(routineact.FieldDailyRoutineID, field.TypeUint64, value)
-	}
-	if value, ok := rauo.mutation.AddedDailyRoutineID(); ok {
-		_spec.AddField(routineact.FieldDailyRoutineID, field.TypeUint64, value)
-	}
-	if value, ok := rauo.mutation.ActID(); ok {
-		_spec.SetField(routineact.FieldActID, field.TypeUint64, value)
-	}
-	if value, ok := rauo.mutation.AddedActID(); ok {
-		_spec.AddField(routineact.FieldActID, field.TypeUint64, value)
-	}
 	if value, ok := rauo.mutation.Order(); ok {
 		_spec.SetField(routineact.FieldOrder, field.TypeInt, value)
 	}
@@ -754,6 +709,9 @@ func (rauo *RoutineActUpdateOne) sqlSave(ctx context.Context) (_node *RoutineAct
 	}
 	if rauo.mutation.LapCleared() {
 		_spec.ClearField(routineact.FieldLap, field.TypeInt)
+	}
+	if value, ok := rauo.mutation.Warmup(); ok {
+		_spec.SetField(routineact.FieldWarmup, field.TypeBool, value)
 	}
 	if value, ok := rauo.mutation.UpdatedAt(); ok {
 		_spec.SetField(routineact.FieldUpdatedAt, field.TypeTime, value)

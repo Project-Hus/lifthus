@@ -155,26 +155,6 @@ func ProgramRecIDNotIn(vs ...uint64) predicate.DailyRoutineRec {
 	return predicate.DailyRoutineRec(sql.FieldNotIn(FieldProgramRecID, vs...))
 }
 
-// ProgramRecIDGT applies the GT predicate on the "program_rec_id" field.
-func ProgramRecIDGT(v uint64) predicate.DailyRoutineRec {
-	return predicate.DailyRoutineRec(sql.FieldGT(FieldProgramRecID, v))
-}
-
-// ProgramRecIDGTE applies the GTE predicate on the "program_rec_id" field.
-func ProgramRecIDGTE(v uint64) predicate.DailyRoutineRec {
-	return predicate.DailyRoutineRec(sql.FieldGTE(FieldProgramRecID, v))
-}
-
-// ProgramRecIDLT applies the LT predicate on the "program_rec_id" field.
-func ProgramRecIDLT(v uint64) predicate.DailyRoutineRec {
-	return predicate.DailyRoutineRec(sql.FieldLT(FieldProgramRecID, v))
-}
-
-// ProgramRecIDLTE applies the LTE predicate on the "program_rec_id" field.
-func ProgramRecIDLTE(v uint64) predicate.DailyRoutineRec {
-	return predicate.DailyRoutineRec(sql.FieldLTE(FieldProgramRecID, v))
-}
-
 // ProgramRecIDIsNil applies the IsNil predicate on the "program_rec_id" field.
 func ProgramRecIDIsNil() predicate.DailyRoutineRec {
 	return predicate.DailyRoutineRec(sql.FieldIsNull(FieldProgramRecID))
@@ -205,26 +185,6 @@ func WeeklyRoutineRecIDNotIn(vs ...uint64) predicate.DailyRoutineRec {
 	return predicate.DailyRoutineRec(sql.FieldNotIn(FieldWeeklyRoutineRecID, vs...))
 }
 
-// WeeklyRoutineRecIDGT applies the GT predicate on the "weekly_routine_rec_id" field.
-func WeeklyRoutineRecIDGT(v uint64) predicate.DailyRoutineRec {
-	return predicate.DailyRoutineRec(sql.FieldGT(FieldWeeklyRoutineRecID, v))
-}
-
-// WeeklyRoutineRecIDGTE applies the GTE predicate on the "weekly_routine_rec_id" field.
-func WeeklyRoutineRecIDGTE(v uint64) predicate.DailyRoutineRec {
-	return predicate.DailyRoutineRec(sql.FieldGTE(FieldWeeklyRoutineRecID, v))
-}
-
-// WeeklyRoutineRecIDLT applies the LT predicate on the "weekly_routine_rec_id" field.
-func WeeklyRoutineRecIDLT(v uint64) predicate.DailyRoutineRec {
-	return predicate.DailyRoutineRec(sql.FieldLT(FieldWeeklyRoutineRecID, v))
-}
-
-// WeeklyRoutineRecIDLTE applies the LTE predicate on the "weekly_routine_rec_id" field.
-func WeeklyRoutineRecIDLTE(v uint64) predicate.DailyRoutineRec {
-	return predicate.DailyRoutineRec(sql.FieldLTE(FieldWeeklyRoutineRecID, v))
-}
-
 // WeeklyRoutineRecIDIsNil applies the IsNil predicate on the "weekly_routine_rec_id" field.
 func WeeklyRoutineRecIDIsNil() predicate.DailyRoutineRec {
 	return predicate.DailyRoutineRec(sql.FieldIsNull(FieldWeeklyRoutineRecID))
@@ -253,26 +213,6 @@ func DailyRoutineIDIn(vs ...uint64) predicate.DailyRoutineRec {
 // DailyRoutineIDNotIn applies the NotIn predicate on the "daily_routine_id" field.
 func DailyRoutineIDNotIn(vs ...uint64) predicate.DailyRoutineRec {
 	return predicate.DailyRoutineRec(sql.FieldNotIn(FieldDailyRoutineID, vs...))
-}
-
-// DailyRoutineIDGT applies the GT predicate on the "daily_routine_id" field.
-func DailyRoutineIDGT(v uint64) predicate.DailyRoutineRec {
-	return predicate.DailyRoutineRec(sql.FieldGT(FieldDailyRoutineID, v))
-}
-
-// DailyRoutineIDGTE applies the GTE predicate on the "daily_routine_id" field.
-func DailyRoutineIDGTE(v uint64) predicate.DailyRoutineRec {
-	return predicate.DailyRoutineRec(sql.FieldGTE(FieldDailyRoutineID, v))
-}
-
-// DailyRoutineIDLT applies the LT predicate on the "daily_routine_id" field.
-func DailyRoutineIDLT(v uint64) predicate.DailyRoutineRec {
-	return predicate.DailyRoutineRec(sql.FieldLT(FieldDailyRoutineID, v))
-}
-
-// DailyRoutineIDLTE applies the LTE predicate on the "daily_routine_id" field.
-func DailyRoutineIDLTE(v uint64) predicate.DailyRoutineRec {
-	return predicate.DailyRoutineRec(sql.FieldLTE(FieldDailyRoutineID, v))
 }
 
 // DailyRoutineIDIsNil applies the IsNil predicate on the "daily_routine_id" field.

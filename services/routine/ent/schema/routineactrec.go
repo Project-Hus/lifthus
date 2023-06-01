@@ -20,7 +20,7 @@ func (RoutineActRec) Fields() []ent.Field {
 		field.Uint64("daily_routine_rec_id"),
 
 		field.Uint64("routine_act_id").Nillable().Optional(),
-		field.Uint64("act_id").Nillable().Optional(),
+		field.Uint64("act_id"),
 
 		field.Int("order").Min(1),
 		field.Int("reps").Min(1).Nillable().Optional(),
@@ -40,8 +40,8 @@ func (RoutineActRec) Fields() []ent.Field {
 // Edges of the RoutineActRec.
 func (RoutineActRec) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("daily_routine_rec", DailyRoutineRec.Type).Ref("routine_act_recs").Unique().Required(),
-		edge.From("act", Act.Type).Ref("routine_act_recs").Unique().Required(),
+		edge.From("daily_routine_rec", DailyRoutineRec.Type).Field("daily_routine_rec_id").Ref("routine_act_recs").Unique().Required(),
+		edge.From("act", Act.Type).Field("act_id").Ref("routine_act_recs").Unique().Required(),
 
 		edge.From("routine_act", RoutineAct.Type).Ref("routine_act_recs").Unique(),
 	}

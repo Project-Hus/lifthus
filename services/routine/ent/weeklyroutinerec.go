@@ -31,10 +31,8 @@ type WeeklyRoutineRec struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the WeeklyRoutineRecQuery when eager-loading is set.
-	Edges                              WeeklyRoutineRecEdges `json:"edges"`
-	program_rec_weekly_routine_recs    *uint64
-	weekly_routine_weekly_routine_recs *uint64
-	selectValues                       sql.SelectValues
+	Edges        WeeklyRoutineRecEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // WeeklyRoutineRecEdges holds the relations/edges for other nodes in the graph.
@@ -94,10 +92,6 @@ func (*WeeklyRoutineRec) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case weeklyroutinerec.FieldStartDate, weeklyroutinerec.FieldCreatedAt, weeklyroutinerec.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case weeklyroutinerec.ForeignKeys[0]: // program_rec_weekly_routine_recs
-			values[i] = new(sql.NullInt64)
-		case weeklyroutinerec.ForeignKeys[1]: // weekly_routine_weekly_routine_recs
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -148,20 +142,6 @@ func (wrr *WeeklyRoutineRec) assignValues(columns []string, values []any) error 
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				wrr.UpdatedAt = value.Time
-			}
-		case weeklyroutinerec.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field program_rec_weekly_routine_recs", value)
-			} else if value.Valid {
-				wrr.program_rec_weekly_routine_recs = new(uint64)
-				*wrr.program_rec_weekly_routine_recs = uint64(value.Int64)
-			}
-		case weeklyroutinerec.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field weekly_routine_weekly_routine_recs", value)
-			} else if value.Valid {
-				wrr.weekly_routine_weekly_routine_recs = new(uint64)
-				*wrr.weekly_routine_weekly_routine_recs = uint64(value.Int64)
 			}
 		default:
 			wrr.selectValues.Set(columns[i], values[i])

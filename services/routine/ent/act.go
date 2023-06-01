@@ -20,7 +20,7 @@ type Act struct {
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Type holds the value of the "type" field.
-	Type *act.Type `json:"type,omitempty"`
+	Type act.Type `json:"type,omitempty"`
 	// Author holds the value of the "author" field.
 	Author uint64 `json:"author,omitempty"`
 	// Image holds the value of the "image" field.
@@ -31,6 +31,38 @@ type Act struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Weight holds the value of the "weight" field.
+	Weight bool `json:"weight,omitempty"`
+	// Bodyweight holds the value of the "bodyweight" field.
+	Bodyweight bool `json:"bodyweight,omitempty"`
+	// Cardio holds the value of the "cardio" field.
+	Cardio bool `json:"cardio,omitempty"`
+	// Upper holds the value of the "upper" field.
+	Upper bool `json:"upper,omitempty"`
+	// Lower holds the value of the "lower" field.
+	Lower bool `json:"lower,omitempty"`
+	// Full holds the value of the "full" field.
+	Full bool `json:"full,omitempty"`
+	// Arms holds the value of the "arms" field.
+	Arms bool `json:"arms,omitempty"`
+	// Shoulders holds the value of the "shoulders" field.
+	Shoulders bool `json:"shoulders,omitempty"`
+	// Chest holds the value of the "chest" field.
+	Chest bool `json:"chest,omitempty"`
+	// Core holds the value of the "core" field.
+	Core bool `json:"core,omitempty"`
+	// UpperBack holds the value of the "upper_back" field.
+	UpperBack bool `json:"upper_back,omitempty"`
+	// LowerBack holds the value of the "lower_back" field.
+	LowerBack bool `json:"lower_back,omitempty"`
+	// Legs holds the value of the "legs" field.
+	Legs bool `json:"legs,omitempty"`
+	// LegsFront holds the value of the "legs_front" field.
+	LegsFront bool `json:"legs_front,omitempty"`
+	// LegsBack holds the value of the "legs_back" field.
+	LegsBack bool `json:"legs_back,omitempty"`
+	// Etc holds the value of the "etc" field.
+	Etc bool `json:"etc,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ActQuery when eager-loading is set.
 	Edges        ActEdges `json:"edges"`
@@ -45,9 +77,11 @@ type ActEdges struct {
 	RoutineActs []*RoutineAct `json:"routine_acts,omitempty"`
 	// RoutineActRecs holds the value of the routine_act_recs edge.
 	RoutineActRecs []*RoutineActRec `json:"routine_act_recs,omitempty"`
+	// OneRepMaxes holds the value of the one_rep_maxes edge.
+	OneRepMaxes []*OneRepMax `json:"one_rep_maxes,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // TagsOrErr returns the Tags value or an error if the edge
@@ -77,11 +111,22 @@ func (e ActEdges) RoutineActRecsOrErr() ([]*RoutineActRec, error) {
 	return nil, &NotLoadedError{edge: "routine_act_recs"}
 }
 
+// OneRepMaxesOrErr returns the OneRepMaxes value or an error if the edge
+// was not loaded in eager-loading.
+func (e ActEdges) OneRepMaxesOrErr() ([]*OneRepMax, error) {
+	if e.loadedTypes[3] {
+		return e.OneRepMaxes, nil
+	}
+	return nil, &NotLoadedError{edge: "one_rep_maxes"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Act) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case act.FieldWeight, act.FieldBodyweight, act.FieldCardio, act.FieldUpper, act.FieldLower, act.FieldFull, act.FieldArms, act.FieldShoulders, act.FieldChest, act.FieldCore, act.FieldUpperBack, act.FieldLowerBack, act.FieldLegs, act.FieldLegsFront, act.FieldLegsBack, act.FieldEtc:
+			values[i] = new(sql.NullBool)
 		case act.FieldID, act.FieldAuthor:
 			values[i] = new(sql.NullInt64)
 		case act.FieldName, act.FieldType, act.FieldImage, act.FieldDescription:
@@ -119,8 +164,7 @@ func (a *Act) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field type", values[i])
 			} else if value.Valid {
-				a.Type = new(act.Type)
-				*a.Type = act.Type(value.String)
+				a.Type = act.Type(value.String)
 			}
 		case act.FieldAuthor:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -154,6 +198,102 @@ func (a *Act) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.UpdatedAt = value.Time
 			}
+		case act.FieldWeight:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field weight", values[i])
+			} else if value.Valid {
+				a.Weight = value.Bool
+			}
+		case act.FieldBodyweight:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field bodyweight", values[i])
+			} else if value.Valid {
+				a.Bodyweight = value.Bool
+			}
+		case act.FieldCardio:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field cardio", values[i])
+			} else if value.Valid {
+				a.Cardio = value.Bool
+			}
+		case act.FieldUpper:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field upper", values[i])
+			} else if value.Valid {
+				a.Upper = value.Bool
+			}
+		case act.FieldLower:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field lower", values[i])
+			} else if value.Valid {
+				a.Lower = value.Bool
+			}
+		case act.FieldFull:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field full", values[i])
+			} else if value.Valid {
+				a.Full = value.Bool
+			}
+		case act.FieldArms:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field arms", values[i])
+			} else if value.Valid {
+				a.Arms = value.Bool
+			}
+		case act.FieldShoulders:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field shoulders", values[i])
+			} else if value.Valid {
+				a.Shoulders = value.Bool
+			}
+		case act.FieldChest:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field chest", values[i])
+			} else if value.Valid {
+				a.Chest = value.Bool
+			}
+		case act.FieldCore:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field core", values[i])
+			} else if value.Valid {
+				a.Core = value.Bool
+			}
+		case act.FieldUpperBack:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field upper_back", values[i])
+			} else if value.Valid {
+				a.UpperBack = value.Bool
+			}
+		case act.FieldLowerBack:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field lower_back", values[i])
+			} else if value.Valid {
+				a.LowerBack = value.Bool
+			}
+		case act.FieldLegs:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field legs", values[i])
+			} else if value.Valid {
+				a.Legs = value.Bool
+			}
+		case act.FieldLegsFront:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field legs_front", values[i])
+			} else if value.Valid {
+				a.LegsFront = value.Bool
+			}
+		case act.FieldLegsBack:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field legs_back", values[i])
+			} else if value.Valid {
+				a.LegsBack = value.Bool
+			}
+		case act.FieldEtc:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field etc", values[i])
+			} else if value.Valid {
+				a.Etc = value.Bool
+			}
 		default:
 			a.selectValues.Set(columns[i], values[i])
 		}
@@ -182,6 +322,11 @@ func (a *Act) QueryRoutineActRecs() *RoutineActRecQuery {
 	return NewActClient(a.config).QueryRoutineActRecs(a)
 }
 
+// QueryOneRepMaxes queries the "one_rep_maxes" edge of the Act entity.
+func (a *Act) QueryOneRepMaxes() *OneRepMaxQuery {
+	return NewActClient(a.config).QueryOneRepMaxes(a)
+}
+
 // Update returns a builder for updating this Act.
 // Note that you need to call Act.Unwrap() before calling this method if this Act
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -208,10 +353,8 @@ func (a *Act) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(a.Name)
 	builder.WriteString(", ")
-	if v := a.Type; v != nil {
-		builder.WriteString("type=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
+	builder.WriteString("type=")
+	builder.WriteString(fmt.Sprintf("%v", a.Type))
 	builder.WriteString(", ")
 	builder.WriteString("author=")
 	builder.WriteString(fmt.Sprintf("%v", a.Author))
@@ -231,6 +374,54 @@ func (a *Act) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(a.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("weight=")
+	builder.WriteString(fmt.Sprintf("%v", a.Weight))
+	builder.WriteString(", ")
+	builder.WriteString("bodyweight=")
+	builder.WriteString(fmt.Sprintf("%v", a.Bodyweight))
+	builder.WriteString(", ")
+	builder.WriteString("cardio=")
+	builder.WriteString(fmt.Sprintf("%v", a.Cardio))
+	builder.WriteString(", ")
+	builder.WriteString("upper=")
+	builder.WriteString(fmt.Sprintf("%v", a.Upper))
+	builder.WriteString(", ")
+	builder.WriteString("lower=")
+	builder.WriteString(fmt.Sprintf("%v", a.Lower))
+	builder.WriteString(", ")
+	builder.WriteString("full=")
+	builder.WriteString(fmt.Sprintf("%v", a.Full))
+	builder.WriteString(", ")
+	builder.WriteString("arms=")
+	builder.WriteString(fmt.Sprintf("%v", a.Arms))
+	builder.WriteString(", ")
+	builder.WriteString("shoulders=")
+	builder.WriteString(fmt.Sprintf("%v", a.Shoulders))
+	builder.WriteString(", ")
+	builder.WriteString("chest=")
+	builder.WriteString(fmt.Sprintf("%v", a.Chest))
+	builder.WriteString(", ")
+	builder.WriteString("core=")
+	builder.WriteString(fmt.Sprintf("%v", a.Core))
+	builder.WriteString(", ")
+	builder.WriteString("upper_back=")
+	builder.WriteString(fmt.Sprintf("%v", a.UpperBack))
+	builder.WriteString(", ")
+	builder.WriteString("lower_back=")
+	builder.WriteString(fmt.Sprintf("%v", a.LowerBack))
+	builder.WriteString(", ")
+	builder.WriteString("legs=")
+	builder.WriteString(fmt.Sprintf("%v", a.Legs))
+	builder.WriteString(", ")
+	builder.WriteString("legs_front=")
+	builder.WriteString(fmt.Sprintf("%v", a.LegsFront))
+	builder.WriteString(", ")
+	builder.WriteString("legs_back=")
+	builder.WriteString(fmt.Sprintf("%v", a.LegsBack))
+	builder.WriteString(", ")
+	builder.WriteString("etc=")
+	builder.WriteString(fmt.Sprintf("%v", a.Etc))
 	builder.WriteByte(')')
 	return builder.String()
 }

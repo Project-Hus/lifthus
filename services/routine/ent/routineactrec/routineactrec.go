@@ -55,14 +55,14 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "dailyroutinerec" package.
 	DailyRoutineRecInverseTable = "daily_routine_recs"
 	// DailyRoutineRecColumn is the table column denoting the daily_routine_rec relation/edge.
-	DailyRoutineRecColumn = "daily_routine_rec_routine_act_recs"
+	DailyRoutineRecColumn = "daily_routine_rec_id"
 	// ActTable is the table that holds the act relation/edge.
 	ActTable = "routine_act_recs"
 	// ActInverseTable is the table name for the Act entity.
 	// It exists in this package in order to avoid circular dependency with the "act" package.
 	ActInverseTable = "acts"
 	// ActColumn is the table column denoting the act relation/edge.
-	ActColumn = "act_routine_act_recs"
+	ActColumn = "act_id"
 	// RoutineActTable is the table that holds the routine_act relation/edge.
 	RoutineActTable = "routine_act_recs"
 	// RoutineActInverseTable is the table name for the RoutineAct entity.
@@ -93,8 +93,6 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "routine_act_recs"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"act_routine_act_recs",
-	"daily_routine_rec_routine_act_recs",
 	"routine_act_routine_act_recs",
 }
 

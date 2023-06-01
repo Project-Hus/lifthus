@@ -468,7 +468,7 @@ func HasWeeklyRoutines() predicate.Program {
 	return predicate.Program(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, WeeklyRoutinesTable, WeeklyRoutinesPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, WeeklyRoutinesTable, WeeklyRoutinesColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -491,7 +491,7 @@ func HasDailyRoutines() predicate.Program {
 	return predicate.Program(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, DailyRoutinesTable, DailyRoutinesPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, DailyRoutinesTable, DailyRoutinesColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

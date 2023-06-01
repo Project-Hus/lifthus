@@ -135,26 +135,6 @@ func DailyRoutineRecIDNotIn(vs ...uint64) predicate.RoutineActRec {
 	return predicate.RoutineActRec(sql.FieldNotIn(FieldDailyRoutineRecID, vs...))
 }
 
-// DailyRoutineRecIDGT applies the GT predicate on the "daily_routine_rec_id" field.
-func DailyRoutineRecIDGT(v uint64) predicate.RoutineActRec {
-	return predicate.RoutineActRec(sql.FieldGT(FieldDailyRoutineRecID, v))
-}
-
-// DailyRoutineRecIDGTE applies the GTE predicate on the "daily_routine_rec_id" field.
-func DailyRoutineRecIDGTE(v uint64) predicate.RoutineActRec {
-	return predicate.RoutineActRec(sql.FieldGTE(FieldDailyRoutineRecID, v))
-}
-
-// DailyRoutineRecIDLT applies the LT predicate on the "daily_routine_rec_id" field.
-func DailyRoutineRecIDLT(v uint64) predicate.RoutineActRec {
-	return predicate.RoutineActRec(sql.FieldLT(FieldDailyRoutineRecID, v))
-}
-
-// DailyRoutineRecIDLTE applies the LTE predicate on the "daily_routine_rec_id" field.
-func DailyRoutineRecIDLTE(v uint64) predicate.RoutineActRec {
-	return predicate.RoutineActRec(sql.FieldLTE(FieldDailyRoutineRecID, v))
-}
-
 // RoutineActIDEQ applies the EQ predicate on the "routine_act_id" field.
 func RoutineActIDEQ(v uint64) predicate.RoutineActRec {
 	return predicate.RoutineActRec(sql.FieldEQ(FieldRoutineActID, v))
@@ -223,36 +203,6 @@ func ActIDIn(vs ...uint64) predicate.RoutineActRec {
 // ActIDNotIn applies the NotIn predicate on the "act_id" field.
 func ActIDNotIn(vs ...uint64) predicate.RoutineActRec {
 	return predicate.RoutineActRec(sql.FieldNotIn(FieldActID, vs...))
-}
-
-// ActIDGT applies the GT predicate on the "act_id" field.
-func ActIDGT(v uint64) predicate.RoutineActRec {
-	return predicate.RoutineActRec(sql.FieldGT(FieldActID, v))
-}
-
-// ActIDGTE applies the GTE predicate on the "act_id" field.
-func ActIDGTE(v uint64) predicate.RoutineActRec {
-	return predicate.RoutineActRec(sql.FieldGTE(FieldActID, v))
-}
-
-// ActIDLT applies the LT predicate on the "act_id" field.
-func ActIDLT(v uint64) predicate.RoutineActRec {
-	return predicate.RoutineActRec(sql.FieldLT(FieldActID, v))
-}
-
-// ActIDLTE applies the LTE predicate on the "act_id" field.
-func ActIDLTE(v uint64) predicate.RoutineActRec {
-	return predicate.RoutineActRec(sql.FieldLTE(FieldActID, v))
-}
-
-// ActIDIsNil applies the IsNil predicate on the "act_id" field.
-func ActIDIsNil() predicate.RoutineActRec {
-	return predicate.RoutineActRec(sql.FieldIsNull(FieldActID))
-}
-
-// ActIDNotNil applies the NotNil predicate on the "act_id" field.
-func ActIDNotNil() predicate.RoutineActRec {
-	return predicate.RoutineActRec(sql.FieldNotNull(FieldActID))
 }
 
 // OrderEQ applies the EQ predicate on the "order" field.

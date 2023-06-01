@@ -14,16 +14,18 @@ const (
 	Label = "routine_act"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldDailyRoutineID holds the string denoting the daily_routine_id field in the database.
-	FieldDailyRoutineID = "daily_routine_id"
 	// FieldActID holds the string denoting the act_id field in the database.
 	FieldActID = "act_id"
+	// FieldDailyRoutineID holds the string denoting the daily_routine_id field in the database.
+	FieldDailyRoutineID = "daily_routine_id"
 	// FieldOrder holds the string denoting the order field in the database.
 	FieldOrder = "order"
 	// FieldReps holds the string denoting the reps field in the database.
 	FieldReps = "reps"
 	// FieldLap holds the string denoting the lap field in the database.
 	FieldLap = "lap"
+	// FieldWarmup holds the string denoting the warmup field in the database.
+	FieldWarmup = "warmup"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -42,14 +44,14 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "act" package.
 	ActInverseTable = "acts"
 	// ActColumn is the table column denoting the act relation/edge.
-	ActColumn = "act_routine_acts"
+	ActColumn = "act_id"
 	// DailyRoutineTable is the table that holds the daily_routine relation/edge.
 	DailyRoutineTable = "routine_acts"
 	// DailyRoutineInverseTable is the table name for the DailyRoutine entity.
 	// It exists in this package in order to avoid circular dependency with the "dailyroutine" package.
 	DailyRoutineInverseTable = "daily_routines"
 	// DailyRoutineColumn is the table column denoting the daily_routine relation/edge.
-	DailyRoutineColumn = "daily_routine_routine_acts"
+	DailyRoutineColumn = "daily_routine_id"
 	// RoutineActRecsTable is the table that holds the routine_act_recs relation/edge.
 	RoutineActRecsTable = "routine_act_recs"
 	// RoutineActRecsInverseTable is the table name for the RoutineActRec entity.
@@ -62,31 +64,20 @@ const (
 // Columns holds all SQL columns for routineact fields.
 var Columns = []string{
 	FieldID,
-	FieldDailyRoutineID,
 	FieldActID,
+	FieldDailyRoutineID,
 	FieldOrder,
 	FieldReps,
 	FieldLap,
+	FieldWarmup,
 	FieldCreatedAt,
 	FieldUpdatedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "routine_acts"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"act_routine_acts",
-	"daily_routine_routine_acts",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -100,6 +91,8 @@ var (
 	RepsValidator func(int) error
 	// LapValidator is a validator for the "lap" field. It is called by the builders before save.
 	LapValidator func(int) error
+	// DefaultWarmup holds the default value on creation for the "warmup" field.
+	DefaultWarmup bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -116,14 +109,14 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByDailyRoutineID orders the results by the daily_routine_id field.
-func ByDailyRoutineID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDailyRoutineID, opts...).ToFunc()
-}
-
 // ByActID orders the results by the act_id field.
 func ByActID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldActID, opts...).ToFunc()
+}
+
+// ByDailyRoutineID orders the results by the daily_routine_id field.
+func ByDailyRoutineID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDailyRoutineID, opts...).ToFunc()
 }
 
 // ByOrder orders the results by the order field.
@@ -139,6 +132,11 @@ func ByReps(opts ...sql.OrderTermOption) OrderOption {
 // ByLap orders the results by the lap field.
 func ByLap(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLap, opts...).ToFunc()
+}
+
+// ByWarmup orders the results by the warmup field.
+func ByWarmup(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWarmup, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

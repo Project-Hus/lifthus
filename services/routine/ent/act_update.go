@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"routine/ent/act"
+	"routine/ent/onerepmax"
 	"routine/ent/predicate"
 	"routine/ent/routineact"
 	"routine/ent/routineactrec"
@@ -40,20 +41,6 @@ func (au *ActUpdate) SetName(s string) *ActUpdate {
 // SetType sets the "type" field.
 func (au *ActUpdate) SetType(a act.Type) *ActUpdate {
 	au.mutation.SetType(a)
-	return au
-}
-
-// SetNillableType sets the "type" field if the given value is not nil.
-func (au *ActUpdate) SetNillableType(a *act.Type) *ActUpdate {
-	if a != nil {
-		au.SetType(*a)
-	}
-	return au
-}
-
-// ClearType clears the value of the "type" field.
-func (au *ActUpdate) ClearType() *ActUpdate {
-	au.mutation.ClearType()
 	return au
 }
 
@@ -116,6 +103,230 @@ func (au *ActUpdate) SetUpdatedAt(t time.Time) *ActUpdate {
 	return au
 }
 
+// SetWeight sets the "weight" field.
+func (au *ActUpdate) SetWeight(b bool) *ActUpdate {
+	au.mutation.SetWeight(b)
+	return au
+}
+
+// SetNillableWeight sets the "weight" field if the given value is not nil.
+func (au *ActUpdate) SetNillableWeight(b *bool) *ActUpdate {
+	if b != nil {
+		au.SetWeight(*b)
+	}
+	return au
+}
+
+// SetBodyweight sets the "bodyweight" field.
+func (au *ActUpdate) SetBodyweight(b bool) *ActUpdate {
+	au.mutation.SetBodyweight(b)
+	return au
+}
+
+// SetNillableBodyweight sets the "bodyweight" field if the given value is not nil.
+func (au *ActUpdate) SetNillableBodyweight(b *bool) *ActUpdate {
+	if b != nil {
+		au.SetBodyweight(*b)
+	}
+	return au
+}
+
+// SetCardio sets the "cardio" field.
+func (au *ActUpdate) SetCardio(b bool) *ActUpdate {
+	au.mutation.SetCardio(b)
+	return au
+}
+
+// SetNillableCardio sets the "cardio" field if the given value is not nil.
+func (au *ActUpdate) SetNillableCardio(b *bool) *ActUpdate {
+	if b != nil {
+		au.SetCardio(*b)
+	}
+	return au
+}
+
+// SetUpper sets the "upper" field.
+func (au *ActUpdate) SetUpper(b bool) *ActUpdate {
+	au.mutation.SetUpper(b)
+	return au
+}
+
+// SetNillableUpper sets the "upper" field if the given value is not nil.
+func (au *ActUpdate) SetNillableUpper(b *bool) *ActUpdate {
+	if b != nil {
+		au.SetUpper(*b)
+	}
+	return au
+}
+
+// SetLower sets the "lower" field.
+func (au *ActUpdate) SetLower(b bool) *ActUpdate {
+	au.mutation.SetLower(b)
+	return au
+}
+
+// SetNillableLower sets the "lower" field if the given value is not nil.
+func (au *ActUpdate) SetNillableLower(b *bool) *ActUpdate {
+	if b != nil {
+		au.SetLower(*b)
+	}
+	return au
+}
+
+// SetFull sets the "full" field.
+func (au *ActUpdate) SetFull(b bool) *ActUpdate {
+	au.mutation.SetFull(b)
+	return au
+}
+
+// SetNillableFull sets the "full" field if the given value is not nil.
+func (au *ActUpdate) SetNillableFull(b *bool) *ActUpdate {
+	if b != nil {
+		au.SetFull(*b)
+	}
+	return au
+}
+
+// SetArms sets the "arms" field.
+func (au *ActUpdate) SetArms(b bool) *ActUpdate {
+	au.mutation.SetArms(b)
+	return au
+}
+
+// SetNillableArms sets the "arms" field if the given value is not nil.
+func (au *ActUpdate) SetNillableArms(b *bool) *ActUpdate {
+	if b != nil {
+		au.SetArms(*b)
+	}
+	return au
+}
+
+// SetShoulders sets the "shoulders" field.
+func (au *ActUpdate) SetShoulders(b bool) *ActUpdate {
+	au.mutation.SetShoulders(b)
+	return au
+}
+
+// SetNillableShoulders sets the "shoulders" field if the given value is not nil.
+func (au *ActUpdate) SetNillableShoulders(b *bool) *ActUpdate {
+	if b != nil {
+		au.SetShoulders(*b)
+	}
+	return au
+}
+
+// SetChest sets the "chest" field.
+func (au *ActUpdate) SetChest(b bool) *ActUpdate {
+	au.mutation.SetChest(b)
+	return au
+}
+
+// SetNillableChest sets the "chest" field if the given value is not nil.
+func (au *ActUpdate) SetNillableChest(b *bool) *ActUpdate {
+	if b != nil {
+		au.SetChest(*b)
+	}
+	return au
+}
+
+// SetCore sets the "core" field.
+func (au *ActUpdate) SetCore(b bool) *ActUpdate {
+	au.mutation.SetCore(b)
+	return au
+}
+
+// SetNillableCore sets the "core" field if the given value is not nil.
+func (au *ActUpdate) SetNillableCore(b *bool) *ActUpdate {
+	if b != nil {
+		au.SetCore(*b)
+	}
+	return au
+}
+
+// SetUpperBack sets the "upper_back" field.
+func (au *ActUpdate) SetUpperBack(b bool) *ActUpdate {
+	au.mutation.SetUpperBack(b)
+	return au
+}
+
+// SetNillableUpperBack sets the "upper_back" field if the given value is not nil.
+func (au *ActUpdate) SetNillableUpperBack(b *bool) *ActUpdate {
+	if b != nil {
+		au.SetUpperBack(*b)
+	}
+	return au
+}
+
+// SetLowerBack sets the "lower_back" field.
+func (au *ActUpdate) SetLowerBack(b bool) *ActUpdate {
+	au.mutation.SetLowerBack(b)
+	return au
+}
+
+// SetNillableLowerBack sets the "lower_back" field if the given value is not nil.
+func (au *ActUpdate) SetNillableLowerBack(b *bool) *ActUpdate {
+	if b != nil {
+		au.SetLowerBack(*b)
+	}
+	return au
+}
+
+// SetLegs sets the "legs" field.
+func (au *ActUpdate) SetLegs(b bool) *ActUpdate {
+	au.mutation.SetLegs(b)
+	return au
+}
+
+// SetNillableLegs sets the "legs" field if the given value is not nil.
+func (au *ActUpdate) SetNillableLegs(b *bool) *ActUpdate {
+	if b != nil {
+		au.SetLegs(*b)
+	}
+	return au
+}
+
+// SetLegsFront sets the "legs_front" field.
+func (au *ActUpdate) SetLegsFront(b bool) *ActUpdate {
+	au.mutation.SetLegsFront(b)
+	return au
+}
+
+// SetNillableLegsFront sets the "legs_front" field if the given value is not nil.
+func (au *ActUpdate) SetNillableLegsFront(b *bool) *ActUpdate {
+	if b != nil {
+		au.SetLegsFront(*b)
+	}
+	return au
+}
+
+// SetLegsBack sets the "legs_back" field.
+func (au *ActUpdate) SetLegsBack(b bool) *ActUpdate {
+	au.mutation.SetLegsBack(b)
+	return au
+}
+
+// SetNillableLegsBack sets the "legs_back" field if the given value is not nil.
+func (au *ActUpdate) SetNillableLegsBack(b *bool) *ActUpdate {
+	if b != nil {
+		au.SetLegsBack(*b)
+	}
+	return au
+}
+
+// SetEtc sets the "etc" field.
+func (au *ActUpdate) SetEtc(b bool) *ActUpdate {
+	au.mutation.SetEtc(b)
+	return au
+}
+
+// SetNillableEtc sets the "etc" field if the given value is not nil.
+func (au *ActUpdate) SetNillableEtc(b *bool) *ActUpdate {
+	if b != nil {
+		au.SetEtc(*b)
+	}
+	return au
+}
+
 // AddTagIDs adds the "tags" edge to the Tag entity by IDs.
 func (au *ActUpdate) AddTagIDs(ids ...uint64) *ActUpdate {
 	au.mutation.AddTagIDs(ids...)
@@ -159,6 +370,21 @@ func (au *ActUpdate) AddRoutineActRecs(r ...*RoutineActRec) *ActUpdate {
 		ids[i] = r[i].ID
 	}
 	return au.AddRoutineActRecIDs(ids...)
+}
+
+// AddOneRepMaxisIDs adds the "one_rep_maxes" edge to the OneRepMax entity by IDs.
+func (au *ActUpdate) AddOneRepMaxisIDs(ids ...uint64) *ActUpdate {
+	au.mutation.AddOneRepMaxisIDs(ids...)
+	return au
+}
+
+// AddOneRepMaxes adds the "one_rep_maxes" edges to the OneRepMax entity.
+func (au *ActUpdate) AddOneRepMaxes(o ...*OneRepMax) *ActUpdate {
+	ids := make([]uint64, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return au.AddOneRepMaxisIDs(ids...)
 }
 
 // Mutation returns the ActMutation object of the builder.
@@ -227,6 +453,27 @@ func (au *ActUpdate) RemoveRoutineActRecs(r ...*RoutineActRec) *ActUpdate {
 		ids[i] = r[i].ID
 	}
 	return au.RemoveRoutineActRecIDs(ids...)
+}
+
+// ClearOneRepMaxes clears all "one_rep_maxes" edges to the OneRepMax entity.
+func (au *ActUpdate) ClearOneRepMaxes() *ActUpdate {
+	au.mutation.ClearOneRepMaxes()
+	return au
+}
+
+// RemoveOneRepMaxisIDs removes the "one_rep_maxes" edge to OneRepMax entities by IDs.
+func (au *ActUpdate) RemoveOneRepMaxisIDs(ids ...uint64) *ActUpdate {
+	au.mutation.RemoveOneRepMaxisIDs(ids...)
+	return au
+}
+
+// RemoveOneRepMaxes removes "one_rep_maxes" edges to OneRepMax entities.
+func (au *ActUpdate) RemoveOneRepMaxes(o ...*OneRepMax) *ActUpdate {
+	ids := make([]uint64, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return au.RemoveOneRepMaxisIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -298,9 +545,6 @@ func (au *ActUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := au.mutation.GetType(); ok {
 		_spec.SetField(act.FieldType, field.TypeEnum, value)
 	}
-	if au.mutation.TypeCleared() {
-		_spec.ClearField(act.FieldType, field.TypeEnum)
-	}
 	if value, ok := au.mutation.Author(); ok {
 		_spec.SetField(act.FieldAuthor, field.TypeUint64, value)
 	}
@@ -321,6 +565,54 @@ func (au *ActUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := au.mutation.UpdatedAt(); ok {
 		_spec.SetField(act.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := au.mutation.Weight(); ok {
+		_spec.SetField(act.FieldWeight, field.TypeBool, value)
+	}
+	if value, ok := au.mutation.Bodyweight(); ok {
+		_spec.SetField(act.FieldBodyweight, field.TypeBool, value)
+	}
+	if value, ok := au.mutation.Cardio(); ok {
+		_spec.SetField(act.FieldCardio, field.TypeBool, value)
+	}
+	if value, ok := au.mutation.Upper(); ok {
+		_spec.SetField(act.FieldUpper, field.TypeBool, value)
+	}
+	if value, ok := au.mutation.Lower(); ok {
+		_spec.SetField(act.FieldLower, field.TypeBool, value)
+	}
+	if value, ok := au.mutation.Full(); ok {
+		_spec.SetField(act.FieldFull, field.TypeBool, value)
+	}
+	if value, ok := au.mutation.Arms(); ok {
+		_spec.SetField(act.FieldArms, field.TypeBool, value)
+	}
+	if value, ok := au.mutation.Shoulders(); ok {
+		_spec.SetField(act.FieldShoulders, field.TypeBool, value)
+	}
+	if value, ok := au.mutation.Chest(); ok {
+		_spec.SetField(act.FieldChest, field.TypeBool, value)
+	}
+	if value, ok := au.mutation.Core(); ok {
+		_spec.SetField(act.FieldCore, field.TypeBool, value)
+	}
+	if value, ok := au.mutation.UpperBack(); ok {
+		_spec.SetField(act.FieldUpperBack, field.TypeBool, value)
+	}
+	if value, ok := au.mutation.LowerBack(); ok {
+		_spec.SetField(act.FieldLowerBack, field.TypeBool, value)
+	}
+	if value, ok := au.mutation.Legs(); ok {
+		_spec.SetField(act.FieldLegs, field.TypeBool, value)
+	}
+	if value, ok := au.mutation.LegsFront(); ok {
+		_spec.SetField(act.FieldLegsFront, field.TypeBool, value)
+	}
+	if value, ok := au.mutation.LegsBack(); ok {
+		_spec.SetField(act.FieldLegsBack, field.TypeBool, value)
+	}
+	if value, ok := au.mutation.Etc(); ok {
+		_spec.SetField(act.FieldEtc, field.TypeBool, value)
 	}
 	if au.mutation.TagsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -457,6 +749,51 @@ func (au *ActUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if au.mutation.OneRepMaxesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.OneRepMaxesTable,
+			Columns: []string{act.OneRepMaxesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(onerepmax.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.RemovedOneRepMaxesIDs(); len(nodes) > 0 && !au.mutation.OneRepMaxesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.OneRepMaxesTable,
+			Columns: []string{act.OneRepMaxesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(onerepmax.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.OneRepMaxesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.OneRepMaxesTable,
+			Columns: []string{act.OneRepMaxesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(onerepmax.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{act.Label}
@@ -486,20 +823,6 @@ func (auo *ActUpdateOne) SetName(s string) *ActUpdateOne {
 // SetType sets the "type" field.
 func (auo *ActUpdateOne) SetType(a act.Type) *ActUpdateOne {
 	auo.mutation.SetType(a)
-	return auo
-}
-
-// SetNillableType sets the "type" field if the given value is not nil.
-func (auo *ActUpdateOne) SetNillableType(a *act.Type) *ActUpdateOne {
-	if a != nil {
-		auo.SetType(*a)
-	}
-	return auo
-}
-
-// ClearType clears the value of the "type" field.
-func (auo *ActUpdateOne) ClearType() *ActUpdateOne {
-	auo.mutation.ClearType()
 	return auo
 }
 
@@ -562,6 +885,230 @@ func (auo *ActUpdateOne) SetUpdatedAt(t time.Time) *ActUpdateOne {
 	return auo
 }
 
+// SetWeight sets the "weight" field.
+func (auo *ActUpdateOne) SetWeight(b bool) *ActUpdateOne {
+	auo.mutation.SetWeight(b)
+	return auo
+}
+
+// SetNillableWeight sets the "weight" field if the given value is not nil.
+func (auo *ActUpdateOne) SetNillableWeight(b *bool) *ActUpdateOne {
+	if b != nil {
+		auo.SetWeight(*b)
+	}
+	return auo
+}
+
+// SetBodyweight sets the "bodyweight" field.
+func (auo *ActUpdateOne) SetBodyweight(b bool) *ActUpdateOne {
+	auo.mutation.SetBodyweight(b)
+	return auo
+}
+
+// SetNillableBodyweight sets the "bodyweight" field if the given value is not nil.
+func (auo *ActUpdateOne) SetNillableBodyweight(b *bool) *ActUpdateOne {
+	if b != nil {
+		auo.SetBodyweight(*b)
+	}
+	return auo
+}
+
+// SetCardio sets the "cardio" field.
+func (auo *ActUpdateOne) SetCardio(b bool) *ActUpdateOne {
+	auo.mutation.SetCardio(b)
+	return auo
+}
+
+// SetNillableCardio sets the "cardio" field if the given value is not nil.
+func (auo *ActUpdateOne) SetNillableCardio(b *bool) *ActUpdateOne {
+	if b != nil {
+		auo.SetCardio(*b)
+	}
+	return auo
+}
+
+// SetUpper sets the "upper" field.
+func (auo *ActUpdateOne) SetUpper(b bool) *ActUpdateOne {
+	auo.mutation.SetUpper(b)
+	return auo
+}
+
+// SetNillableUpper sets the "upper" field if the given value is not nil.
+func (auo *ActUpdateOne) SetNillableUpper(b *bool) *ActUpdateOne {
+	if b != nil {
+		auo.SetUpper(*b)
+	}
+	return auo
+}
+
+// SetLower sets the "lower" field.
+func (auo *ActUpdateOne) SetLower(b bool) *ActUpdateOne {
+	auo.mutation.SetLower(b)
+	return auo
+}
+
+// SetNillableLower sets the "lower" field if the given value is not nil.
+func (auo *ActUpdateOne) SetNillableLower(b *bool) *ActUpdateOne {
+	if b != nil {
+		auo.SetLower(*b)
+	}
+	return auo
+}
+
+// SetFull sets the "full" field.
+func (auo *ActUpdateOne) SetFull(b bool) *ActUpdateOne {
+	auo.mutation.SetFull(b)
+	return auo
+}
+
+// SetNillableFull sets the "full" field if the given value is not nil.
+func (auo *ActUpdateOne) SetNillableFull(b *bool) *ActUpdateOne {
+	if b != nil {
+		auo.SetFull(*b)
+	}
+	return auo
+}
+
+// SetArms sets the "arms" field.
+func (auo *ActUpdateOne) SetArms(b bool) *ActUpdateOne {
+	auo.mutation.SetArms(b)
+	return auo
+}
+
+// SetNillableArms sets the "arms" field if the given value is not nil.
+func (auo *ActUpdateOne) SetNillableArms(b *bool) *ActUpdateOne {
+	if b != nil {
+		auo.SetArms(*b)
+	}
+	return auo
+}
+
+// SetShoulders sets the "shoulders" field.
+func (auo *ActUpdateOne) SetShoulders(b bool) *ActUpdateOne {
+	auo.mutation.SetShoulders(b)
+	return auo
+}
+
+// SetNillableShoulders sets the "shoulders" field if the given value is not nil.
+func (auo *ActUpdateOne) SetNillableShoulders(b *bool) *ActUpdateOne {
+	if b != nil {
+		auo.SetShoulders(*b)
+	}
+	return auo
+}
+
+// SetChest sets the "chest" field.
+func (auo *ActUpdateOne) SetChest(b bool) *ActUpdateOne {
+	auo.mutation.SetChest(b)
+	return auo
+}
+
+// SetNillableChest sets the "chest" field if the given value is not nil.
+func (auo *ActUpdateOne) SetNillableChest(b *bool) *ActUpdateOne {
+	if b != nil {
+		auo.SetChest(*b)
+	}
+	return auo
+}
+
+// SetCore sets the "core" field.
+func (auo *ActUpdateOne) SetCore(b bool) *ActUpdateOne {
+	auo.mutation.SetCore(b)
+	return auo
+}
+
+// SetNillableCore sets the "core" field if the given value is not nil.
+func (auo *ActUpdateOne) SetNillableCore(b *bool) *ActUpdateOne {
+	if b != nil {
+		auo.SetCore(*b)
+	}
+	return auo
+}
+
+// SetUpperBack sets the "upper_back" field.
+func (auo *ActUpdateOne) SetUpperBack(b bool) *ActUpdateOne {
+	auo.mutation.SetUpperBack(b)
+	return auo
+}
+
+// SetNillableUpperBack sets the "upper_back" field if the given value is not nil.
+func (auo *ActUpdateOne) SetNillableUpperBack(b *bool) *ActUpdateOne {
+	if b != nil {
+		auo.SetUpperBack(*b)
+	}
+	return auo
+}
+
+// SetLowerBack sets the "lower_back" field.
+func (auo *ActUpdateOne) SetLowerBack(b bool) *ActUpdateOne {
+	auo.mutation.SetLowerBack(b)
+	return auo
+}
+
+// SetNillableLowerBack sets the "lower_back" field if the given value is not nil.
+func (auo *ActUpdateOne) SetNillableLowerBack(b *bool) *ActUpdateOne {
+	if b != nil {
+		auo.SetLowerBack(*b)
+	}
+	return auo
+}
+
+// SetLegs sets the "legs" field.
+func (auo *ActUpdateOne) SetLegs(b bool) *ActUpdateOne {
+	auo.mutation.SetLegs(b)
+	return auo
+}
+
+// SetNillableLegs sets the "legs" field if the given value is not nil.
+func (auo *ActUpdateOne) SetNillableLegs(b *bool) *ActUpdateOne {
+	if b != nil {
+		auo.SetLegs(*b)
+	}
+	return auo
+}
+
+// SetLegsFront sets the "legs_front" field.
+func (auo *ActUpdateOne) SetLegsFront(b bool) *ActUpdateOne {
+	auo.mutation.SetLegsFront(b)
+	return auo
+}
+
+// SetNillableLegsFront sets the "legs_front" field if the given value is not nil.
+func (auo *ActUpdateOne) SetNillableLegsFront(b *bool) *ActUpdateOne {
+	if b != nil {
+		auo.SetLegsFront(*b)
+	}
+	return auo
+}
+
+// SetLegsBack sets the "legs_back" field.
+func (auo *ActUpdateOne) SetLegsBack(b bool) *ActUpdateOne {
+	auo.mutation.SetLegsBack(b)
+	return auo
+}
+
+// SetNillableLegsBack sets the "legs_back" field if the given value is not nil.
+func (auo *ActUpdateOne) SetNillableLegsBack(b *bool) *ActUpdateOne {
+	if b != nil {
+		auo.SetLegsBack(*b)
+	}
+	return auo
+}
+
+// SetEtc sets the "etc" field.
+func (auo *ActUpdateOne) SetEtc(b bool) *ActUpdateOne {
+	auo.mutation.SetEtc(b)
+	return auo
+}
+
+// SetNillableEtc sets the "etc" field if the given value is not nil.
+func (auo *ActUpdateOne) SetNillableEtc(b *bool) *ActUpdateOne {
+	if b != nil {
+		auo.SetEtc(*b)
+	}
+	return auo
+}
+
 // AddTagIDs adds the "tags" edge to the Tag entity by IDs.
 func (auo *ActUpdateOne) AddTagIDs(ids ...uint64) *ActUpdateOne {
 	auo.mutation.AddTagIDs(ids...)
@@ -605,6 +1152,21 @@ func (auo *ActUpdateOne) AddRoutineActRecs(r ...*RoutineActRec) *ActUpdateOne {
 		ids[i] = r[i].ID
 	}
 	return auo.AddRoutineActRecIDs(ids...)
+}
+
+// AddOneRepMaxisIDs adds the "one_rep_maxes" edge to the OneRepMax entity by IDs.
+func (auo *ActUpdateOne) AddOneRepMaxisIDs(ids ...uint64) *ActUpdateOne {
+	auo.mutation.AddOneRepMaxisIDs(ids...)
+	return auo
+}
+
+// AddOneRepMaxes adds the "one_rep_maxes" edges to the OneRepMax entity.
+func (auo *ActUpdateOne) AddOneRepMaxes(o ...*OneRepMax) *ActUpdateOne {
+	ids := make([]uint64, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return auo.AddOneRepMaxisIDs(ids...)
 }
 
 // Mutation returns the ActMutation object of the builder.
@@ -673,6 +1235,27 @@ func (auo *ActUpdateOne) RemoveRoutineActRecs(r ...*RoutineActRec) *ActUpdateOne
 		ids[i] = r[i].ID
 	}
 	return auo.RemoveRoutineActRecIDs(ids...)
+}
+
+// ClearOneRepMaxes clears all "one_rep_maxes" edges to the OneRepMax entity.
+func (auo *ActUpdateOne) ClearOneRepMaxes() *ActUpdateOne {
+	auo.mutation.ClearOneRepMaxes()
+	return auo
+}
+
+// RemoveOneRepMaxisIDs removes the "one_rep_maxes" edge to OneRepMax entities by IDs.
+func (auo *ActUpdateOne) RemoveOneRepMaxisIDs(ids ...uint64) *ActUpdateOne {
+	auo.mutation.RemoveOneRepMaxisIDs(ids...)
+	return auo
+}
+
+// RemoveOneRepMaxes removes "one_rep_maxes" edges to OneRepMax entities.
+func (auo *ActUpdateOne) RemoveOneRepMaxes(o ...*OneRepMax) *ActUpdateOne {
+	ids := make([]uint64, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return auo.RemoveOneRepMaxisIDs(ids...)
 }
 
 // Where appends a list predicates to the ActUpdate builder.
@@ -774,9 +1357,6 @@ func (auo *ActUpdateOne) sqlSave(ctx context.Context) (_node *Act, err error) {
 	if value, ok := auo.mutation.GetType(); ok {
 		_spec.SetField(act.FieldType, field.TypeEnum, value)
 	}
-	if auo.mutation.TypeCleared() {
-		_spec.ClearField(act.FieldType, field.TypeEnum)
-	}
 	if value, ok := auo.mutation.Author(); ok {
 		_spec.SetField(act.FieldAuthor, field.TypeUint64, value)
 	}
@@ -797,6 +1377,54 @@ func (auo *ActUpdateOne) sqlSave(ctx context.Context) (_node *Act, err error) {
 	}
 	if value, ok := auo.mutation.UpdatedAt(); ok {
 		_spec.SetField(act.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := auo.mutation.Weight(); ok {
+		_spec.SetField(act.FieldWeight, field.TypeBool, value)
+	}
+	if value, ok := auo.mutation.Bodyweight(); ok {
+		_spec.SetField(act.FieldBodyweight, field.TypeBool, value)
+	}
+	if value, ok := auo.mutation.Cardio(); ok {
+		_spec.SetField(act.FieldCardio, field.TypeBool, value)
+	}
+	if value, ok := auo.mutation.Upper(); ok {
+		_spec.SetField(act.FieldUpper, field.TypeBool, value)
+	}
+	if value, ok := auo.mutation.Lower(); ok {
+		_spec.SetField(act.FieldLower, field.TypeBool, value)
+	}
+	if value, ok := auo.mutation.Full(); ok {
+		_spec.SetField(act.FieldFull, field.TypeBool, value)
+	}
+	if value, ok := auo.mutation.Arms(); ok {
+		_spec.SetField(act.FieldArms, field.TypeBool, value)
+	}
+	if value, ok := auo.mutation.Shoulders(); ok {
+		_spec.SetField(act.FieldShoulders, field.TypeBool, value)
+	}
+	if value, ok := auo.mutation.Chest(); ok {
+		_spec.SetField(act.FieldChest, field.TypeBool, value)
+	}
+	if value, ok := auo.mutation.Core(); ok {
+		_spec.SetField(act.FieldCore, field.TypeBool, value)
+	}
+	if value, ok := auo.mutation.UpperBack(); ok {
+		_spec.SetField(act.FieldUpperBack, field.TypeBool, value)
+	}
+	if value, ok := auo.mutation.LowerBack(); ok {
+		_spec.SetField(act.FieldLowerBack, field.TypeBool, value)
+	}
+	if value, ok := auo.mutation.Legs(); ok {
+		_spec.SetField(act.FieldLegs, field.TypeBool, value)
+	}
+	if value, ok := auo.mutation.LegsFront(); ok {
+		_spec.SetField(act.FieldLegsFront, field.TypeBool, value)
+	}
+	if value, ok := auo.mutation.LegsBack(); ok {
+		_spec.SetField(act.FieldLegsBack, field.TypeBool, value)
+	}
+	if value, ok := auo.mutation.Etc(); ok {
+		_spec.SetField(act.FieldEtc, field.TypeBool, value)
 	}
 	if auo.mutation.TagsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -926,6 +1554,51 @@ func (auo *ActUpdateOne) sqlSave(ctx context.Context) (_node *Act, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(routineactrec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if auo.mutation.OneRepMaxesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.OneRepMaxesTable,
+			Columns: []string{act.OneRepMaxesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(onerepmax.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.RemovedOneRepMaxesIDs(); len(nodes) > 0 && !auo.mutation.OneRepMaxesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.OneRepMaxesTable,
+			Columns: []string{act.OneRepMaxesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(onerepmax.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.OneRepMaxesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.OneRepMaxesTable,
+			Columns: []string{act.OneRepMaxesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(onerepmax.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

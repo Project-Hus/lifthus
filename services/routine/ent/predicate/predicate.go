@@ -9,11 +9,17 @@ import (
 // Act is the predicate function for act builders.
 type Act func(*sql.Selector)
 
+// BodyInfo is the predicate function for bodyinfo builders.
+type BodyInfo func(*sql.Selector)
+
 // DailyRoutine is the predicate function for dailyroutine builders.
 type DailyRoutine func(*sql.Selector)
 
 // DailyRoutineRec is the predicate function for dailyroutinerec builders.
 type DailyRoutineRec func(*sql.Selector)
+
+// OneRepMax is the predicate function for onerepmax builders.
+type OneRepMax func(*sql.Selector)
 
 // Program is the predicate function for program builders.
 type Program func(*sql.Selector)

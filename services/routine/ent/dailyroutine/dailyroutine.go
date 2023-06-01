@@ -16,8 +16,8 @@ const (
 	FieldID = "id"
 	// FieldProgramID holds the string denoting the program_id field in the database.
 	FieldProgramID = "program_id"
-	// FieldWeekID holds the string denoting the week_id field in the database.
-	FieldWeekID = "week_id"
+	// FieldWeeklyRoutineID holds the string denoting the weekly_routine_id field in the database.
+	FieldWeeklyRoutineID = "weekly_routine_id"
 	// FieldDay holds the string denoting the day field in the database.
 	FieldDay = "day"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -34,50 +34,45 @@ const (
 	EdgeDailyRoutineRecs = "daily_routine_recs"
 	// Table holds the table name of the dailyroutine in the database.
 	Table = "daily_routines"
-	// ProgramTable is the table that holds the program relation/edge. The primary key declared below.
-	ProgramTable = "program_daily_routines"
+	// ProgramTable is the table that holds the program relation/edge.
+	ProgramTable = "daily_routines"
 	// ProgramInverseTable is the table name for the Program entity.
 	// It exists in this package in order to avoid circular dependency with the "program" package.
 	ProgramInverseTable = "programs"
-	// WeeklyRoutineTable is the table that holds the weekly_routine relation/edge. The primary key declared below.
-	WeeklyRoutineTable = "weekly_routine_daily_routines"
+	// ProgramColumn is the table column denoting the program relation/edge.
+	ProgramColumn = "program_id"
+	// WeeklyRoutineTable is the table that holds the weekly_routine relation/edge.
+	WeeklyRoutineTable = "daily_routines"
 	// WeeklyRoutineInverseTable is the table name for the WeeklyRoutine entity.
 	// It exists in this package in order to avoid circular dependency with the "weeklyroutine" package.
 	WeeklyRoutineInverseTable = "weekly_routines"
+	// WeeklyRoutineColumn is the table column denoting the weekly_routine relation/edge.
+	WeeklyRoutineColumn = "weekly_routine_id"
 	// RoutineActsTable is the table that holds the routine_acts relation/edge.
 	RoutineActsTable = "routine_acts"
 	// RoutineActsInverseTable is the table name for the RoutineAct entity.
 	// It exists in this package in order to avoid circular dependency with the "routineact" package.
 	RoutineActsInverseTable = "routine_acts"
 	// RoutineActsColumn is the table column denoting the routine_acts relation/edge.
-	RoutineActsColumn = "daily_routine_routine_acts"
+	RoutineActsColumn = "daily_routine_id"
 	// DailyRoutineRecsTable is the table that holds the daily_routine_recs relation/edge.
 	DailyRoutineRecsTable = "daily_routine_recs"
 	// DailyRoutineRecsInverseTable is the table name for the DailyRoutineRec entity.
 	// It exists in this package in order to avoid circular dependency with the "dailyroutinerec" package.
 	DailyRoutineRecsInverseTable = "daily_routine_recs"
 	// DailyRoutineRecsColumn is the table column denoting the daily_routine_recs relation/edge.
-	DailyRoutineRecsColumn = "daily_routine_daily_routine_recs"
+	DailyRoutineRecsColumn = "daily_routine_id"
 )
 
 // Columns holds all SQL columns for dailyroutine fields.
 var Columns = []string{
 	FieldID,
 	FieldProgramID,
-	FieldWeekID,
+	FieldWeeklyRoutineID,
 	FieldDay,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
-
-var (
-	// ProgramPrimaryKey and ProgramColumn2 are the table columns denoting the
-	// primary key for the program relation (M2M).
-	ProgramPrimaryKey = []string{"program_id", "daily_routine_id"}
-	// WeeklyRoutinePrimaryKey and WeeklyRoutineColumn2 are the table columns denoting the
-	// primary key for the weekly_routine relation (M2M).
-	WeeklyRoutinePrimaryKey = []string{"weekly_routine_id", "daily_routine_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -113,9 +108,9 @@ func ByProgramID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProgramID, opts...).ToFunc()
 }
 
-// ByWeekID orders the results by the week_id field.
-func ByWeekID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldWeekID, opts...).ToFunc()
+// ByWeeklyRoutineID orders the results by the weekly_routine_id field.
+func ByWeeklyRoutineID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWeeklyRoutineID, opts...).ToFunc()
 }
 
 // ByDay orders the results by the day field.
@@ -133,31 +128,17 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// ByProgramCount orders the results by program count.
-func ByProgramCount(opts ...sql.OrderTermOption) OrderOption {
+// ByProgramField orders the results by program field.
+func ByProgramField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newProgramStep(), opts...)
+		sqlgraph.OrderByNeighborTerms(s, newProgramStep(), sql.OrderByField(field, opts...))
 	}
 }
 
-// ByProgram orders the results by program terms.
-func ByProgram(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByWeeklyRoutineField orders the results by weekly_routine field.
+func ByWeeklyRoutineField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newProgramStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByWeeklyRoutineCount orders the results by weekly_routine count.
-func ByWeeklyRoutineCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newWeeklyRoutineStep(), opts...)
-	}
-}
-
-// ByWeeklyRoutine orders the results by weekly_routine terms.
-func ByWeeklyRoutine(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newWeeklyRoutineStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newWeeklyRoutineStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -192,14 +173,14 @@ func newProgramStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ProgramInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, true, ProgramTable, ProgramPrimaryKey...),
+		sqlgraph.Edge(sqlgraph.M2O, true, ProgramTable, ProgramColumn),
 	)
 }
 func newWeeklyRoutineStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(WeeklyRoutineInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, true, WeeklyRoutineTable, WeeklyRoutinePrimaryKey...),
+		sqlgraph.Edge(sqlgraph.M2O, true, WeeklyRoutineTable, WeeklyRoutineColumn),
 	)
 }
 func newRoutineActsStep() *sqlgraph.Step {

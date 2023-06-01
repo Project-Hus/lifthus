@@ -28,7 +28,6 @@ type RoutineActQuery struct {
 	withAct            *ActQuery
 	withDailyRoutine   *DailyRoutineQuery
 	withRoutineActRecs *RoutineActRecQuery
-	withFKs            bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -371,12 +370,12 @@ func (raq *RoutineActQuery) WithRoutineActRecs(opts ...func(*RoutineActRecQuery)
 // Example:
 //
 //	var v []struct {
-//		DailyRoutineID uint64 `json:"daily_routine_id,omitempty"`
+//		ActID uint64 `json:"act_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.RoutineAct.Query().
-//		GroupBy(routineact.FieldDailyRoutineID).
+//		GroupBy(routineact.FieldActID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (raq *RoutineActQuery) GroupBy(field string, fields ...string) *RoutineActGroupBy {
@@ -394,11 +393,11 @@ func (raq *RoutineActQuery) GroupBy(field string, fields ...string) *RoutineActG
 // Example:
 //
 //	var v []struct {
-//		DailyRoutineID uint64 `json:"daily_routine_id,omitempty"`
+//		ActID uint64 `json:"act_id,omitempty"`
 //	}
 //
 //	client.RoutineAct.Query().
-//		Select(routineact.FieldDailyRoutineID).
+//		Select(routineact.FieldActID).
 //		Scan(ctx, &v)
 func (raq *RoutineActQuery) Select(fields ...string) *RoutineActSelect {
 	raq.ctx.Fields = append(raq.ctx.Fields, fields...)
@@ -442,7 +441,6 @@ func (raq *RoutineActQuery) prepareQuery(ctx context.Context) error {
 func (raq *RoutineActQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*RoutineAct, error) {
 	var (
 		nodes       = []*RoutineAct{}
-		withFKs     = raq.withFKs
 		_spec       = raq.querySpec()
 		loadedTypes = [3]bool{
 			raq.withAct != nil,
@@ -450,12 +448,6 @@ func (raq *RoutineActQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 			raq.withRoutineActRecs != nil,
 		}
 	)
-	if raq.withAct != nil || raq.withDailyRoutine != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, routineact.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*RoutineAct).scanValues(nil, columns)
 	}
@@ -500,10 +492,7 @@ func (raq *RoutineActQuery) loadAct(ctx context.Context, query *ActQuery, nodes 
 	ids := make([]uint64, 0, len(nodes))
 	nodeids := make(map[uint64][]*RoutineAct)
 	for i := range nodes {
-		if nodes[i].act_routine_acts == nil {
-			continue
-		}
-		fk := *nodes[i].act_routine_acts
+		fk := nodes[i].ActID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -520,7 +509,7 @@ func (raq *RoutineActQuery) loadAct(ctx context.Context, query *ActQuery, nodes 
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "act_routine_acts" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "act_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -532,10 +521,7 @@ func (raq *RoutineActQuery) loadDailyRoutine(ctx context.Context, query *DailyRo
 	ids := make([]uint64, 0, len(nodes))
 	nodeids := make(map[uint64][]*RoutineAct)
 	for i := range nodes {
-		if nodes[i].daily_routine_routine_acts == nil {
-			continue
-		}
-		fk := *nodes[i].daily_routine_routine_acts
+		fk := nodes[i].DailyRoutineID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -552,7 +538,7 @@ func (raq *RoutineActQuery) loadDailyRoutine(ctx context.Context, query *DailyRo
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "daily_routine_routine_acts" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "daily_routine_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -616,6 +602,12 @@ func (raq *RoutineActQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != routineact.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if raq.withAct != nil {
+			_spec.Node.AddColumnOnce(routineact.FieldActID)
+		}
+		if raq.withDailyRoutine != nil {
+			_spec.Node.AddColumnOnce(routineact.FieldDailyRoutineID)
 		}
 	}
 	if ps := raq.predicates; len(ps) > 0 {

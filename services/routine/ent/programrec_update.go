@@ -6,7 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"routine/ent/bodyinfo"
 	"routine/ent/dailyroutinerec"
+	"routine/ent/onerepmax"
 	"routine/ent/predicate"
 	"routine/ent/program"
 	"routine/ent/programrec"
@@ -46,14 +48,7 @@ func (pru *ProgramRecUpdate) AddAuthor(u int64) *ProgramRecUpdate {
 
 // SetProgramID sets the "program_id" field.
 func (pru *ProgramRecUpdate) SetProgramID(u uint64) *ProgramRecUpdate {
-	pru.mutation.ResetProgramID()
 	pru.mutation.SetProgramID(u)
-	return pru
-}
-
-// AddProgramID adds u to the "program_id" field.
-func (pru *ProgramRecUpdate) AddProgramID(u int64) *ProgramRecUpdate {
-	pru.mutation.AddProgramID(u)
 	return pru
 }
 
@@ -101,20 +96,6 @@ func (pru *ProgramRecUpdate) SetUpdatedAt(t time.Time) *ProgramRecUpdate {
 	return pru
 }
 
-// SetProgramID sets the "program" edge to the Program entity by ID.
-func (pru *ProgramRecUpdate) SetProgramID(id uint64) *ProgramRecUpdate {
-	pru.mutation.SetProgramID(id)
-	return pru
-}
-
-// SetNillableProgramID sets the "program" edge to the Program entity by ID if the given value is not nil.
-func (pru *ProgramRecUpdate) SetNillableProgramID(id *uint64) *ProgramRecUpdate {
-	if id != nil {
-		pru = pru.SetProgramID(*id)
-	}
-	return pru
-}
-
 // SetProgram sets the "program" edge to the Program entity.
 func (pru *ProgramRecUpdate) SetProgram(p *Program) *ProgramRecUpdate {
 	return pru.SetProgramID(p.ID)
@@ -148,6 +129,36 @@ func (pru *ProgramRecUpdate) AddDailyRoutineRecs(d ...*DailyRoutineRec) *Program
 		ids[i] = d[i].ID
 	}
 	return pru.AddDailyRoutineRecIDs(ids...)
+}
+
+// AddBodyInfoIDs adds the "body_info" edge to the BodyInfo entity by IDs.
+func (pru *ProgramRecUpdate) AddBodyInfoIDs(ids ...uint64) *ProgramRecUpdate {
+	pru.mutation.AddBodyInfoIDs(ids...)
+	return pru
+}
+
+// AddBodyInfo adds the "body_info" edges to the BodyInfo entity.
+func (pru *ProgramRecUpdate) AddBodyInfo(b ...*BodyInfo) *ProgramRecUpdate {
+	ids := make([]uint64, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return pru.AddBodyInfoIDs(ids...)
+}
+
+// AddOneRepMaxIDs adds the "one_rep_max" edge to the OneRepMax entity by IDs.
+func (pru *ProgramRecUpdate) AddOneRepMaxIDs(ids ...uint64) *ProgramRecUpdate {
+	pru.mutation.AddOneRepMaxIDs(ids...)
+	return pru
+}
+
+// AddOneRepMax adds the "one_rep_max" edges to the OneRepMax entity.
+func (pru *ProgramRecUpdate) AddOneRepMax(o ...*OneRepMax) *ProgramRecUpdate {
+	ids := make([]uint64, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return pru.AddOneRepMaxIDs(ids...)
 }
 
 // Mutation returns the ProgramRecMutation object of the builder.
@@ -203,6 +214,48 @@ func (pru *ProgramRecUpdate) RemoveDailyRoutineRecs(d ...*DailyRoutineRec) *Prog
 	return pru.RemoveDailyRoutineRecIDs(ids...)
 }
 
+// ClearBodyInfo clears all "body_info" edges to the BodyInfo entity.
+func (pru *ProgramRecUpdate) ClearBodyInfo() *ProgramRecUpdate {
+	pru.mutation.ClearBodyInfo()
+	return pru
+}
+
+// RemoveBodyInfoIDs removes the "body_info" edge to BodyInfo entities by IDs.
+func (pru *ProgramRecUpdate) RemoveBodyInfoIDs(ids ...uint64) *ProgramRecUpdate {
+	pru.mutation.RemoveBodyInfoIDs(ids...)
+	return pru
+}
+
+// RemoveBodyInfo removes "body_info" edges to BodyInfo entities.
+func (pru *ProgramRecUpdate) RemoveBodyInfo(b ...*BodyInfo) *ProgramRecUpdate {
+	ids := make([]uint64, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return pru.RemoveBodyInfoIDs(ids...)
+}
+
+// ClearOneRepMax clears all "one_rep_max" edges to the OneRepMax entity.
+func (pru *ProgramRecUpdate) ClearOneRepMax() *ProgramRecUpdate {
+	pru.mutation.ClearOneRepMax()
+	return pru
+}
+
+// RemoveOneRepMaxIDs removes the "one_rep_max" edge to OneRepMax entities by IDs.
+func (pru *ProgramRecUpdate) RemoveOneRepMaxIDs(ids ...uint64) *ProgramRecUpdate {
+	pru.mutation.RemoveOneRepMaxIDs(ids...)
+	return pru
+}
+
+// RemoveOneRepMax removes "one_rep_max" edges to OneRepMax entities.
+func (pru *ProgramRecUpdate) RemoveOneRepMax(o ...*OneRepMax) *ProgramRecUpdate {
+	ids := make([]uint64, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return pru.RemoveOneRepMaxIDs(ids...)
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (pru *ProgramRecUpdate) Save(ctx context.Context) (int, error) {
 	pru.defaults()
@@ -246,6 +299,9 @@ func (pru *ProgramRecUpdate) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "ProgramRec.status": %w`, err)}
 		}
 	}
+	if _, ok := pru.mutation.ProgramID(); pru.mutation.ProgramCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "ProgramRec.program"`)
+	}
 	return nil
 }
 
@@ -266,12 +322,6 @@ func (pru *ProgramRecUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := pru.mutation.AddedAuthor(); ok {
 		_spec.AddField(programrec.FieldAuthor, field.TypeUint64, value)
-	}
-	if value, ok := pru.mutation.ProgramID(); ok {
-		_spec.SetField(programrec.FieldProgramID, field.TypeUint64, value)
-	}
-	if value, ok := pru.mutation.AddedProgramID(); ok {
-		_spec.AddField(programrec.FieldProgramID, field.TypeUint64, value)
 	}
 	if value, ok := pru.mutation.StartDate(); ok {
 		_spec.SetField(programrec.FieldStartDate, field.TypeTime, value)
@@ -410,6 +460,96 @@ func (pru *ProgramRecUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if pru.mutation.BodyInfoCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.BodyInfoTable,
+			Columns: []string{programrec.BodyInfoColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bodyinfo.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pru.mutation.RemovedBodyInfoIDs(); len(nodes) > 0 && !pru.mutation.BodyInfoCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.BodyInfoTable,
+			Columns: []string{programrec.BodyInfoColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bodyinfo.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pru.mutation.BodyInfoIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.BodyInfoTable,
+			Columns: []string{programrec.BodyInfoColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bodyinfo.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pru.mutation.OneRepMaxCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.OneRepMaxTable,
+			Columns: []string{programrec.OneRepMaxColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(onerepmax.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pru.mutation.RemovedOneRepMaxIDs(); len(nodes) > 0 && !pru.mutation.OneRepMaxCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.OneRepMaxTable,
+			Columns: []string{programrec.OneRepMaxColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(onerepmax.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pru.mutation.OneRepMaxIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.OneRepMaxTable,
+			Columns: []string{programrec.OneRepMaxColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(onerepmax.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{programrec.Label}
@@ -445,14 +585,7 @@ func (pruo *ProgramRecUpdateOne) AddAuthor(u int64) *ProgramRecUpdateOne {
 
 // SetProgramID sets the "program_id" field.
 func (pruo *ProgramRecUpdateOne) SetProgramID(u uint64) *ProgramRecUpdateOne {
-	pruo.mutation.ResetProgramID()
 	pruo.mutation.SetProgramID(u)
-	return pruo
-}
-
-// AddProgramID adds u to the "program_id" field.
-func (pruo *ProgramRecUpdateOne) AddProgramID(u int64) *ProgramRecUpdateOne {
-	pruo.mutation.AddProgramID(u)
 	return pruo
 }
 
@@ -500,20 +633,6 @@ func (pruo *ProgramRecUpdateOne) SetUpdatedAt(t time.Time) *ProgramRecUpdateOne 
 	return pruo
 }
 
-// SetProgramID sets the "program" edge to the Program entity by ID.
-func (pruo *ProgramRecUpdateOne) SetProgramID(id uint64) *ProgramRecUpdateOne {
-	pruo.mutation.SetProgramID(id)
-	return pruo
-}
-
-// SetNillableProgramID sets the "program" edge to the Program entity by ID if the given value is not nil.
-func (pruo *ProgramRecUpdateOne) SetNillableProgramID(id *uint64) *ProgramRecUpdateOne {
-	if id != nil {
-		pruo = pruo.SetProgramID(*id)
-	}
-	return pruo
-}
-
 // SetProgram sets the "program" edge to the Program entity.
 func (pruo *ProgramRecUpdateOne) SetProgram(p *Program) *ProgramRecUpdateOne {
 	return pruo.SetProgramID(p.ID)
@@ -547,6 +666,36 @@ func (pruo *ProgramRecUpdateOne) AddDailyRoutineRecs(d ...*DailyRoutineRec) *Pro
 		ids[i] = d[i].ID
 	}
 	return pruo.AddDailyRoutineRecIDs(ids...)
+}
+
+// AddBodyInfoIDs adds the "body_info" edge to the BodyInfo entity by IDs.
+func (pruo *ProgramRecUpdateOne) AddBodyInfoIDs(ids ...uint64) *ProgramRecUpdateOne {
+	pruo.mutation.AddBodyInfoIDs(ids...)
+	return pruo
+}
+
+// AddBodyInfo adds the "body_info" edges to the BodyInfo entity.
+func (pruo *ProgramRecUpdateOne) AddBodyInfo(b ...*BodyInfo) *ProgramRecUpdateOne {
+	ids := make([]uint64, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return pruo.AddBodyInfoIDs(ids...)
+}
+
+// AddOneRepMaxIDs adds the "one_rep_max" edge to the OneRepMax entity by IDs.
+func (pruo *ProgramRecUpdateOne) AddOneRepMaxIDs(ids ...uint64) *ProgramRecUpdateOne {
+	pruo.mutation.AddOneRepMaxIDs(ids...)
+	return pruo
+}
+
+// AddOneRepMax adds the "one_rep_max" edges to the OneRepMax entity.
+func (pruo *ProgramRecUpdateOne) AddOneRepMax(o ...*OneRepMax) *ProgramRecUpdateOne {
+	ids := make([]uint64, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return pruo.AddOneRepMaxIDs(ids...)
 }
 
 // Mutation returns the ProgramRecMutation object of the builder.
@@ -600,6 +749,48 @@ func (pruo *ProgramRecUpdateOne) RemoveDailyRoutineRecs(d ...*DailyRoutineRec) *
 		ids[i] = d[i].ID
 	}
 	return pruo.RemoveDailyRoutineRecIDs(ids...)
+}
+
+// ClearBodyInfo clears all "body_info" edges to the BodyInfo entity.
+func (pruo *ProgramRecUpdateOne) ClearBodyInfo() *ProgramRecUpdateOne {
+	pruo.mutation.ClearBodyInfo()
+	return pruo
+}
+
+// RemoveBodyInfoIDs removes the "body_info" edge to BodyInfo entities by IDs.
+func (pruo *ProgramRecUpdateOne) RemoveBodyInfoIDs(ids ...uint64) *ProgramRecUpdateOne {
+	pruo.mutation.RemoveBodyInfoIDs(ids...)
+	return pruo
+}
+
+// RemoveBodyInfo removes "body_info" edges to BodyInfo entities.
+func (pruo *ProgramRecUpdateOne) RemoveBodyInfo(b ...*BodyInfo) *ProgramRecUpdateOne {
+	ids := make([]uint64, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return pruo.RemoveBodyInfoIDs(ids...)
+}
+
+// ClearOneRepMax clears all "one_rep_max" edges to the OneRepMax entity.
+func (pruo *ProgramRecUpdateOne) ClearOneRepMax() *ProgramRecUpdateOne {
+	pruo.mutation.ClearOneRepMax()
+	return pruo
+}
+
+// RemoveOneRepMaxIDs removes the "one_rep_max" edge to OneRepMax entities by IDs.
+func (pruo *ProgramRecUpdateOne) RemoveOneRepMaxIDs(ids ...uint64) *ProgramRecUpdateOne {
+	pruo.mutation.RemoveOneRepMaxIDs(ids...)
+	return pruo
+}
+
+// RemoveOneRepMax removes "one_rep_max" edges to OneRepMax entities.
+func (pruo *ProgramRecUpdateOne) RemoveOneRepMax(o ...*OneRepMax) *ProgramRecUpdateOne {
+	ids := make([]uint64, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return pruo.RemoveOneRepMaxIDs(ids...)
 }
 
 // Where appends a list predicates to the ProgramRecUpdate builder.
@@ -658,6 +849,9 @@ func (pruo *ProgramRecUpdateOne) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "ProgramRec.status": %w`, err)}
 		}
 	}
+	if _, ok := pruo.mutation.ProgramID(); pruo.mutation.ProgramCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "ProgramRec.program"`)
+	}
 	return nil
 }
 
@@ -695,12 +889,6 @@ func (pruo *ProgramRecUpdateOne) sqlSave(ctx context.Context) (_node *ProgramRec
 	}
 	if value, ok := pruo.mutation.AddedAuthor(); ok {
 		_spec.AddField(programrec.FieldAuthor, field.TypeUint64, value)
-	}
-	if value, ok := pruo.mutation.ProgramID(); ok {
-		_spec.SetField(programrec.FieldProgramID, field.TypeUint64, value)
-	}
-	if value, ok := pruo.mutation.AddedProgramID(); ok {
-		_spec.AddField(programrec.FieldProgramID, field.TypeUint64, value)
 	}
 	if value, ok := pruo.mutation.StartDate(); ok {
 		_spec.SetField(programrec.FieldStartDate, field.TypeTime, value)
@@ -832,6 +1020,96 @@ func (pruo *ProgramRecUpdateOne) sqlSave(ctx context.Context) (_node *ProgramRec
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dailyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pruo.mutation.BodyInfoCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.BodyInfoTable,
+			Columns: []string{programrec.BodyInfoColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bodyinfo.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pruo.mutation.RemovedBodyInfoIDs(); len(nodes) > 0 && !pruo.mutation.BodyInfoCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.BodyInfoTable,
+			Columns: []string{programrec.BodyInfoColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bodyinfo.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pruo.mutation.BodyInfoIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.BodyInfoTable,
+			Columns: []string{programrec.BodyInfoColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bodyinfo.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pruo.mutation.OneRepMaxCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.OneRepMaxTable,
+			Columns: []string{programrec.OneRepMaxColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(onerepmax.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pruo.mutation.RemovedOneRepMaxIDs(); len(nodes) > 0 && !pruo.mutation.OneRepMaxCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.OneRepMaxTable,
+			Columns: []string{programrec.OneRepMaxColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(onerepmax.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pruo.mutation.OneRepMaxIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.OneRepMaxTable,
+			Columns: []string{programrec.OneRepMaxColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(onerepmax.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

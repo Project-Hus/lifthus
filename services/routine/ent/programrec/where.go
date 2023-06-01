@@ -150,26 +150,6 @@ func ProgramIDNotIn(vs ...uint64) predicate.ProgramRec {
 	return predicate.ProgramRec(sql.FieldNotIn(FieldProgramID, vs...))
 }
 
-// ProgramIDGT applies the GT predicate on the "program_id" field.
-func ProgramIDGT(v uint64) predicate.ProgramRec {
-	return predicate.ProgramRec(sql.FieldGT(FieldProgramID, v))
-}
-
-// ProgramIDGTE applies the GTE predicate on the "program_id" field.
-func ProgramIDGTE(v uint64) predicate.ProgramRec {
-	return predicate.ProgramRec(sql.FieldGTE(FieldProgramID, v))
-}
-
-// ProgramIDLT applies the LT predicate on the "program_id" field.
-func ProgramIDLT(v uint64) predicate.ProgramRec {
-	return predicate.ProgramRec(sql.FieldLT(FieldProgramID, v))
-}
-
-// ProgramIDLTE applies the LTE predicate on the "program_id" field.
-func ProgramIDLTE(v uint64) predicate.ProgramRec {
-	return predicate.ProgramRec(sql.FieldLTE(FieldProgramID, v))
-}
-
 // StartDateEQ applies the EQ predicate on the "start_date" field.
 func StartDateEQ(v time.Time) predicate.ProgramRec {
 	return predicate.ProgramRec(sql.FieldEQ(FieldStartDate, v))
@@ -486,6 +466,52 @@ func HasDailyRoutineRecs() predicate.ProgramRec {
 func HasDailyRoutineRecsWith(preds ...predicate.DailyRoutineRec) predicate.ProgramRec {
 	return predicate.ProgramRec(func(s *sql.Selector) {
 		step := newDailyRoutineRecsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasBodyInfo applies the HasEdge predicate on the "body_info" edge.
+func HasBodyInfo() predicate.ProgramRec {
+	return predicate.ProgramRec(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, BodyInfoTable, BodyInfoColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBodyInfoWith applies the HasEdge predicate on the "body_info" edge with a given conditions (other predicates).
+func HasBodyInfoWith(preds ...predicate.BodyInfo) predicate.ProgramRec {
+	return predicate.ProgramRec(func(s *sql.Selector) {
+		step := newBodyInfoStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasOneRepMax applies the HasEdge predicate on the "one_rep_max" edge.
+func HasOneRepMax() predicate.ProgramRec {
+	return predicate.ProgramRec(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, OneRepMaxTable, OneRepMaxColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOneRepMaxWith applies the HasEdge predicate on the "one_rep_max" edge with a given conditions (other predicates).
+func HasOneRepMaxWith(preds ...predicate.OneRepMax) predicate.ProgramRec {
+	return predicate.ProgramRec(func(s *sql.Selector) {
+		step := newOneRepMaxStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

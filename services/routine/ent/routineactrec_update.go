@@ -33,14 +33,7 @@ func (raru *RoutineActRecUpdate) Where(ps ...predicate.RoutineActRec) *RoutineAc
 
 // SetDailyRoutineRecID sets the "daily_routine_rec_id" field.
 func (raru *RoutineActRecUpdate) SetDailyRoutineRecID(u uint64) *RoutineActRecUpdate {
-	raru.mutation.ResetDailyRoutineRecID()
 	raru.mutation.SetDailyRoutineRecID(u)
-	return raru
-}
-
-// AddDailyRoutineRecID adds u to the "daily_routine_rec_id" field.
-func (raru *RoutineActRecUpdate) AddDailyRoutineRecID(u int64) *RoutineActRecUpdate {
-	raru.mutation.AddDailyRoutineRecID(u)
 	return raru
 }
 
@@ -73,28 +66,7 @@ func (raru *RoutineActRecUpdate) ClearRoutineActID() *RoutineActRecUpdate {
 
 // SetActID sets the "act_id" field.
 func (raru *RoutineActRecUpdate) SetActID(u uint64) *RoutineActRecUpdate {
-	raru.mutation.ResetActID()
 	raru.mutation.SetActID(u)
-	return raru
-}
-
-// SetNillableActID sets the "act_id" field if the given value is not nil.
-func (raru *RoutineActRecUpdate) SetNillableActID(u *uint64) *RoutineActRecUpdate {
-	if u != nil {
-		raru.SetActID(*u)
-	}
-	return raru
-}
-
-// AddActID adds u to the "act_id" field.
-func (raru *RoutineActRecUpdate) AddActID(u int64) *RoutineActRecUpdate {
-	raru.mutation.AddActID(u)
-	return raru
-}
-
-// ClearActID clears the value of the "act_id" field.
-func (raru *RoutineActRecUpdate) ClearActID() *RoutineActRecUpdate {
-	raru.mutation.ClearActID()
 	return raru
 }
 
@@ -259,21 +231,9 @@ func (raru *RoutineActRecUpdate) SetUpdatedAt(t time.Time) *RoutineActRecUpdate 
 	return raru
 }
 
-// SetDailyRoutineRecID sets the "daily_routine_rec" edge to the DailyRoutineRec entity by ID.
-func (raru *RoutineActRecUpdate) SetDailyRoutineRecID(id uint64) *RoutineActRecUpdate {
-	raru.mutation.SetDailyRoutineRecID(id)
-	return raru
-}
-
 // SetDailyRoutineRec sets the "daily_routine_rec" edge to the DailyRoutineRec entity.
 func (raru *RoutineActRecUpdate) SetDailyRoutineRec(d *DailyRoutineRec) *RoutineActRecUpdate {
 	return raru.SetDailyRoutineRecID(d.ID)
-}
-
-// SetActID sets the "act" edge to the Act entity by ID.
-func (raru *RoutineActRecUpdate) SetActID(id uint64) *RoutineActRecUpdate {
-	raru.mutation.SetActID(id)
-	return raru
 }
 
 // SetAct sets the "act" edge to the Act entity.
@@ -412,12 +372,6 @@ func (raru *RoutineActRecUpdate) sqlSave(ctx context.Context) (n int, err error)
 			}
 		}
 	}
-	if value, ok := raru.mutation.DailyRoutineRecID(); ok {
-		_spec.SetField(routineactrec.FieldDailyRoutineRecID, field.TypeUint64, value)
-	}
-	if value, ok := raru.mutation.AddedDailyRoutineRecID(); ok {
-		_spec.AddField(routineactrec.FieldDailyRoutineRecID, field.TypeUint64, value)
-	}
 	if value, ok := raru.mutation.RoutineActID(); ok {
 		_spec.SetField(routineactrec.FieldRoutineActID, field.TypeUint64, value)
 	}
@@ -426,15 +380,6 @@ func (raru *RoutineActRecUpdate) sqlSave(ctx context.Context) (n int, err error)
 	}
 	if raru.mutation.RoutineActIDCleared() {
 		_spec.ClearField(routineactrec.FieldRoutineActID, field.TypeUint64)
-	}
-	if value, ok := raru.mutation.ActID(); ok {
-		_spec.SetField(routineactrec.FieldActID, field.TypeUint64, value)
-	}
-	if value, ok := raru.mutation.AddedActID(); ok {
-		_spec.AddField(routineactrec.FieldActID, field.TypeUint64, value)
-	}
-	if raru.mutation.ActIDCleared() {
-		_spec.ClearField(routineactrec.FieldActID, field.TypeUint64)
 	}
 	if value, ok := raru.mutation.Order(); ok {
 		_spec.SetField(routineactrec.FieldOrder, field.TypeInt, value)
@@ -599,14 +544,7 @@ type RoutineActRecUpdateOne struct {
 
 // SetDailyRoutineRecID sets the "daily_routine_rec_id" field.
 func (raruo *RoutineActRecUpdateOne) SetDailyRoutineRecID(u uint64) *RoutineActRecUpdateOne {
-	raruo.mutation.ResetDailyRoutineRecID()
 	raruo.mutation.SetDailyRoutineRecID(u)
-	return raruo
-}
-
-// AddDailyRoutineRecID adds u to the "daily_routine_rec_id" field.
-func (raruo *RoutineActRecUpdateOne) AddDailyRoutineRecID(u int64) *RoutineActRecUpdateOne {
-	raruo.mutation.AddDailyRoutineRecID(u)
 	return raruo
 }
 
@@ -639,28 +577,7 @@ func (raruo *RoutineActRecUpdateOne) ClearRoutineActID() *RoutineActRecUpdateOne
 
 // SetActID sets the "act_id" field.
 func (raruo *RoutineActRecUpdateOne) SetActID(u uint64) *RoutineActRecUpdateOne {
-	raruo.mutation.ResetActID()
 	raruo.mutation.SetActID(u)
-	return raruo
-}
-
-// SetNillableActID sets the "act_id" field if the given value is not nil.
-func (raruo *RoutineActRecUpdateOne) SetNillableActID(u *uint64) *RoutineActRecUpdateOne {
-	if u != nil {
-		raruo.SetActID(*u)
-	}
-	return raruo
-}
-
-// AddActID adds u to the "act_id" field.
-func (raruo *RoutineActRecUpdateOne) AddActID(u int64) *RoutineActRecUpdateOne {
-	raruo.mutation.AddActID(u)
-	return raruo
-}
-
-// ClearActID clears the value of the "act_id" field.
-func (raruo *RoutineActRecUpdateOne) ClearActID() *RoutineActRecUpdateOne {
-	raruo.mutation.ClearActID()
 	return raruo
 }
 
@@ -825,21 +742,9 @@ func (raruo *RoutineActRecUpdateOne) SetUpdatedAt(t time.Time) *RoutineActRecUpd
 	return raruo
 }
 
-// SetDailyRoutineRecID sets the "daily_routine_rec" edge to the DailyRoutineRec entity by ID.
-func (raruo *RoutineActRecUpdateOne) SetDailyRoutineRecID(id uint64) *RoutineActRecUpdateOne {
-	raruo.mutation.SetDailyRoutineRecID(id)
-	return raruo
-}
-
 // SetDailyRoutineRec sets the "daily_routine_rec" edge to the DailyRoutineRec entity.
 func (raruo *RoutineActRecUpdateOne) SetDailyRoutineRec(d *DailyRoutineRec) *RoutineActRecUpdateOne {
 	return raruo.SetDailyRoutineRecID(d.ID)
-}
-
-// SetActID sets the "act" edge to the Act entity by ID.
-func (raruo *RoutineActRecUpdateOne) SetActID(id uint64) *RoutineActRecUpdateOne {
-	raruo.mutation.SetActID(id)
-	return raruo
 }
 
 // SetAct sets the "act" edge to the Act entity.
@@ -1008,12 +913,6 @@ func (raruo *RoutineActRecUpdateOne) sqlSave(ctx context.Context) (_node *Routin
 			}
 		}
 	}
-	if value, ok := raruo.mutation.DailyRoutineRecID(); ok {
-		_spec.SetField(routineactrec.FieldDailyRoutineRecID, field.TypeUint64, value)
-	}
-	if value, ok := raruo.mutation.AddedDailyRoutineRecID(); ok {
-		_spec.AddField(routineactrec.FieldDailyRoutineRecID, field.TypeUint64, value)
-	}
 	if value, ok := raruo.mutation.RoutineActID(); ok {
 		_spec.SetField(routineactrec.FieldRoutineActID, field.TypeUint64, value)
 	}
@@ -1022,15 +921,6 @@ func (raruo *RoutineActRecUpdateOne) sqlSave(ctx context.Context) (_node *Routin
 	}
 	if raruo.mutation.RoutineActIDCleared() {
 		_spec.ClearField(routineactrec.FieldRoutineActID, field.TypeUint64)
-	}
-	if value, ok := raruo.mutation.ActID(); ok {
-		_spec.SetField(routineactrec.FieldActID, field.TypeUint64, value)
-	}
-	if value, ok := raruo.mutation.AddedActID(); ok {
-		_spec.AddField(routineactrec.FieldActID, field.TypeUint64, value)
-	}
-	if raruo.mutation.ActIDCleared() {
-		_spec.ClearField(routineactrec.FieldActID, field.TypeUint64)
 	}
 	if value, ok := raruo.mutation.Order(); ok {
 		_spec.SetField(routineactrec.FieldOrder, field.TypeInt, value)

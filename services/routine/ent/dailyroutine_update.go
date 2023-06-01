@@ -34,7 +34,6 @@ func (dru *DailyRoutineUpdate) Where(ps ...predicate.DailyRoutine) *DailyRoutine
 
 // SetProgramID sets the "program_id" field.
 func (dru *DailyRoutineUpdate) SetProgramID(u uint64) *DailyRoutineUpdate {
-	dru.mutation.ResetProgramID()
 	dru.mutation.SetProgramID(u)
 	return dru
 }
@@ -47,42 +46,29 @@ func (dru *DailyRoutineUpdate) SetNillableProgramID(u *uint64) *DailyRoutineUpda
 	return dru
 }
 
-// AddProgramID adds u to the "program_id" field.
-func (dru *DailyRoutineUpdate) AddProgramID(u int64) *DailyRoutineUpdate {
-	dru.mutation.AddProgramID(u)
-	return dru
-}
-
 // ClearProgramID clears the value of the "program_id" field.
 func (dru *DailyRoutineUpdate) ClearProgramID() *DailyRoutineUpdate {
 	dru.mutation.ClearProgramID()
 	return dru
 }
 
-// SetWeekID sets the "week_id" field.
-func (dru *DailyRoutineUpdate) SetWeekID(u uint64) *DailyRoutineUpdate {
-	dru.mutation.ResetWeekID()
-	dru.mutation.SetWeekID(u)
+// SetWeeklyRoutineID sets the "weekly_routine_id" field.
+func (dru *DailyRoutineUpdate) SetWeeklyRoutineID(u uint64) *DailyRoutineUpdate {
+	dru.mutation.SetWeeklyRoutineID(u)
 	return dru
 }
 
-// SetNillableWeekID sets the "week_id" field if the given value is not nil.
-func (dru *DailyRoutineUpdate) SetNillableWeekID(u *uint64) *DailyRoutineUpdate {
+// SetNillableWeeklyRoutineID sets the "weekly_routine_id" field if the given value is not nil.
+func (dru *DailyRoutineUpdate) SetNillableWeeklyRoutineID(u *uint64) *DailyRoutineUpdate {
 	if u != nil {
-		dru.SetWeekID(*u)
+		dru.SetWeeklyRoutineID(*u)
 	}
 	return dru
 }
 
-// AddWeekID adds u to the "week_id" field.
-func (dru *DailyRoutineUpdate) AddWeekID(u int64) *DailyRoutineUpdate {
-	dru.mutation.AddWeekID(u)
-	return dru
-}
-
-// ClearWeekID clears the value of the "week_id" field.
-func (dru *DailyRoutineUpdate) ClearWeekID() *DailyRoutineUpdate {
-	dru.mutation.ClearWeekID()
+// ClearWeeklyRoutineID clears the value of the "weekly_routine_id" field.
+func (dru *DailyRoutineUpdate) ClearWeeklyRoutineID() *DailyRoutineUpdate {
+	dru.mutation.ClearWeeklyRoutineID()
 	return dru
 }
 
@@ -105,34 +91,14 @@ func (dru *DailyRoutineUpdate) SetUpdatedAt(t time.Time) *DailyRoutineUpdate {
 	return dru
 }
 
-// AddProgramIDs adds the "program" edge to the Program entity by IDs.
-func (dru *DailyRoutineUpdate) AddProgramIDs(ids ...uint64) *DailyRoutineUpdate {
-	dru.mutation.AddProgramIDs(ids...)
-	return dru
+// SetProgram sets the "program" edge to the Program entity.
+func (dru *DailyRoutineUpdate) SetProgram(p *Program) *DailyRoutineUpdate {
+	return dru.SetProgramID(p.ID)
 }
 
-// AddProgram adds the "program" edges to the Program entity.
-func (dru *DailyRoutineUpdate) AddProgram(p ...*Program) *DailyRoutineUpdate {
-	ids := make([]uint64, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return dru.AddProgramIDs(ids...)
-}
-
-// AddWeeklyRoutineIDs adds the "weekly_routine" edge to the WeeklyRoutine entity by IDs.
-func (dru *DailyRoutineUpdate) AddWeeklyRoutineIDs(ids ...uint64) *DailyRoutineUpdate {
-	dru.mutation.AddWeeklyRoutineIDs(ids...)
-	return dru
-}
-
-// AddWeeklyRoutine adds the "weekly_routine" edges to the WeeklyRoutine entity.
-func (dru *DailyRoutineUpdate) AddWeeklyRoutine(w ...*WeeklyRoutine) *DailyRoutineUpdate {
-	ids := make([]uint64, len(w))
-	for i := range w {
-		ids[i] = w[i].ID
-	}
-	return dru.AddWeeklyRoutineIDs(ids...)
+// SetWeeklyRoutine sets the "weekly_routine" edge to the WeeklyRoutine entity.
+func (dru *DailyRoutineUpdate) SetWeeklyRoutine(w *WeeklyRoutine) *DailyRoutineUpdate {
+	return dru.SetWeeklyRoutineID(w.ID)
 }
 
 // AddRoutineActIDs adds the "routine_acts" edge to the RoutineAct entity by IDs.
@@ -170,46 +136,16 @@ func (dru *DailyRoutineUpdate) Mutation() *DailyRoutineMutation {
 	return dru.mutation
 }
 
-// ClearProgram clears all "program" edges to the Program entity.
+// ClearProgram clears the "program" edge to the Program entity.
 func (dru *DailyRoutineUpdate) ClearProgram() *DailyRoutineUpdate {
 	dru.mutation.ClearProgram()
 	return dru
 }
 
-// RemoveProgramIDs removes the "program" edge to Program entities by IDs.
-func (dru *DailyRoutineUpdate) RemoveProgramIDs(ids ...uint64) *DailyRoutineUpdate {
-	dru.mutation.RemoveProgramIDs(ids...)
-	return dru
-}
-
-// RemoveProgram removes "program" edges to Program entities.
-func (dru *DailyRoutineUpdate) RemoveProgram(p ...*Program) *DailyRoutineUpdate {
-	ids := make([]uint64, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return dru.RemoveProgramIDs(ids...)
-}
-
-// ClearWeeklyRoutine clears all "weekly_routine" edges to the WeeklyRoutine entity.
+// ClearWeeklyRoutine clears the "weekly_routine" edge to the WeeklyRoutine entity.
 func (dru *DailyRoutineUpdate) ClearWeeklyRoutine() *DailyRoutineUpdate {
 	dru.mutation.ClearWeeklyRoutine()
 	return dru
-}
-
-// RemoveWeeklyRoutineIDs removes the "weekly_routine" edge to WeeklyRoutine entities by IDs.
-func (dru *DailyRoutineUpdate) RemoveWeeklyRoutineIDs(ids ...uint64) *DailyRoutineUpdate {
-	dru.mutation.RemoveWeeklyRoutineIDs(ids...)
-	return dru
-}
-
-// RemoveWeeklyRoutine removes "weekly_routine" edges to WeeklyRoutine entities.
-func (dru *DailyRoutineUpdate) RemoveWeeklyRoutine(w ...*WeeklyRoutine) *DailyRoutineUpdate {
-	ids := make([]uint64, len(w))
-	for i := range w {
-		ids[i] = w[i].ID
-	}
-	return dru.RemoveWeeklyRoutineIDs(ids...)
 }
 
 // ClearRoutineActs clears all "routine_acts" edges to the RoutineAct entity.
@@ -312,24 +248,6 @@ func (dru *DailyRoutineUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := dru.mutation.ProgramID(); ok {
-		_spec.SetField(dailyroutine.FieldProgramID, field.TypeUint64, value)
-	}
-	if value, ok := dru.mutation.AddedProgramID(); ok {
-		_spec.AddField(dailyroutine.FieldProgramID, field.TypeUint64, value)
-	}
-	if dru.mutation.ProgramIDCleared() {
-		_spec.ClearField(dailyroutine.FieldProgramID, field.TypeUint64)
-	}
-	if value, ok := dru.mutation.WeekID(); ok {
-		_spec.SetField(dailyroutine.FieldWeekID, field.TypeUint64, value)
-	}
-	if value, ok := dru.mutation.AddedWeekID(); ok {
-		_spec.AddField(dailyroutine.FieldWeekID, field.TypeUint64, value)
-	}
-	if dru.mutation.WeekIDCleared() {
-		_spec.ClearField(dailyroutine.FieldWeekID, field.TypeUint64)
-	}
 	if value, ok := dru.mutation.Day(); ok {
 		_spec.SetField(dailyroutine.FieldDay, field.TypeInt, value)
 	}
@@ -341,39 +259,23 @@ func (dru *DailyRoutineUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if dru.mutation.ProgramCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   dailyroutine.ProgramTable,
-			Columns: dailyroutine.ProgramPrimaryKey,
+			Columns: []string{dailyroutine.ProgramColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64),
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := dru.mutation.RemovedProgramIDs(); len(nodes) > 0 && !dru.mutation.ProgramCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   dailyroutine.ProgramTable,
-			Columns: dailyroutine.ProgramPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := dru.mutation.ProgramIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   dailyroutine.ProgramTable,
-			Columns: dailyroutine.ProgramPrimaryKey,
+			Columns: []string{dailyroutine.ProgramColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64),
@@ -386,39 +288,23 @@ func (dru *DailyRoutineUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if dru.mutation.WeeklyRoutineCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   dailyroutine.WeeklyRoutineTable,
-			Columns: dailyroutine.WeeklyRoutinePrimaryKey,
+			Columns: []string{dailyroutine.WeeklyRoutineColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(weeklyroutine.FieldID, field.TypeUint64),
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := dru.mutation.RemovedWeeklyRoutineIDs(); len(nodes) > 0 && !dru.mutation.WeeklyRoutineCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   dailyroutine.WeeklyRoutineTable,
-			Columns: dailyroutine.WeeklyRoutinePrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(weeklyroutine.FieldID, field.TypeUint64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := dru.mutation.WeeklyRoutineIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   dailyroutine.WeeklyRoutineTable,
-			Columns: dailyroutine.WeeklyRoutinePrimaryKey,
+			Columns: []string{dailyroutine.WeeklyRoutineColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(weeklyroutine.FieldID, field.TypeUint64),
@@ -541,7 +427,6 @@ type DailyRoutineUpdateOne struct {
 
 // SetProgramID sets the "program_id" field.
 func (druo *DailyRoutineUpdateOne) SetProgramID(u uint64) *DailyRoutineUpdateOne {
-	druo.mutation.ResetProgramID()
 	druo.mutation.SetProgramID(u)
 	return druo
 }
@@ -554,42 +439,29 @@ func (druo *DailyRoutineUpdateOne) SetNillableProgramID(u *uint64) *DailyRoutine
 	return druo
 }
 
-// AddProgramID adds u to the "program_id" field.
-func (druo *DailyRoutineUpdateOne) AddProgramID(u int64) *DailyRoutineUpdateOne {
-	druo.mutation.AddProgramID(u)
-	return druo
-}
-
 // ClearProgramID clears the value of the "program_id" field.
 func (druo *DailyRoutineUpdateOne) ClearProgramID() *DailyRoutineUpdateOne {
 	druo.mutation.ClearProgramID()
 	return druo
 }
 
-// SetWeekID sets the "week_id" field.
-func (druo *DailyRoutineUpdateOne) SetWeekID(u uint64) *DailyRoutineUpdateOne {
-	druo.mutation.ResetWeekID()
-	druo.mutation.SetWeekID(u)
+// SetWeeklyRoutineID sets the "weekly_routine_id" field.
+func (druo *DailyRoutineUpdateOne) SetWeeklyRoutineID(u uint64) *DailyRoutineUpdateOne {
+	druo.mutation.SetWeeklyRoutineID(u)
 	return druo
 }
 
-// SetNillableWeekID sets the "week_id" field if the given value is not nil.
-func (druo *DailyRoutineUpdateOne) SetNillableWeekID(u *uint64) *DailyRoutineUpdateOne {
+// SetNillableWeeklyRoutineID sets the "weekly_routine_id" field if the given value is not nil.
+func (druo *DailyRoutineUpdateOne) SetNillableWeeklyRoutineID(u *uint64) *DailyRoutineUpdateOne {
 	if u != nil {
-		druo.SetWeekID(*u)
+		druo.SetWeeklyRoutineID(*u)
 	}
 	return druo
 }
 
-// AddWeekID adds u to the "week_id" field.
-func (druo *DailyRoutineUpdateOne) AddWeekID(u int64) *DailyRoutineUpdateOne {
-	druo.mutation.AddWeekID(u)
-	return druo
-}
-
-// ClearWeekID clears the value of the "week_id" field.
-func (druo *DailyRoutineUpdateOne) ClearWeekID() *DailyRoutineUpdateOne {
-	druo.mutation.ClearWeekID()
+// ClearWeeklyRoutineID clears the value of the "weekly_routine_id" field.
+func (druo *DailyRoutineUpdateOne) ClearWeeklyRoutineID() *DailyRoutineUpdateOne {
+	druo.mutation.ClearWeeklyRoutineID()
 	return druo
 }
 
@@ -612,34 +484,14 @@ func (druo *DailyRoutineUpdateOne) SetUpdatedAt(t time.Time) *DailyRoutineUpdate
 	return druo
 }
 
-// AddProgramIDs adds the "program" edge to the Program entity by IDs.
-func (druo *DailyRoutineUpdateOne) AddProgramIDs(ids ...uint64) *DailyRoutineUpdateOne {
-	druo.mutation.AddProgramIDs(ids...)
-	return druo
+// SetProgram sets the "program" edge to the Program entity.
+func (druo *DailyRoutineUpdateOne) SetProgram(p *Program) *DailyRoutineUpdateOne {
+	return druo.SetProgramID(p.ID)
 }
 
-// AddProgram adds the "program" edges to the Program entity.
-func (druo *DailyRoutineUpdateOne) AddProgram(p ...*Program) *DailyRoutineUpdateOne {
-	ids := make([]uint64, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return druo.AddProgramIDs(ids...)
-}
-
-// AddWeeklyRoutineIDs adds the "weekly_routine" edge to the WeeklyRoutine entity by IDs.
-func (druo *DailyRoutineUpdateOne) AddWeeklyRoutineIDs(ids ...uint64) *DailyRoutineUpdateOne {
-	druo.mutation.AddWeeklyRoutineIDs(ids...)
-	return druo
-}
-
-// AddWeeklyRoutine adds the "weekly_routine" edges to the WeeklyRoutine entity.
-func (druo *DailyRoutineUpdateOne) AddWeeklyRoutine(w ...*WeeklyRoutine) *DailyRoutineUpdateOne {
-	ids := make([]uint64, len(w))
-	for i := range w {
-		ids[i] = w[i].ID
-	}
-	return druo.AddWeeklyRoutineIDs(ids...)
+// SetWeeklyRoutine sets the "weekly_routine" edge to the WeeklyRoutine entity.
+func (druo *DailyRoutineUpdateOne) SetWeeklyRoutine(w *WeeklyRoutine) *DailyRoutineUpdateOne {
+	return druo.SetWeeklyRoutineID(w.ID)
 }
 
 // AddRoutineActIDs adds the "routine_acts" edge to the RoutineAct entity by IDs.
@@ -677,46 +529,16 @@ func (druo *DailyRoutineUpdateOne) Mutation() *DailyRoutineMutation {
 	return druo.mutation
 }
 
-// ClearProgram clears all "program" edges to the Program entity.
+// ClearProgram clears the "program" edge to the Program entity.
 func (druo *DailyRoutineUpdateOne) ClearProgram() *DailyRoutineUpdateOne {
 	druo.mutation.ClearProgram()
 	return druo
 }
 
-// RemoveProgramIDs removes the "program" edge to Program entities by IDs.
-func (druo *DailyRoutineUpdateOne) RemoveProgramIDs(ids ...uint64) *DailyRoutineUpdateOne {
-	druo.mutation.RemoveProgramIDs(ids...)
-	return druo
-}
-
-// RemoveProgram removes "program" edges to Program entities.
-func (druo *DailyRoutineUpdateOne) RemoveProgram(p ...*Program) *DailyRoutineUpdateOne {
-	ids := make([]uint64, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return druo.RemoveProgramIDs(ids...)
-}
-
-// ClearWeeklyRoutine clears all "weekly_routine" edges to the WeeklyRoutine entity.
+// ClearWeeklyRoutine clears the "weekly_routine" edge to the WeeklyRoutine entity.
 func (druo *DailyRoutineUpdateOne) ClearWeeklyRoutine() *DailyRoutineUpdateOne {
 	druo.mutation.ClearWeeklyRoutine()
 	return druo
-}
-
-// RemoveWeeklyRoutineIDs removes the "weekly_routine" edge to WeeklyRoutine entities by IDs.
-func (druo *DailyRoutineUpdateOne) RemoveWeeklyRoutineIDs(ids ...uint64) *DailyRoutineUpdateOne {
-	druo.mutation.RemoveWeeklyRoutineIDs(ids...)
-	return druo
-}
-
-// RemoveWeeklyRoutine removes "weekly_routine" edges to WeeklyRoutine entities.
-func (druo *DailyRoutineUpdateOne) RemoveWeeklyRoutine(w ...*WeeklyRoutine) *DailyRoutineUpdateOne {
-	ids := make([]uint64, len(w))
-	for i := range w {
-		ids[i] = w[i].ID
-	}
-	return druo.RemoveWeeklyRoutineIDs(ids...)
 }
 
 // ClearRoutineActs clears all "routine_acts" edges to the RoutineAct entity.
@@ -849,24 +671,6 @@ func (druo *DailyRoutineUpdateOne) sqlSave(ctx context.Context) (_node *DailyRou
 			}
 		}
 	}
-	if value, ok := druo.mutation.ProgramID(); ok {
-		_spec.SetField(dailyroutine.FieldProgramID, field.TypeUint64, value)
-	}
-	if value, ok := druo.mutation.AddedProgramID(); ok {
-		_spec.AddField(dailyroutine.FieldProgramID, field.TypeUint64, value)
-	}
-	if druo.mutation.ProgramIDCleared() {
-		_spec.ClearField(dailyroutine.FieldProgramID, field.TypeUint64)
-	}
-	if value, ok := druo.mutation.WeekID(); ok {
-		_spec.SetField(dailyroutine.FieldWeekID, field.TypeUint64, value)
-	}
-	if value, ok := druo.mutation.AddedWeekID(); ok {
-		_spec.AddField(dailyroutine.FieldWeekID, field.TypeUint64, value)
-	}
-	if druo.mutation.WeekIDCleared() {
-		_spec.ClearField(dailyroutine.FieldWeekID, field.TypeUint64)
-	}
 	if value, ok := druo.mutation.Day(); ok {
 		_spec.SetField(dailyroutine.FieldDay, field.TypeInt, value)
 	}
@@ -878,39 +682,23 @@ func (druo *DailyRoutineUpdateOne) sqlSave(ctx context.Context) (_node *DailyRou
 	}
 	if druo.mutation.ProgramCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   dailyroutine.ProgramTable,
-			Columns: dailyroutine.ProgramPrimaryKey,
+			Columns: []string{dailyroutine.ProgramColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64),
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := druo.mutation.RemovedProgramIDs(); len(nodes) > 0 && !druo.mutation.ProgramCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   dailyroutine.ProgramTable,
-			Columns: dailyroutine.ProgramPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := druo.mutation.ProgramIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   dailyroutine.ProgramTable,
-			Columns: dailyroutine.ProgramPrimaryKey,
+			Columns: []string{dailyroutine.ProgramColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64),
@@ -923,39 +711,23 @@ func (druo *DailyRoutineUpdateOne) sqlSave(ctx context.Context) (_node *DailyRou
 	}
 	if druo.mutation.WeeklyRoutineCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   dailyroutine.WeeklyRoutineTable,
-			Columns: dailyroutine.WeeklyRoutinePrimaryKey,
+			Columns: []string{dailyroutine.WeeklyRoutineColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(weeklyroutine.FieldID, field.TypeUint64),
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := druo.mutation.RemovedWeeklyRoutineIDs(); len(nodes) > 0 && !druo.mutation.WeeklyRoutineCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   dailyroutine.WeeklyRoutineTable,
-			Columns: dailyroutine.WeeklyRoutinePrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(weeklyroutine.FieldID, field.TypeUint64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := druo.mutation.WeeklyRoutineIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   dailyroutine.WeeklyRoutineTable,
-			Columns: dailyroutine.WeeklyRoutinePrimaryKey,
+			Columns: []string{dailyroutine.WeeklyRoutineColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(weeklyroutine.FieldID, field.TypeUint64),

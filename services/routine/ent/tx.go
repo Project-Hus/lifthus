@@ -14,10 +14,14 @@ type Tx struct {
 	config
 	// Act is the client for interacting with the Act builders.
 	Act *ActClient
+	// BodyInfo is the client for interacting with the BodyInfo builders.
+	BodyInfo *BodyInfoClient
 	// DailyRoutine is the client for interacting with the DailyRoutine builders.
 	DailyRoutine *DailyRoutineClient
 	// DailyRoutineRec is the client for interacting with the DailyRoutineRec builders.
 	DailyRoutineRec *DailyRoutineRecClient
+	// OneRepMax is the client for interacting with the OneRepMax builders.
+	OneRepMax *OneRepMaxClient
 	// Program is the client for interacting with the Program builders.
 	Program *ProgramClient
 	// ProgramRec is the client for interacting with the ProgramRec builders.
@@ -164,8 +168,10 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Act = NewActClient(tx.config)
+	tx.BodyInfo = NewBodyInfoClient(tx.config)
 	tx.DailyRoutine = NewDailyRoutineClient(tx.config)
 	tx.DailyRoutineRec = NewDailyRoutineRecClient(tx.config)
+	tx.OneRepMax = NewOneRepMaxClient(tx.config)
 	tx.Program = NewProgramClient(tx.config)
 	tx.ProgramRec = NewProgramRecClient(tx.config)
 	tx.RoutineAct = NewRoutineActClient(tx.config)

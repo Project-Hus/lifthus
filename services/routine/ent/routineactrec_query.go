@@ -449,7 +449,7 @@ func (rarq *RoutineActRecQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			rarq.withRoutineAct != nil,
 		}
 	)
-	if rarq.withDailyRoutineRec != nil || rarq.withAct != nil || rarq.withRoutineAct != nil {
+	if rarq.withRoutineAct != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -498,10 +498,7 @@ func (rarq *RoutineActRecQuery) loadDailyRoutineRec(ctx context.Context, query *
 	ids := make([]uint64, 0, len(nodes))
 	nodeids := make(map[uint64][]*RoutineActRec)
 	for i := range nodes {
-		if nodes[i].daily_routine_rec_routine_act_recs == nil {
-			continue
-		}
-		fk := *nodes[i].daily_routine_rec_routine_act_recs
+		fk := nodes[i].DailyRoutineRecID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -518,7 +515,7 @@ func (rarq *RoutineActRecQuery) loadDailyRoutineRec(ctx context.Context, query *
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "daily_routine_rec_routine_act_recs" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "daily_routine_rec_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -530,10 +527,7 @@ func (rarq *RoutineActRecQuery) loadAct(ctx context.Context, query *ActQuery, no
 	ids := make([]uint64, 0, len(nodes))
 	nodeids := make(map[uint64][]*RoutineActRec)
 	for i := range nodes {
-		if nodes[i].act_routine_act_recs == nil {
-			continue
-		}
-		fk := *nodes[i].act_routine_act_recs
+		fk := nodes[i].ActID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -550,7 +544,7 @@ func (rarq *RoutineActRecQuery) loadAct(ctx context.Context, query *ActQuery, no
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "act_routine_act_recs" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "act_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -615,6 +609,12 @@ func (rarq *RoutineActRecQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != routineactrec.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if rarq.withDailyRoutineRec != nil {
+			_spec.Node.AddColumnOnce(routineactrec.FieldDailyRoutineRecID)
+		}
+		if rarq.withAct != nil {
+			_spec.Node.AddColumnOnce(routineactrec.FieldActID)
 		}
 	}
 	if ps := rarq.predicates; len(ps) > 0 {

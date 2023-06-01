@@ -36,9 +36,8 @@ type ProgramRec struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProgramRecQuery when eager-loading is set.
-	Edges                ProgramRecEdges `json:"edges"`
-	program_program_recs *uint64
-	selectValues         sql.SelectValues
+	Edges        ProgramRecEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // ProgramRecEdges holds the relations/edges for other nodes in the graph.
@@ -49,9 +48,13 @@ type ProgramRecEdges struct {
 	WeeklyRoutineRecs []*WeeklyRoutineRec `json:"weekly_routine_recs,omitempty"`
 	// DailyRoutineRecs holds the value of the daily_routine_recs edge.
 	DailyRoutineRecs []*DailyRoutineRec `json:"daily_routine_recs,omitempty"`
+	// BodyInfo holds the value of the body_info edge.
+	BodyInfo []*BodyInfo `json:"body_info,omitempty"`
+	// OneRepMax holds the value of the one_rep_max edge.
+	OneRepMax []*OneRepMax `json:"one_rep_max,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [5]bool
 }
 
 // ProgramOrErr returns the Program value or an error if the edge
@@ -85,6 +88,24 @@ func (e ProgramRecEdges) DailyRoutineRecsOrErr() ([]*DailyRoutineRec, error) {
 	return nil, &NotLoadedError{edge: "daily_routine_recs"}
 }
 
+// BodyInfoOrErr returns the BodyInfo value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProgramRecEdges) BodyInfoOrErr() ([]*BodyInfo, error) {
+	if e.loadedTypes[3] {
+		return e.BodyInfo, nil
+	}
+	return nil, &NotLoadedError{edge: "body_info"}
+}
+
+// OneRepMaxOrErr returns the OneRepMax value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProgramRecEdges) OneRepMaxOrErr() ([]*OneRepMax, error) {
+	if e.loadedTypes[4] {
+		return e.OneRepMax, nil
+	}
+	return nil, &NotLoadedError{edge: "one_rep_max"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*ProgramRec) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -96,8 +117,6 @@ func (*ProgramRec) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case programrec.FieldStartDate, programrec.FieldEndDate, programrec.FieldCreatedAt, programrec.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case programrec.ForeignKeys[0]: // program_program_recs
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -168,13 +187,6 @@ func (pr *ProgramRec) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pr.UpdatedAt = value.Time
 			}
-		case programrec.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field program_program_recs", value)
-			} else if value.Valid {
-				pr.program_program_recs = new(uint64)
-				*pr.program_program_recs = uint64(value.Int64)
-			}
 		default:
 			pr.selectValues.Set(columns[i], values[i])
 		}
@@ -201,6 +213,16 @@ func (pr *ProgramRec) QueryWeeklyRoutineRecs() *WeeklyRoutineRecQuery {
 // QueryDailyRoutineRecs queries the "daily_routine_recs" edge of the ProgramRec entity.
 func (pr *ProgramRec) QueryDailyRoutineRecs() *DailyRoutineRecQuery {
 	return NewProgramRecClient(pr.config).QueryDailyRoutineRecs(pr)
+}
+
+// QueryBodyInfo queries the "body_info" edge of the ProgramRec entity.
+func (pr *ProgramRec) QueryBodyInfo() *BodyInfoQuery {
+	return NewProgramRecClient(pr.config).QueryBodyInfo(pr)
+}
+
+// QueryOneRepMax queries the "one_rep_max" edge of the ProgramRec entity.
+func (pr *ProgramRec) QueryOneRepMax() *OneRepMaxQuery {
+	return NewProgramRecClient(pr.config).QueryOneRepMax(pr)
 }
 
 // Update returns a builder for updating this ProgramRec.

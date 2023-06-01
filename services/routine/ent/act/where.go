@@ -85,6 +85,86 @@ func UpdatedAt(v time.Time) predicate.Act {
 	return predicate.Act(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
+// Weight applies equality check predicate on the "weight" field. It's identical to WeightEQ.
+func Weight(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldWeight, v))
+}
+
+// Bodyweight applies equality check predicate on the "bodyweight" field. It's identical to BodyweightEQ.
+func Bodyweight(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldBodyweight, v))
+}
+
+// Cardio applies equality check predicate on the "cardio" field. It's identical to CardioEQ.
+func Cardio(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldCardio, v))
+}
+
+// Upper applies equality check predicate on the "upper" field. It's identical to UpperEQ.
+func Upper(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldUpper, v))
+}
+
+// Lower applies equality check predicate on the "lower" field. It's identical to LowerEQ.
+func Lower(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldLower, v))
+}
+
+// Full applies equality check predicate on the "full" field. It's identical to FullEQ.
+func Full(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldFull, v))
+}
+
+// Arms applies equality check predicate on the "arms" field. It's identical to ArmsEQ.
+func Arms(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldArms, v))
+}
+
+// Shoulders applies equality check predicate on the "shoulders" field. It's identical to ShouldersEQ.
+func Shoulders(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldShoulders, v))
+}
+
+// Chest applies equality check predicate on the "chest" field. It's identical to ChestEQ.
+func Chest(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldChest, v))
+}
+
+// Core applies equality check predicate on the "core" field. It's identical to CoreEQ.
+func Core(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldCore, v))
+}
+
+// UpperBack applies equality check predicate on the "upper_back" field. It's identical to UpperBackEQ.
+func UpperBack(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldUpperBack, v))
+}
+
+// LowerBack applies equality check predicate on the "lower_back" field. It's identical to LowerBackEQ.
+func LowerBack(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldLowerBack, v))
+}
+
+// Legs applies equality check predicate on the "legs" field. It's identical to LegsEQ.
+func Legs(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldLegs, v))
+}
+
+// LegsFront applies equality check predicate on the "legs_front" field. It's identical to LegsFrontEQ.
+func LegsFront(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldLegsFront, v))
+}
+
+// LegsBack applies equality check predicate on the "legs_back" field. It's identical to LegsBackEQ.
+func LegsBack(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldLegsBack, v))
+}
+
+// Etc applies equality check predicate on the "etc" field. It's identical to EtcEQ.
+func Etc(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldEtc, v))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.Act {
 	return predicate.Act(sql.FieldEQ(FieldName, v))
@@ -168,16 +248,6 @@ func TypeIn(vs ...Type) predicate.Act {
 // TypeNotIn applies the NotIn predicate on the "type" field.
 func TypeNotIn(vs ...Type) predicate.Act {
 	return predicate.Act(sql.FieldNotIn(FieldType, vs...))
-}
-
-// TypeIsNil applies the IsNil predicate on the "type" field.
-func TypeIsNil() predicate.Act {
-	return predicate.Act(sql.FieldIsNull(FieldType))
-}
-
-// TypeNotNil applies the NotNil predicate on the "type" field.
-func TypeNotNil() predicate.Act {
-	return predicate.Act(sql.FieldNotNull(FieldType))
 }
 
 // AuthorEQ applies the EQ predicate on the "author" field.
@@ -450,6 +520,166 @@ func UpdatedAtLTE(v time.Time) predicate.Act {
 	return predicate.Act(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
+// WeightEQ applies the EQ predicate on the "weight" field.
+func WeightEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldWeight, v))
+}
+
+// WeightNEQ applies the NEQ predicate on the "weight" field.
+func WeightNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldWeight, v))
+}
+
+// BodyweightEQ applies the EQ predicate on the "bodyweight" field.
+func BodyweightEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldBodyweight, v))
+}
+
+// BodyweightNEQ applies the NEQ predicate on the "bodyweight" field.
+func BodyweightNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldBodyweight, v))
+}
+
+// CardioEQ applies the EQ predicate on the "cardio" field.
+func CardioEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldCardio, v))
+}
+
+// CardioNEQ applies the NEQ predicate on the "cardio" field.
+func CardioNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldCardio, v))
+}
+
+// UpperEQ applies the EQ predicate on the "upper" field.
+func UpperEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldUpper, v))
+}
+
+// UpperNEQ applies the NEQ predicate on the "upper" field.
+func UpperNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldUpper, v))
+}
+
+// LowerEQ applies the EQ predicate on the "lower" field.
+func LowerEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldLower, v))
+}
+
+// LowerNEQ applies the NEQ predicate on the "lower" field.
+func LowerNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldLower, v))
+}
+
+// FullEQ applies the EQ predicate on the "full" field.
+func FullEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldFull, v))
+}
+
+// FullNEQ applies the NEQ predicate on the "full" field.
+func FullNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldFull, v))
+}
+
+// ArmsEQ applies the EQ predicate on the "arms" field.
+func ArmsEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldArms, v))
+}
+
+// ArmsNEQ applies the NEQ predicate on the "arms" field.
+func ArmsNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldArms, v))
+}
+
+// ShouldersEQ applies the EQ predicate on the "shoulders" field.
+func ShouldersEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldShoulders, v))
+}
+
+// ShouldersNEQ applies the NEQ predicate on the "shoulders" field.
+func ShouldersNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldShoulders, v))
+}
+
+// ChestEQ applies the EQ predicate on the "chest" field.
+func ChestEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldChest, v))
+}
+
+// ChestNEQ applies the NEQ predicate on the "chest" field.
+func ChestNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldChest, v))
+}
+
+// CoreEQ applies the EQ predicate on the "core" field.
+func CoreEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldCore, v))
+}
+
+// CoreNEQ applies the NEQ predicate on the "core" field.
+func CoreNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldCore, v))
+}
+
+// UpperBackEQ applies the EQ predicate on the "upper_back" field.
+func UpperBackEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldUpperBack, v))
+}
+
+// UpperBackNEQ applies the NEQ predicate on the "upper_back" field.
+func UpperBackNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldUpperBack, v))
+}
+
+// LowerBackEQ applies the EQ predicate on the "lower_back" field.
+func LowerBackEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldLowerBack, v))
+}
+
+// LowerBackNEQ applies the NEQ predicate on the "lower_back" field.
+func LowerBackNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldLowerBack, v))
+}
+
+// LegsEQ applies the EQ predicate on the "legs" field.
+func LegsEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldLegs, v))
+}
+
+// LegsNEQ applies the NEQ predicate on the "legs" field.
+func LegsNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldLegs, v))
+}
+
+// LegsFrontEQ applies the EQ predicate on the "legs_front" field.
+func LegsFrontEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldLegsFront, v))
+}
+
+// LegsFrontNEQ applies the NEQ predicate on the "legs_front" field.
+func LegsFrontNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldLegsFront, v))
+}
+
+// LegsBackEQ applies the EQ predicate on the "legs_back" field.
+func LegsBackEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldLegsBack, v))
+}
+
+// LegsBackNEQ applies the NEQ predicate on the "legs_back" field.
+func LegsBackNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldLegsBack, v))
+}
+
+// EtcEQ applies the EQ predicate on the "etc" field.
+func EtcEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldEtc, v))
+}
+
+// EtcNEQ applies the NEQ predicate on the "etc" field.
+func EtcNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldEtc, v))
+}
+
 // HasTags applies the HasEdge predicate on the "tags" edge.
 func HasTags() predicate.Act {
 	return predicate.Act(func(s *sql.Selector) {
@@ -511,6 +741,29 @@ func HasRoutineActRecs() predicate.Act {
 func HasRoutineActRecsWith(preds ...predicate.RoutineActRec) predicate.Act {
 	return predicate.Act(func(s *sql.Selector) {
 		step := newRoutineActRecsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasOneRepMaxes applies the HasEdge predicate on the "one_rep_maxes" edge.
+func HasOneRepMaxes() predicate.Act {
+	return predicate.Act(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, OneRepMaxesTable, OneRepMaxesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOneRepMaxesWith applies the HasEdge predicate on the "one_rep_maxes" edge with a given conditions (other predicates).
+func HasOneRepMaxesWith(preds ...predicate.OneRepMax) predicate.Act {
+	return predicate.Act(func(s *sql.Selector) {
+		step := newOneRepMaxesStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

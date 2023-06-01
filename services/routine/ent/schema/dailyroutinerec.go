@@ -35,10 +35,10 @@ func (DailyRoutineRec) Fields() []ent.Field {
 // Edges of the DailyRoutineRec.
 func (DailyRoutineRec) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("daily_routine", DailyRoutine.Type).Ref("daily_routine_recs").Unique(),
+		edge.From("daily_routine", DailyRoutine.Type).Field("daily_routine_id").Ref("daily_routine_recs").Unique(),
 
-		edge.From("program_rec", ProgramRec.Type).Ref("daily_routine_recs").Unique(),
-		edge.From("weekly_routine_rec", WeeklyRoutineRec.Type).Ref("daily_routine_recs").Unique(),
+		edge.From("program_rec", ProgramRec.Type).Field("program_rec_id").Ref("daily_routine_recs").Unique(),
+		edge.From("weekly_routine_rec", WeeklyRoutineRec.Type).Field("weekly_routine_rec_id").Ref("daily_routine_recs").Unique(),
 
 		edge.To("routine_act_recs", RoutineActRec.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 	}

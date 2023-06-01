@@ -6,7 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"routine/ent/bodyinfo"
 	"routine/ent/dailyroutinerec"
+	"routine/ent/onerepmax"
 	"routine/ent/program"
 	"routine/ent/programrec"
 	"routine/ent/weeklyroutinerec"
@@ -101,20 +103,6 @@ func (prc *ProgramRecCreate) SetID(u uint64) *ProgramRecCreate {
 	return prc
 }
 
-// SetProgramID sets the "program" edge to the Program entity by ID.
-func (prc *ProgramRecCreate) SetProgramID(id uint64) *ProgramRecCreate {
-	prc.mutation.SetProgramID(id)
-	return prc
-}
-
-// SetNillableProgramID sets the "program" edge to the Program entity by ID if the given value is not nil.
-func (prc *ProgramRecCreate) SetNillableProgramID(id *uint64) *ProgramRecCreate {
-	if id != nil {
-		prc = prc.SetProgramID(*id)
-	}
-	return prc
-}
-
 // SetProgram sets the "program" edge to the Program entity.
 func (prc *ProgramRecCreate) SetProgram(p *Program) *ProgramRecCreate {
 	return prc.SetProgramID(p.ID)
@@ -148,6 +136,36 @@ func (prc *ProgramRecCreate) AddDailyRoutineRecs(d ...*DailyRoutineRec) *Program
 		ids[i] = d[i].ID
 	}
 	return prc.AddDailyRoutineRecIDs(ids...)
+}
+
+// AddBodyInfoIDs adds the "body_info" edge to the BodyInfo entity by IDs.
+func (prc *ProgramRecCreate) AddBodyInfoIDs(ids ...uint64) *ProgramRecCreate {
+	prc.mutation.AddBodyInfoIDs(ids...)
+	return prc
+}
+
+// AddBodyInfo adds the "body_info" edges to the BodyInfo entity.
+func (prc *ProgramRecCreate) AddBodyInfo(b ...*BodyInfo) *ProgramRecCreate {
+	ids := make([]uint64, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
+	}
+	return prc.AddBodyInfoIDs(ids...)
+}
+
+// AddOneRepMaxIDs adds the "one_rep_max" edge to the OneRepMax entity by IDs.
+func (prc *ProgramRecCreate) AddOneRepMaxIDs(ids ...uint64) *ProgramRecCreate {
+	prc.mutation.AddOneRepMaxIDs(ids...)
+	return prc
+}
+
+// AddOneRepMax adds the "one_rep_max" edges to the OneRepMax entity.
+func (prc *ProgramRecCreate) AddOneRepMax(o ...*OneRepMax) *ProgramRecCreate {
+	ids := make([]uint64, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return prc.AddOneRepMaxIDs(ids...)
 }
 
 // Mutation returns the ProgramRecMutation object of the builder.
@@ -223,6 +241,9 @@ func (prc *ProgramRecCreate) check() error {
 	if _, ok := prc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "ProgramRec.updated_at"`)}
 	}
+	if _, ok := prc.mutation.ProgramID(); !ok {
+		return &ValidationError{Name: "program", err: errors.New(`ent: missing required edge "ProgramRec.program"`)}
+	}
 	return nil
 }
 
@@ -258,10 +279,6 @@ func (prc *ProgramRecCreate) createSpec() (*ProgramRec, *sqlgraph.CreateSpec) {
 	if value, ok := prc.mutation.Author(); ok {
 		_spec.SetField(programrec.FieldAuthor, field.TypeUint64, value)
 		_node.Author = value
-	}
-	if value, ok := prc.mutation.ProgramID(); ok {
-		_spec.SetField(programrec.FieldProgramID, field.TypeUint64, value)
-		_node.ProgramID = value
 	}
 	if value, ok := prc.mutation.StartDate(); ok {
 		_spec.SetField(programrec.FieldStartDate, field.TypeTime, value)
@@ -301,7 +318,7 @@ func (prc *ProgramRecCreate) createSpec() (*ProgramRec, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.program_program_recs = &nodes[0]
+		_node.ProgramID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := prc.mutation.WeeklyRoutineRecsIDs(); len(nodes) > 0 {
@@ -329,6 +346,38 @@ func (prc *ProgramRecCreate) createSpec() (*ProgramRec, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dailyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := prc.mutation.BodyInfoIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.BodyInfoTable,
+			Columns: []string{programrec.BodyInfoColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(bodyinfo.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := prc.mutation.OneRepMaxIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.OneRepMaxTable,
+			Columns: []string{programrec.OneRepMaxColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(onerepmax.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

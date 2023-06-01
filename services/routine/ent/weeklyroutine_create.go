@@ -69,19 +69,9 @@ func (wrc *WeeklyRoutineCreate) SetID(u uint64) *WeeklyRoutineCreate {
 	return wrc
 }
 
-// AddProgramIDs adds the "program" edge to the Program entity by IDs.
-func (wrc *WeeklyRoutineCreate) AddProgramIDs(ids ...uint64) *WeeklyRoutineCreate {
-	wrc.mutation.AddProgramIDs(ids...)
-	return wrc
-}
-
-// AddProgram adds the "program" edges to the Program entity.
-func (wrc *WeeklyRoutineCreate) AddProgram(p ...*Program) *WeeklyRoutineCreate {
-	ids := make([]uint64, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return wrc.AddProgramIDs(ids...)
+// SetProgram sets the "program" edge to the Program entity.
+func (wrc *WeeklyRoutineCreate) SetProgram(p *Program) *WeeklyRoutineCreate {
+	return wrc.SetProgramID(p.ID)
 }
 
 // AddDailyRoutineIDs adds the "daily_routines" edge to the DailyRoutine entity by IDs.
@@ -178,6 +168,9 @@ func (wrc *WeeklyRoutineCreate) check() error {
 	if _, ok := wrc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "WeeklyRoutine.updated_at"`)}
 	}
+	if _, ok := wrc.mutation.ProgramID(); !ok {
+		return &ValidationError{Name: "program", err: errors.New(`ent: missing required edge "WeeklyRoutine.program"`)}
+	}
 	return nil
 }
 
@@ -210,10 +203,6 @@ func (wrc *WeeklyRoutineCreate) createSpec() (*WeeklyRoutine, *sqlgraph.CreateSp
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := wrc.mutation.ProgramID(); ok {
-		_spec.SetField(weeklyroutine.FieldProgramID, field.TypeUint64, value)
-		_node.ProgramID = value
-	}
 	if value, ok := wrc.mutation.Week(); ok {
 		_spec.SetField(weeklyroutine.FieldWeek, field.TypeInt, value)
 		_node.Week = value
@@ -228,10 +217,10 @@ func (wrc *WeeklyRoutineCreate) createSpec() (*WeeklyRoutine, *sqlgraph.CreateSp
 	}
 	if nodes := wrc.mutation.ProgramIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   weeklyroutine.ProgramTable,
-			Columns: weeklyroutine.ProgramPrimaryKey,
+			Columns: []string{weeklyroutine.ProgramColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64),
@@ -240,14 +229,15 @@ func (wrc *WeeklyRoutineCreate) createSpec() (*WeeklyRoutine, *sqlgraph.CreateSp
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.ProgramID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := wrc.mutation.DailyRoutinesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   weeklyroutine.DailyRoutinesTable,
-			Columns: weeklyroutine.DailyRoutinesPrimaryKey,
+			Columns: []string{weeklyroutine.DailyRoutinesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dailyroutine.FieldID, field.TypeUint64),

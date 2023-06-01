@@ -20,6 +20,18 @@ func (f ActFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ActMutation", m)
 }
 
+// The BodyInfoFunc type is an adapter to allow the use of ordinary
+// function as BodyInfo mutator.
+type BodyInfoFunc func(context.Context, *ent.BodyInfoMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f BodyInfoFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.BodyInfoMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.BodyInfoMutation", m)
+}
+
 // The DailyRoutineFunc type is an adapter to allow the use of ordinary
 // function as DailyRoutine mutator.
 type DailyRoutineFunc func(context.Context, *ent.DailyRoutineMutation) (ent.Value, error)
@@ -42,6 +54,18 @@ func (f DailyRoutineRecFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DailyRoutineRecMutation", m)
+}
+
+// The OneRepMaxFunc type is an adapter to allow the use of ordinary
+// function as OneRepMax mutator.
+type OneRepMaxFunc func(context.Context, *ent.OneRepMaxMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OneRepMaxFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OneRepMaxMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OneRepMaxMutation", m)
 }
 
 // The ProgramFunc type is an adapter to allow the use of ordinary

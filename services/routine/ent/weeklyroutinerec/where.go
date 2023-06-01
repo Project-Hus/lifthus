@@ -100,26 +100,6 @@ func ProgramRecIDNotIn(vs ...uint64) predicate.WeeklyRoutineRec {
 	return predicate.WeeklyRoutineRec(sql.FieldNotIn(FieldProgramRecID, vs...))
 }
 
-// ProgramRecIDGT applies the GT predicate on the "program_rec_id" field.
-func ProgramRecIDGT(v uint64) predicate.WeeklyRoutineRec {
-	return predicate.WeeklyRoutineRec(sql.FieldGT(FieldProgramRecID, v))
-}
-
-// ProgramRecIDGTE applies the GTE predicate on the "program_rec_id" field.
-func ProgramRecIDGTE(v uint64) predicate.WeeklyRoutineRec {
-	return predicate.WeeklyRoutineRec(sql.FieldGTE(FieldProgramRecID, v))
-}
-
-// ProgramRecIDLT applies the LT predicate on the "program_rec_id" field.
-func ProgramRecIDLT(v uint64) predicate.WeeklyRoutineRec {
-	return predicate.WeeklyRoutineRec(sql.FieldLT(FieldProgramRecID, v))
-}
-
-// ProgramRecIDLTE applies the LTE predicate on the "program_rec_id" field.
-func ProgramRecIDLTE(v uint64) predicate.WeeklyRoutineRec {
-	return predicate.WeeklyRoutineRec(sql.FieldLTE(FieldProgramRecID, v))
-}
-
 // WeeklyRoutineIDEQ applies the EQ predicate on the "weekly_routine_id" field.
 func WeeklyRoutineIDEQ(v uint64) predicate.WeeklyRoutineRec {
 	return predicate.WeeklyRoutineRec(sql.FieldEQ(FieldWeeklyRoutineID, v))
@@ -138,26 +118,6 @@ func WeeklyRoutineIDIn(vs ...uint64) predicate.WeeklyRoutineRec {
 // WeeklyRoutineIDNotIn applies the NotIn predicate on the "weekly_routine_id" field.
 func WeeklyRoutineIDNotIn(vs ...uint64) predicate.WeeklyRoutineRec {
 	return predicate.WeeklyRoutineRec(sql.FieldNotIn(FieldWeeklyRoutineID, vs...))
-}
-
-// WeeklyRoutineIDGT applies the GT predicate on the "weekly_routine_id" field.
-func WeeklyRoutineIDGT(v uint64) predicate.WeeklyRoutineRec {
-	return predicate.WeeklyRoutineRec(sql.FieldGT(FieldWeeklyRoutineID, v))
-}
-
-// WeeklyRoutineIDGTE applies the GTE predicate on the "weekly_routine_id" field.
-func WeeklyRoutineIDGTE(v uint64) predicate.WeeklyRoutineRec {
-	return predicate.WeeklyRoutineRec(sql.FieldGTE(FieldWeeklyRoutineID, v))
-}
-
-// WeeklyRoutineIDLT applies the LT predicate on the "weekly_routine_id" field.
-func WeeklyRoutineIDLT(v uint64) predicate.WeeklyRoutineRec {
-	return predicate.WeeklyRoutineRec(sql.FieldLT(FieldWeeklyRoutineID, v))
-}
-
-// WeeklyRoutineIDLTE applies the LTE predicate on the "weekly_routine_id" field.
-func WeeklyRoutineIDLTE(v uint64) predicate.WeeklyRoutineRec {
-	return predicate.WeeklyRoutineRec(sql.FieldLTE(FieldWeeklyRoutineID, v))
 }
 
 // StartDateEQ applies the EQ predicate on the "start_date" field.

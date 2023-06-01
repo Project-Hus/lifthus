@@ -40,11 +40,8 @@ type DailyRoutineRec struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DailyRoutineRecQuery when eager-loading is set.
-	Edges                                 DailyRoutineRecEdges `json:"edges"`
-	daily_routine_daily_routine_recs      *uint64
-	program_rec_daily_routine_recs        *uint64
-	weekly_routine_rec_daily_routine_recs *uint64
-	selectValues                          sql.SelectValues
+	Edges        DailyRoutineRecEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // DailyRoutineRecEdges holds the relations/edges for other nodes in the graph.
@@ -121,12 +118,6 @@ func (*DailyRoutineRec) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case dailyroutinerec.FieldDate, dailyroutinerec.FieldCreatedAt, dailyroutinerec.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case dailyroutinerec.ForeignKeys[0]: // daily_routine_daily_routine_recs
-			values[i] = new(sql.NullInt64)
-		case dailyroutinerec.ForeignKeys[1]: // program_rec_daily_routine_recs
-			values[i] = new(sql.NullInt64)
-		case dailyroutinerec.ForeignKeys[2]: // weekly_routine_rec_daily_routine_recs
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -205,27 +196,6 @@ func (drr *DailyRoutineRec) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				drr.UpdatedAt = value.Time
-			}
-		case dailyroutinerec.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field daily_routine_daily_routine_recs", value)
-			} else if value.Valid {
-				drr.daily_routine_daily_routine_recs = new(uint64)
-				*drr.daily_routine_daily_routine_recs = uint64(value.Int64)
-			}
-		case dailyroutinerec.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field program_rec_daily_routine_recs", value)
-			} else if value.Valid {
-				drr.program_rec_daily_routine_recs = new(uint64)
-				*drr.program_rec_daily_routine_recs = uint64(value.Int64)
-			}
-		case dailyroutinerec.ForeignKeys[2]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field weekly_routine_rec_daily_routine_recs", value)
-			} else if value.Valid {
-				drr.weekly_routine_rec_daily_routine_recs = new(uint64)
-				*drr.weekly_routine_rec_daily_routine_recs = uint64(value.Int64)
 			}
 		default:
 			drr.selectValues.Set(columns[i], values[i])

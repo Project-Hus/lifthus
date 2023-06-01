@@ -38,21 +38,21 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "weeklyroutine" package.
 	WeeklyRoutineInverseTable = "weekly_routines"
 	// WeeklyRoutineColumn is the table column denoting the weekly_routine relation/edge.
-	WeeklyRoutineColumn = "weekly_routine_weekly_routine_recs"
+	WeeklyRoutineColumn = "weekly_routine_id"
 	// ProgramRecTable is the table that holds the program_rec relation/edge.
 	ProgramRecTable = "weekly_routine_recs"
 	// ProgramRecInverseTable is the table name for the ProgramRec entity.
 	// It exists in this package in order to avoid circular dependency with the "programrec" package.
 	ProgramRecInverseTable = "program_recs"
 	// ProgramRecColumn is the table column denoting the program_rec relation/edge.
-	ProgramRecColumn = "program_rec_weekly_routine_recs"
+	ProgramRecColumn = "program_rec_id"
 	// DailyRoutineRecsTable is the table that holds the daily_routine_recs relation/edge.
 	DailyRoutineRecsTable = "daily_routine_recs"
 	// DailyRoutineRecsInverseTable is the table name for the DailyRoutineRec entity.
 	// It exists in this package in order to avoid circular dependency with the "dailyroutinerec" package.
 	DailyRoutineRecsInverseTable = "daily_routine_recs"
 	// DailyRoutineRecsColumn is the table column denoting the daily_routine_recs relation/edge.
-	DailyRoutineRecsColumn = "weekly_routine_rec_daily_routine_recs"
+	DailyRoutineRecsColumn = "weekly_routine_rec_id"
 )
 
 // Columns holds all SQL columns for weeklyroutinerec fields.
@@ -65,22 +65,10 @@ var Columns = []string{
 	FieldUpdatedAt,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "weekly_routine_recs"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"program_rec_weekly_routine_recs",
-	"weekly_routine_weekly_routine_recs",
-}
-
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}

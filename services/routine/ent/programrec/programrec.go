@@ -37,6 +37,10 @@ const (
 	EdgeWeeklyRoutineRecs = "weekly_routine_recs"
 	// EdgeDailyRoutineRecs holds the string denoting the daily_routine_recs edge name in mutations.
 	EdgeDailyRoutineRecs = "daily_routine_recs"
+	// EdgeBodyInfo holds the string denoting the body_info edge name in mutations.
+	EdgeBodyInfo = "body_info"
+	// EdgeOneRepMax holds the string denoting the one_rep_max edge name in mutations.
+	EdgeOneRepMax = "one_rep_max"
 	// Table holds the table name of the programrec in the database.
 	Table = "program_recs"
 	// ProgramTable is the table that holds the program relation/edge.
@@ -45,21 +49,35 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "program" package.
 	ProgramInverseTable = "programs"
 	// ProgramColumn is the table column denoting the program relation/edge.
-	ProgramColumn = "program_program_recs"
+	ProgramColumn = "program_id"
 	// WeeklyRoutineRecsTable is the table that holds the weekly_routine_recs relation/edge.
 	WeeklyRoutineRecsTable = "weekly_routine_recs"
 	// WeeklyRoutineRecsInverseTable is the table name for the WeeklyRoutineRec entity.
 	// It exists in this package in order to avoid circular dependency with the "weeklyroutinerec" package.
 	WeeklyRoutineRecsInverseTable = "weekly_routine_recs"
 	// WeeklyRoutineRecsColumn is the table column denoting the weekly_routine_recs relation/edge.
-	WeeklyRoutineRecsColumn = "program_rec_weekly_routine_recs"
+	WeeklyRoutineRecsColumn = "program_rec_id"
 	// DailyRoutineRecsTable is the table that holds the daily_routine_recs relation/edge.
 	DailyRoutineRecsTable = "daily_routine_recs"
 	// DailyRoutineRecsInverseTable is the table name for the DailyRoutineRec entity.
 	// It exists in this package in order to avoid circular dependency with the "dailyroutinerec" package.
 	DailyRoutineRecsInverseTable = "daily_routine_recs"
 	// DailyRoutineRecsColumn is the table column denoting the daily_routine_recs relation/edge.
-	DailyRoutineRecsColumn = "program_rec_daily_routine_recs"
+	DailyRoutineRecsColumn = "program_rec_id"
+	// BodyInfoTable is the table that holds the body_info relation/edge.
+	BodyInfoTable = "body_infos"
+	// BodyInfoInverseTable is the table name for the BodyInfo entity.
+	// It exists in this package in order to avoid circular dependency with the "bodyinfo" package.
+	BodyInfoInverseTable = "body_infos"
+	// BodyInfoColumn is the table column denoting the body_info relation/edge.
+	BodyInfoColumn = "program_rec_id"
+	// OneRepMaxTable is the table that holds the one_rep_max relation/edge.
+	OneRepMaxTable = "one_rep_maxes"
+	// OneRepMaxInverseTable is the table name for the OneRepMax entity.
+	// It exists in this package in order to avoid circular dependency with the "onerepmax" package.
+	OneRepMaxInverseTable = "one_rep_maxes"
+	// OneRepMaxColumn is the table column denoting the one_rep_max relation/edge.
+	OneRepMaxColumn = "program_rec_id"
 )
 
 // Columns holds all SQL columns for programrec fields.
@@ -75,21 +93,10 @@ var Columns = []string{
 	FieldUpdatedAt,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "program_recs"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"program_program_recs",
-}
-
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -214,6 +221,34 @@ func ByDailyRoutineRecs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption 
 		sqlgraph.OrderByNeighborTerms(s, newDailyRoutineRecsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByBodyInfoCount orders the results by body_info count.
+func ByBodyInfoCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newBodyInfoStep(), opts...)
+	}
+}
+
+// ByBodyInfo orders the results by body_info terms.
+func ByBodyInfo(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newBodyInfoStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByOneRepMaxCount orders the results by one_rep_max count.
+func ByOneRepMaxCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newOneRepMaxStep(), opts...)
+	}
+}
+
+// ByOneRepMax orders the results by one_rep_max terms.
+func ByOneRepMax(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOneRepMaxStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newProgramStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -233,5 +268,19 @@ func newDailyRoutineRecsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DailyRoutineRecsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, DailyRoutineRecsTable, DailyRoutineRecsColumn),
+	)
+}
+func newBodyInfoStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(BodyInfoInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, BodyInfoTable, BodyInfoColumn),
+	)
+}
+func newOneRepMaxStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OneRepMaxInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, OneRepMaxTable, OneRepMaxColumn),
 	)
 }

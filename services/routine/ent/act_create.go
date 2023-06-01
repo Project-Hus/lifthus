@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"routine/ent/act"
+	"routine/ent/onerepmax"
 	"routine/ent/routineact"
 	"routine/ent/routineactrec"
 	"routine/ent/tag"
@@ -32,14 +33,6 @@ func (ac *ActCreate) SetName(s string) *ActCreate {
 // SetType sets the "type" field.
 func (ac *ActCreate) SetType(a act.Type) *ActCreate {
 	ac.mutation.SetType(a)
-	return ac
-}
-
-// SetNillableType sets the "type" field if the given value is not nil.
-func (ac *ActCreate) SetNillableType(a *act.Type) *ActCreate {
-	if a != nil {
-		ac.SetType(*a)
-	}
 	return ac
 }
 
@@ -105,6 +98,230 @@ func (ac *ActCreate) SetNillableUpdatedAt(t *time.Time) *ActCreate {
 	return ac
 }
 
+// SetWeight sets the "weight" field.
+func (ac *ActCreate) SetWeight(b bool) *ActCreate {
+	ac.mutation.SetWeight(b)
+	return ac
+}
+
+// SetNillableWeight sets the "weight" field if the given value is not nil.
+func (ac *ActCreate) SetNillableWeight(b *bool) *ActCreate {
+	if b != nil {
+		ac.SetWeight(*b)
+	}
+	return ac
+}
+
+// SetBodyweight sets the "bodyweight" field.
+func (ac *ActCreate) SetBodyweight(b bool) *ActCreate {
+	ac.mutation.SetBodyweight(b)
+	return ac
+}
+
+// SetNillableBodyweight sets the "bodyweight" field if the given value is not nil.
+func (ac *ActCreate) SetNillableBodyweight(b *bool) *ActCreate {
+	if b != nil {
+		ac.SetBodyweight(*b)
+	}
+	return ac
+}
+
+// SetCardio sets the "cardio" field.
+func (ac *ActCreate) SetCardio(b bool) *ActCreate {
+	ac.mutation.SetCardio(b)
+	return ac
+}
+
+// SetNillableCardio sets the "cardio" field if the given value is not nil.
+func (ac *ActCreate) SetNillableCardio(b *bool) *ActCreate {
+	if b != nil {
+		ac.SetCardio(*b)
+	}
+	return ac
+}
+
+// SetUpper sets the "upper" field.
+func (ac *ActCreate) SetUpper(b bool) *ActCreate {
+	ac.mutation.SetUpper(b)
+	return ac
+}
+
+// SetNillableUpper sets the "upper" field if the given value is not nil.
+func (ac *ActCreate) SetNillableUpper(b *bool) *ActCreate {
+	if b != nil {
+		ac.SetUpper(*b)
+	}
+	return ac
+}
+
+// SetLower sets the "lower" field.
+func (ac *ActCreate) SetLower(b bool) *ActCreate {
+	ac.mutation.SetLower(b)
+	return ac
+}
+
+// SetNillableLower sets the "lower" field if the given value is not nil.
+func (ac *ActCreate) SetNillableLower(b *bool) *ActCreate {
+	if b != nil {
+		ac.SetLower(*b)
+	}
+	return ac
+}
+
+// SetFull sets the "full" field.
+func (ac *ActCreate) SetFull(b bool) *ActCreate {
+	ac.mutation.SetFull(b)
+	return ac
+}
+
+// SetNillableFull sets the "full" field if the given value is not nil.
+func (ac *ActCreate) SetNillableFull(b *bool) *ActCreate {
+	if b != nil {
+		ac.SetFull(*b)
+	}
+	return ac
+}
+
+// SetArms sets the "arms" field.
+func (ac *ActCreate) SetArms(b bool) *ActCreate {
+	ac.mutation.SetArms(b)
+	return ac
+}
+
+// SetNillableArms sets the "arms" field if the given value is not nil.
+func (ac *ActCreate) SetNillableArms(b *bool) *ActCreate {
+	if b != nil {
+		ac.SetArms(*b)
+	}
+	return ac
+}
+
+// SetShoulders sets the "shoulders" field.
+func (ac *ActCreate) SetShoulders(b bool) *ActCreate {
+	ac.mutation.SetShoulders(b)
+	return ac
+}
+
+// SetNillableShoulders sets the "shoulders" field if the given value is not nil.
+func (ac *ActCreate) SetNillableShoulders(b *bool) *ActCreate {
+	if b != nil {
+		ac.SetShoulders(*b)
+	}
+	return ac
+}
+
+// SetChest sets the "chest" field.
+func (ac *ActCreate) SetChest(b bool) *ActCreate {
+	ac.mutation.SetChest(b)
+	return ac
+}
+
+// SetNillableChest sets the "chest" field if the given value is not nil.
+func (ac *ActCreate) SetNillableChest(b *bool) *ActCreate {
+	if b != nil {
+		ac.SetChest(*b)
+	}
+	return ac
+}
+
+// SetCore sets the "core" field.
+func (ac *ActCreate) SetCore(b bool) *ActCreate {
+	ac.mutation.SetCore(b)
+	return ac
+}
+
+// SetNillableCore sets the "core" field if the given value is not nil.
+func (ac *ActCreate) SetNillableCore(b *bool) *ActCreate {
+	if b != nil {
+		ac.SetCore(*b)
+	}
+	return ac
+}
+
+// SetUpperBack sets the "upper_back" field.
+func (ac *ActCreate) SetUpperBack(b bool) *ActCreate {
+	ac.mutation.SetUpperBack(b)
+	return ac
+}
+
+// SetNillableUpperBack sets the "upper_back" field if the given value is not nil.
+func (ac *ActCreate) SetNillableUpperBack(b *bool) *ActCreate {
+	if b != nil {
+		ac.SetUpperBack(*b)
+	}
+	return ac
+}
+
+// SetLowerBack sets the "lower_back" field.
+func (ac *ActCreate) SetLowerBack(b bool) *ActCreate {
+	ac.mutation.SetLowerBack(b)
+	return ac
+}
+
+// SetNillableLowerBack sets the "lower_back" field if the given value is not nil.
+func (ac *ActCreate) SetNillableLowerBack(b *bool) *ActCreate {
+	if b != nil {
+		ac.SetLowerBack(*b)
+	}
+	return ac
+}
+
+// SetLegs sets the "legs" field.
+func (ac *ActCreate) SetLegs(b bool) *ActCreate {
+	ac.mutation.SetLegs(b)
+	return ac
+}
+
+// SetNillableLegs sets the "legs" field if the given value is not nil.
+func (ac *ActCreate) SetNillableLegs(b *bool) *ActCreate {
+	if b != nil {
+		ac.SetLegs(*b)
+	}
+	return ac
+}
+
+// SetLegsFront sets the "legs_front" field.
+func (ac *ActCreate) SetLegsFront(b bool) *ActCreate {
+	ac.mutation.SetLegsFront(b)
+	return ac
+}
+
+// SetNillableLegsFront sets the "legs_front" field if the given value is not nil.
+func (ac *ActCreate) SetNillableLegsFront(b *bool) *ActCreate {
+	if b != nil {
+		ac.SetLegsFront(*b)
+	}
+	return ac
+}
+
+// SetLegsBack sets the "legs_back" field.
+func (ac *ActCreate) SetLegsBack(b bool) *ActCreate {
+	ac.mutation.SetLegsBack(b)
+	return ac
+}
+
+// SetNillableLegsBack sets the "legs_back" field if the given value is not nil.
+func (ac *ActCreate) SetNillableLegsBack(b *bool) *ActCreate {
+	if b != nil {
+		ac.SetLegsBack(*b)
+	}
+	return ac
+}
+
+// SetEtc sets the "etc" field.
+func (ac *ActCreate) SetEtc(b bool) *ActCreate {
+	ac.mutation.SetEtc(b)
+	return ac
+}
+
+// SetNillableEtc sets the "etc" field if the given value is not nil.
+func (ac *ActCreate) SetNillableEtc(b *bool) *ActCreate {
+	if b != nil {
+		ac.SetEtc(*b)
+	}
+	return ac
+}
+
 // SetID sets the "id" field.
 func (ac *ActCreate) SetID(u uint64) *ActCreate {
 	ac.mutation.SetID(u)
@@ -156,6 +373,21 @@ func (ac *ActCreate) AddRoutineActRecs(r ...*RoutineActRec) *ActCreate {
 	return ac.AddRoutineActRecIDs(ids...)
 }
 
+// AddOneRepMaxisIDs adds the "one_rep_maxes" edge to the OneRepMax entity by IDs.
+func (ac *ActCreate) AddOneRepMaxisIDs(ids ...uint64) *ActCreate {
+	ac.mutation.AddOneRepMaxisIDs(ids...)
+	return ac
+}
+
+// AddOneRepMaxes adds the "one_rep_maxes" edges to the OneRepMax entity.
+func (ac *ActCreate) AddOneRepMaxes(o ...*OneRepMax) *ActCreate {
+	ids := make([]uint64, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return ac.AddOneRepMaxisIDs(ids...)
+}
+
 // Mutation returns the ActMutation object of the builder.
 func (ac *ActCreate) Mutation() *ActMutation {
 	return ac.mutation
@@ -199,6 +431,70 @@ func (ac *ActCreate) defaults() {
 		v := act.DefaultUpdatedAt()
 		ac.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := ac.mutation.Weight(); !ok {
+		v := act.DefaultWeight
+		ac.mutation.SetWeight(v)
+	}
+	if _, ok := ac.mutation.Bodyweight(); !ok {
+		v := act.DefaultBodyweight
+		ac.mutation.SetBodyweight(v)
+	}
+	if _, ok := ac.mutation.Cardio(); !ok {
+		v := act.DefaultCardio
+		ac.mutation.SetCardio(v)
+	}
+	if _, ok := ac.mutation.Upper(); !ok {
+		v := act.DefaultUpper
+		ac.mutation.SetUpper(v)
+	}
+	if _, ok := ac.mutation.Lower(); !ok {
+		v := act.DefaultLower
+		ac.mutation.SetLower(v)
+	}
+	if _, ok := ac.mutation.Full(); !ok {
+		v := act.DefaultFull
+		ac.mutation.SetFull(v)
+	}
+	if _, ok := ac.mutation.Arms(); !ok {
+		v := act.DefaultArms
+		ac.mutation.SetArms(v)
+	}
+	if _, ok := ac.mutation.Shoulders(); !ok {
+		v := act.DefaultShoulders
+		ac.mutation.SetShoulders(v)
+	}
+	if _, ok := ac.mutation.Chest(); !ok {
+		v := act.DefaultChest
+		ac.mutation.SetChest(v)
+	}
+	if _, ok := ac.mutation.Core(); !ok {
+		v := act.DefaultCore
+		ac.mutation.SetCore(v)
+	}
+	if _, ok := ac.mutation.UpperBack(); !ok {
+		v := act.DefaultUpperBack
+		ac.mutation.SetUpperBack(v)
+	}
+	if _, ok := ac.mutation.LowerBack(); !ok {
+		v := act.DefaultLowerBack
+		ac.mutation.SetLowerBack(v)
+	}
+	if _, ok := ac.mutation.Legs(); !ok {
+		v := act.DefaultLegs
+		ac.mutation.SetLegs(v)
+	}
+	if _, ok := ac.mutation.LegsFront(); !ok {
+		v := act.DefaultLegsFront
+		ac.mutation.SetLegsFront(v)
+	}
+	if _, ok := ac.mutation.LegsBack(); !ok {
+		v := act.DefaultLegsBack
+		ac.mutation.SetLegsBack(v)
+	}
+	if _, ok := ac.mutation.Etc(); !ok {
+		v := act.DefaultEtc
+		ac.mutation.SetEtc(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -210,6 +506,9 @@ func (ac *ActCreate) check() error {
 		if err := act.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Act.name": %w`, err)}
 		}
+	}
+	if _, ok := ac.mutation.GetType(); !ok {
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Act.type"`)}
 	}
 	if v, ok := ac.mutation.GetType(); ok {
 		if err := act.TypeValidator(v); err != nil {
@@ -224,6 +523,54 @@ func (ac *ActCreate) check() error {
 	}
 	if _, ok := ac.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Act.updated_at"`)}
+	}
+	if _, ok := ac.mutation.Weight(); !ok {
+		return &ValidationError{Name: "weight", err: errors.New(`ent: missing required field "Act.weight"`)}
+	}
+	if _, ok := ac.mutation.Bodyweight(); !ok {
+		return &ValidationError{Name: "bodyweight", err: errors.New(`ent: missing required field "Act.bodyweight"`)}
+	}
+	if _, ok := ac.mutation.Cardio(); !ok {
+		return &ValidationError{Name: "cardio", err: errors.New(`ent: missing required field "Act.cardio"`)}
+	}
+	if _, ok := ac.mutation.Upper(); !ok {
+		return &ValidationError{Name: "upper", err: errors.New(`ent: missing required field "Act.upper"`)}
+	}
+	if _, ok := ac.mutation.Lower(); !ok {
+		return &ValidationError{Name: "lower", err: errors.New(`ent: missing required field "Act.lower"`)}
+	}
+	if _, ok := ac.mutation.Full(); !ok {
+		return &ValidationError{Name: "full", err: errors.New(`ent: missing required field "Act.full"`)}
+	}
+	if _, ok := ac.mutation.Arms(); !ok {
+		return &ValidationError{Name: "arms", err: errors.New(`ent: missing required field "Act.arms"`)}
+	}
+	if _, ok := ac.mutation.Shoulders(); !ok {
+		return &ValidationError{Name: "shoulders", err: errors.New(`ent: missing required field "Act.shoulders"`)}
+	}
+	if _, ok := ac.mutation.Chest(); !ok {
+		return &ValidationError{Name: "chest", err: errors.New(`ent: missing required field "Act.chest"`)}
+	}
+	if _, ok := ac.mutation.Core(); !ok {
+		return &ValidationError{Name: "core", err: errors.New(`ent: missing required field "Act.core"`)}
+	}
+	if _, ok := ac.mutation.UpperBack(); !ok {
+		return &ValidationError{Name: "upper_back", err: errors.New(`ent: missing required field "Act.upper_back"`)}
+	}
+	if _, ok := ac.mutation.LowerBack(); !ok {
+		return &ValidationError{Name: "lower_back", err: errors.New(`ent: missing required field "Act.lower_back"`)}
+	}
+	if _, ok := ac.mutation.Legs(); !ok {
+		return &ValidationError{Name: "legs", err: errors.New(`ent: missing required field "Act.legs"`)}
+	}
+	if _, ok := ac.mutation.LegsFront(); !ok {
+		return &ValidationError{Name: "legs_front", err: errors.New(`ent: missing required field "Act.legs_front"`)}
+	}
+	if _, ok := ac.mutation.LegsBack(); !ok {
+		return &ValidationError{Name: "legs_back", err: errors.New(`ent: missing required field "Act.legs_back"`)}
+	}
+	if _, ok := ac.mutation.Etc(); !ok {
+		return &ValidationError{Name: "etc", err: errors.New(`ent: missing required field "Act.etc"`)}
 	}
 	return nil
 }
@@ -263,7 +610,7 @@ func (ac *ActCreate) createSpec() (*Act, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := ac.mutation.GetType(); ok {
 		_spec.SetField(act.FieldType, field.TypeEnum, value)
-		_node.Type = &value
+		_node.Type = value
 	}
 	if value, ok := ac.mutation.Author(); ok {
 		_spec.SetField(act.FieldAuthor, field.TypeUint64, value)
@@ -284,6 +631,70 @@ func (ac *ActCreate) createSpec() (*Act, *sqlgraph.CreateSpec) {
 	if value, ok := ac.mutation.UpdatedAt(); ok {
 		_spec.SetField(act.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if value, ok := ac.mutation.Weight(); ok {
+		_spec.SetField(act.FieldWeight, field.TypeBool, value)
+		_node.Weight = value
+	}
+	if value, ok := ac.mutation.Bodyweight(); ok {
+		_spec.SetField(act.FieldBodyweight, field.TypeBool, value)
+		_node.Bodyweight = value
+	}
+	if value, ok := ac.mutation.Cardio(); ok {
+		_spec.SetField(act.FieldCardio, field.TypeBool, value)
+		_node.Cardio = value
+	}
+	if value, ok := ac.mutation.Upper(); ok {
+		_spec.SetField(act.FieldUpper, field.TypeBool, value)
+		_node.Upper = value
+	}
+	if value, ok := ac.mutation.Lower(); ok {
+		_spec.SetField(act.FieldLower, field.TypeBool, value)
+		_node.Lower = value
+	}
+	if value, ok := ac.mutation.Full(); ok {
+		_spec.SetField(act.FieldFull, field.TypeBool, value)
+		_node.Full = value
+	}
+	if value, ok := ac.mutation.Arms(); ok {
+		_spec.SetField(act.FieldArms, field.TypeBool, value)
+		_node.Arms = value
+	}
+	if value, ok := ac.mutation.Shoulders(); ok {
+		_spec.SetField(act.FieldShoulders, field.TypeBool, value)
+		_node.Shoulders = value
+	}
+	if value, ok := ac.mutation.Chest(); ok {
+		_spec.SetField(act.FieldChest, field.TypeBool, value)
+		_node.Chest = value
+	}
+	if value, ok := ac.mutation.Core(); ok {
+		_spec.SetField(act.FieldCore, field.TypeBool, value)
+		_node.Core = value
+	}
+	if value, ok := ac.mutation.UpperBack(); ok {
+		_spec.SetField(act.FieldUpperBack, field.TypeBool, value)
+		_node.UpperBack = value
+	}
+	if value, ok := ac.mutation.LowerBack(); ok {
+		_spec.SetField(act.FieldLowerBack, field.TypeBool, value)
+		_node.LowerBack = value
+	}
+	if value, ok := ac.mutation.Legs(); ok {
+		_spec.SetField(act.FieldLegs, field.TypeBool, value)
+		_node.Legs = value
+	}
+	if value, ok := ac.mutation.LegsFront(); ok {
+		_spec.SetField(act.FieldLegsFront, field.TypeBool, value)
+		_node.LegsFront = value
+	}
+	if value, ok := ac.mutation.LegsBack(); ok {
+		_spec.SetField(act.FieldLegsBack, field.TypeBool, value)
+		_node.LegsBack = value
+	}
+	if value, ok := ac.mutation.Etc(); ok {
+		_spec.SetField(act.FieldEtc, field.TypeBool, value)
+		_node.Etc = value
 	}
 	if nodes := ac.mutation.TagsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -326,6 +737,22 @@ func (ac *ActCreate) createSpec() (*Act, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(routineactrec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ac.mutation.OneRepMaxesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.OneRepMaxesTable,
+			Columns: []string{act.OneRepMaxesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(onerepmax.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

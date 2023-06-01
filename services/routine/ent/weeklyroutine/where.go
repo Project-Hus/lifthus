@@ -95,26 +95,6 @@ func ProgramIDNotIn(vs ...uint64) predicate.WeeklyRoutine {
 	return predicate.WeeklyRoutine(sql.FieldNotIn(FieldProgramID, vs...))
 }
 
-// ProgramIDGT applies the GT predicate on the "program_id" field.
-func ProgramIDGT(v uint64) predicate.WeeklyRoutine {
-	return predicate.WeeklyRoutine(sql.FieldGT(FieldProgramID, v))
-}
-
-// ProgramIDGTE applies the GTE predicate on the "program_id" field.
-func ProgramIDGTE(v uint64) predicate.WeeklyRoutine {
-	return predicate.WeeklyRoutine(sql.FieldGTE(FieldProgramID, v))
-}
-
-// ProgramIDLT applies the LT predicate on the "program_id" field.
-func ProgramIDLT(v uint64) predicate.WeeklyRoutine {
-	return predicate.WeeklyRoutine(sql.FieldLT(FieldProgramID, v))
-}
-
-// ProgramIDLTE applies the LTE predicate on the "program_id" field.
-func ProgramIDLTE(v uint64) predicate.WeeklyRoutine {
-	return predicate.WeeklyRoutine(sql.FieldLTE(FieldProgramID, v))
-}
-
 // WeekEQ applies the EQ predicate on the "week" field.
 func WeekEQ(v int) predicate.WeeklyRoutine {
 	return predicate.WeeklyRoutine(sql.FieldEQ(FieldWeek, v))
@@ -240,7 +220,7 @@ func HasProgram() predicate.WeeklyRoutine {
 	return predicate.WeeklyRoutine(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, ProgramTable, ProgramPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, ProgramTable, ProgramColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -263,7 +243,7 @@ func HasDailyRoutines() predicate.WeeklyRoutine {
 	return predicate.WeeklyRoutine(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, DailyRoutinesTable, DailyRoutinesPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, DailyRoutinesTable, DailyRoutinesColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

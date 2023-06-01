@@ -49,14 +49,6 @@ func (rarc *RoutineActRecCreate) SetActID(u uint64) *RoutineActRecCreate {
 	return rarc
 }
 
-// SetNillableActID sets the "act_id" field if the given value is not nil.
-func (rarc *RoutineActRecCreate) SetNillableActID(u *uint64) *RoutineActRecCreate {
-	if u != nil {
-		rarc.SetActID(*u)
-	}
-	return rarc
-}
-
 // SetOrder sets the "order" field.
 func (rarc *RoutineActRecCreate) SetOrder(i int) *RoutineActRecCreate {
 	rarc.mutation.SetOrder(i)
@@ -187,21 +179,9 @@ func (rarc *RoutineActRecCreate) SetID(u uint64) *RoutineActRecCreate {
 	return rarc
 }
 
-// SetDailyRoutineRecID sets the "daily_routine_rec" edge to the DailyRoutineRec entity by ID.
-func (rarc *RoutineActRecCreate) SetDailyRoutineRecID(id uint64) *RoutineActRecCreate {
-	rarc.mutation.SetDailyRoutineRecID(id)
-	return rarc
-}
-
 // SetDailyRoutineRec sets the "daily_routine_rec" edge to the DailyRoutineRec entity.
 func (rarc *RoutineActRecCreate) SetDailyRoutineRec(d *DailyRoutineRec) *RoutineActRecCreate {
 	return rarc.SetDailyRoutineRecID(d.ID)
-}
-
-// SetActID sets the "act" edge to the Act entity by ID.
-func (rarc *RoutineActRecCreate) SetActID(id uint64) *RoutineActRecCreate {
-	rarc.mutation.SetActID(id)
-	return rarc
 }
 
 // SetAct sets the "act" edge to the Act entity.
@@ -285,6 +265,9 @@ func (rarc *RoutineActRecCreate) defaults() {
 func (rarc *RoutineActRecCreate) check() error {
 	if _, ok := rarc.mutation.DailyRoutineRecID(); !ok {
 		return &ValidationError{Name: "daily_routine_rec_id", err: errors.New(`ent: missing required field "RoutineActRec.daily_routine_rec_id"`)}
+	}
+	if _, ok := rarc.mutation.ActID(); !ok {
+		return &ValidationError{Name: "act_id", err: errors.New(`ent: missing required field "RoutineActRec.act_id"`)}
 	}
 	if _, ok := rarc.mutation.Order(); !ok {
 		return &ValidationError{Name: "order", err: errors.New(`ent: missing required field "RoutineActRec.order"`)}
@@ -372,17 +355,9 @@ func (rarc *RoutineActRecCreate) createSpec() (*RoutineActRec, *sqlgraph.CreateS
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := rarc.mutation.DailyRoutineRecID(); ok {
-		_spec.SetField(routineactrec.FieldDailyRoutineRecID, field.TypeUint64, value)
-		_node.DailyRoutineRecID = value
-	}
 	if value, ok := rarc.mutation.RoutineActID(); ok {
 		_spec.SetField(routineactrec.FieldRoutineActID, field.TypeUint64, value)
 		_node.RoutineActID = &value
-	}
-	if value, ok := rarc.mutation.ActID(); ok {
-		_spec.SetField(routineactrec.FieldActID, field.TypeUint64, value)
-		_node.ActID = &value
 	}
 	if value, ok := rarc.mutation.Order(); ok {
 		_spec.SetField(routineactrec.FieldOrder, field.TypeInt, value)
@@ -438,7 +413,7 @@ func (rarc *RoutineActRecCreate) createSpec() (*RoutineActRec, *sqlgraph.CreateS
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.daily_routine_rec_routine_act_recs = &nodes[0]
+		_node.DailyRoutineRecID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := rarc.mutation.ActIDs(); len(nodes) > 0 {
@@ -455,7 +430,7 @@ func (rarc *RoutineActRecCreate) createSpec() (*RoutineActRec, *sqlgraph.CreateS
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.act_routine_act_recs = &nodes[0]
+		_node.ActID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := rarc.mutation.RoutineActIDs(); len(nodes) > 0 {

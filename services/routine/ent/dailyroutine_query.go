@@ -80,7 +80,7 @@ func (drq *DailyRoutineQuery) QueryProgram() *ProgramQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(dailyroutine.Table, dailyroutine.FieldID, selector),
 			sqlgraph.To(program.Table, program.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, dailyroutine.ProgramTable, dailyroutine.ProgramPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, dailyroutine.ProgramTable, dailyroutine.ProgramColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(drq.driver.Dialect(), step)
 		return fromU, nil
@@ -102,7 +102,7 @@ func (drq *DailyRoutineQuery) QueryWeeklyRoutine() *WeeklyRoutineQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(dailyroutine.Table, dailyroutine.FieldID, selector),
 			sqlgraph.To(weeklyroutine.Table, weeklyroutine.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, dailyroutine.WeeklyRoutineTable, dailyroutine.WeeklyRoutinePrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, dailyroutine.WeeklyRoutineTable, dailyroutine.WeeklyRoutineColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(drq.driver.Dialect(), step)
 		return fromU, nil
@@ -504,16 +504,14 @@ func (drq *DailyRoutineQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 		return nodes, nil
 	}
 	if query := drq.withProgram; query != nil {
-		if err := drq.loadProgram(ctx, query, nodes,
-			func(n *DailyRoutine) { n.Edges.Program = []*Program{} },
-			func(n *DailyRoutine, e *Program) { n.Edges.Program = append(n.Edges.Program, e) }); err != nil {
+		if err := drq.loadProgram(ctx, query, nodes, nil,
+			func(n *DailyRoutine, e *Program) { n.Edges.Program = e }); err != nil {
 			return nil, err
 		}
 	}
 	if query := drq.withWeeklyRoutine; query != nil {
-		if err := drq.loadWeeklyRoutine(ctx, query, nodes,
-			func(n *DailyRoutine) { n.Edges.WeeklyRoutine = []*WeeklyRoutine{} },
-			func(n *DailyRoutine, e *WeeklyRoutine) { n.Edges.WeeklyRoutine = append(n.Edges.WeeklyRoutine, e) }); err != nil {
+		if err := drq.loadWeeklyRoutine(ctx, query, nodes, nil,
+			func(n *DailyRoutine, e *WeeklyRoutine) { n.Edges.WeeklyRoutine = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -537,123 +535,65 @@ func (drq *DailyRoutineQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 }
 
 func (drq *DailyRoutineQuery) loadProgram(ctx context.Context, query *ProgramQuery, nodes []*DailyRoutine, init func(*DailyRoutine), assign func(*DailyRoutine, *Program)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uint64]*DailyRoutine)
-	nids := make(map[uint64]map[*DailyRoutine]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
+	ids := make([]uint64, 0, len(nodes))
+	nodeids := make(map[uint64][]*DailyRoutine)
+	for i := range nodes {
+		if nodes[i].ProgramID == nil {
+			continue
 		}
+		fk := *nodes[i].ProgramID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(dailyroutine.ProgramTable)
-		s.Join(joinT).On(s.C(program.FieldID), joinT.C(dailyroutine.ProgramPrimaryKey[0]))
-		s.Where(sql.InValues(joinT.C(dailyroutine.ProgramPrimaryKey[1]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(dailyroutine.ProgramPrimaryKey[1]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
+	if len(ids) == 0 {
+		return nil
 	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(sql.NullInt64)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := uint64(values[0].(*sql.NullInt64).Int64)
-				inValue := uint64(values[1].(*sql.NullInt64).Int64)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*DailyRoutine]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*Program](ctx, query, qr, query.inters)
+	query.Where(program.IDIn(ids...))
+	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
+		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected "program" node returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "program_id" returned %v`, n.ID)
 		}
-		for kn := range nodes {
-			assign(kn, n)
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
 	return nil
 }
 func (drq *DailyRoutineQuery) loadWeeklyRoutine(ctx context.Context, query *WeeklyRoutineQuery, nodes []*DailyRoutine, init func(*DailyRoutine), assign func(*DailyRoutine, *WeeklyRoutine)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uint64]*DailyRoutine)
-	nids := make(map[uint64]map[*DailyRoutine]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
+	ids := make([]uint64, 0, len(nodes))
+	nodeids := make(map[uint64][]*DailyRoutine)
+	for i := range nodes {
+		if nodes[i].WeeklyRoutineID == nil {
+			continue
 		}
+		fk := *nodes[i].WeeklyRoutineID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(dailyroutine.WeeklyRoutineTable)
-		s.Join(joinT).On(s.C(weeklyroutine.FieldID), joinT.C(dailyroutine.WeeklyRoutinePrimaryKey[0]))
-		s.Where(sql.InValues(joinT.C(dailyroutine.WeeklyRoutinePrimaryKey[1]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(dailyroutine.WeeklyRoutinePrimaryKey[1]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
+	if len(ids) == 0 {
+		return nil
 	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(sql.NullInt64)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := uint64(values[0].(*sql.NullInt64).Int64)
-				inValue := uint64(values[1].(*sql.NullInt64).Int64)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*DailyRoutine]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*WeeklyRoutine](ctx, query, qr, query.inters)
+	query.Where(weeklyroutine.IDIn(ids...))
+	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
+		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected "weekly_routine" node returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "weekly_routine_id" returned %v`, n.ID)
 		}
-		for kn := range nodes {
-			assign(kn, n)
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
 	return nil
@@ -668,7 +608,9 @@ func (drq *DailyRoutineQuery) loadRoutineActs(ctx context.Context, query *Routin
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(routineact.FieldDailyRoutineID)
+	}
 	query.Where(predicate.RoutineAct(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(dailyroutine.RoutineActsColumn), fks...))
 	}))
@@ -677,13 +619,10 @@ func (drq *DailyRoutineQuery) loadRoutineActs(ctx context.Context, query *Routin
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.daily_routine_routine_acts
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "daily_routine_routine_acts" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.DailyRoutineID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "daily_routine_routine_acts" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "daily_routine_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -699,7 +638,9 @@ func (drq *DailyRoutineQuery) loadDailyRoutineRecs(ctx context.Context, query *D
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(dailyroutinerec.FieldDailyRoutineID)
+	}
 	query.Where(predicate.DailyRoutineRec(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(dailyroutine.DailyRoutineRecsColumn), fks...))
 	}))
@@ -708,13 +649,13 @@ func (drq *DailyRoutineQuery) loadDailyRoutineRecs(ctx context.Context, query *D
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.daily_routine_daily_routine_recs
+		fk := n.DailyRoutineID
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "daily_routine_daily_routine_recs" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "daily_routine_id" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "daily_routine_daily_routine_recs" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "daily_routine_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -745,6 +686,12 @@ func (drq *DailyRoutineQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != dailyroutine.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if drq.withProgram != nil {
+			_spec.Node.AddColumnOnce(dailyroutine.FieldProgramID)
+		}
+		if drq.withWeeklyRoutine != nil {
+			_spec.Node.AddColumnOnce(dailyroutine.FieldWeeklyRoutineID)
 		}
 	}
 	if ps := drq.predicates; len(ps) > 0 {

@@ -25,7 +25,7 @@ type RoutineActRec struct {
 	// RoutineActID holds the value of the "routine_act_id" field.
 	RoutineActID *uint64 `json:"routine_act_id,omitempty"`
 	// ActID holds the value of the "act_id" field.
-	ActID *uint64 `json:"act_id,omitempty"`
+	ActID uint64 `json:"act_id,omitempty"`
 	// Order holds the value of the "order" field.
 	Order int `json:"order,omitempty"`
 	// Reps holds the value of the "reps" field.
@@ -48,11 +48,9 @@ type RoutineActRec struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RoutineActRecQuery when eager-loading is set.
-	Edges                              RoutineActRecEdges `json:"edges"`
-	act_routine_act_recs               *uint64
-	daily_routine_rec_routine_act_recs *uint64
-	routine_act_routine_act_recs       *uint64
-	selectValues                       sql.SelectValues
+	Edges                        RoutineActRecEdges `json:"edges"`
+	routine_act_routine_act_recs *uint64
+	selectValues                 sql.SelectValues
 }
 
 // RoutineActRecEdges holds the relations/edges for other nodes in the graph.
@@ -118,11 +116,7 @@ func (*RoutineActRec) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case routineactrec.FieldCreatedAt, routineactrec.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case routineactrec.ForeignKeys[0]: // act_routine_act_recs
-			values[i] = new(sql.NullInt64)
-		case routineactrec.ForeignKeys[1]: // daily_routine_rec_routine_act_recs
-			values[i] = new(sql.NullInt64)
-		case routineactrec.ForeignKeys[2]: // routine_act_routine_act_recs
+		case routineactrec.ForeignKeys[0]: // routine_act_routine_act_recs
 			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -162,8 +156,7 @@ func (rar *RoutineActRec) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field act_id", values[i])
 			} else if value.Valid {
-				rar.ActID = new(uint64)
-				*rar.ActID = uint64(value.Int64)
+				rar.ActID = uint64(value.Int64)
 			}
 		case routineactrec.FieldOrder:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -231,20 +224,6 @@ func (rar *RoutineActRec) assignValues(columns []string, values []any) error {
 			}
 		case routineactrec.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field act_routine_act_recs", value)
-			} else if value.Valid {
-				rar.act_routine_act_recs = new(uint64)
-				*rar.act_routine_act_recs = uint64(value.Int64)
-			}
-		case routineactrec.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field daily_routine_rec_routine_act_recs", value)
-			} else if value.Valid {
-				rar.daily_routine_rec_routine_act_recs = new(uint64)
-				*rar.daily_routine_rec_routine_act_recs = uint64(value.Int64)
-			}
-		case routineactrec.ForeignKeys[2]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field routine_act_routine_act_recs", value)
 			} else if value.Valid {
 				rar.routine_act_routine_act_recs = new(uint64)
@@ -309,10 +288,8 @@ func (rar *RoutineActRec) String() string {
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	if v := rar.ActID; v != nil {
-		builder.WriteString("act_id=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
+	builder.WriteString("act_id=")
+	builder.WriteString(fmt.Sprintf("%v", rar.ActID))
 	builder.WriteString(", ")
 	builder.WriteString("order=")
 	builder.WriteString(fmt.Sprintf("%v", rar.Order))

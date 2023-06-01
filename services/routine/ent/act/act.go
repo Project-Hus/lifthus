@@ -29,12 +29,46 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldWeight holds the string denoting the weight field in the database.
+	FieldWeight = "weight"
+	// FieldBodyweight holds the string denoting the bodyweight field in the database.
+	FieldBodyweight = "bodyweight"
+	// FieldCardio holds the string denoting the cardio field in the database.
+	FieldCardio = "cardio"
+	// FieldUpper holds the string denoting the upper field in the database.
+	FieldUpper = "upper"
+	// FieldLower holds the string denoting the lower field in the database.
+	FieldLower = "lower"
+	// FieldFull holds the string denoting the full field in the database.
+	FieldFull = "full"
+	// FieldArms holds the string denoting the arms field in the database.
+	FieldArms = "arms"
+	// FieldShoulders holds the string denoting the shoulders field in the database.
+	FieldShoulders = "shoulders"
+	// FieldChest holds the string denoting the chest field in the database.
+	FieldChest = "chest"
+	// FieldCore holds the string denoting the core field in the database.
+	FieldCore = "core"
+	// FieldUpperBack holds the string denoting the upper_back field in the database.
+	FieldUpperBack = "upper_back"
+	// FieldLowerBack holds the string denoting the lower_back field in the database.
+	FieldLowerBack = "lower_back"
+	// FieldLegs holds the string denoting the legs field in the database.
+	FieldLegs = "legs"
+	// FieldLegsFront holds the string denoting the legs_front field in the database.
+	FieldLegsFront = "legs_front"
+	// FieldLegsBack holds the string denoting the legs_back field in the database.
+	FieldLegsBack = "legs_back"
+	// FieldEtc holds the string denoting the etc field in the database.
+	FieldEtc = "etc"
 	// EdgeTags holds the string denoting the tags edge name in mutations.
 	EdgeTags = "tags"
 	// EdgeRoutineActs holds the string denoting the routine_acts edge name in mutations.
 	EdgeRoutineActs = "routine_acts"
 	// EdgeRoutineActRecs holds the string denoting the routine_act_recs edge name in mutations.
 	EdgeRoutineActRecs = "routine_act_recs"
+	// EdgeOneRepMaxes holds the string denoting the one_rep_maxes edge name in mutations.
+	EdgeOneRepMaxes = "one_rep_maxes"
 	// Table holds the table name of the act in the database.
 	Table = "acts"
 	// TagsTable is the table that holds the tags relation/edge. The primary key declared below.
@@ -48,14 +82,21 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "routineact" package.
 	RoutineActsInverseTable = "routine_acts"
 	// RoutineActsColumn is the table column denoting the routine_acts relation/edge.
-	RoutineActsColumn = "act_routine_acts"
+	RoutineActsColumn = "act_id"
 	// RoutineActRecsTable is the table that holds the routine_act_recs relation/edge.
 	RoutineActRecsTable = "routine_act_recs"
 	// RoutineActRecsInverseTable is the table name for the RoutineActRec entity.
 	// It exists in this package in order to avoid circular dependency with the "routineactrec" package.
 	RoutineActRecsInverseTable = "routine_act_recs"
 	// RoutineActRecsColumn is the table column denoting the routine_act_recs relation/edge.
-	RoutineActRecsColumn = "act_routine_act_recs"
+	RoutineActRecsColumn = "act_id"
+	// OneRepMaxesTable is the table that holds the one_rep_maxes relation/edge.
+	OneRepMaxesTable = "one_rep_maxes"
+	// OneRepMaxesInverseTable is the table name for the OneRepMax entity.
+	// It exists in this package in order to avoid circular dependency with the "onerepmax" package.
+	OneRepMaxesInverseTable = "one_rep_maxes"
+	// OneRepMaxesColumn is the table column denoting the one_rep_maxes relation/edge.
+	OneRepMaxesColumn = "act_id"
 )
 
 // Columns holds all SQL columns for act fields.
@@ -68,6 +109,22 @@ var Columns = []string{
 	FieldDescription,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldWeight,
+	FieldBodyweight,
+	FieldCardio,
+	FieldUpper,
+	FieldLower,
+	FieldFull,
+	FieldArms,
+	FieldShoulders,
+	FieldChest,
+	FieldCore,
+	FieldUpperBack,
+	FieldLowerBack,
+	FieldLegs,
+	FieldLegsFront,
+	FieldLegsBack,
+	FieldEtc,
 }
 
 var (
@@ -95,6 +152,38 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultWeight holds the default value on creation for the "weight" field.
+	DefaultWeight bool
+	// DefaultBodyweight holds the default value on creation for the "bodyweight" field.
+	DefaultBodyweight bool
+	// DefaultCardio holds the default value on creation for the "cardio" field.
+	DefaultCardio bool
+	// DefaultUpper holds the default value on creation for the "upper" field.
+	DefaultUpper bool
+	// DefaultLower holds the default value on creation for the "lower" field.
+	DefaultLower bool
+	// DefaultFull holds the default value on creation for the "full" field.
+	DefaultFull bool
+	// DefaultArms holds the default value on creation for the "arms" field.
+	DefaultArms bool
+	// DefaultShoulders holds the default value on creation for the "shoulders" field.
+	DefaultShoulders bool
+	// DefaultChest holds the default value on creation for the "chest" field.
+	DefaultChest bool
+	// DefaultCore holds the default value on creation for the "core" field.
+	DefaultCore bool
+	// DefaultUpperBack holds the default value on creation for the "upper_back" field.
+	DefaultUpperBack bool
+	// DefaultLowerBack holds the default value on creation for the "lower_back" field.
+	DefaultLowerBack bool
+	// DefaultLegs holds the default value on creation for the "legs" field.
+	DefaultLegs bool
+	// DefaultLegsFront holds the default value on creation for the "legs_front" field.
+	DefaultLegsFront bool
+	// DefaultLegsBack holds the default value on creation for the "legs_back" field.
+	DefaultLegsBack bool
+	// DefaultEtc holds the default value on creation for the "etc" field.
+	DefaultEtc bool
 )
 
 // Type defines the type for the "type" enum field.
@@ -102,8 +191,9 @@ type Type string
 
 // Type values.
 const (
-	TypeRep Type = "rep"
-	TypeLap Type = "lap"
+	TypeRep    Type = "rep"
+	TypeLap    Type = "lap"
+	TypeSimple Type = "simple"
 )
 
 func (_type Type) String() string {
@@ -113,7 +203,7 @@ func (_type Type) String() string {
 // TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
 func TypeValidator(_type Type) error {
 	switch _type {
-	case TypeRep, TypeLap:
+	case TypeRep, TypeLap, TypeSimple:
 		return nil
 	default:
 		return fmt.Errorf("act: invalid enum value for type field: %q", _type)
@@ -163,6 +253,86 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
+// ByWeight orders the results by the weight field.
+func ByWeight(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWeight, opts...).ToFunc()
+}
+
+// ByBodyweight orders the results by the bodyweight field.
+func ByBodyweight(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBodyweight, opts...).ToFunc()
+}
+
+// ByCardio orders the results by the cardio field.
+func ByCardio(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCardio, opts...).ToFunc()
+}
+
+// ByUpper orders the results by the upper field.
+func ByUpper(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpper, opts...).ToFunc()
+}
+
+// ByLower orders the results by the lower field.
+func ByLower(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLower, opts...).ToFunc()
+}
+
+// ByFull orders the results by the full field.
+func ByFull(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFull, opts...).ToFunc()
+}
+
+// ByArms orders the results by the arms field.
+func ByArms(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldArms, opts...).ToFunc()
+}
+
+// ByShoulders orders the results by the shoulders field.
+func ByShoulders(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldShoulders, opts...).ToFunc()
+}
+
+// ByChest orders the results by the chest field.
+func ByChest(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChest, opts...).ToFunc()
+}
+
+// ByCore orders the results by the core field.
+func ByCore(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCore, opts...).ToFunc()
+}
+
+// ByUpperBack orders the results by the upper_back field.
+func ByUpperBack(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpperBack, opts...).ToFunc()
+}
+
+// ByLowerBack orders the results by the lower_back field.
+func ByLowerBack(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLowerBack, opts...).ToFunc()
+}
+
+// ByLegs orders the results by the legs field.
+func ByLegs(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLegs, opts...).ToFunc()
+}
+
+// ByLegsFront orders the results by the legs_front field.
+func ByLegsFront(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLegsFront, opts...).ToFunc()
+}
+
+// ByLegsBack orders the results by the legs_back field.
+func ByLegsBack(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLegsBack, opts...).ToFunc()
+}
+
+// ByEtc orders the results by the etc field.
+func ByEtc(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEtc, opts...).ToFunc()
+}
+
 // ByTagsCount orders the results by tags count.
 func ByTagsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -204,6 +374,20 @@ func ByRoutineActRecs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newRoutineActRecsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByOneRepMaxesCount orders the results by one_rep_maxes count.
+func ByOneRepMaxesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newOneRepMaxesStep(), opts...)
+	}
+}
+
+// ByOneRepMaxes orders the results by one_rep_maxes terms.
+func ByOneRepMaxes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOneRepMaxesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTagsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -223,5 +407,12 @@ func newRoutineActRecsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RoutineActRecsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, RoutineActRecsTable, RoutineActRecsColumn),
+	)
+}
+func newOneRepMaxesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OneRepMaxesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, OneRepMaxesTable, OneRepMaxesColumn),
 	)
 }

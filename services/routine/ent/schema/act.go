@@ -21,7 +21,7 @@ func (Act) Fields() []ent.Field {
 		field.Uint64("id").Unique(), // user id from Hus
 
 		field.String("name").NotEmpty().Annotations(entsql.Annotation{Size: 50}),
-		field.Enum("type").Values("rep", "lap").Nillable().Optional(),
+		field.Enum("type").Values("rep", "lap", "simple"),
 
 		field.Uint64("author"),
 		field.String("image").Nillable().Optional(),
@@ -29,6 +29,28 @@ func (Act) Fields() []ent.Field {
 
 		field.Time("created_at").Default(time.Now).Immutable(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
+
+		// weight/cardio
+		field.Bool("weight").Default(false),
+		field.Bool("bodyweight").Default(false),
+		field.Bool("cardio").Default(false),
+
+		// upper/lower/full body
+		field.Bool("upper").Default(false),
+		field.Bool("lower").Default(false),
+		field.Bool("full").Default(false),
+
+		// prime movers
+		field.Bool("arms").Default(false),
+		field.Bool("shoulders").Default(false),
+		field.Bool("chest").Default(false),
+		field.Bool("core").Default(false),
+		field.Bool("upper_back").Default(false),
+		field.Bool("lower_back").Default(false),
+		field.Bool("legs").Default(false),
+		field.Bool("legs_front").Default(false),
+		field.Bool("legs_back").Default(false),
+		field.Bool("etc").Default(false),
 	}
 }
 
@@ -39,5 +61,7 @@ func (Act) Edges() []ent.Edge {
 		edge.To("routine_acts", RoutineAct.Type),
 
 		edge.To("routine_act_recs", RoutineActRec.Type),
+
+		edge.To("one_rep_maxes", OneRepMax.Type),
 	}
 }

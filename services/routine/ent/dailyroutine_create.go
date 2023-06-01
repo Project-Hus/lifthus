@@ -38,16 +38,16 @@ func (drc *DailyRoutineCreate) SetNillableProgramID(u *uint64) *DailyRoutineCrea
 	return drc
 }
 
-// SetWeekID sets the "week_id" field.
-func (drc *DailyRoutineCreate) SetWeekID(u uint64) *DailyRoutineCreate {
-	drc.mutation.SetWeekID(u)
+// SetWeeklyRoutineID sets the "weekly_routine_id" field.
+func (drc *DailyRoutineCreate) SetWeeklyRoutineID(u uint64) *DailyRoutineCreate {
+	drc.mutation.SetWeeklyRoutineID(u)
 	return drc
 }
 
-// SetNillableWeekID sets the "week_id" field if the given value is not nil.
-func (drc *DailyRoutineCreate) SetNillableWeekID(u *uint64) *DailyRoutineCreate {
+// SetNillableWeeklyRoutineID sets the "weekly_routine_id" field if the given value is not nil.
+func (drc *DailyRoutineCreate) SetNillableWeeklyRoutineID(u *uint64) *DailyRoutineCreate {
 	if u != nil {
-		drc.SetWeekID(*u)
+		drc.SetWeeklyRoutineID(*u)
 	}
 	return drc
 }
@@ -92,34 +92,14 @@ func (drc *DailyRoutineCreate) SetID(u uint64) *DailyRoutineCreate {
 	return drc
 }
 
-// AddProgramIDs adds the "program" edge to the Program entity by IDs.
-func (drc *DailyRoutineCreate) AddProgramIDs(ids ...uint64) *DailyRoutineCreate {
-	drc.mutation.AddProgramIDs(ids...)
-	return drc
+// SetProgram sets the "program" edge to the Program entity.
+func (drc *DailyRoutineCreate) SetProgram(p *Program) *DailyRoutineCreate {
+	return drc.SetProgramID(p.ID)
 }
 
-// AddProgram adds the "program" edges to the Program entity.
-func (drc *DailyRoutineCreate) AddProgram(p ...*Program) *DailyRoutineCreate {
-	ids := make([]uint64, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return drc.AddProgramIDs(ids...)
-}
-
-// AddWeeklyRoutineIDs adds the "weekly_routine" edge to the WeeklyRoutine entity by IDs.
-func (drc *DailyRoutineCreate) AddWeeklyRoutineIDs(ids ...uint64) *DailyRoutineCreate {
-	drc.mutation.AddWeeklyRoutineIDs(ids...)
-	return drc
-}
-
-// AddWeeklyRoutine adds the "weekly_routine" edges to the WeeklyRoutine entity.
-func (drc *DailyRoutineCreate) AddWeeklyRoutine(w ...*WeeklyRoutine) *DailyRoutineCreate {
-	ids := make([]uint64, len(w))
-	for i := range w {
-		ids[i] = w[i].ID
-	}
-	return drc.AddWeeklyRoutineIDs(ids...)
+// SetWeeklyRoutine sets the "weekly_routine" edge to the WeeklyRoutine entity.
+func (drc *DailyRoutineCreate) SetWeeklyRoutine(w *WeeklyRoutine) *DailyRoutineCreate {
+	return drc.SetWeeklyRoutineID(w.ID)
 }
 
 // AddRoutineActIDs adds the "routine_acts" edge to the RoutineAct entity by IDs.
@@ -245,14 +225,6 @@ func (drc *DailyRoutineCreate) createSpec() (*DailyRoutine, *sqlgraph.CreateSpec
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := drc.mutation.ProgramID(); ok {
-		_spec.SetField(dailyroutine.FieldProgramID, field.TypeUint64, value)
-		_node.ProgramID = &value
-	}
-	if value, ok := drc.mutation.WeekID(); ok {
-		_spec.SetField(dailyroutine.FieldWeekID, field.TypeUint64, value)
-		_node.WeekID = &value
-	}
 	if value, ok := drc.mutation.Day(); ok {
 		_spec.SetField(dailyroutine.FieldDay, field.TypeInt, value)
 		_node.Day = value
@@ -267,10 +239,10 @@ func (drc *DailyRoutineCreate) createSpec() (*DailyRoutine, *sqlgraph.CreateSpec
 	}
 	if nodes := drc.mutation.ProgramIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   dailyroutine.ProgramTable,
-			Columns: dailyroutine.ProgramPrimaryKey,
+			Columns: []string{dailyroutine.ProgramColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64),
@@ -279,14 +251,15 @@ func (drc *DailyRoutineCreate) createSpec() (*DailyRoutine, *sqlgraph.CreateSpec
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.ProgramID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := drc.mutation.WeeklyRoutineIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   dailyroutine.WeeklyRoutineTable,
-			Columns: dailyroutine.WeeklyRoutinePrimaryKey,
+			Columns: []string{dailyroutine.WeeklyRoutineColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(weeklyroutine.FieldID, field.TypeUint64),
@@ -295,6 +268,7 @@ func (drc *DailyRoutineCreate) createSpec() (*DailyRoutine, *sqlgraph.CreateSpec
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.WeeklyRoutineID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := drc.mutation.RoutineActsIDs(); len(nodes) > 0 {

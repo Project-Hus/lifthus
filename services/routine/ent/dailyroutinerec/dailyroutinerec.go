@@ -49,28 +49,28 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "dailyroutine" package.
 	DailyRoutineInverseTable = "daily_routines"
 	// DailyRoutineColumn is the table column denoting the daily_routine relation/edge.
-	DailyRoutineColumn = "daily_routine_daily_routine_recs"
+	DailyRoutineColumn = "daily_routine_id"
 	// ProgramRecTable is the table that holds the program_rec relation/edge.
 	ProgramRecTable = "daily_routine_recs"
 	// ProgramRecInverseTable is the table name for the ProgramRec entity.
 	// It exists in this package in order to avoid circular dependency with the "programrec" package.
 	ProgramRecInverseTable = "program_recs"
 	// ProgramRecColumn is the table column denoting the program_rec relation/edge.
-	ProgramRecColumn = "program_rec_daily_routine_recs"
+	ProgramRecColumn = "program_rec_id"
 	// WeeklyRoutineRecTable is the table that holds the weekly_routine_rec relation/edge.
 	WeeklyRoutineRecTable = "daily_routine_recs"
 	// WeeklyRoutineRecInverseTable is the table name for the WeeklyRoutineRec entity.
 	// It exists in this package in order to avoid circular dependency with the "weeklyroutinerec" package.
 	WeeklyRoutineRecInverseTable = "weekly_routine_recs"
 	// WeeklyRoutineRecColumn is the table column denoting the weekly_routine_rec relation/edge.
-	WeeklyRoutineRecColumn = "weekly_routine_rec_daily_routine_recs"
+	WeeklyRoutineRecColumn = "weekly_routine_rec_id"
 	// RoutineActRecsTable is the table that holds the routine_act_recs relation/edge.
 	RoutineActRecsTable = "routine_act_recs"
 	// RoutineActRecsInverseTable is the table name for the RoutineActRec entity.
 	// It exists in this package in order to avoid circular dependency with the "routineactrec" package.
 	RoutineActRecsInverseTable = "routine_act_recs"
 	// RoutineActRecsColumn is the table column denoting the routine_act_recs relation/edge.
-	RoutineActRecsColumn = "daily_routine_rec_routine_act_recs"
+	RoutineActRecsColumn = "daily_routine_rec_id"
 )
 
 // Columns holds all SQL columns for dailyroutinerec fields.
@@ -87,23 +87,10 @@ var Columns = []string{
 	FieldUpdatedAt,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "daily_routine_recs"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"daily_routine_daily_routine_recs",
-	"program_rec_daily_routine_recs",
-	"weekly_routine_rec_daily_routine_recs",
-}
-
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}

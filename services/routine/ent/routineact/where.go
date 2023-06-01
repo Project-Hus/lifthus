@@ -55,14 +55,14 @@ func IDLTE(id uint64) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldLTE(FieldID, id))
 }
 
-// DailyRoutineID applies equality check predicate on the "daily_routine_id" field. It's identical to DailyRoutineIDEQ.
-func DailyRoutineID(v uint64) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldEQ(FieldDailyRoutineID, v))
-}
-
 // ActID applies equality check predicate on the "act_id" field. It's identical to ActIDEQ.
 func ActID(v uint64) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldEQ(FieldActID, v))
+}
+
+// DailyRoutineID applies equality check predicate on the "daily_routine_id" field. It's identical to DailyRoutineIDEQ.
+func DailyRoutineID(v uint64) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldEQ(FieldDailyRoutineID, v))
 }
 
 // Order applies equality check predicate on the "order" field. It's identical to OrderEQ.
@@ -80,6 +80,11 @@ func Lap(v int) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldEQ(FieldLap, v))
 }
 
+// Warmup applies equality check predicate on the "warmup" field. It's identical to WarmupEQ.
+func Warmup(v bool) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldEQ(FieldWarmup, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldEQ(FieldCreatedAt, v))
@@ -88,46 +93,6 @@ func CreatedAt(v time.Time) predicate.RoutineAct {
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldEQ(FieldUpdatedAt, v))
-}
-
-// DailyRoutineIDEQ applies the EQ predicate on the "daily_routine_id" field.
-func DailyRoutineIDEQ(v uint64) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldEQ(FieldDailyRoutineID, v))
-}
-
-// DailyRoutineIDNEQ applies the NEQ predicate on the "daily_routine_id" field.
-func DailyRoutineIDNEQ(v uint64) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldNEQ(FieldDailyRoutineID, v))
-}
-
-// DailyRoutineIDIn applies the In predicate on the "daily_routine_id" field.
-func DailyRoutineIDIn(vs ...uint64) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldIn(FieldDailyRoutineID, vs...))
-}
-
-// DailyRoutineIDNotIn applies the NotIn predicate on the "daily_routine_id" field.
-func DailyRoutineIDNotIn(vs ...uint64) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldNotIn(FieldDailyRoutineID, vs...))
-}
-
-// DailyRoutineIDGT applies the GT predicate on the "daily_routine_id" field.
-func DailyRoutineIDGT(v uint64) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldGT(FieldDailyRoutineID, v))
-}
-
-// DailyRoutineIDGTE applies the GTE predicate on the "daily_routine_id" field.
-func DailyRoutineIDGTE(v uint64) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldGTE(FieldDailyRoutineID, v))
-}
-
-// DailyRoutineIDLT applies the LT predicate on the "daily_routine_id" field.
-func DailyRoutineIDLT(v uint64) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldLT(FieldDailyRoutineID, v))
-}
-
-// DailyRoutineIDLTE applies the LTE predicate on the "daily_routine_id" field.
-func DailyRoutineIDLTE(v uint64) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldLTE(FieldDailyRoutineID, v))
 }
 
 // ActIDEQ applies the EQ predicate on the "act_id" field.
@@ -150,24 +115,24 @@ func ActIDNotIn(vs ...uint64) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldNotIn(FieldActID, vs...))
 }
 
-// ActIDGT applies the GT predicate on the "act_id" field.
-func ActIDGT(v uint64) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldGT(FieldActID, v))
+// DailyRoutineIDEQ applies the EQ predicate on the "daily_routine_id" field.
+func DailyRoutineIDEQ(v uint64) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldEQ(FieldDailyRoutineID, v))
 }
 
-// ActIDGTE applies the GTE predicate on the "act_id" field.
-func ActIDGTE(v uint64) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldGTE(FieldActID, v))
+// DailyRoutineIDNEQ applies the NEQ predicate on the "daily_routine_id" field.
+func DailyRoutineIDNEQ(v uint64) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldNEQ(FieldDailyRoutineID, v))
 }
 
-// ActIDLT applies the LT predicate on the "act_id" field.
-func ActIDLT(v uint64) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldLT(FieldActID, v))
+// DailyRoutineIDIn applies the In predicate on the "daily_routine_id" field.
+func DailyRoutineIDIn(vs ...uint64) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldIn(FieldDailyRoutineID, vs...))
 }
 
-// ActIDLTE applies the LTE predicate on the "act_id" field.
-func ActIDLTE(v uint64) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldLTE(FieldActID, v))
+// DailyRoutineIDNotIn applies the NotIn predicate on the "daily_routine_id" field.
+func DailyRoutineIDNotIn(vs ...uint64) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldNotIn(FieldDailyRoutineID, vs...))
 }
 
 // OrderEQ applies the EQ predicate on the "order" field.
@@ -308,6 +273,16 @@ func LapIsNil() predicate.RoutineAct {
 // LapNotNil applies the NotNil predicate on the "lap" field.
 func LapNotNil() predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldNotNull(FieldLap))
+}
+
+// WarmupEQ applies the EQ predicate on the "warmup" field.
+func WarmupEQ(v bool) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldEQ(FieldWarmup, v))
+}
+
+// WarmupNEQ applies the NEQ predicate on the "warmup" field.
+func WarmupNEQ(v bool) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldNEQ(FieldWarmup, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

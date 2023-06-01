@@ -4,6 +4,7 @@ package ent
 
 import (
 	"fmt"
+	"routine/ent/program"
 	"routine/ent/weeklyroutine"
 	"strings"
 	"time"
@@ -34,7 +35,7 @@ type WeeklyRoutine struct {
 // WeeklyRoutineEdges holds the relations/edges for other nodes in the graph.
 type WeeklyRoutineEdges struct {
 	// Program holds the value of the program edge.
-	Program []*Program `json:"program,omitempty"`
+	Program *Program `json:"program,omitempty"`
 	// DailyRoutines holds the value of the daily_routines edge.
 	DailyRoutines []*DailyRoutine `json:"daily_routines,omitempty"`
 	// WeeklyRoutineRecs holds the value of the weekly_routine_recs edge.
@@ -45,9 +46,13 @@ type WeeklyRoutineEdges struct {
 }
 
 // ProgramOrErr returns the Program value or an error if the edge
-// was not loaded in eager-loading.
-func (e WeeklyRoutineEdges) ProgramOrErr() ([]*Program, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e WeeklyRoutineEdges) ProgramOrErr() (*Program, error) {
 	if e.loadedTypes[0] {
+		if e.Program == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: program.Label}
+		}
 		return e.Program, nil
 	}
 	return nil, &NotLoadedError{edge: "program"}

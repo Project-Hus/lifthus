@@ -5,6 +5,8 @@ package ent
 import (
 	"fmt"
 	"routine/ent/dailyroutine"
+	"routine/ent/program"
+	"routine/ent/weeklyroutine"
 	"strings"
 	"time"
 
@@ -19,8 +21,8 @@ type DailyRoutine struct {
 	ID uint64 `json:"id,omitempty"`
 	// ProgramID holds the value of the "program_id" field.
 	ProgramID *uint64 `json:"program_id,omitempty"`
-	// WeekID holds the value of the "week_id" field.
-	WeekID *uint64 `json:"week_id,omitempty"`
+	// WeeklyRoutineID holds the value of the "weekly_routine_id" field.
+	WeeklyRoutineID *uint64 `json:"weekly_routine_id,omitempty"`
 	// Day holds the value of the "day" field.
 	Day int `json:"day,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -36,9 +38,9 @@ type DailyRoutine struct {
 // DailyRoutineEdges holds the relations/edges for other nodes in the graph.
 type DailyRoutineEdges struct {
 	// Program holds the value of the program edge.
-	Program []*Program `json:"program,omitempty"`
+	Program *Program `json:"program,omitempty"`
 	// WeeklyRoutine holds the value of the weekly_routine edge.
-	WeeklyRoutine []*WeeklyRoutine `json:"weekly_routine,omitempty"`
+	WeeklyRoutine *WeeklyRoutine `json:"weekly_routine,omitempty"`
 	// RoutineActs holds the value of the routine_acts edge.
 	RoutineActs []*RoutineAct `json:"routine_acts,omitempty"`
 	// DailyRoutineRecs holds the value of the daily_routine_recs edge.
@@ -49,18 +51,26 @@ type DailyRoutineEdges struct {
 }
 
 // ProgramOrErr returns the Program value or an error if the edge
-// was not loaded in eager-loading.
-func (e DailyRoutineEdges) ProgramOrErr() ([]*Program, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DailyRoutineEdges) ProgramOrErr() (*Program, error) {
 	if e.loadedTypes[0] {
+		if e.Program == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: program.Label}
+		}
 		return e.Program, nil
 	}
 	return nil, &NotLoadedError{edge: "program"}
 }
 
 // WeeklyRoutineOrErr returns the WeeklyRoutine value or an error if the edge
-// was not loaded in eager-loading.
-func (e DailyRoutineEdges) WeeklyRoutineOrErr() ([]*WeeklyRoutine, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DailyRoutineEdges) WeeklyRoutineOrErr() (*WeeklyRoutine, error) {
 	if e.loadedTypes[1] {
+		if e.WeeklyRoutine == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: weeklyroutine.Label}
+		}
 		return e.WeeklyRoutine, nil
 	}
 	return nil, &NotLoadedError{edge: "weekly_routine"}
@@ -89,7 +99,7 @@ func (*DailyRoutine) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case dailyroutine.FieldID, dailyroutine.FieldProgramID, dailyroutine.FieldWeekID, dailyroutine.FieldDay:
+		case dailyroutine.FieldID, dailyroutine.FieldProgramID, dailyroutine.FieldWeeklyRoutineID, dailyroutine.FieldDay:
 			values[i] = new(sql.NullInt64)
 		case dailyroutine.FieldCreatedAt, dailyroutine.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -121,12 +131,12 @@ func (dr *DailyRoutine) assignValues(columns []string, values []any) error {
 				dr.ProgramID = new(uint64)
 				*dr.ProgramID = uint64(value.Int64)
 			}
-		case dailyroutine.FieldWeekID:
+		case dailyroutine.FieldWeeklyRoutineID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field week_id", values[i])
+				return fmt.Errorf("unexpected type %T for field weekly_routine_id", values[i])
 			} else if value.Valid {
-				dr.WeekID = new(uint64)
-				*dr.WeekID = uint64(value.Int64)
+				dr.WeeklyRoutineID = new(uint64)
+				*dr.WeeklyRoutineID = uint64(value.Int64)
 			}
 		case dailyroutine.FieldDay:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -207,8 +217,8 @@ func (dr *DailyRoutine) String() string {
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	if v := dr.WeekID; v != nil {
-		builder.WriteString("week_id=")
+	if v := dr.WeeklyRoutineID; v != nil {
+		builder.WriteString("weekly_routine_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")

@@ -75,37 +75,9 @@ func (wrrc *WeeklyRoutineRecCreate) SetID(u uint64) *WeeklyRoutineRecCreate {
 	return wrrc
 }
 
-// SetWeeklyRoutineID sets the "weekly_routine" edge to the WeeklyRoutine entity by ID.
-func (wrrc *WeeklyRoutineRecCreate) SetWeeklyRoutineID(id uint64) *WeeklyRoutineRecCreate {
-	wrrc.mutation.SetWeeklyRoutineID(id)
-	return wrrc
-}
-
-// SetNillableWeeklyRoutineID sets the "weekly_routine" edge to the WeeklyRoutine entity by ID if the given value is not nil.
-func (wrrc *WeeklyRoutineRecCreate) SetNillableWeeklyRoutineID(id *uint64) *WeeklyRoutineRecCreate {
-	if id != nil {
-		wrrc = wrrc.SetWeeklyRoutineID(*id)
-	}
-	return wrrc
-}
-
 // SetWeeklyRoutine sets the "weekly_routine" edge to the WeeklyRoutine entity.
 func (wrrc *WeeklyRoutineRecCreate) SetWeeklyRoutine(w *WeeklyRoutine) *WeeklyRoutineRecCreate {
 	return wrrc.SetWeeklyRoutineID(w.ID)
-}
-
-// SetProgramRecID sets the "program_rec" edge to the ProgramRec entity by ID.
-func (wrrc *WeeklyRoutineRecCreate) SetProgramRecID(id uint64) *WeeklyRoutineRecCreate {
-	wrrc.mutation.SetProgramRecID(id)
-	return wrrc
-}
-
-// SetNillableProgramRecID sets the "program_rec" edge to the ProgramRec entity by ID if the given value is not nil.
-func (wrrc *WeeklyRoutineRecCreate) SetNillableProgramRecID(id *uint64) *WeeklyRoutineRecCreate {
-	if id != nil {
-		wrrc = wrrc.SetProgramRecID(*id)
-	}
-	return wrrc
 }
 
 // SetProgramRec sets the "program_rec" edge to the ProgramRec entity.
@@ -190,6 +162,12 @@ func (wrrc *WeeklyRoutineRecCreate) check() error {
 	if _, ok := wrrc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "WeeklyRoutineRec.updated_at"`)}
 	}
+	if _, ok := wrrc.mutation.WeeklyRoutineID(); !ok {
+		return &ValidationError{Name: "weekly_routine", err: errors.New(`ent: missing required edge "WeeklyRoutineRec.weekly_routine"`)}
+	}
+	if _, ok := wrrc.mutation.ProgramRecID(); !ok {
+		return &ValidationError{Name: "program_rec", err: errors.New(`ent: missing required edge "WeeklyRoutineRec.program_rec"`)}
+	}
 	return nil
 }
 
@@ -222,14 +200,6 @@ func (wrrc *WeeklyRoutineRecCreate) createSpec() (*WeeklyRoutineRec, *sqlgraph.C
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := wrrc.mutation.ProgramRecID(); ok {
-		_spec.SetField(weeklyroutinerec.FieldProgramRecID, field.TypeUint64, value)
-		_node.ProgramRecID = value
-	}
-	if value, ok := wrrc.mutation.WeeklyRoutineID(); ok {
-		_spec.SetField(weeklyroutinerec.FieldWeeklyRoutineID, field.TypeUint64, value)
-		_node.WeeklyRoutineID = value
-	}
 	if value, ok := wrrc.mutation.StartDate(); ok {
 		_spec.SetField(weeklyroutinerec.FieldStartDate, field.TypeTime, value)
 		_node.StartDate = value
@@ -256,7 +226,7 @@ func (wrrc *WeeklyRoutineRecCreate) createSpec() (*WeeklyRoutineRec, *sqlgraph.C
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.weekly_routine_weekly_routine_recs = &nodes[0]
+		_node.WeeklyRoutineID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := wrrc.mutation.ProgramRecIDs(); len(nodes) > 0 {
@@ -273,7 +243,7 @@ func (wrrc *WeeklyRoutineRecCreate) createSpec() (*WeeklyRoutineRec, *sqlgraph.C
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.program_rec_weekly_routine_recs = &nodes[0]
+		_node.ProgramRecID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := wrrc.mutation.DailyRoutineRecsIDs(); len(nodes) > 0 {

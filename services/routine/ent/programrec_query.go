@@ -7,7 +7,9 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"math"
+	"routine/ent/bodyinfo"
 	"routine/ent/dailyroutinerec"
+	"routine/ent/onerepmax"
 	"routine/ent/predicate"
 	"routine/ent/program"
 	"routine/ent/programrec"
@@ -28,7 +30,8 @@ type ProgramRecQuery struct {
 	withProgram           *ProgramQuery
 	withWeeklyRoutineRecs *WeeklyRoutineRecQuery
 	withDailyRoutineRecs  *DailyRoutineRecQuery
-	withFKs               bool
+	withBodyInfo          *BodyInfoQuery
+	withOneRepMax         *OneRepMaxQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -124,6 +127,50 @@ func (prq *ProgramRecQuery) QueryDailyRoutineRecs() *DailyRoutineRecQuery {
 			sqlgraph.From(programrec.Table, programrec.FieldID, selector),
 			sqlgraph.To(dailyroutinerec.Table, dailyroutinerec.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, programrec.DailyRoutineRecsTable, programrec.DailyRoutineRecsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(prq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryBodyInfo chains the current query on the "body_info" edge.
+func (prq *ProgramRecQuery) QueryBodyInfo() *BodyInfoQuery {
+	query := (&BodyInfoClient{config: prq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := prq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := prq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(programrec.Table, programrec.FieldID, selector),
+			sqlgraph.To(bodyinfo.Table, bodyinfo.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, programrec.BodyInfoTable, programrec.BodyInfoColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(prq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryOneRepMax chains the current query on the "one_rep_max" edge.
+func (prq *ProgramRecQuery) QueryOneRepMax() *OneRepMaxQuery {
+	query := (&OneRepMaxClient{config: prq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := prq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := prq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(programrec.Table, programrec.FieldID, selector),
+			sqlgraph.To(onerepmax.Table, onerepmax.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, programrec.OneRepMaxTable, programrec.OneRepMaxColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(prq.driver.Dialect(), step)
 		return fromU, nil
@@ -326,6 +373,8 @@ func (prq *ProgramRecQuery) Clone() *ProgramRecQuery {
 		withProgram:           prq.withProgram.Clone(),
 		withWeeklyRoutineRecs: prq.withWeeklyRoutineRecs.Clone(),
 		withDailyRoutineRecs:  prq.withDailyRoutineRecs.Clone(),
+		withBodyInfo:          prq.withBodyInfo.Clone(),
+		withOneRepMax:         prq.withOneRepMax.Clone(),
 		// clone intermediate query.
 		sql:  prq.sql.Clone(),
 		path: prq.path,
@@ -362,6 +411,28 @@ func (prq *ProgramRecQuery) WithDailyRoutineRecs(opts ...func(*DailyRoutineRecQu
 		opt(query)
 	}
 	prq.withDailyRoutineRecs = query
+	return prq
+}
+
+// WithBodyInfo tells the query-builder to eager-load the nodes that are connected to
+// the "body_info" edge. The optional arguments are used to configure the query builder of the edge.
+func (prq *ProgramRecQuery) WithBodyInfo(opts ...func(*BodyInfoQuery)) *ProgramRecQuery {
+	query := (&BodyInfoClient{config: prq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	prq.withBodyInfo = query
+	return prq
+}
+
+// WithOneRepMax tells the query-builder to eager-load the nodes that are connected to
+// the "one_rep_max" edge. The optional arguments are used to configure the query builder of the edge.
+func (prq *ProgramRecQuery) WithOneRepMax(opts ...func(*OneRepMaxQuery)) *ProgramRecQuery {
+	query := (&OneRepMaxClient{config: prq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	prq.withOneRepMax = query
 	return prq
 }
 
@@ -442,20 +513,15 @@ func (prq *ProgramRecQuery) prepareQuery(ctx context.Context) error {
 func (prq *ProgramRecQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ProgramRec, error) {
 	var (
 		nodes       = []*ProgramRec{}
-		withFKs     = prq.withFKs
 		_spec       = prq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [5]bool{
 			prq.withProgram != nil,
 			prq.withWeeklyRoutineRecs != nil,
 			prq.withDailyRoutineRecs != nil,
+			prq.withBodyInfo != nil,
+			prq.withOneRepMax != nil,
 		}
 	)
-	if prq.withProgram != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, programrec.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*ProgramRec).scanValues(nil, columns)
 	}
@@ -498,6 +564,20 @@ func (prq *ProgramRecQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 			return nil, err
 		}
 	}
+	if query := prq.withBodyInfo; query != nil {
+		if err := prq.loadBodyInfo(ctx, query, nodes,
+			func(n *ProgramRec) { n.Edges.BodyInfo = []*BodyInfo{} },
+			func(n *ProgramRec, e *BodyInfo) { n.Edges.BodyInfo = append(n.Edges.BodyInfo, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := prq.withOneRepMax; query != nil {
+		if err := prq.loadOneRepMax(ctx, query, nodes,
+			func(n *ProgramRec) { n.Edges.OneRepMax = []*OneRepMax{} },
+			func(n *ProgramRec, e *OneRepMax) { n.Edges.OneRepMax = append(n.Edges.OneRepMax, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
@@ -505,10 +585,7 @@ func (prq *ProgramRecQuery) loadProgram(ctx context.Context, query *ProgramQuery
 	ids := make([]uint64, 0, len(nodes))
 	nodeids := make(map[uint64][]*ProgramRec)
 	for i := range nodes {
-		if nodes[i].program_program_recs == nil {
-			continue
-		}
-		fk := *nodes[i].program_program_recs
+		fk := nodes[i].ProgramID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -525,7 +602,7 @@ func (prq *ProgramRecQuery) loadProgram(ctx context.Context, query *ProgramQuery
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "program_program_recs" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "program_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -543,7 +620,9 @@ func (prq *ProgramRecQuery) loadWeeklyRoutineRecs(ctx context.Context, query *We
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(weeklyroutinerec.FieldProgramRecID)
+	}
 	query.Where(predicate.WeeklyRoutineRec(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(programrec.WeeklyRoutineRecsColumn), fks...))
 	}))
@@ -552,13 +631,10 @@ func (prq *ProgramRecQuery) loadWeeklyRoutineRecs(ctx context.Context, query *We
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.program_rec_weekly_routine_recs
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "program_rec_weekly_routine_recs" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.ProgramRecID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "program_rec_weekly_routine_recs" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "program_rec_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -574,7 +650,9 @@ func (prq *ProgramRecQuery) loadDailyRoutineRecs(ctx context.Context, query *Dai
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(dailyroutinerec.FieldProgramRecID)
+	}
 	query.Where(predicate.DailyRoutineRec(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(programrec.DailyRoutineRecsColumn), fks...))
 	}))
@@ -583,13 +661,79 @@ func (prq *ProgramRecQuery) loadDailyRoutineRecs(ctx context.Context, query *Dai
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.program_rec_daily_routine_recs
+		fk := n.ProgramRecID
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "program_rec_daily_routine_recs" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "program_rec_id" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "program_rec_daily_routine_recs" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "program_rec_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (prq *ProgramRecQuery) loadBodyInfo(ctx context.Context, query *BodyInfoQuery, nodes []*ProgramRec, init func(*ProgramRec), assign func(*ProgramRec, *BodyInfo)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint64]*ProgramRec)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(bodyinfo.FieldProgramRecID)
+	}
+	query.Where(predicate.BodyInfo(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(programrec.BodyInfoColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ProgramRecID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "program_rec_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "program_rec_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (prq *ProgramRecQuery) loadOneRepMax(ctx context.Context, query *OneRepMaxQuery, nodes []*ProgramRec, init func(*ProgramRec), assign func(*ProgramRec, *OneRepMax)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint64]*ProgramRec)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(onerepmax.FieldProgramRecID)
+	}
+	query.Where(predicate.OneRepMax(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(programrec.OneRepMaxColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ProgramRecID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "program_rec_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "program_rec_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -620,6 +764,9 @@ func (prq *ProgramRecQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != programrec.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if prq.withProgram != nil {
+			_spec.Node.AddColumnOnce(programrec.FieldProgramID)
 		}
 	}
 	if ps := prq.predicates; len(ps) > 0 {

@@ -21,6 +21,7 @@ func (WeeklyRoutineRec) Fields() []ent.Field {
 
 		field.Uint64("program_rec_id"),
 		field.Uint64("weekly_routine_id"),
+
 		field.Time("start_date"),
 
 		field.Time("created_at").Default(time.Now).Immutable(),
@@ -31,9 +32,10 @@ func (WeeklyRoutineRec) Fields() []ent.Field {
 // Edges of the WeeklyRoutineRec.
 func (WeeklyRoutineRec) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("weekly_routine", WeeklyRoutine.Type).Ref("weekly_routine_recs").Unique(),
+		edge.From("weekly_routine", WeeklyRoutine.Type).Field("weekly_routine_id").Ref("weekly_routine_recs").Unique().Required(),
 
-		edge.From("program_rec", ProgramRec.Type).Ref("weekly_routine_recs").Unique(),
+		edge.From("program_rec", ProgramRec.Type).Field("program_rec_id").Ref("weekly_routine_recs").Unique().Required(),
+
 		edge.To("daily_routine_recs", DailyRoutineRec.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 	}
 }

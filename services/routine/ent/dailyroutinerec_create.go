@@ -132,56 +132,14 @@ func (drrc *DailyRoutineRecCreate) SetID(u uint64) *DailyRoutineRecCreate {
 	return drrc
 }
 
-// SetDailyRoutineID sets the "daily_routine" edge to the DailyRoutine entity by ID.
-func (drrc *DailyRoutineRecCreate) SetDailyRoutineID(id uint64) *DailyRoutineRecCreate {
-	drrc.mutation.SetDailyRoutineID(id)
-	return drrc
-}
-
-// SetNillableDailyRoutineID sets the "daily_routine" edge to the DailyRoutine entity by ID if the given value is not nil.
-func (drrc *DailyRoutineRecCreate) SetNillableDailyRoutineID(id *uint64) *DailyRoutineRecCreate {
-	if id != nil {
-		drrc = drrc.SetDailyRoutineID(*id)
-	}
-	return drrc
-}
-
 // SetDailyRoutine sets the "daily_routine" edge to the DailyRoutine entity.
 func (drrc *DailyRoutineRecCreate) SetDailyRoutine(d *DailyRoutine) *DailyRoutineRecCreate {
 	return drrc.SetDailyRoutineID(d.ID)
 }
 
-// SetProgramRecID sets the "program_rec" edge to the ProgramRec entity by ID.
-func (drrc *DailyRoutineRecCreate) SetProgramRecID(id uint64) *DailyRoutineRecCreate {
-	drrc.mutation.SetProgramRecID(id)
-	return drrc
-}
-
-// SetNillableProgramRecID sets the "program_rec" edge to the ProgramRec entity by ID if the given value is not nil.
-func (drrc *DailyRoutineRecCreate) SetNillableProgramRecID(id *uint64) *DailyRoutineRecCreate {
-	if id != nil {
-		drrc = drrc.SetProgramRecID(*id)
-	}
-	return drrc
-}
-
 // SetProgramRec sets the "program_rec" edge to the ProgramRec entity.
 func (drrc *DailyRoutineRecCreate) SetProgramRec(p *ProgramRec) *DailyRoutineRecCreate {
 	return drrc.SetProgramRecID(p.ID)
-}
-
-// SetWeeklyRoutineRecID sets the "weekly_routine_rec" edge to the WeeklyRoutineRec entity by ID.
-func (drrc *DailyRoutineRecCreate) SetWeeklyRoutineRecID(id uint64) *DailyRoutineRecCreate {
-	drrc.mutation.SetWeeklyRoutineRecID(id)
-	return drrc
-}
-
-// SetNillableWeeklyRoutineRecID sets the "weekly_routine_rec" edge to the WeeklyRoutineRec entity by ID if the given value is not nil.
-func (drrc *DailyRoutineRecCreate) SetNillableWeeklyRoutineRecID(id *uint64) *DailyRoutineRecCreate {
-	if id != nil {
-		drrc = drrc.SetWeeklyRoutineRecID(*id)
-	}
-	return drrc
 }
 
 // SetWeeklyRoutineRec sets the "weekly_routine_rec" edge to the WeeklyRoutineRec entity.
@@ -307,18 +265,6 @@ func (drrc *DailyRoutineRecCreate) createSpec() (*DailyRoutineRec, *sqlgraph.Cre
 		_spec.SetField(dailyroutinerec.FieldAuthor, field.TypeUint64, value)
 		_node.Author = value
 	}
-	if value, ok := drrc.mutation.ProgramRecID(); ok {
-		_spec.SetField(dailyroutinerec.FieldProgramRecID, field.TypeUint64, value)
-		_node.ProgramRecID = &value
-	}
-	if value, ok := drrc.mutation.WeeklyRoutineRecID(); ok {
-		_spec.SetField(dailyroutinerec.FieldWeeklyRoutineRecID, field.TypeUint64, value)
-		_node.WeeklyRoutineRecID = &value
-	}
-	if value, ok := drrc.mutation.DailyRoutineID(); ok {
-		_spec.SetField(dailyroutinerec.FieldDailyRoutineID, field.TypeUint64, value)
-		_node.DailyRoutineID = &value
-	}
 	if value, ok := drrc.mutation.Date(); ok {
 		_spec.SetField(dailyroutinerec.FieldDate, field.TypeTime, value)
 		_node.Date = value
@@ -353,7 +299,7 @@ func (drrc *DailyRoutineRecCreate) createSpec() (*DailyRoutineRec, *sqlgraph.Cre
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.daily_routine_daily_routine_recs = &nodes[0]
+		_node.DailyRoutineID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := drrc.mutation.ProgramRecIDs(); len(nodes) > 0 {
@@ -370,7 +316,7 @@ func (drrc *DailyRoutineRecCreate) createSpec() (*DailyRoutineRec, *sqlgraph.Cre
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.program_rec_daily_routine_recs = &nodes[0]
+		_node.ProgramRecID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := drrc.mutation.WeeklyRoutineRecIDs(); len(nodes) > 0 {
@@ -387,7 +333,7 @@ func (drrc *DailyRoutineRecCreate) createSpec() (*DailyRoutineRec, *sqlgraph.Cre
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.weekly_routine_rec_daily_routine_recs = &nodes[0]
+		_node.WeeklyRoutineRecID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := drrc.mutation.RoutineActRecsIDs(); len(nodes) > 0 {

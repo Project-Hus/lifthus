@@ -7,8 +7,10 @@ import (
 	"errors"
 	"fmt"
 	"routine/ent/act"
+	"routine/ent/bodyinfo"
 	"routine/ent/dailyroutine"
 	"routine/ent/dailyroutinerec"
+	"routine/ent/onerepmax"
 	"routine/ent/predicate"
 	"routine/ent/program"
 	"routine/ent/programrec"
@@ -34,8 +36,10 @@ const (
 
 	// Node types.
 	TypeAct              = "Act"
+	TypeBodyInfo         = "BodyInfo"
 	TypeDailyRoutine     = "DailyRoutine"
 	TypeDailyRoutineRec  = "DailyRoutineRec"
+	TypeOneRepMax        = "OneRepMax"
 	TypeProgram          = "Program"
 	TypeProgramRec       = "ProgramRec"
 	TypeRoutineAct       = "RoutineAct"
@@ -59,6 +63,22 @@ type ActMutation struct {
 	description             *string
 	created_at              *time.Time
 	updated_at              *time.Time
+	weight                  *bool
+	bodyweight              *bool
+	cardio                  *bool
+	upper                   *bool
+	lower                   *bool
+	full                    *bool
+	arms                    *bool
+	shoulders               *bool
+	chest                   *bool
+	core                    *bool
+	upper_back              *bool
+	lower_back              *bool
+	legs                    *bool
+	legs_front              *bool
+	legs_back               *bool
+	etc                     *bool
 	clearedFields           map[string]struct{}
 	tags                    map[uint64]struct{}
 	removedtags             map[uint64]struct{}
@@ -69,6 +89,9 @@ type ActMutation struct {
 	routine_act_recs        map[uint64]struct{}
 	removedroutine_act_recs map[uint64]struct{}
 	clearedroutine_act_recs bool
+	one_rep_maxes           map[uint64]struct{}
+	removedone_rep_maxes    map[uint64]struct{}
+	clearedone_rep_maxes    bool
 	done                    bool
 	oldValue                func(context.Context) (*Act, error)
 	predicates              []predicate.Act
@@ -231,7 +254,7 @@ func (m *ActMutation) GetType() (r act.Type, exists bool) {
 // OldType returns the old "type" field's value of the Act entity.
 // If the Act object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ActMutation) OldType(ctx context.Context) (v *act.Type, err error) {
+func (m *ActMutation) OldType(ctx context.Context) (v act.Type, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldType is only allowed on UpdateOne operations")
 	}
@@ -245,22 +268,9 @@ func (m *ActMutation) OldType(ctx context.Context) (v *act.Type, err error) {
 	return oldValue.Type, nil
 }
 
-// ClearType clears the value of the "type" field.
-func (m *ActMutation) ClearType() {
-	m._type = nil
-	m.clearedFields[act.FieldType] = struct{}{}
-}
-
-// TypeCleared returns if the "type" field was cleared in this mutation.
-func (m *ActMutation) TypeCleared() bool {
-	_, ok := m.clearedFields[act.FieldType]
-	return ok
-}
-
 // ResetType resets all changes to the "type" field.
 func (m *ActMutation) ResetType() {
 	m._type = nil
-	delete(m.clearedFields, act.FieldType)
 }
 
 // SetAuthor sets the "author" field.
@@ -489,6 +499,582 @@ func (m *ActMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// SetWeight sets the "weight" field.
+func (m *ActMutation) SetWeight(b bool) {
+	m.weight = &b
+}
+
+// Weight returns the value of the "weight" field in the mutation.
+func (m *ActMutation) Weight() (r bool, exists bool) {
+	v := m.weight
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWeight returns the old "weight" field's value of the Act entity.
+// If the Act object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActMutation) OldWeight(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWeight is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWeight requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWeight: %w", err)
+	}
+	return oldValue.Weight, nil
+}
+
+// ResetWeight resets all changes to the "weight" field.
+func (m *ActMutation) ResetWeight() {
+	m.weight = nil
+}
+
+// SetBodyweight sets the "bodyweight" field.
+func (m *ActMutation) SetBodyweight(b bool) {
+	m.bodyweight = &b
+}
+
+// Bodyweight returns the value of the "bodyweight" field in the mutation.
+func (m *ActMutation) Bodyweight() (r bool, exists bool) {
+	v := m.bodyweight
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBodyweight returns the old "bodyweight" field's value of the Act entity.
+// If the Act object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActMutation) OldBodyweight(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBodyweight is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBodyweight requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBodyweight: %w", err)
+	}
+	return oldValue.Bodyweight, nil
+}
+
+// ResetBodyweight resets all changes to the "bodyweight" field.
+func (m *ActMutation) ResetBodyweight() {
+	m.bodyweight = nil
+}
+
+// SetCardio sets the "cardio" field.
+func (m *ActMutation) SetCardio(b bool) {
+	m.cardio = &b
+}
+
+// Cardio returns the value of the "cardio" field in the mutation.
+func (m *ActMutation) Cardio() (r bool, exists bool) {
+	v := m.cardio
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCardio returns the old "cardio" field's value of the Act entity.
+// If the Act object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActMutation) OldCardio(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCardio is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCardio requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCardio: %w", err)
+	}
+	return oldValue.Cardio, nil
+}
+
+// ResetCardio resets all changes to the "cardio" field.
+func (m *ActMutation) ResetCardio() {
+	m.cardio = nil
+}
+
+// SetUpper sets the "upper" field.
+func (m *ActMutation) SetUpper(b bool) {
+	m.upper = &b
+}
+
+// Upper returns the value of the "upper" field in the mutation.
+func (m *ActMutation) Upper() (r bool, exists bool) {
+	v := m.upper
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpper returns the old "upper" field's value of the Act entity.
+// If the Act object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActMutation) OldUpper(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpper is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpper requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpper: %w", err)
+	}
+	return oldValue.Upper, nil
+}
+
+// ResetUpper resets all changes to the "upper" field.
+func (m *ActMutation) ResetUpper() {
+	m.upper = nil
+}
+
+// SetLower sets the "lower" field.
+func (m *ActMutation) SetLower(b bool) {
+	m.lower = &b
+}
+
+// Lower returns the value of the "lower" field in the mutation.
+func (m *ActMutation) Lower() (r bool, exists bool) {
+	v := m.lower
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLower returns the old "lower" field's value of the Act entity.
+// If the Act object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActMutation) OldLower(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLower is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLower requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLower: %w", err)
+	}
+	return oldValue.Lower, nil
+}
+
+// ResetLower resets all changes to the "lower" field.
+func (m *ActMutation) ResetLower() {
+	m.lower = nil
+}
+
+// SetFull sets the "full" field.
+func (m *ActMutation) SetFull(b bool) {
+	m.full = &b
+}
+
+// Full returns the value of the "full" field in the mutation.
+func (m *ActMutation) Full() (r bool, exists bool) {
+	v := m.full
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFull returns the old "full" field's value of the Act entity.
+// If the Act object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActMutation) OldFull(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFull is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFull requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFull: %w", err)
+	}
+	return oldValue.Full, nil
+}
+
+// ResetFull resets all changes to the "full" field.
+func (m *ActMutation) ResetFull() {
+	m.full = nil
+}
+
+// SetArms sets the "arms" field.
+func (m *ActMutation) SetArms(b bool) {
+	m.arms = &b
+}
+
+// Arms returns the value of the "arms" field in the mutation.
+func (m *ActMutation) Arms() (r bool, exists bool) {
+	v := m.arms
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldArms returns the old "arms" field's value of the Act entity.
+// If the Act object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActMutation) OldArms(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldArms is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldArms requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldArms: %w", err)
+	}
+	return oldValue.Arms, nil
+}
+
+// ResetArms resets all changes to the "arms" field.
+func (m *ActMutation) ResetArms() {
+	m.arms = nil
+}
+
+// SetShoulders sets the "shoulders" field.
+func (m *ActMutation) SetShoulders(b bool) {
+	m.shoulders = &b
+}
+
+// Shoulders returns the value of the "shoulders" field in the mutation.
+func (m *ActMutation) Shoulders() (r bool, exists bool) {
+	v := m.shoulders
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldShoulders returns the old "shoulders" field's value of the Act entity.
+// If the Act object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActMutation) OldShoulders(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldShoulders is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldShoulders requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldShoulders: %w", err)
+	}
+	return oldValue.Shoulders, nil
+}
+
+// ResetShoulders resets all changes to the "shoulders" field.
+func (m *ActMutation) ResetShoulders() {
+	m.shoulders = nil
+}
+
+// SetChest sets the "chest" field.
+func (m *ActMutation) SetChest(b bool) {
+	m.chest = &b
+}
+
+// Chest returns the value of the "chest" field in the mutation.
+func (m *ActMutation) Chest() (r bool, exists bool) {
+	v := m.chest
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldChest returns the old "chest" field's value of the Act entity.
+// If the Act object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActMutation) OldChest(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldChest is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldChest requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldChest: %w", err)
+	}
+	return oldValue.Chest, nil
+}
+
+// ResetChest resets all changes to the "chest" field.
+func (m *ActMutation) ResetChest() {
+	m.chest = nil
+}
+
+// SetCore sets the "core" field.
+func (m *ActMutation) SetCore(b bool) {
+	m.core = &b
+}
+
+// Core returns the value of the "core" field in the mutation.
+func (m *ActMutation) Core() (r bool, exists bool) {
+	v := m.core
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCore returns the old "core" field's value of the Act entity.
+// If the Act object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActMutation) OldCore(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCore is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCore requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCore: %w", err)
+	}
+	return oldValue.Core, nil
+}
+
+// ResetCore resets all changes to the "core" field.
+func (m *ActMutation) ResetCore() {
+	m.core = nil
+}
+
+// SetUpperBack sets the "upper_back" field.
+func (m *ActMutation) SetUpperBack(b bool) {
+	m.upper_back = &b
+}
+
+// UpperBack returns the value of the "upper_back" field in the mutation.
+func (m *ActMutation) UpperBack() (r bool, exists bool) {
+	v := m.upper_back
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpperBack returns the old "upper_back" field's value of the Act entity.
+// If the Act object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActMutation) OldUpperBack(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpperBack is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpperBack requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpperBack: %w", err)
+	}
+	return oldValue.UpperBack, nil
+}
+
+// ResetUpperBack resets all changes to the "upper_back" field.
+func (m *ActMutation) ResetUpperBack() {
+	m.upper_back = nil
+}
+
+// SetLowerBack sets the "lower_back" field.
+func (m *ActMutation) SetLowerBack(b bool) {
+	m.lower_back = &b
+}
+
+// LowerBack returns the value of the "lower_back" field in the mutation.
+func (m *ActMutation) LowerBack() (r bool, exists bool) {
+	v := m.lower_back
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLowerBack returns the old "lower_back" field's value of the Act entity.
+// If the Act object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActMutation) OldLowerBack(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLowerBack is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLowerBack requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLowerBack: %w", err)
+	}
+	return oldValue.LowerBack, nil
+}
+
+// ResetLowerBack resets all changes to the "lower_back" field.
+func (m *ActMutation) ResetLowerBack() {
+	m.lower_back = nil
+}
+
+// SetLegs sets the "legs" field.
+func (m *ActMutation) SetLegs(b bool) {
+	m.legs = &b
+}
+
+// Legs returns the value of the "legs" field in the mutation.
+func (m *ActMutation) Legs() (r bool, exists bool) {
+	v := m.legs
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLegs returns the old "legs" field's value of the Act entity.
+// If the Act object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActMutation) OldLegs(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLegs is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLegs requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLegs: %w", err)
+	}
+	return oldValue.Legs, nil
+}
+
+// ResetLegs resets all changes to the "legs" field.
+func (m *ActMutation) ResetLegs() {
+	m.legs = nil
+}
+
+// SetLegsFront sets the "legs_front" field.
+func (m *ActMutation) SetLegsFront(b bool) {
+	m.legs_front = &b
+}
+
+// LegsFront returns the value of the "legs_front" field in the mutation.
+func (m *ActMutation) LegsFront() (r bool, exists bool) {
+	v := m.legs_front
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLegsFront returns the old "legs_front" field's value of the Act entity.
+// If the Act object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActMutation) OldLegsFront(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLegsFront is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLegsFront requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLegsFront: %w", err)
+	}
+	return oldValue.LegsFront, nil
+}
+
+// ResetLegsFront resets all changes to the "legs_front" field.
+func (m *ActMutation) ResetLegsFront() {
+	m.legs_front = nil
+}
+
+// SetLegsBack sets the "legs_back" field.
+func (m *ActMutation) SetLegsBack(b bool) {
+	m.legs_back = &b
+}
+
+// LegsBack returns the value of the "legs_back" field in the mutation.
+func (m *ActMutation) LegsBack() (r bool, exists bool) {
+	v := m.legs_back
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLegsBack returns the old "legs_back" field's value of the Act entity.
+// If the Act object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActMutation) OldLegsBack(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLegsBack is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLegsBack requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLegsBack: %w", err)
+	}
+	return oldValue.LegsBack, nil
+}
+
+// ResetLegsBack resets all changes to the "legs_back" field.
+func (m *ActMutation) ResetLegsBack() {
+	m.legs_back = nil
+}
+
+// SetEtc sets the "etc" field.
+func (m *ActMutation) SetEtc(b bool) {
+	m.etc = &b
+}
+
+// Etc returns the value of the "etc" field in the mutation.
+func (m *ActMutation) Etc() (r bool, exists bool) {
+	v := m.etc
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEtc returns the old "etc" field's value of the Act entity.
+// If the Act object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActMutation) OldEtc(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEtc is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEtc requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEtc: %w", err)
+	}
+	return oldValue.Etc, nil
+}
+
+// ResetEtc resets all changes to the "etc" field.
+func (m *ActMutation) ResetEtc() {
+	m.etc = nil
+}
+
 // AddTagIDs adds the "tags" edge to the Tag entity by ids.
 func (m *ActMutation) AddTagIDs(ids ...uint64) {
 	if m.tags == nil {
@@ -651,6 +1237,60 @@ func (m *ActMutation) ResetRoutineActRecs() {
 	m.removedroutine_act_recs = nil
 }
 
+// AddOneRepMaxisIDs adds the "one_rep_maxes" edge to the OneRepMax entity by ids.
+func (m *ActMutation) AddOneRepMaxisIDs(ids ...uint64) {
+	if m.one_rep_maxes == nil {
+		m.one_rep_maxes = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.one_rep_maxes[ids[i]] = struct{}{}
+	}
+}
+
+// ClearOneRepMaxes clears the "one_rep_maxes" edge to the OneRepMax entity.
+func (m *ActMutation) ClearOneRepMaxes() {
+	m.clearedone_rep_maxes = true
+}
+
+// OneRepMaxesCleared reports if the "one_rep_maxes" edge to the OneRepMax entity was cleared.
+func (m *ActMutation) OneRepMaxesCleared() bool {
+	return m.clearedone_rep_maxes
+}
+
+// RemoveOneRepMaxisIDs removes the "one_rep_maxes" edge to the OneRepMax entity by IDs.
+func (m *ActMutation) RemoveOneRepMaxisIDs(ids ...uint64) {
+	if m.removedone_rep_maxes == nil {
+		m.removedone_rep_maxes = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.one_rep_maxes, ids[i])
+		m.removedone_rep_maxes[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedOneRepMaxes returns the removed IDs of the "one_rep_maxes" edge to the OneRepMax entity.
+func (m *ActMutation) RemovedOneRepMaxesIDs() (ids []uint64) {
+	for id := range m.removedone_rep_maxes {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// OneRepMaxesIDs returns the "one_rep_maxes" edge IDs in the mutation.
+func (m *ActMutation) OneRepMaxesIDs() (ids []uint64) {
+	for id := range m.one_rep_maxes {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetOneRepMaxes resets all changes to the "one_rep_maxes" edge.
+func (m *ActMutation) ResetOneRepMaxes() {
+	m.one_rep_maxes = nil
+	m.clearedone_rep_maxes = false
+	m.removedone_rep_maxes = nil
+}
+
 // Where appends a list predicates to the ActMutation builder.
 func (m *ActMutation) Where(ps ...predicate.Act) {
 	m.predicates = append(m.predicates, ps...)
@@ -685,7 +1325,7 @@ func (m *ActMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ActMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 23)
 	if m.name != nil {
 		fields = append(fields, act.FieldName)
 	}
@@ -706,6 +1346,54 @@ func (m *ActMutation) Fields() []string {
 	}
 	if m.updated_at != nil {
 		fields = append(fields, act.FieldUpdatedAt)
+	}
+	if m.weight != nil {
+		fields = append(fields, act.FieldWeight)
+	}
+	if m.bodyweight != nil {
+		fields = append(fields, act.FieldBodyweight)
+	}
+	if m.cardio != nil {
+		fields = append(fields, act.FieldCardio)
+	}
+	if m.upper != nil {
+		fields = append(fields, act.FieldUpper)
+	}
+	if m.lower != nil {
+		fields = append(fields, act.FieldLower)
+	}
+	if m.full != nil {
+		fields = append(fields, act.FieldFull)
+	}
+	if m.arms != nil {
+		fields = append(fields, act.FieldArms)
+	}
+	if m.shoulders != nil {
+		fields = append(fields, act.FieldShoulders)
+	}
+	if m.chest != nil {
+		fields = append(fields, act.FieldChest)
+	}
+	if m.core != nil {
+		fields = append(fields, act.FieldCore)
+	}
+	if m.upper_back != nil {
+		fields = append(fields, act.FieldUpperBack)
+	}
+	if m.lower_back != nil {
+		fields = append(fields, act.FieldLowerBack)
+	}
+	if m.legs != nil {
+		fields = append(fields, act.FieldLegs)
+	}
+	if m.legs_front != nil {
+		fields = append(fields, act.FieldLegsFront)
+	}
+	if m.legs_back != nil {
+		fields = append(fields, act.FieldLegsBack)
+	}
+	if m.etc != nil {
+		fields = append(fields, act.FieldEtc)
 	}
 	return fields
 }
@@ -729,6 +1417,38 @@ func (m *ActMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case act.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case act.FieldWeight:
+		return m.Weight()
+	case act.FieldBodyweight:
+		return m.Bodyweight()
+	case act.FieldCardio:
+		return m.Cardio()
+	case act.FieldUpper:
+		return m.Upper()
+	case act.FieldLower:
+		return m.Lower()
+	case act.FieldFull:
+		return m.Full()
+	case act.FieldArms:
+		return m.Arms()
+	case act.FieldShoulders:
+		return m.Shoulders()
+	case act.FieldChest:
+		return m.Chest()
+	case act.FieldCore:
+		return m.Core()
+	case act.FieldUpperBack:
+		return m.UpperBack()
+	case act.FieldLowerBack:
+		return m.LowerBack()
+	case act.FieldLegs:
+		return m.Legs()
+	case act.FieldLegsFront:
+		return m.LegsFront()
+	case act.FieldLegsBack:
+		return m.LegsBack()
+	case act.FieldEtc:
+		return m.Etc()
 	}
 	return nil, false
 }
@@ -752,6 +1472,38 @@ func (m *ActMutation) OldField(ctx context.Context, name string) (ent.Value, err
 		return m.OldCreatedAt(ctx)
 	case act.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case act.FieldWeight:
+		return m.OldWeight(ctx)
+	case act.FieldBodyweight:
+		return m.OldBodyweight(ctx)
+	case act.FieldCardio:
+		return m.OldCardio(ctx)
+	case act.FieldUpper:
+		return m.OldUpper(ctx)
+	case act.FieldLower:
+		return m.OldLower(ctx)
+	case act.FieldFull:
+		return m.OldFull(ctx)
+	case act.FieldArms:
+		return m.OldArms(ctx)
+	case act.FieldShoulders:
+		return m.OldShoulders(ctx)
+	case act.FieldChest:
+		return m.OldChest(ctx)
+	case act.FieldCore:
+		return m.OldCore(ctx)
+	case act.FieldUpperBack:
+		return m.OldUpperBack(ctx)
+	case act.FieldLowerBack:
+		return m.OldLowerBack(ctx)
+	case act.FieldLegs:
+		return m.OldLegs(ctx)
+	case act.FieldLegsFront:
+		return m.OldLegsFront(ctx)
+	case act.FieldLegsBack:
+		return m.OldLegsBack(ctx)
+	case act.FieldEtc:
+		return m.OldEtc(ctx)
 	}
 	return nil, fmt.Errorf("unknown Act field %s", name)
 }
@@ -810,6 +1562,118 @@ func (m *ActMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUpdatedAt(v)
 		return nil
+	case act.FieldWeight:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWeight(v)
+		return nil
+	case act.FieldBodyweight:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBodyweight(v)
+		return nil
+	case act.FieldCardio:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCardio(v)
+		return nil
+	case act.FieldUpper:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpper(v)
+		return nil
+	case act.FieldLower:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLower(v)
+		return nil
+	case act.FieldFull:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFull(v)
+		return nil
+	case act.FieldArms:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetArms(v)
+		return nil
+	case act.FieldShoulders:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetShoulders(v)
+		return nil
+	case act.FieldChest:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetChest(v)
+		return nil
+	case act.FieldCore:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCore(v)
+		return nil
+	case act.FieldUpperBack:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpperBack(v)
+		return nil
+	case act.FieldLowerBack:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLowerBack(v)
+		return nil
+	case act.FieldLegs:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLegs(v)
+		return nil
+	case act.FieldLegsFront:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLegsFront(v)
+		return nil
+	case act.FieldLegsBack:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLegsBack(v)
+		return nil
+	case act.FieldEtc:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEtc(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Act field %s", name)
 }
@@ -855,9 +1719,6 @@ func (m *ActMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *ActMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(act.FieldType) {
-		fields = append(fields, act.FieldType)
-	}
 	if m.FieldCleared(act.FieldImage) {
 		fields = append(fields, act.FieldImage)
 	}
@@ -878,9 +1739,6 @@ func (m *ActMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *ActMutation) ClearField(name string) error {
 	switch name {
-	case act.FieldType:
-		m.ClearType()
-		return nil
 	case act.FieldImage:
 		m.ClearImage()
 		return nil
@@ -916,13 +1774,61 @@ func (m *ActMutation) ResetField(name string) error {
 	case act.FieldUpdatedAt:
 		m.ResetUpdatedAt()
 		return nil
+	case act.FieldWeight:
+		m.ResetWeight()
+		return nil
+	case act.FieldBodyweight:
+		m.ResetBodyweight()
+		return nil
+	case act.FieldCardio:
+		m.ResetCardio()
+		return nil
+	case act.FieldUpper:
+		m.ResetUpper()
+		return nil
+	case act.FieldLower:
+		m.ResetLower()
+		return nil
+	case act.FieldFull:
+		m.ResetFull()
+		return nil
+	case act.FieldArms:
+		m.ResetArms()
+		return nil
+	case act.FieldShoulders:
+		m.ResetShoulders()
+		return nil
+	case act.FieldChest:
+		m.ResetChest()
+		return nil
+	case act.FieldCore:
+		m.ResetCore()
+		return nil
+	case act.FieldUpperBack:
+		m.ResetUpperBack()
+		return nil
+	case act.FieldLowerBack:
+		m.ResetLowerBack()
+		return nil
+	case act.FieldLegs:
+		m.ResetLegs()
+		return nil
+	case act.FieldLegsFront:
+		m.ResetLegsFront()
+		return nil
+	case act.FieldLegsBack:
+		m.ResetLegsBack()
+		return nil
+	case act.FieldEtc:
+		m.ResetEtc()
+		return nil
 	}
 	return fmt.Errorf("unknown Act field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ActMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.tags != nil {
 		edges = append(edges, act.EdgeTags)
 	}
@@ -931,6 +1837,9 @@ func (m *ActMutation) AddedEdges() []string {
 	}
 	if m.routine_act_recs != nil {
 		edges = append(edges, act.EdgeRoutineActRecs)
+	}
+	if m.one_rep_maxes != nil {
+		edges = append(edges, act.EdgeOneRepMaxes)
 	}
 	return edges
 }
@@ -957,13 +1866,19 @@ func (m *ActMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case act.EdgeOneRepMaxes:
+		ids := make([]ent.Value, 0, len(m.one_rep_maxes))
+		for id := range m.one_rep_maxes {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ActMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedtags != nil {
 		edges = append(edges, act.EdgeTags)
 	}
@@ -972,6 +1887,9 @@ func (m *ActMutation) RemovedEdges() []string {
 	}
 	if m.removedroutine_act_recs != nil {
 		edges = append(edges, act.EdgeRoutineActRecs)
+	}
+	if m.removedone_rep_maxes != nil {
+		edges = append(edges, act.EdgeOneRepMaxes)
 	}
 	return edges
 }
@@ -998,13 +1916,19 @@ func (m *ActMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case act.EdgeOneRepMaxes:
+		ids := make([]ent.Value, 0, len(m.removedone_rep_maxes))
+		for id := range m.removedone_rep_maxes {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ActMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedtags {
 		edges = append(edges, act.EdgeTags)
 	}
@@ -1013,6 +1937,9 @@ func (m *ActMutation) ClearedEdges() []string {
 	}
 	if m.clearedroutine_act_recs {
 		edges = append(edges, act.EdgeRoutineActRecs)
+	}
+	if m.clearedone_rep_maxes {
+		edges = append(edges, act.EdgeOneRepMaxes)
 	}
 	return edges
 }
@@ -1027,6 +1954,8 @@ func (m *ActMutation) EdgeCleared(name string) bool {
 		return m.clearedroutine_acts
 	case act.EdgeRoutineActRecs:
 		return m.clearedroutine_act_recs
+	case act.EdgeOneRepMaxes:
+		return m.clearedone_rep_maxes
 	}
 	return false
 }
@@ -1052,8 +1981,990 @@ func (m *ActMutation) ResetEdge(name string) error {
 	case act.EdgeRoutineActRecs:
 		m.ResetRoutineActRecs()
 		return nil
+	case act.EdgeOneRepMaxes:
+		m.ResetOneRepMaxes()
+		return nil
 	}
 	return fmt.Errorf("unknown Act edge %s", name)
+}
+
+// BodyInfoMutation represents an operation that mutates the BodyInfo nodes in the graph.
+type BodyInfoMutation struct {
+	config
+	op                      Op
+	typ                     string
+	id                      *uint64
+	author                  *uint64
+	addauthor               *int64
+	date                    *time.Time
+	height                  *float64
+	addheight               *float64
+	body_weight             *float64
+	addbody_weight          *float64
+	body_fat_mass           *float64
+	addbody_fat_mass        *float64
+	skeletal_muscle_mass    *float64
+	addskeletal_muscle_mass *float64
+	clearedFields           map[string]struct{}
+	program_rec             *uint64
+	clearedprogram_rec      bool
+	done                    bool
+	oldValue                func(context.Context) (*BodyInfo, error)
+	predicates              []predicate.BodyInfo
+}
+
+var _ ent.Mutation = (*BodyInfoMutation)(nil)
+
+// bodyinfoOption allows management of the mutation configuration using functional options.
+type bodyinfoOption func(*BodyInfoMutation)
+
+// newBodyInfoMutation creates new mutation for the BodyInfo entity.
+func newBodyInfoMutation(c config, op Op, opts ...bodyinfoOption) *BodyInfoMutation {
+	m := &BodyInfoMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeBodyInfo,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withBodyInfoID sets the ID field of the mutation.
+func withBodyInfoID(id uint64) bodyinfoOption {
+	return func(m *BodyInfoMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *BodyInfo
+		)
+		m.oldValue = func(ctx context.Context) (*BodyInfo, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().BodyInfo.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withBodyInfo sets the old BodyInfo of the mutation.
+func withBodyInfo(node *BodyInfo) bodyinfoOption {
+	return func(m *BodyInfoMutation) {
+		m.oldValue = func(context.Context) (*BodyInfo, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m BodyInfoMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m BodyInfoMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of BodyInfo entities.
+func (m *BodyInfoMutation) SetID(id uint64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *BodyInfoMutation) ID() (id uint64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *BodyInfoMutation) IDs(ctx context.Context) ([]uint64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().BodyInfo.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetAuthor sets the "author" field.
+func (m *BodyInfoMutation) SetAuthor(u uint64) {
+	m.author = &u
+	m.addauthor = nil
+}
+
+// Author returns the value of the "author" field in the mutation.
+func (m *BodyInfoMutation) Author() (r uint64, exists bool) {
+	v := m.author
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAuthor returns the old "author" field's value of the BodyInfo entity.
+// If the BodyInfo object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BodyInfoMutation) OldAuthor(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAuthor is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAuthor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAuthor: %w", err)
+	}
+	return oldValue.Author, nil
+}
+
+// AddAuthor adds u to the "author" field.
+func (m *BodyInfoMutation) AddAuthor(u int64) {
+	if m.addauthor != nil {
+		*m.addauthor += u
+	} else {
+		m.addauthor = &u
+	}
+}
+
+// AddedAuthor returns the value that was added to the "author" field in this mutation.
+func (m *BodyInfoMutation) AddedAuthor() (r int64, exists bool) {
+	v := m.addauthor
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetAuthor resets all changes to the "author" field.
+func (m *BodyInfoMutation) ResetAuthor() {
+	m.author = nil
+	m.addauthor = nil
+}
+
+// SetProgramRecID sets the "program_rec_id" field.
+func (m *BodyInfoMutation) SetProgramRecID(u uint64) {
+	m.program_rec = &u
+}
+
+// ProgramRecID returns the value of the "program_rec_id" field in the mutation.
+func (m *BodyInfoMutation) ProgramRecID() (r uint64, exists bool) {
+	v := m.program_rec
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProgramRecID returns the old "program_rec_id" field's value of the BodyInfo entity.
+// If the BodyInfo object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BodyInfoMutation) OldProgramRecID(ctx context.Context) (v *uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProgramRecID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProgramRecID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProgramRecID: %w", err)
+	}
+	return oldValue.ProgramRecID, nil
+}
+
+// ClearProgramRecID clears the value of the "program_rec_id" field.
+func (m *BodyInfoMutation) ClearProgramRecID() {
+	m.program_rec = nil
+	m.clearedFields[bodyinfo.FieldProgramRecID] = struct{}{}
+}
+
+// ProgramRecIDCleared returns if the "program_rec_id" field was cleared in this mutation.
+func (m *BodyInfoMutation) ProgramRecIDCleared() bool {
+	_, ok := m.clearedFields[bodyinfo.FieldProgramRecID]
+	return ok
+}
+
+// ResetProgramRecID resets all changes to the "program_rec_id" field.
+func (m *BodyInfoMutation) ResetProgramRecID() {
+	m.program_rec = nil
+	delete(m.clearedFields, bodyinfo.FieldProgramRecID)
+}
+
+// SetDate sets the "date" field.
+func (m *BodyInfoMutation) SetDate(t time.Time) {
+	m.date = &t
+}
+
+// Date returns the value of the "date" field in the mutation.
+func (m *BodyInfoMutation) Date() (r time.Time, exists bool) {
+	v := m.date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDate returns the old "date" field's value of the BodyInfo entity.
+// If the BodyInfo object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BodyInfoMutation) OldDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDate: %w", err)
+	}
+	return oldValue.Date, nil
+}
+
+// ResetDate resets all changes to the "date" field.
+func (m *BodyInfoMutation) ResetDate() {
+	m.date = nil
+}
+
+// SetHeight sets the "height" field.
+func (m *BodyInfoMutation) SetHeight(f float64) {
+	m.height = &f
+	m.addheight = nil
+}
+
+// Height returns the value of the "height" field in the mutation.
+func (m *BodyInfoMutation) Height() (r float64, exists bool) {
+	v := m.height
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHeight returns the old "height" field's value of the BodyInfo entity.
+// If the BodyInfo object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BodyInfoMutation) OldHeight(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHeight is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHeight requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHeight: %w", err)
+	}
+	return oldValue.Height, nil
+}
+
+// AddHeight adds f to the "height" field.
+func (m *BodyInfoMutation) AddHeight(f float64) {
+	if m.addheight != nil {
+		*m.addheight += f
+	} else {
+		m.addheight = &f
+	}
+}
+
+// AddedHeight returns the value that was added to the "height" field in this mutation.
+func (m *BodyInfoMutation) AddedHeight() (r float64, exists bool) {
+	v := m.addheight
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearHeight clears the value of the "height" field.
+func (m *BodyInfoMutation) ClearHeight() {
+	m.height = nil
+	m.addheight = nil
+	m.clearedFields[bodyinfo.FieldHeight] = struct{}{}
+}
+
+// HeightCleared returns if the "height" field was cleared in this mutation.
+func (m *BodyInfoMutation) HeightCleared() bool {
+	_, ok := m.clearedFields[bodyinfo.FieldHeight]
+	return ok
+}
+
+// ResetHeight resets all changes to the "height" field.
+func (m *BodyInfoMutation) ResetHeight() {
+	m.height = nil
+	m.addheight = nil
+	delete(m.clearedFields, bodyinfo.FieldHeight)
+}
+
+// SetBodyWeight sets the "body_weight" field.
+func (m *BodyInfoMutation) SetBodyWeight(f float64) {
+	m.body_weight = &f
+	m.addbody_weight = nil
+}
+
+// BodyWeight returns the value of the "body_weight" field in the mutation.
+func (m *BodyInfoMutation) BodyWeight() (r float64, exists bool) {
+	v := m.body_weight
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBodyWeight returns the old "body_weight" field's value of the BodyInfo entity.
+// If the BodyInfo object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BodyInfoMutation) OldBodyWeight(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBodyWeight is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBodyWeight requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBodyWeight: %w", err)
+	}
+	return oldValue.BodyWeight, nil
+}
+
+// AddBodyWeight adds f to the "body_weight" field.
+func (m *BodyInfoMutation) AddBodyWeight(f float64) {
+	if m.addbody_weight != nil {
+		*m.addbody_weight += f
+	} else {
+		m.addbody_weight = &f
+	}
+}
+
+// AddedBodyWeight returns the value that was added to the "body_weight" field in this mutation.
+func (m *BodyInfoMutation) AddedBodyWeight() (r float64, exists bool) {
+	v := m.addbody_weight
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearBodyWeight clears the value of the "body_weight" field.
+func (m *BodyInfoMutation) ClearBodyWeight() {
+	m.body_weight = nil
+	m.addbody_weight = nil
+	m.clearedFields[bodyinfo.FieldBodyWeight] = struct{}{}
+}
+
+// BodyWeightCleared returns if the "body_weight" field was cleared in this mutation.
+func (m *BodyInfoMutation) BodyWeightCleared() bool {
+	_, ok := m.clearedFields[bodyinfo.FieldBodyWeight]
+	return ok
+}
+
+// ResetBodyWeight resets all changes to the "body_weight" field.
+func (m *BodyInfoMutation) ResetBodyWeight() {
+	m.body_weight = nil
+	m.addbody_weight = nil
+	delete(m.clearedFields, bodyinfo.FieldBodyWeight)
+}
+
+// SetBodyFatMass sets the "body_fat_mass" field.
+func (m *BodyInfoMutation) SetBodyFatMass(f float64) {
+	m.body_fat_mass = &f
+	m.addbody_fat_mass = nil
+}
+
+// BodyFatMass returns the value of the "body_fat_mass" field in the mutation.
+func (m *BodyInfoMutation) BodyFatMass() (r float64, exists bool) {
+	v := m.body_fat_mass
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBodyFatMass returns the old "body_fat_mass" field's value of the BodyInfo entity.
+// If the BodyInfo object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BodyInfoMutation) OldBodyFatMass(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBodyFatMass is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBodyFatMass requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBodyFatMass: %w", err)
+	}
+	return oldValue.BodyFatMass, nil
+}
+
+// AddBodyFatMass adds f to the "body_fat_mass" field.
+func (m *BodyInfoMutation) AddBodyFatMass(f float64) {
+	if m.addbody_fat_mass != nil {
+		*m.addbody_fat_mass += f
+	} else {
+		m.addbody_fat_mass = &f
+	}
+}
+
+// AddedBodyFatMass returns the value that was added to the "body_fat_mass" field in this mutation.
+func (m *BodyInfoMutation) AddedBodyFatMass() (r float64, exists bool) {
+	v := m.addbody_fat_mass
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearBodyFatMass clears the value of the "body_fat_mass" field.
+func (m *BodyInfoMutation) ClearBodyFatMass() {
+	m.body_fat_mass = nil
+	m.addbody_fat_mass = nil
+	m.clearedFields[bodyinfo.FieldBodyFatMass] = struct{}{}
+}
+
+// BodyFatMassCleared returns if the "body_fat_mass" field was cleared in this mutation.
+func (m *BodyInfoMutation) BodyFatMassCleared() bool {
+	_, ok := m.clearedFields[bodyinfo.FieldBodyFatMass]
+	return ok
+}
+
+// ResetBodyFatMass resets all changes to the "body_fat_mass" field.
+func (m *BodyInfoMutation) ResetBodyFatMass() {
+	m.body_fat_mass = nil
+	m.addbody_fat_mass = nil
+	delete(m.clearedFields, bodyinfo.FieldBodyFatMass)
+}
+
+// SetSkeletalMuscleMass sets the "skeletal_muscle_mass" field.
+func (m *BodyInfoMutation) SetSkeletalMuscleMass(f float64) {
+	m.skeletal_muscle_mass = &f
+	m.addskeletal_muscle_mass = nil
+}
+
+// SkeletalMuscleMass returns the value of the "skeletal_muscle_mass" field in the mutation.
+func (m *BodyInfoMutation) SkeletalMuscleMass() (r float64, exists bool) {
+	v := m.skeletal_muscle_mass
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSkeletalMuscleMass returns the old "skeletal_muscle_mass" field's value of the BodyInfo entity.
+// If the BodyInfo object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BodyInfoMutation) OldSkeletalMuscleMass(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSkeletalMuscleMass is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSkeletalMuscleMass requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSkeletalMuscleMass: %w", err)
+	}
+	return oldValue.SkeletalMuscleMass, nil
+}
+
+// AddSkeletalMuscleMass adds f to the "skeletal_muscle_mass" field.
+func (m *BodyInfoMutation) AddSkeletalMuscleMass(f float64) {
+	if m.addskeletal_muscle_mass != nil {
+		*m.addskeletal_muscle_mass += f
+	} else {
+		m.addskeletal_muscle_mass = &f
+	}
+}
+
+// AddedSkeletalMuscleMass returns the value that was added to the "skeletal_muscle_mass" field in this mutation.
+func (m *BodyInfoMutation) AddedSkeletalMuscleMass() (r float64, exists bool) {
+	v := m.addskeletal_muscle_mass
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearSkeletalMuscleMass clears the value of the "skeletal_muscle_mass" field.
+func (m *BodyInfoMutation) ClearSkeletalMuscleMass() {
+	m.skeletal_muscle_mass = nil
+	m.addskeletal_muscle_mass = nil
+	m.clearedFields[bodyinfo.FieldSkeletalMuscleMass] = struct{}{}
+}
+
+// SkeletalMuscleMassCleared returns if the "skeletal_muscle_mass" field was cleared in this mutation.
+func (m *BodyInfoMutation) SkeletalMuscleMassCleared() bool {
+	_, ok := m.clearedFields[bodyinfo.FieldSkeletalMuscleMass]
+	return ok
+}
+
+// ResetSkeletalMuscleMass resets all changes to the "skeletal_muscle_mass" field.
+func (m *BodyInfoMutation) ResetSkeletalMuscleMass() {
+	m.skeletal_muscle_mass = nil
+	m.addskeletal_muscle_mass = nil
+	delete(m.clearedFields, bodyinfo.FieldSkeletalMuscleMass)
+}
+
+// ClearProgramRec clears the "program_rec" edge to the ProgramRec entity.
+func (m *BodyInfoMutation) ClearProgramRec() {
+	m.clearedprogram_rec = true
+}
+
+// ProgramRecCleared reports if the "program_rec" edge to the ProgramRec entity was cleared.
+func (m *BodyInfoMutation) ProgramRecCleared() bool {
+	return m.ProgramRecIDCleared() || m.clearedprogram_rec
+}
+
+// ProgramRecIDs returns the "program_rec" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProgramRecID instead. It exists only for internal usage by the builders.
+func (m *BodyInfoMutation) ProgramRecIDs() (ids []uint64) {
+	if id := m.program_rec; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProgramRec resets all changes to the "program_rec" edge.
+func (m *BodyInfoMutation) ResetProgramRec() {
+	m.program_rec = nil
+	m.clearedprogram_rec = false
+}
+
+// Where appends a list predicates to the BodyInfoMutation builder.
+func (m *BodyInfoMutation) Where(ps ...predicate.BodyInfo) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the BodyInfoMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *BodyInfoMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.BodyInfo, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *BodyInfoMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *BodyInfoMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (BodyInfo).
+func (m *BodyInfoMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *BodyInfoMutation) Fields() []string {
+	fields := make([]string, 0, 7)
+	if m.author != nil {
+		fields = append(fields, bodyinfo.FieldAuthor)
+	}
+	if m.program_rec != nil {
+		fields = append(fields, bodyinfo.FieldProgramRecID)
+	}
+	if m.date != nil {
+		fields = append(fields, bodyinfo.FieldDate)
+	}
+	if m.height != nil {
+		fields = append(fields, bodyinfo.FieldHeight)
+	}
+	if m.body_weight != nil {
+		fields = append(fields, bodyinfo.FieldBodyWeight)
+	}
+	if m.body_fat_mass != nil {
+		fields = append(fields, bodyinfo.FieldBodyFatMass)
+	}
+	if m.skeletal_muscle_mass != nil {
+		fields = append(fields, bodyinfo.FieldSkeletalMuscleMass)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *BodyInfoMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case bodyinfo.FieldAuthor:
+		return m.Author()
+	case bodyinfo.FieldProgramRecID:
+		return m.ProgramRecID()
+	case bodyinfo.FieldDate:
+		return m.Date()
+	case bodyinfo.FieldHeight:
+		return m.Height()
+	case bodyinfo.FieldBodyWeight:
+		return m.BodyWeight()
+	case bodyinfo.FieldBodyFatMass:
+		return m.BodyFatMass()
+	case bodyinfo.FieldSkeletalMuscleMass:
+		return m.SkeletalMuscleMass()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *BodyInfoMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case bodyinfo.FieldAuthor:
+		return m.OldAuthor(ctx)
+	case bodyinfo.FieldProgramRecID:
+		return m.OldProgramRecID(ctx)
+	case bodyinfo.FieldDate:
+		return m.OldDate(ctx)
+	case bodyinfo.FieldHeight:
+		return m.OldHeight(ctx)
+	case bodyinfo.FieldBodyWeight:
+		return m.OldBodyWeight(ctx)
+	case bodyinfo.FieldBodyFatMass:
+		return m.OldBodyFatMass(ctx)
+	case bodyinfo.FieldSkeletalMuscleMass:
+		return m.OldSkeletalMuscleMass(ctx)
+	}
+	return nil, fmt.Errorf("unknown BodyInfo field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *BodyInfoMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case bodyinfo.FieldAuthor:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAuthor(v)
+		return nil
+	case bodyinfo.FieldProgramRecID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProgramRecID(v)
+		return nil
+	case bodyinfo.FieldDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDate(v)
+		return nil
+	case bodyinfo.FieldHeight:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHeight(v)
+		return nil
+	case bodyinfo.FieldBodyWeight:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBodyWeight(v)
+		return nil
+	case bodyinfo.FieldBodyFatMass:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBodyFatMass(v)
+		return nil
+	case bodyinfo.FieldSkeletalMuscleMass:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSkeletalMuscleMass(v)
+		return nil
+	}
+	return fmt.Errorf("unknown BodyInfo field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *BodyInfoMutation) AddedFields() []string {
+	var fields []string
+	if m.addauthor != nil {
+		fields = append(fields, bodyinfo.FieldAuthor)
+	}
+	if m.addheight != nil {
+		fields = append(fields, bodyinfo.FieldHeight)
+	}
+	if m.addbody_weight != nil {
+		fields = append(fields, bodyinfo.FieldBodyWeight)
+	}
+	if m.addbody_fat_mass != nil {
+		fields = append(fields, bodyinfo.FieldBodyFatMass)
+	}
+	if m.addskeletal_muscle_mass != nil {
+		fields = append(fields, bodyinfo.FieldSkeletalMuscleMass)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *BodyInfoMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case bodyinfo.FieldAuthor:
+		return m.AddedAuthor()
+	case bodyinfo.FieldHeight:
+		return m.AddedHeight()
+	case bodyinfo.FieldBodyWeight:
+		return m.AddedBodyWeight()
+	case bodyinfo.FieldBodyFatMass:
+		return m.AddedBodyFatMass()
+	case bodyinfo.FieldSkeletalMuscleMass:
+		return m.AddedSkeletalMuscleMass()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *BodyInfoMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case bodyinfo.FieldAuthor:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAuthor(v)
+		return nil
+	case bodyinfo.FieldHeight:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddHeight(v)
+		return nil
+	case bodyinfo.FieldBodyWeight:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddBodyWeight(v)
+		return nil
+	case bodyinfo.FieldBodyFatMass:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddBodyFatMass(v)
+		return nil
+	case bodyinfo.FieldSkeletalMuscleMass:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSkeletalMuscleMass(v)
+		return nil
+	}
+	return fmt.Errorf("unknown BodyInfo numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *BodyInfoMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(bodyinfo.FieldProgramRecID) {
+		fields = append(fields, bodyinfo.FieldProgramRecID)
+	}
+	if m.FieldCleared(bodyinfo.FieldHeight) {
+		fields = append(fields, bodyinfo.FieldHeight)
+	}
+	if m.FieldCleared(bodyinfo.FieldBodyWeight) {
+		fields = append(fields, bodyinfo.FieldBodyWeight)
+	}
+	if m.FieldCleared(bodyinfo.FieldBodyFatMass) {
+		fields = append(fields, bodyinfo.FieldBodyFatMass)
+	}
+	if m.FieldCleared(bodyinfo.FieldSkeletalMuscleMass) {
+		fields = append(fields, bodyinfo.FieldSkeletalMuscleMass)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *BodyInfoMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *BodyInfoMutation) ClearField(name string) error {
+	switch name {
+	case bodyinfo.FieldProgramRecID:
+		m.ClearProgramRecID()
+		return nil
+	case bodyinfo.FieldHeight:
+		m.ClearHeight()
+		return nil
+	case bodyinfo.FieldBodyWeight:
+		m.ClearBodyWeight()
+		return nil
+	case bodyinfo.FieldBodyFatMass:
+		m.ClearBodyFatMass()
+		return nil
+	case bodyinfo.FieldSkeletalMuscleMass:
+		m.ClearSkeletalMuscleMass()
+		return nil
+	}
+	return fmt.Errorf("unknown BodyInfo nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *BodyInfoMutation) ResetField(name string) error {
+	switch name {
+	case bodyinfo.FieldAuthor:
+		m.ResetAuthor()
+		return nil
+	case bodyinfo.FieldProgramRecID:
+		m.ResetProgramRecID()
+		return nil
+	case bodyinfo.FieldDate:
+		m.ResetDate()
+		return nil
+	case bodyinfo.FieldHeight:
+		m.ResetHeight()
+		return nil
+	case bodyinfo.FieldBodyWeight:
+		m.ResetBodyWeight()
+		return nil
+	case bodyinfo.FieldBodyFatMass:
+		m.ResetBodyFatMass()
+		return nil
+	case bodyinfo.FieldSkeletalMuscleMass:
+		m.ResetSkeletalMuscleMass()
+		return nil
+	}
+	return fmt.Errorf("unknown BodyInfo field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *BodyInfoMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.program_rec != nil {
+		edges = append(edges, bodyinfo.EdgeProgramRec)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *BodyInfoMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case bodyinfo.EdgeProgramRec:
+		if id := m.program_rec; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *BodyInfoMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *BodyInfoMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *BodyInfoMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedprogram_rec {
+		edges = append(edges, bodyinfo.EdgeProgramRec)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *BodyInfoMutation) EdgeCleared(name string) bool {
+	switch name {
+	case bodyinfo.EdgeProgramRec:
+		return m.clearedprogram_rec
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *BodyInfoMutation) ClearEdge(name string) error {
+	switch name {
+	case bodyinfo.EdgeProgramRec:
+		m.ClearProgramRec()
+		return nil
+	}
+	return fmt.Errorf("unknown BodyInfo unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *BodyInfoMutation) ResetEdge(name string) error {
+	switch name {
+	case bodyinfo.EdgeProgramRec:
+		m.ResetProgramRec()
+		return nil
+	}
+	return fmt.Errorf("unknown BodyInfo edge %s", name)
 }
 
 // DailyRoutineMutation represents an operation that mutates the DailyRoutine nodes in the graph.
@@ -1062,20 +2973,14 @@ type DailyRoutineMutation struct {
 	op                        Op
 	typ                       string
 	id                        *uint64
-	program_id                *uint64
-	addprogram_id             *int64
-	week_id                   *uint64
-	addweek_id                *int64
 	day                       *int
 	addday                    *int
 	created_at                *time.Time
 	updated_at                *time.Time
 	clearedFields             map[string]struct{}
-	program                   map[uint64]struct{}
-	removedprogram            map[uint64]struct{}
+	program                   *uint64
 	clearedprogram            bool
-	weekly_routine            map[uint64]struct{}
-	removedweekly_routine     map[uint64]struct{}
+	weekly_routine            *uint64
 	clearedweekly_routine     bool
 	routine_acts              map[uint64]struct{}
 	removedroutine_acts       map[uint64]struct{}
@@ -1194,13 +3099,12 @@ func (m *DailyRoutineMutation) IDs(ctx context.Context) ([]uint64, error) {
 
 // SetProgramID sets the "program_id" field.
 func (m *DailyRoutineMutation) SetProgramID(u uint64) {
-	m.program_id = &u
-	m.addprogram_id = nil
+	m.program = &u
 }
 
 // ProgramID returns the value of the "program_id" field in the mutation.
 func (m *DailyRoutineMutation) ProgramID() (r uint64, exists bool) {
-	v := m.program_id
+	v := m.program
 	if v == nil {
 		return
 	}
@@ -1224,28 +3128,9 @@ func (m *DailyRoutineMutation) OldProgramID(ctx context.Context) (v *uint64, err
 	return oldValue.ProgramID, nil
 }
 
-// AddProgramID adds u to the "program_id" field.
-func (m *DailyRoutineMutation) AddProgramID(u int64) {
-	if m.addprogram_id != nil {
-		*m.addprogram_id += u
-	} else {
-		m.addprogram_id = &u
-	}
-}
-
-// AddedProgramID returns the value that was added to the "program_id" field in this mutation.
-func (m *DailyRoutineMutation) AddedProgramID() (r int64, exists bool) {
-	v := m.addprogram_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
 // ClearProgramID clears the value of the "program_id" field.
 func (m *DailyRoutineMutation) ClearProgramID() {
-	m.program_id = nil
-	m.addprogram_id = nil
+	m.program = nil
 	m.clearedFields[dailyroutine.FieldProgramID] = struct{}{}
 }
 
@@ -1257,79 +3142,57 @@ func (m *DailyRoutineMutation) ProgramIDCleared() bool {
 
 // ResetProgramID resets all changes to the "program_id" field.
 func (m *DailyRoutineMutation) ResetProgramID() {
-	m.program_id = nil
-	m.addprogram_id = nil
+	m.program = nil
 	delete(m.clearedFields, dailyroutine.FieldProgramID)
 }
 
-// SetWeekID sets the "week_id" field.
-func (m *DailyRoutineMutation) SetWeekID(u uint64) {
-	m.week_id = &u
-	m.addweek_id = nil
+// SetWeeklyRoutineID sets the "weekly_routine_id" field.
+func (m *DailyRoutineMutation) SetWeeklyRoutineID(u uint64) {
+	m.weekly_routine = &u
 }
 
-// WeekID returns the value of the "week_id" field in the mutation.
-func (m *DailyRoutineMutation) WeekID() (r uint64, exists bool) {
-	v := m.week_id
+// WeeklyRoutineID returns the value of the "weekly_routine_id" field in the mutation.
+func (m *DailyRoutineMutation) WeeklyRoutineID() (r uint64, exists bool) {
+	v := m.weekly_routine
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldWeekID returns the old "week_id" field's value of the DailyRoutine entity.
+// OldWeeklyRoutineID returns the old "weekly_routine_id" field's value of the DailyRoutine entity.
 // If the DailyRoutine object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DailyRoutineMutation) OldWeekID(ctx context.Context) (v *uint64, err error) {
+func (m *DailyRoutineMutation) OldWeeklyRoutineID(ctx context.Context) (v *uint64, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldWeekID is only allowed on UpdateOne operations")
+		return v, errors.New("OldWeeklyRoutineID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldWeekID requires an ID field in the mutation")
+		return v, errors.New("OldWeeklyRoutineID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldWeekID: %w", err)
+		return v, fmt.Errorf("querying old value for OldWeeklyRoutineID: %w", err)
 	}
-	return oldValue.WeekID, nil
+	return oldValue.WeeklyRoutineID, nil
 }
 
-// AddWeekID adds u to the "week_id" field.
-func (m *DailyRoutineMutation) AddWeekID(u int64) {
-	if m.addweek_id != nil {
-		*m.addweek_id += u
-	} else {
-		m.addweek_id = &u
-	}
+// ClearWeeklyRoutineID clears the value of the "weekly_routine_id" field.
+func (m *DailyRoutineMutation) ClearWeeklyRoutineID() {
+	m.weekly_routine = nil
+	m.clearedFields[dailyroutine.FieldWeeklyRoutineID] = struct{}{}
 }
 
-// AddedWeekID returns the value that was added to the "week_id" field in this mutation.
-func (m *DailyRoutineMutation) AddedWeekID() (r int64, exists bool) {
-	v := m.addweek_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ClearWeekID clears the value of the "week_id" field.
-func (m *DailyRoutineMutation) ClearWeekID() {
-	m.week_id = nil
-	m.addweek_id = nil
-	m.clearedFields[dailyroutine.FieldWeekID] = struct{}{}
-}
-
-// WeekIDCleared returns if the "week_id" field was cleared in this mutation.
-func (m *DailyRoutineMutation) WeekIDCleared() bool {
-	_, ok := m.clearedFields[dailyroutine.FieldWeekID]
+// WeeklyRoutineIDCleared returns if the "weekly_routine_id" field was cleared in this mutation.
+func (m *DailyRoutineMutation) WeeklyRoutineIDCleared() bool {
+	_, ok := m.clearedFields[dailyroutine.FieldWeeklyRoutineID]
 	return ok
 }
 
-// ResetWeekID resets all changes to the "week_id" field.
-func (m *DailyRoutineMutation) ResetWeekID() {
-	m.week_id = nil
-	m.addweek_id = nil
-	delete(m.clearedFields, dailyroutine.FieldWeekID)
+// ResetWeeklyRoutineID resets all changes to the "weekly_routine_id" field.
+func (m *DailyRoutineMutation) ResetWeeklyRoutineID() {
+	m.weekly_routine = nil
+	delete(m.clearedFields, dailyroutine.FieldWeeklyRoutineID)
 }
 
 // SetDay sets the "day" field.
@@ -1460,16 +3323,6 @@ func (m *DailyRoutineMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// AddProgramIDs adds the "program" edge to the Program entity by ids.
-func (m *DailyRoutineMutation) AddProgramIDs(ids ...uint64) {
-	if m.program == nil {
-		m.program = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		m.program[ids[i]] = struct{}{}
-	}
-}
-
 // ClearProgram clears the "program" edge to the Program entity.
 func (m *DailyRoutineMutation) ClearProgram() {
 	m.clearedprogram = true
@@ -1477,32 +3330,15 @@ func (m *DailyRoutineMutation) ClearProgram() {
 
 // ProgramCleared reports if the "program" edge to the Program entity was cleared.
 func (m *DailyRoutineMutation) ProgramCleared() bool {
-	return m.clearedprogram
-}
-
-// RemoveProgramIDs removes the "program" edge to the Program entity by IDs.
-func (m *DailyRoutineMutation) RemoveProgramIDs(ids ...uint64) {
-	if m.removedprogram == nil {
-		m.removedprogram = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		delete(m.program, ids[i])
-		m.removedprogram[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProgram returns the removed IDs of the "program" edge to the Program entity.
-func (m *DailyRoutineMutation) RemovedProgramIDs() (ids []uint64) {
-	for id := range m.removedprogram {
-		ids = append(ids, id)
-	}
-	return
+	return m.ProgramIDCleared() || m.clearedprogram
 }
 
 // ProgramIDs returns the "program" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProgramID instead. It exists only for internal usage by the builders.
 func (m *DailyRoutineMutation) ProgramIDs() (ids []uint64) {
-	for id := range m.program {
-		ids = append(ids, id)
+	if id := m.program; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -1511,17 +3347,6 @@ func (m *DailyRoutineMutation) ProgramIDs() (ids []uint64) {
 func (m *DailyRoutineMutation) ResetProgram() {
 	m.program = nil
 	m.clearedprogram = false
-	m.removedprogram = nil
-}
-
-// AddWeeklyRoutineIDs adds the "weekly_routine" edge to the WeeklyRoutine entity by ids.
-func (m *DailyRoutineMutation) AddWeeklyRoutineIDs(ids ...uint64) {
-	if m.weekly_routine == nil {
-		m.weekly_routine = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		m.weekly_routine[ids[i]] = struct{}{}
-	}
 }
 
 // ClearWeeklyRoutine clears the "weekly_routine" edge to the WeeklyRoutine entity.
@@ -1531,32 +3356,15 @@ func (m *DailyRoutineMutation) ClearWeeklyRoutine() {
 
 // WeeklyRoutineCleared reports if the "weekly_routine" edge to the WeeklyRoutine entity was cleared.
 func (m *DailyRoutineMutation) WeeklyRoutineCleared() bool {
-	return m.clearedweekly_routine
-}
-
-// RemoveWeeklyRoutineIDs removes the "weekly_routine" edge to the WeeklyRoutine entity by IDs.
-func (m *DailyRoutineMutation) RemoveWeeklyRoutineIDs(ids ...uint64) {
-	if m.removedweekly_routine == nil {
-		m.removedweekly_routine = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		delete(m.weekly_routine, ids[i])
-		m.removedweekly_routine[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedWeeklyRoutine returns the removed IDs of the "weekly_routine" edge to the WeeklyRoutine entity.
-func (m *DailyRoutineMutation) RemovedWeeklyRoutineIDs() (ids []uint64) {
-	for id := range m.removedweekly_routine {
-		ids = append(ids, id)
-	}
-	return
+	return m.WeeklyRoutineIDCleared() || m.clearedweekly_routine
 }
 
 // WeeklyRoutineIDs returns the "weekly_routine" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// WeeklyRoutineID instead. It exists only for internal usage by the builders.
 func (m *DailyRoutineMutation) WeeklyRoutineIDs() (ids []uint64) {
-	for id := range m.weekly_routine {
-		ids = append(ids, id)
+	if id := m.weekly_routine; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -1565,7 +3373,6 @@ func (m *DailyRoutineMutation) WeeklyRoutineIDs() (ids []uint64) {
 func (m *DailyRoutineMutation) ResetWeeklyRoutine() {
 	m.weekly_routine = nil
 	m.clearedweekly_routine = false
-	m.removedweekly_routine = nil
 }
 
 // AddRoutineActIDs adds the "routine_acts" edge to the RoutineAct entity by ids.
@@ -1711,11 +3518,11 @@ func (m *DailyRoutineMutation) Type() string {
 // AddedFields().
 func (m *DailyRoutineMutation) Fields() []string {
 	fields := make([]string, 0, 5)
-	if m.program_id != nil {
+	if m.program != nil {
 		fields = append(fields, dailyroutine.FieldProgramID)
 	}
-	if m.week_id != nil {
-		fields = append(fields, dailyroutine.FieldWeekID)
+	if m.weekly_routine != nil {
+		fields = append(fields, dailyroutine.FieldWeeklyRoutineID)
 	}
 	if m.day != nil {
 		fields = append(fields, dailyroutine.FieldDay)
@@ -1736,8 +3543,8 @@ func (m *DailyRoutineMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case dailyroutine.FieldProgramID:
 		return m.ProgramID()
-	case dailyroutine.FieldWeekID:
-		return m.WeekID()
+	case dailyroutine.FieldWeeklyRoutineID:
+		return m.WeeklyRoutineID()
 	case dailyroutine.FieldDay:
 		return m.Day()
 	case dailyroutine.FieldCreatedAt:
@@ -1755,8 +3562,8 @@ func (m *DailyRoutineMutation) OldField(ctx context.Context, name string) (ent.V
 	switch name {
 	case dailyroutine.FieldProgramID:
 		return m.OldProgramID(ctx)
-	case dailyroutine.FieldWeekID:
-		return m.OldWeekID(ctx)
+	case dailyroutine.FieldWeeklyRoutineID:
+		return m.OldWeeklyRoutineID(ctx)
 	case dailyroutine.FieldDay:
 		return m.OldDay(ctx)
 	case dailyroutine.FieldCreatedAt:
@@ -1779,12 +3586,12 @@ func (m *DailyRoutineMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetProgramID(v)
 		return nil
-	case dailyroutine.FieldWeekID:
+	case dailyroutine.FieldWeeklyRoutineID:
 		v, ok := value.(uint64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetWeekID(v)
+		m.SetWeeklyRoutineID(v)
 		return nil
 	case dailyroutine.FieldDay:
 		v, ok := value.(int)
@@ -1815,12 +3622,6 @@ func (m *DailyRoutineMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *DailyRoutineMutation) AddedFields() []string {
 	var fields []string
-	if m.addprogram_id != nil {
-		fields = append(fields, dailyroutine.FieldProgramID)
-	}
-	if m.addweek_id != nil {
-		fields = append(fields, dailyroutine.FieldWeekID)
-	}
 	if m.addday != nil {
 		fields = append(fields, dailyroutine.FieldDay)
 	}
@@ -1832,10 +3633,6 @@ func (m *DailyRoutineMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *DailyRoutineMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case dailyroutine.FieldProgramID:
-		return m.AddedProgramID()
-	case dailyroutine.FieldWeekID:
-		return m.AddedWeekID()
 	case dailyroutine.FieldDay:
 		return m.AddedDay()
 	}
@@ -1847,20 +3644,6 @@ func (m *DailyRoutineMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *DailyRoutineMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case dailyroutine.FieldProgramID:
-		v, ok := value.(int64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddProgramID(v)
-		return nil
-	case dailyroutine.FieldWeekID:
-		v, ok := value.(int64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddWeekID(v)
-		return nil
 	case dailyroutine.FieldDay:
 		v, ok := value.(int)
 		if !ok {
@@ -1879,8 +3662,8 @@ func (m *DailyRoutineMutation) ClearedFields() []string {
 	if m.FieldCleared(dailyroutine.FieldProgramID) {
 		fields = append(fields, dailyroutine.FieldProgramID)
 	}
-	if m.FieldCleared(dailyroutine.FieldWeekID) {
-		fields = append(fields, dailyroutine.FieldWeekID)
+	if m.FieldCleared(dailyroutine.FieldWeeklyRoutineID) {
+		fields = append(fields, dailyroutine.FieldWeeklyRoutineID)
 	}
 	return fields
 }
@@ -1899,8 +3682,8 @@ func (m *DailyRoutineMutation) ClearField(name string) error {
 	case dailyroutine.FieldProgramID:
 		m.ClearProgramID()
 		return nil
-	case dailyroutine.FieldWeekID:
-		m.ClearWeekID()
+	case dailyroutine.FieldWeeklyRoutineID:
+		m.ClearWeeklyRoutineID()
 		return nil
 	}
 	return fmt.Errorf("unknown DailyRoutine nullable field %s", name)
@@ -1913,8 +3696,8 @@ func (m *DailyRoutineMutation) ResetField(name string) error {
 	case dailyroutine.FieldProgramID:
 		m.ResetProgramID()
 		return nil
-	case dailyroutine.FieldWeekID:
-		m.ResetWeekID()
+	case dailyroutine.FieldWeeklyRoutineID:
+		m.ResetWeeklyRoutineID()
 		return nil
 	case dailyroutine.FieldDay:
 		m.ResetDay()
@@ -1952,17 +3735,13 @@ func (m *DailyRoutineMutation) AddedEdges() []string {
 func (m *DailyRoutineMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case dailyroutine.EdgeProgram:
-		ids := make([]ent.Value, 0, len(m.program))
-		for id := range m.program {
-			ids = append(ids, id)
+		if id := m.program; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case dailyroutine.EdgeWeeklyRoutine:
-		ids := make([]ent.Value, 0, len(m.weekly_routine))
-		for id := range m.weekly_routine {
-			ids = append(ids, id)
+		if id := m.weekly_routine; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case dailyroutine.EdgeRoutineActs:
 		ids := make([]ent.Value, 0, len(m.routine_acts))
 		for id := range m.routine_acts {
@@ -1982,12 +3761,6 @@ func (m *DailyRoutineMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DailyRoutineMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 4)
-	if m.removedprogram != nil {
-		edges = append(edges, dailyroutine.EdgeProgram)
-	}
-	if m.removedweekly_routine != nil {
-		edges = append(edges, dailyroutine.EdgeWeeklyRoutine)
-	}
 	if m.removedroutine_acts != nil {
 		edges = append(edges, dailyroutine.EdgeRoutineActs)
 	}
@@ -2001,18 +3774,6 @@ func (m *DailyRoutineMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *DailyRoutineMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case dailyroutine.EdgeProgram:
-		ids := make([]ent.Value, 0, len(m.removedprogram))
-		for id := range m.removedprogram {
-			ids = append(ids, id)
-		}
-		return ids
-	case dailyroutine.EdgeWeeklyRoutine:
-		ids := make([]ent.Value, 0, len(m.removedweekly_routine))
-		for id := range m.removedweekly_routine {
-			ids = append(ids, id)
-		}
-		return ids
 	case dailyroutine.EdgeRoutineActs:
 		ids := make([]ent.Value, 0, len(m.removedroutine_acts))
 		for id := range m.removedroutine_acts {
@@ -2067,6 +3828,12 @@ func (m *DailyRoutineMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *DailyRoutineMutation) ClearEdge(name string) error {
 	switch name {
+	case dailyroutine.EdgeProgram:
+		m.ClearProgram()
+		return nil
+	case dailyroutine.EdgeWeeklyRoutine:
+		m.ClearWeeklyRoutine()
+		return nil
 	}
 	return fmt.Errorf("unknown DailyRoutine unique edge %s", name)
 }
@@ -2099,12 +3866,6 @@ type DailyRoutineRecMutation struct {
 	id                        *uint64
 	author                    *uint64
 	addauthor                 *int64
-	program_rec_id            *uint64
-	addprogram_rec_id         *int64
-	weekly_routine_rec_id     *uint64
-	addweekly_routine_rec_id  *int64
-	daily_routine_id          *uint64
-	adddaily_routine_id       *int64
 	date                      *time.Time
 	status                    *dailyroutinerec.Status
 	comment                   *string
@@ -2287,13 +4048,12 @@ func (m *DailyRoutineRecMutation) ResetAuthor() {
 
 // SetProgramRecID sets the "program_rec_id" field.
 func (m *DailyRoutineRecMutation) SetProgramRecID(u uint64) {
-	m.program_rec_id = &u
-	m.addprogram_rec_id = nil
+	m.program_rec = &u
 }
 
 // ProgramRecID returns the value of the "program_rec_id" field in the mutation.
 func (m *DailyRoutineRecMutation) ProgramRecID() (r uint64, exists bool) {
-	v := m.program_rec_id
+	v := m.program_rec
 	if v == nil {
 		return
 	}
@@ -2317,28 +4077,9 @@ func (m *DailyRoutineRecMutation) OldProgramRecID(ctx context.Context) (v *uint6
 	return oldValue.ProgramRecID, nil
 }
 
-// AddProgramRecID adds u to the "program_rec_id" field.
-func (m *DailyRoutineRecMutation) AddProgramRecID(u int64) {
-	if m.addprogram_rec_id != nil {
-		*m.addprogram_rec_id += u
-	} else {
-		m.addprogram_rec_id = &u
-	}
-}
-
-// AddedProgramRecID returns the value that was added to the "program_rec_id" field in this mutation.
-func (m *DailyRoutineRecMutation) AddedProgramRecID() (r int64, exists bool) {
-	v := m.addprogram_rec_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
 // ClearProgramRecID clears the value of the "program_rec_id" field.
 func (m *DailyRoutineRecMutation) ClearProgramRecID() {
-	m.program_rec_id = nil
-	m.addprogram_rec_id = nil
+	m.program_rec = nil
 	m.clearedFields[dailyroutinerec.FieldProgramRecID] = struct{}{}
 }
 
@@ -2350,20 +4091,18 @@ func (m *DailyRoutineRecMutation) ProgramRecIDCleared() bool {
 
 // ResetProgramRecID resets all changes to the "program_rec_id" field.
 func (m *DailyRoutineRecMutation) ResetProgramRecID() {
-	m.program_rec_id = nil
-	m.addprogram_rec_id = nil
+	m.program_rec = nil
 	delete(m.clearedFields, dailyroutinerec.FieldProgramRecID)
 }
 
 // SetWeeklyRoutineRecID sets the "weekly_routine_rec_id" field.
 func (m *DailyRoutineRecMutation) SetWeeklyRoutineRecID(u uint64) {
-	m.weekly_routine_rec_id = &u
-	m.addweekly_routine_rec_id = nil
+	m.weekly_routine_rec = &u
 }
 
 // WeeklyRoutineRecID returns the value of the "weekly_routine_rec_id" field in the mutation.
 func (m *DailyRoutineRecMutation) WeeklyRoutineRecID() (r uint64, exists bool) {
-	v := m.weekly_routine_rec_id
+	v := m.weekly_routine_rec
 	if v == nil {
 		return
 	}
@@ -2387,28 +4126,9 @@ func (m *DailyRoutineRecMutation) OldWeeklyRoutineRecID(ctx context.Context) (v 
 	return oldValue.WeeklyRoutineRecID, nil
 }
 
-// AddWeeklyRoutineRecID adds u to the "weekly_routine_rec_id" field.
-func (m *DailyRoutineRecMutation) AddWeeklyRoutineRecID(u int64) {
-	if m.addweekly_routine_rec_id != nil {
-		*m.addweekly_routine_rec_id += u
-	} else {
-		m.addweekly_routine_rec_id = &u
-	}
-}
-
-// AddedWeeklyRoutineRecID returns the value that was added to the "weekly_routine_rec_id" field in this mutation.
-func (m *DailyRoutineRecMutation) AddedWeeklyRoutineRecID() (r int64, exists bool) {
-	v := m.addweekly_routine_rec_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
 // ClearWeeklyRoutineRecID clears the value of the "weekly_routine_rec_id" field.
 func (m *DailyRoutineRecMutation) ClearWeeklyRoutineRecID() {
-	m.weekly_routine_rec_id = nil
-	m.addweekly_routine_rec_id = nil
+	m.weekly_routine_rec = nil
 	m.clearedFields[dailyroutinerec.FieldWeeklyRoutineRecID] = struct{}{}
 }
 
@@ -2420,20 +4140,18 @@ func (m *DailyRoutineRecMutation) WeeklyRoutineRecIDCleared() bool {
 
 // ResetWeeklyRoutineRecID resets all changes to the "weekly_routine_rec_id" field.
 func (m *DailyRoutineRecMutation) ResetWeeklyRoutineRecID() {
-	m.weekly_routine_rec_id = nil
-	m.addweekly_routine_rec_id = nil
+	m.weekly_routine_rec = nil
 	delete(m.clearedFields, dailyroutinerec.FieldWeeklyRoutineRecID)
 }
 
 // SetDailyRoutineID sets the "daily_routine_id" field.
 func (m *DailyRoutineRecMutation) SetDailyRoutineID(u uint64) {
-	m.daily_routine_id = &u
-	m.adddaily_routine_id = nil
+	m.daily_routine = &u
 }
 
 // DailyRoutineID returns the value of the "daily_routine_id" field in the mutation.
 func (m *DailyRoutineRecMutation) DailyRoutineID() (r uint64, exists bool) {
-	v := m.daily_routine_id
+	v := m.daily_routine
 	if v == nil {
 		return
 	}
@@ -2457,28 +4175,9 @@ func (m *DailyRoutineRecMutation) OldDailyRoutineID(ctx context.Context) (v *uin
 	return oldValue.DailyRoutineID, nil
 }
 
-// AddDailyRoutineID adds u to the "daily_routine_id" field.
-func (m *DailyRoutineRecMutation) AddDailyRoutineID(u int64) {
-	if m.adddaily_routine_id != nil {
-		*m.adddaily_routine_id += u
-	} else {
-		m.adddaily_routine_id = &u
-	}
-}
-
-// AddedDailyRoutineID returns the value that was added to the "daily_routine_id" field in this mutation.
-func (m *DailyRoutineRecMutation) AddedDailyRoutineID() (r int64, exists bool) {
-	v := m.adddaily_routine_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
 // ClearDailyRoutineID clears the value of the "daily_routine_id" field.
 func (m *DailyRoutineRecMutation) ClearDailyRoutineID() {
-	m.daily_routine_id = nil
-	m.adddaily_routine_id = nil
+	m.daily_routine = nil
 	m.clearedFields[dailyroutinerec.FieldDailyRoutineID] = struct{}{}
 }
 
@@ -2490,8 +4189,7 @@ func (m *DailyRoutineRecMutation) DailyRoutineIDCleared() bool {
 
 // ResetDailyRoutineID resets all changes to the "daily_routine_id" field.
 func (m *DailyRoutineRecMutation) ResetDailyRoutineID() {
-	m.daily_routine_id = nil
-	m.adddaily_routine_id = nil
+	m.daily_routine = nil
 	delete(m.clearedFields, dailyroutinerec.FieldDailyRoutineID)
 }
 
@@ -2688,11 +4386,6 @@ func (m *DailyRoutineRecMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// SetDailyRoutineID sets the "daily_routine" edge to the DailyRoutine entity by id.
-func (m *DailyRoutineRecMutation) SetDailyRoutineID(id uint64) {
-	m.daily_routine = &id
-}
-
 // ClearDailyRoutine clears the "daily_routine" edge to the DailyRoutine entity.
 func (m *DailyRoutineRecMutation) ClearDailyRoutine() {
 	m.cleareddaily_routine = true
@@ -2700,15 +4393,7 @@ func (m *DailyRoutineRecMutation) ClearDailyRoutine() {
 
 // DailyRoutineCleared reports if the "daily_routine" edge to the DailyRoutine entity was cleared.
 func (m *DailyRoutineRecMutation) DailyRoutineCleared() bool {
-	return m.cleareddaily_routine
-}
-
-// DailyRoutineID returns the "daily_routine" edge ID in the mutation.
-func (m *DailyRoutineRecMutation) DailyRoutineID() (id uint64, exists bool) {
-	if m.daily_routine != nil {
-		return *m.daily_routine, true
-	}
-	return
+	return m.DailyRoutineIDCleared() || m.cleareddaily_routine
 }
 
 // DailyRoutineIDs returns the "daily_routine" edge IDs in the mutation.
@@ -2727,11 +4412,6 @@ func (m *DailyRoutineRecMutation) ResetDailyRoutine() {
 	m.cleareddaily_routine = false
 }
 
-// SetProgramRecID sets the "program_rec" edge to the ProgramRec entity by id.
-func (m *DailyRoutineRecMutation) SetProgramRecID(id uint64) {
-	m.program_rec = &id
-}
-
 // ClearProgramRec clears the "program_rec" edge to the ProgramRec entity.
 func (m *DailyRoutineRecMutation) ClearProgramRec() {
 	m.clearedprogram_rec = true
@@ -2739,15 +4419,7 @@ func (m *DailyRoutineRecMutation) ClearProgramRec() {
 
 // ProgramRecCleared reports if the "program_rec" edge to the ProgramRec entity was cleared.
 func (m *DailyRoutineRecMutation) ProgramRecCleared() bool {
-	return m.clearedprogram_rec
-}
-
-// ProgramRecID returns the "program_rec" edge ID in the mutation.
-func (m *DailyRoutineRecMutation) ProgramRecID() (id uint64, exists bool) {
-	if m.program_rec != nil {
-		return *m.program_rec, true
-	}
-	return
+	return m.ProgramRecIDCleared() || m.clearedprogram_rec
 }
 
 // ProgramRecIDs returns the "program_rec" edge IDs in the mutation.
@@ -2766,11 +4438,6 @@ func (m *DailyRoutineRecMutation) ResetProgramRec() {
 	m.clearedprogram_rec = false
 }
 
-// SetWeeklyRoutineRecID sets the "weekly_routine_rec" edge to the WeeklyRoutineRec entity by id.
-func (m *DailyRoutineRecMutation) SetWeeklyRoutineRecID(id uint64) {
-	m.weekly_routine_rec = &id
-}
-
 // ClearWeeklyRoutineRec clears the "weekly_routine_rec" edge to the WeeklyRoutineRec entity.
 func (m *DailyRoutineRecMutation) ClearWeeklyRoutineRec() {
 	m.clearedweekly_routine_rec = true
@@ -2778,15 +4445,7 @@ func (m *DailyRoutineRecMutation) ClearWeeklyRoutineRec() {
 
 // WeeklyRoutineRecCleared reports if the "weekly_routine_rec" edge to the WeeklyRoutineRec entity was cleared.
 func (m *DailyRoutineRecMutation) WeeklyRoutineRecCleared() bool {
-	return m.clearedweekly_routine_rec
-}
-
-// WeeklyRoutineRecID returns the "weekly_routine_rec" edge ID in the mutation.
-func (m *DailyRoutineRecMutation) WeeklyRoutineRecID() (id uint64, exists bool) {
-	if m.weekly_routine_rec != nil {
-		return *m.weekly_routine_rec, true
-	}
-	return
+	return m.WeeklyRoutineRecIDCleared() || m.clearedweekly_routine_rec
 }
 
 // WeeklyRoutineRecIDs returns the "weekly_routine_rec" edge IDs in the mutation.
@@ -2897,13 +4556,13 @@ func (m *DailyRoutineRecMutation) Fields() []string {
 	if m.author != nil {
 		fields = append(fields, dailyroutinerec.FieldAuthor)
 	}
-	if m.program_rec_id != nil {
+	if m.program_rec != nil {
 		fields = append(fields, dailyroutinerec.FieldProgramRecID)
 	}
-	if m.weekly_routine_rec_id != nil {
+	if m.weekly_routine_rec != nil {
 		fields = append(fields, dailyroutinerec.FieldWeeklyRoutineRecID)
 	}
-	if m.daily_routine_id != nil {
+	if m.daily_routine != nil {
 		fields = append(fields, dailyroutinerec.FieldDailyRoutineID)
 	}
 	if m.date != nil {
@@ -3057,15 +4716,6 @@ func (m *DailyRoutineRecMutation) AddedFields() []string {
 	if m.addauthor != nil {
 		fields = append(fields, dailyroutinerec.FieldAuthor)
 	}
-	if m.addprogram_rec_id != nil {
-		fields = append(fields, dailyroutinerec.FieldProgramRecID)
-	}
-	if m.addweekly_routine_rec_id != nil {
-		fields = append(fields, dailyroutinerec.FieldWeeklyRoutineRecID)
-	}
-	if m.adddaily_routine_id != nil {
-		fields = append(fields, dailyroutinerec.FieldDailyRoutineID)
-	}
 	return fields
 }
 
@@ -3076,12 +4726,6 @@ func (m *DailyRoutineRecMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case dailyroutinerec.FieldAuthor:
 		return m.AddedAuthor()
-	case dailyroutinerec.FieldProgramRecID:
-		return m.AddedProgramRecID()
-	case dailyroutinerec.FieldWeeklyRoutineRecID:
-		return m.AddedWeeklyRoutineRecID()
-	case dailyroutinerec.FieldDailyRoutineID:
-		return m.AddedDailyRoutineID()
 	}
 	return nil, false
 }
@@ -3097,27 +4741,6 @@ func (m *DailyRoutineRecMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddAuthor(v)
-		return nil
-	case dailyroutinerec.FieldProgramRecID:
-		v, ok := value.(int64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddProgramRecID(v)
-		return nil
-	case dailyroutinerec.FieldWeeklyRoutineRecID:
-		v, ok := value.(int64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddWeeklyRoutineRecID(v)
-		return nil
-	case dailyroutinerec.FieldDailyRoutineID:
-		v, ok := value.(int64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddDailyRoutineID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown DailyRoutineRec numeric field %s", name)
@@ -3340,6 +4963,871 @@ func (m *DailyRoutineRecMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown DailyRoutineRec edge %s", name)
+}
+
+// OneRepMaxMutation represents an operation that mutates the OneRepMax nodes in the graph.
+type OneRepMaxMutation struct {
+	config
+	op                 Op
+	typ                string
+	id                 *uint64
+	author             *uint64
+	addauthor          *int64
+	date               *time.Time
+	one_rep_max        *float64
+	addone_rep_max     *float64
+	certified          *bool
+	calculated         *bool
+	clearedFields      map[string]struct{}
+	act                *uint64
+	clearedact         bool
+	program_rec        *uint64
+	clearedprogram_rec bool
+	done               bool
+	oldValue           func(context.Context) (*OneRepMax, error)
+	predicates         []predicate.OneRepMax
+}
+
+var _ ent.Mutation = (*OneRepMaxMutation)(nil)
+
+// onerepmaxOption allows management of the mutation configuration using functional options.
+type onerepmaxOption func(*OneRepMaxMutation)
+
+// newOneRepMaxMutation creates new mutation for the OneRepMax entity.
+func newOneRepMaxMutation(c config, op Op, opts ...onerepmaxOption) *OneRepMaxMutation {
+	m := &OneRepMaxMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeOneRepMax,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withOneRepMaxID sets the ID field of the mutation.
+func withOneRepMaxID(id uint64) onerepmaxOption {
+	return func(m *OneRepMaxMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *OneRepMax
+		)
+		m.oldValue = func(ctx context.Context) (*OneRepMax, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().OneRepMax.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withOneRepMax sets the old OneRepMax of the mutation.
+func withOneRepMax(node *OneRepMax) onerepmaxOption {
+	return func(m *OneRepMaxMutation) {
+		m.oldValue = func(context.Context) (*OneRepMax, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m OneRepMaxMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m OneRepMaxMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of OneRepMax entities.
+func (m *OneRepMaxMutation) SetID(id uint64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *OneRepMaxMutation) ID() (id uint64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *OneRepMaxMutation) IDs(ctx context.Context) ([]uint64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().OneRepMax.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetAuthor sets the "author" field.
+func (m *OneRepMaxMutation) SetAuthor(u uint64) {
+	m.author = &u
+	m.addauthor = nil
+}
+
+// Author returns the value of the "author" field in the mutation.
+func (m *OneRepMaxMutation) Author() (r uint64, exists bool) {
+	v := m.author
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAuthor returns the old "author" field's value of the OneRepMax entity.
+// If the OneRepMax object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OneRepMaxMutation) OldAuthor(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAuthor is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAuthor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAuthor: %w", err)
+	}
+	return oldValue.Author, nil
+}
+
+// AddAuthor adds u to the "author" field.
+func (m *OneRepMaxMutation) AddAuthor(u int64) {
+	if m.addauthor != nil {
+		*m.addauthor += u
+	} else {
+		m.addauthor = &u
+	}
+}
+
+// AddedAuthor returns the value that was added to the "author" field in this mutation.
+func (m *OneRepMaxMutation) AddedAuthor() (r int64, exists bool) {
+	v := m.addauthor
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetAuthor resets all changes to the "author" field.
+func (m *OneRepMaxMutation) ResetAuthor() {
+	m.author = nil
+	m.addauthor = nil
+}
+
+// SetActID sets the "act_id" field.
+func (m *OneRepMaxMutation) SetActID(u uint64) {
+	m.act = &u
+}
+
+// ActID returns the value of the "act_id" field in the mutation.
+func (m *OneRepMaxMutation) ActID() (r uint64, exists bool) {
+	v := m.act
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldActID returns the old "act_id" field's value of the OneRepMax entity.
+// If the OneRepMax object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OneRepMaxMutation) OldActID(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldActID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldActID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldActID: %w", err)
+	}
+	return oldValue.ActID, nil
+}
+
+// ResetActID resets all changes to the "act_id" field.
+func (m *OneRepMaxMutation) ResetActID() {
+	m.act = nil
+}
+
+// SetProgramRecID sets the "program_rec_id" field.
+func (m *OneRepMaxMutation) SetProgramRecID(u uint64) {
+	m.program_rec = &u
+}
+
+// ProgramRecID returns the value of the "program_rec_id" field in the mutation.
+func (m *OneRepMaxMutation) ProgramRecID() (r uint64, exists bool) {
+	v := m.program_rec
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProgramRecID returns the old "program_rec_id" field's value of the OneRepMax entity.
+// If the OneRepMax object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OneRepMaxMutation) OldProgramRecID(ctx context.Context) (v *uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProgramRecID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProgramRecID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProgramRecID: %w", err)
+	}
+	return oldValue.ProgramRecID, nil
+}
+
+// ClearProgramRecID clears the value of the "program_rec_id" field.
+func (m *OneRepMaxMutation) ClearProgramRecID() {
+	m.program_rec = nil
+	m.clearedFields[onerepmax.FieldProgramRecID] = struct{}{}
+}
+
+// ProgramRecIDCleared returns if the "program_rec_id" field was cleared in this mutation.
+func (m *OneRepMaxMutation) ProgramRecIDCleared() bool {
+	_, ok := m.clearedFields[onerepmax.FieldProgramRecID]
+	return ok
+}
+
+// ResetProgramRecID resets all changes to the "program_rec_id" field.
+func (m *OneRepMaxMutation) ResetProgramRecID() {
+	m.program_rec = nil
+	delete(m.clearedFields, onerepmax.FieldProgramRecID)
+}
+
+// SetDate sets the "date" field.
+func (m *OneRepMaxMutation) SetDate(t time.Time) {
+	m.date = &t
+}
+
+// Date returns the value of the "date" field in the mutation.
+func (m *OneRepMaxMutation) Date() (r time.Time, exists bool) {
+	v := m.date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDate returns the old "date" field's value of the OneRepMax entity.
+// If the OneRepMax object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OneRepMaxMutation) OldDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDate: %w", err)
+	}
+	return oldValue.Date, nil
+}
+
+// ResetDate resets all changes to the "date" field.
+func (m *OneRepMaxMutation) ResetDate() {
+	m.date = nil
+}
+
+// SetOneRepMax sets the "one_rep_max" field.
+func (m *OneRepMaxMutation) SetOneRepMax(f float64) {
+	m.one_rep_max = &f
+	m.addone_rep_max = nil
+}
+
+// OneRepMax returns the value of the "one_rep_max" field in the mutation.
+func (m *OneRepMaxMutation) OneRepMax() (r float64, exists bool) {
+	v := m.one_rep_max
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOneRepMax returns the old "one_rep_max" field's value of the OneRepMax entity.
+// If the OneRepMax object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OneRepMaxMutation) OldOneRepMax(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOneRepMax is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOneRepMax requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOneRepMax: %w", err)
+	}
+	return oldValue.OneRepMax, nil
+}
+
+// AddOneRepMax adds f to the "one_rep_max" field.
+func (m *OneRepMaxMutation) AddOneRepMax(f float64) {
+	if m.addone_rep_max != nil {
+		*m.addone_rep_max += f
+	} else {
+		m.addone_rep_max = &f
+	}
+}
+
+// AddedOneRepMax returns the value that was added to the "one_rep_max" field in this mutation.
+func (m *OneRepMaxMutation) AddedOneRepMax() (r float64, exists bool) {
+	v := m.addone_rep_max
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearOneRepMax clears the value of the "one_rep_max" field.
+func (m *OneRepMaxMutation) ClearOneRepMax() {
+	m.one_rep_max = nil
+	m.addone_rep_max = nil
+	m.clearedFields[onerepmax.FieldOneRepMax] = struct{}{}
+}
+
+// OneRepMaxCleared returns if the "one_rep_max" field was cleared in this mutation.
+func (m *OneRepMaxMutation) OneRepMaxCleared() bool {
+	_, ok := m.clearedFields[onerepmax.FieldOneRepMax]
+	return ok
+}
+
+// ResetOneRepMax resets all changes to the "one_rep_max" field.
+func (m *OneRepMaxMutation) ResetOneRepMax() {
+	m.one_rep_max = nil
+	m.addone_rep_max = nil
+	delete(m.clearedFields, onerepmax.FieldOneRepMax)
+}
+
+// SetCertified sets the "certified" field.
+func (m *OneRepMaxMutation) SetCertified(b bool) {
+	m.certified = &b
+}
+
+// Certified returns the value of the "certified" field in the mutation.
+func (m *OneRepMaxMutation) Certified() (r bool, exists bool) {
+	v := m.certified
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCertified returns the old "certified" field's value of the OneRepMax entity.
+// If the OneRepMax object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OneRepMaxMutation) OldCertified(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCertified is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCertified requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCertified: %w", err)
+	}
+	return oldValue.Certified, nil
+}
+
+// ResetCertified resets all changes to the "certified" field.
+func (m *OneRepMaxMutation) ResetCertified() {
+	m.certified = nil
+}
+
+// SetCalculated sets the "calculated" field.
+func (m *OneRepMaxMutation) SetCalculated(b bool) {
+	m.calculated = &b
+}
+
+// Calculated returns the value of the "calculated" field in the mutation.
+func (m *OneRepMaxMutation) Calculated() (r bool, exists bool) {
+	v := m.calculated
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCalculated returns the old "calculated" field's value of the OneRepMax entity.
+// If the OneRepMax object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OneRepMaxMutation) OldCalculated(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCalculated is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCalculated requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCalculated: %w", err)
+	}
+	return oldValue.Calculated, nil
+}
+
+// ResetCalculated resets all changes to the "calculated" field.
+func (m *OneRepMaxMutation) ResetCalculated() {
+	m.calculated = nil
+}
+
+// ClearAct clears the "act" edge to the Act entity.
+func (m *OneRepMaxMutation) ClearAct() {
+	m.clearedact = true
+}
+
+// ActCleared reports if the "act" edge to the Act entity was cleared.
+func (m *OneRepMaxMutation) ActCleared() bool {
+	return m.clearedact
+}
+
+// ActIDs returns the "act" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ActID instead. It exists only for internal usage by the builders.
+func (m *OneRepMaxMutation) ActIDs() (ids []uint64) {
+	if id := m.act; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAct resets all changes to the "act" edge.
+func (m *OneRepMaxMutation) ResetAct() {
+	m.act = nil
+	m.clearedact = false
+}
+
+// ClearProgramRec clears the "program_rec" edge to the ProgramRec entity.
+func (m *OneRepMaxMutation) ClearProgramRec() {
+	m.clearedprogram_rec = true
+}
+
+// ProgramRecCleared reports if the "program_rec" edge to the ProgramRec entity was cleared.
+func (m *OneRepMaxMutation) ProgramRecCleared() bool {
+	return m.ProgramRecIDCleared() || m.clearedprogram_rec
+}
+
+// ProgramRecIDs returns the "program_rec" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProgramRecID instead. It exists only for internal usage by the builders.
+func (m *OneRepMaxMutation) ProgramRecIDs() (ids []uint64) {
+	if id := m.program_rec; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProgramRec resets all changes to the "program_rec" edge.
+func (m *OneRepMaxMutation) ResetProgramRec() {
+	m.program_rec = nil
+	m.clearedprogram_rec = false
+}
+
+// Where appends a list predicates to the OneRepMaxMutation builder.
+func (m *OneRepMaxMutation) Where(ps ...predicate.OneRepMax) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the OneRepMaxMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *OneRepMaxMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.OneRepMax, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *OneRepMaxMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *OneRepMaxMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (OneRepMax).
+func (m *OneRepMaxMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *OneRepMaxMutation) Fields() []string {
+	fields := make([]string, 0, 7)
+	if m.author != nil {
+		fields = append(fields, onerepmax.FieldAuthor)
+	}
+	if m.act != nil {
+		fields = append(fields, onerepmax.FieldActID)
+	}
+	if m.program_rec != nil {
+		fields = append(fields, onerepmax.FieldProgramRecID)
+	}
+	if m.date != nil {
+		fields = append(fields, onerepmax.FieldDate)
+	}
+	if m.one_rep_max != nil {
+		fields = append(fields, onerepmax.FieldOneRepMax)
+	}
+	if m.certified != nil {
+		fields = append(fields, onerepmax.FieldCertified)
+	}
+	if m.calculated != nil {
+		fields = append(fields, onerepmax.FieldCalculated)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *OneRepMaxMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case onerepmax.FieldAuthor:
+		return m.Author()
+	case onerepmax.FieldActID:
+		return m.ActID()
+	case onerepmax.FieldProgramRecID:
+		return m.ProgramRecID()
+	case onerepmax.FieldDate:
+		return m.Date()
+	case onerepmax.FieldOneRepMax:
+		return m.OneRepMax()
+	case onerepmax.FieldCertified:
+		return m.Certified()
+	case onerepmax.FieldCalculated:
+		return m.Calculated()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *OneRepMaxMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case onerepmax.FieldAuthor:
+		return m.OldAuthor(ctx)
+	case onerepmax.FieldActID:
+		return m.OldActID(ctx)
+	case onerepmax.FieldProgramRecID:
+		return m.OldProgramRecID(ctx)
+	case onerepmax.FieldDate:
+		return m.OldDate(ctx)
+	case onerepmax.FieldOneRepMax:
+		return m.OldOneRepMax(ctx)
+	case onerepmax.FieldCertified:
+		return m.OldCertified(ctx)
+	case onerepmax.FieldCalculated:
+		return m.OldCalculated(ctx)
+	}
+	return nil, fmt.Errorf("unknown OneRepMax field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OneRepMaxMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case onerepmax.FieldAuthor:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAuthor(v)
+		return nil
+	case onerepmax.FieldActID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetActID(v)
+		return nil
+	case onerepmax.FieldProgramRecID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProgramRecID(v)
+		return nil
+	case onerepmax.FieldDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDate(v)
+		return nil
+	case onerepmax.FieldOneRepMax:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOneRepMax(v)
+		return nil
+	case onerepmax.FieldCertified:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCertified(v)
+		return nil
+	case onerepmax.FieldCalculated:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCalculated(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OneRepMax field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *OneRepMaxMutation) AddedFields() []string {
+	var fields []string
+	if m.addauthor != nil {
+		fields = append(fields, onerepmax.FieldAuthor)
+	}
+	if m.addone_rep_max != nil {
+		fields = append(fields, onerepmax.FieldOneRepMax)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *OneRepMaxMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case onerepmax.FieldAuthor:
+		return m.AddedAuthor()
+	case onerepmax.FieldOneRepMax:
+		return m.AddedOneRepMax()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OneRepMaxMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case onerepmax.FieldAuthor:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAuthor(v)
+		return nil
+	case onerepmax.FieldOneRepMax:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOneRepMax(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OneRepMax numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *OneRepMaxMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(onerepmax.FieldProgramRecID) {
+		fields = append(fields, onerepmax.FieldProgramRecID)
+	}
+	if m.FieldCleared(onerepmax.FieldOneRepMax) {
+		fields = append(fields, onerepmax.FieldOneRepMax)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *OneRepMaxMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *OneRepMaxMutation) ClearField(name string) error {
+	switch name {
+	case onerepmax.FieldProgramRecID:
+		m.ClearProgramRecID()
+		return nil
+	case onerepmax.FieldOneRepMax:
+		m.ClearOneRepMax()
+		return nil
+	}
+	return fmt.Errorf("unknown OneRepMax nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *OneRepMaxMutation) ResetField(name string) error {
+	switch name {
+	case onerepmax.FieldAuthor:
+		m.ResetAuthor()
+		return nil
+	case onerepmax.FieldActID:
+		m.ResetActID()
+		return nil
+	case onerepmax.FieldProgramRecID:
+		m.ResetProgramRecID()
+		return nil
+	case onerepmax.FieldDate:
+		m.ResetDate()
+		return nil
+	case onerepmax.FieldOneRepMax:
+		m.ResetOneRepMax()
+		return nil
+	case onerepmax.FieldCertified:
+		m.ResetCertified()
+		return nil
+	case onerepmax.FieldCalculated:
+		m.ResetCalculated()
+		return nil
+	}
+	return fmt.Errorf("unknown OneRepMax field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *OneRepMaxMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.act != nil {
+		edges = append(edges, onerepmax.EdgeAct)
+	}
+	if m.program_rec != nil {
+		edges = append(edges, onerepmax.EdgeProgramRec)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *OneRepMaxMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case onerepmax.EdgeAct:
+		if id := m.act; id != nil {
+			return []ent.Value{*id}
+		}
+	case onerepmax.EdgeProgramRec:
+		if id := m.program_rec; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *OneRepMaxMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *OneRepMaxMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *OneRepMaxMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedact {
+		edges = append(edges, onerepmax.EdgeAct)
+	}
+	if m.clearedprogram_rec {
+		edges = append(edges, onerepmax.EdgeProgramRec)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *OneRepMaxMutation) EdgeCleared(name string) bool {
+	switch name {
+	case onerepmax.EdgeAct:
+		return m.clearedact
+	case onerepmax.EdgeProgramRec:
+		return m.clearedprogram_rec
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *OneRepMaxMutation) ClearEdge(name string) error {
+	switch name {
+	case onerepmax.EdgeAct:
+		m.ClearAct()
+		return nil
+	case onerepmax.EdgeProgramRec:
+		m.ClearProgramRec()
+		return nil
+	}
+	return fmt.Errorf("unknown OneRepMax unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *OneRepMaxMutation) ResetEdge(name string) error {
+	switch name {
+	case onerepmax.EdgeAct:
+		m.ResetAct()
+		return nil
+	case onerepmax.EdgeProgramRec:
+		m.ResetProgramRec()
+		return nil
+	}
+	return fmt.Errorf("unknown OneRepMax edge %s", name)
 }
 
 // ProgramMutation represents an operation that mutates the Program nodes in the graph.
@@ -4425,8 +6913,6 @@ type ProgramRecMutation struct {
 	id                         *uint64
 	author                     *uint64
 	addauthor                  *int64
-	program_id                 *uint64
-	addprogram_id              *int64
 	start_date                 *time.Time
 	end_date                   *time.Time
 	status                     *programrec.Status
@@ -4442,6 +6928,12 @@ type ProgramRecMutation struct {
 	daily_routine_recs         map[uint64]struct{}
 	removeddaily_routine_recs  map[uint64]struct{}
 	cleareddaily_routine_recs  bool
+	body_info                  map[uint64]struct{}
+	removedbody_info           map[uint64]struct{}
+	clearedbody_info           bool
+	one_rep_max                map[uint64]struct{}
+	removedone_rep_max         map[uint64]struct{}
+	clearedone_rep_max         bool
 	done                       bool
 	oldValue                   func(context.Context) (*ProgramRec, error)
 	predicates                 []predicate.ProgramRec
@@ -4609,13 +7101,12 @@ func (m *ProgramRecMutation) ResetAuthor() {
 
 // SetProgramID sets the "program_id" field.
 func (m *ProgramRecMutation) SetProgramID(u uint64) {
-	m.program_id = &u
-	m.addprogram_id = nil
+	m.program = &u
 }
 
 // ProgramID returns the value of the "program_id" field in the mutation.
 func (m *ProgramRecMutation) ProgramID() (r uint64, exists bool) {
-	v := m.program_id
+	v := m.program
 	if v == nil {
 		return
 	}
@@ -4639,28 +7130,9 @@ func (m *ProgramRecMutation) OldProgramID(ctx context.Context) (v uint64, err er
 	return oldValue.ProgramID, nil
 }
 
-// AddProgramID adds u to the "program_id" field.
-func (m *ProgramRecMutation) AddProgramID(u int64) {
-	if m.addprogram_id != nil {
-		*m.addprogram_id += u
-	} else {
-		m.addprogram_id = &u
-	}
-}
-
-// AddedProgramID returns the value that was added to the "program_id" field in this mutation.
-func (m *ProgramRecMutation) AddedProgramID() (r int64, exists bool) {
-	v := m.addprogram_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
 // ResetProgramID resets all changes to the "program_id" field.
 func (m *ProgramRecMutation) ResetProgramID() {
-	m.program_id = nil
-	m.addprogram_id = nil
+	m.program = nil
 }
 
 // SetStartDate sets the "start_date" field.
@@ -4892,11 +7364,6 @@ func (m *ProgramRecMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// SetProgramID sets the "program" edge to the Program entity by id.
-func (m *ProgramRecMutation) SetProgramID(id uint64) {
-	m.program = &id
-}
-
 // ClearProgram clears the "program" edge to the Program entity.
 func (m *ProgramRecMutation) ClearProgram() {
 	m.clearedprogram = true
@@ -4905,14 +7372,6 @@ func (m *ProgramRecMutation) ClearProgram() {
 // ProgramCleared reports if the "program" edge to the Program entity was cleared.
 func (m *ProgramRecMutation) ProgramCleared() bool {
 	return m.clearedprogram
-}
-
-// ProgramID returns the "program" edge ID in the mutation.
-func (m *ProgramRecMutation) ProgramID() (id uint64, exists bool) {
-	if m.program != nil {
-		return *m.program, true
-	}
-	return
 }
 
 // ProgramIDs returns the "program" edge IDs in the mutation.
@@ -5039,6 +7498,114 @@ func (m *ProgramRecMutation) ResetDailyRoutineRecs() {
 	m.removeddaily_routine_recs = nil
 }
 
+// AddBodyInfoIDs adds the "body_info" edge to the BodyInfo entity by ids.
+func (m *ProgramRecMutation) AddBodyInfoIDs(ids ...uint64) {
+	if m.body_info == nil {
+		m.body_info = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.body_info[ids[i]] = struct{}{}
+	}
+}
+
+// ClearBodyInfo clears the "body_info" edge to the BodyInfo entity.
+func (m *ProgramRecMutation) ClearBodyInfo() {
+	m.clearedbody_info = true
+}
+
+// BodyInfoCleared reports if the "body_info" edge to the BodyInfo entity was cleared.
+func (m *ProgramRecMutation) BodyInfoCleared() bool {
+	return m.clearedbody_info
+}
+
+// RemoveBodyInfoIDs removes the "body_info" edge to the BodyInfo entity by IDs.
+func (m *ProgramRecMutation) RemoveBodyInfoIDs(ids ...uint64) {
+	if m.removedbody_info == nil {
+		m.removedbody_info = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.body_info, ids[i])
+		m.removedbody_info[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedBodyInfo returns the removed IDs of the "body_info" edge to the BodyInfo entity.
+func (m *ProgramRecMutation) RemovedBodyInfoIDs() (ids []uint64) {
+	for id := range m.removedbody_info {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// BodyInfoIDs returns the "body_info" edge IDs in the mutation.
+func (m *ProgramRecMutation) BodyInfoIDs() (ids []uint64) {
+	for id := range m.body_info {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetBodyInfo resets all changes to the "body_info" edge.
+func (m *ProgramRecMutation) ResetBodyInfo() {
+	m.body_info = nil
+	m.clearedbody_info = false
+	m.removedbody_info = nil
+}
+
+// AddOneRepMaxIDs adds the "one_rep_max" edge to the OneRepMax entity by ids.
+func (m *ProgramRecMutation) AddOneRepMaxIDs(ids ...uint64) {
+	if m.one_rep_max == nil {
+		m.one_rep_max = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.one_rep_max[ids[i]] = struct{}{}
+	}
+}
+
+// ClearOneRepMax clears the "one_rep_max" edge to the OneRepMax entity.
+func (m *ProgramRecMutation) ClearOneRepMax() {
+	m.clearedone_rep_max = true
+}
+
+// OneRepMaxCleared reports if the "one_rep_max" edge to the OneRepMax entity was cleared.
+func (m *ProgramRecMutation) OneRepMaxCleared() bool {
+	return m.clearedone_rep_max
+}
+
+// RemoveOneRepMaxIDs removes the "one_rep_max" edge to the OneRepMax entity by IDs.
+func (m *ProgramRecMutation) RemoveOneRepMaxIDs(ids ...uint64) {
+	if m.removedone_rep_max == nil {
+		m.removedone_rep_max = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.one_rep_max, ids[i])
+		m.removedone_rep_max[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedOneRepMax returns the removed IDs of the "one_rep_max" edge to the OneRepMax entity.
+func (m *ProgramRecMutation) RemovedOneRepMaxIDs() (ids []uint64) {
+	for id := range m.removedone_rep_max {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// OneRepMaxIDs returns the "one_rep_max" edge IDs in the mutation.
+func (m *ProgramRecMutation) OneRepMaxIDs() (ids []uint64) {
+	for id := range m.one_rep_max {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetOneRepMax resets all changes to the "one_rep_max" edge.
+func (m *ProgramRecMutation) ResetOneRepMax() {
+	m.one_rep_max = nil
+	m.clearedone_rep_max = false
+	m.removedone_rep_max = nil
+}
+
 // Where appends a list predicates to the ProgramRecMutation builder.
 func (m *ProgramRecMutation) Where(ps ...predicate.ProgramRec) {
 	m.predicates = append(m.predicates, ps...)
@@ -5077,7 +7644,7 @@ func (m *ProgramRecMutation) Fields() []string {
 	if m.author != nil {
 		fields = append(fields, programrec.FieldAuthor)
 	}
-	if m.program_id != nil {
+	if m.program != nil {
 		fields = append(fields, programrec.FieldProgramID)
 	}
 	if m.start_date != nil {
@@ -5223,9 +7790,6 @@ func (m *ProgramRecMutation) AddedFields() []string {
 	if m.addauthor != nil {
 		fields = append(fields, programrec.FieldAuthor)
 	}
-	if m.addprogram_id != nil {
-		fields = append(fields, programrec.FieldProgramID)
-	}
 	return fields
 }
 
@@ -5236,8 +7800,6 @@ func (m *ProgramRecMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case programrec.FieldAuthor:
 		return m.AddedAuthor()
-	case programrec.FieldProgramID:
-		return m.AddedProgramID()
 	}
 	return nil, false
 }
@@ -5253,13 +7815,6 @@ func (m *ProgramRecMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddAuthor(v)
-		return nil
-	case programrec.FieldProgramID:
-		v, ok := value.(int64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddProgramID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown ProgramRec numeric field %s", name)
@@ -5327,7 +7882,7 @@ func (m *ProgramRecMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProgramRecMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 5)
 	if m.program != nil {
 		edges = append(edges, programrec.EdgeProgram)
 	}
@@ -5336,6 +7891,12 @@ func (m *ProgramRecMutation) AddedEdges() []string {
 	}
 	if m.daily_routine_recs != nil {
 		edges = append(edges, programrec.EdgeDailyRoutineRecs)
+	}
+	if m.body_info != nil {
+		edges = append(edges, programrec.EdgeBodyInfo)
+	}
+	if m.one_rep_max != nil {
+		edges = append(edges, programrec.EdgeOneRepMax)
 	}
 	return edges
 }
@@ -5360,18 +7921,36 @@ func (m *ProgramRecMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case programrec.EdgeBodyInfo:
+		ids := make([]ent.Value, 0, len(m.body_info))
+		for id := range m.body_info {
+			ids = append(ids, id)
+		}
+		return ids
+	case programrec.EdgeOneRepMax:
+		ids := make([]ent.Value, 0, len(m.one_rep_max))
+		for id := range m.one_rep_max {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProgramRecMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 5)
 	if m.removedweekly_routine_recs != nil {
 		edges = append(edges, programrec.EdgeWeeklyRoutineRecs)
 	}
 	if m.removeddaily_routine_recs != nil {
 		edges = append(edges, programrec.EdgeDailyRoutineRecs)
+	}
+	if m.removedbody_info != nil {
+		edges = append(edges, programrec.EdgeBodyInfo)
+	}
+	if m.removedone_rep_max != nil {
+		edges = append(edges, programrec.EdgeOneRepMax)
 	}
 	return edges
 }
@@ -5392,13 +7971,25 @@ func (m *ProgramRecMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case programrec.EdgeBodyInfo:
+		ids := make([]ent.Value, 0, len(m.removedbody_info))
+		for id := range m.removedbody_info {
+			ids = append(ids, id)
+		}
+		return ids
+	case programrec.EdgeOneRepMax:
+		ids := make([]ent.Value, 0, len(m.removedone_rep_max))
+		for id := range m.removedone_rep_max {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProgramRecMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 5)
 	if m.clearedprogram {
 		edges = append(edges, programrec.EdgeProgram)
 	}
@@ -5407,6 +7998,12 @@ func (m *ProgramRecMutation) ClearedEdges() []string {
 	}
 	if m.cleareddaily_routine_recs {
 		edges = append(edges, programrec.EdgeDailyRoutineRecs)
+	}
+	if m.clearedbody_info {
+		edges = append(edges, programrec.EdgeBodyInfo)
+	}
+	if m.clearedone_rep_max {
+		edges = append(edges, programrec.EdgeOneRepMax)
 	}
 	return edges
 }
@@ -5421,6 +8018,10 @@ func (m *ProgramRecMutation) EdgeCleared(name string) bool {
 		return m.clearedweekly_routine_recs
 	case programrec.EdgeDailyRoutineRecs:
 		return m.cleareddaily_routine_recs
+	case programrec.EdgeBodyInfo:
+		return m.clearedbody_info
+	case programrec.EdgeOneRepMax:
+		return m.clearedone_rep_max
 	}
 	return false
 }
@@ -5449,6 +8050,12 @@ func (m *ProgramRecMutation) ResetEdge(name string) error {
 	case programrec.EdgeDailyRoutineRecs:
 		m.ResetDailyRoutineRecs()
 		return nil
+	case programrec.EdgeBodyInfo:
+		m.ResetBodyInfo()
+		return nil
+	case programrec.EdgeOneRepMax:
+		m.ResetOneRepMax()
+		return nil
 	}
 	return fmt.Errorf("unknown ProgramRec edge %s", name)
 }
@@ -5459,16 +8066,13 @@ type RoutineActMutation struct {
 	op                      Op
 	typ                     string
 	id                      *uint64
-	daily_routine_id        *uint64
-	adddaily_routine_id     *int64
-	act_id                  *uint64
-	addact_id               *int64
 	_order                  *int
 	add_order               *int
 	reps                    *int
 	addreps                 *int
 	lap                     *int
 	addlap                  *int
+	warmup                  *bool
 	created_at              *time.Time
 	updated_at              *time.Time
 	clearedFields           map[string]struct{}
@@ -5588,71 +8192,14 @@ func (m *RoutineActMutation) IDs(ctx context.Context) ([]uint64, error) {
 	}
 }
 
-// SetDailyRoutineID sets the "daily_routine_id" field.
-func (m *RoutineActMutation) SetDailyRoutineID(u uint64) {
-	m.daily_routine_id = &u
-	m.adddaily_routine_id = nil
-}
-
-// DailyRoutineID returns the value of the "daily_routine_id" field in the mutation.
-func (m *RoutineActMutation) DailyRoutineID() (r uint64, exists bool) {
-	v := m.daily_routine_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDailyRoutineID returns the old "daily_routine_id" field's value of the RoutineAct entity.
-// If the RoutineAct object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RoutineActMutation) OldDailyRoutineID(ctx context.Context) (v uint64, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDailyRoutineID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDailyRoutineID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDailyRoutineID: %w", err)
-	}
-	return oldValue.DailyRoutineID, nil
-}
-
-// AddDailyRoutineID adds u to the "daily_routine_id" field.
-func (m *RoutineActMutation) AddDailyRoutineID(u int64) {
-	if m.adddaily_routine_id != nil {
-		*m.adddaily_routine_id += u
-	} else {
-		m.adddaily_routine_id = &u
-	}
-}
-
-// AddedDailyRoutineID returns the value that was added to the "daily_routine_id" field in this mutation.
-func (m *RoutineActMutation) AddedDailyRoutineID() (r int64, exists bool) {
-	v := m.adddaily_routine_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetDailyRoutineID resets all changes to the "daily_routine_id" field.
-func (m *RoutineActMutation) ResetDailyRoutineID() {
-	m.daily_routine_id = nil
-	m.adddaily_routine_id = nil
-}
-
 // SetActID sets the "act_id" field.
 func (m *RoutineActMutation) SetActID(u uint64) {
-	m.act_id = &u
-	m.addact_id = nil
+	m.act = &u
 }
 
 // ActID returns the value of the "act_id" field in the mutation.
 func (m *RoutineActMutation) ActID() (r uint64, exists bool) {
-	v := m.act_id
+	v := m.act
 	if v == nil {
 		return
 	}
@@ -5676,28 +8223,45 @@ func (m *RoutineActMutation) OldActID(ctx context.Context) (v uint64, err error)
 	return oldValue.ActID, nil
 }
 
-// AddActID adds u to the "act_id" field.
-func (m *RoutineActMutation) AddActID(u int64) {
-	if m.addact_id != nil {
-		*m.addact_id += u
-	} else {
-		m.addact_id = &u
-	}
+// ResetActID resets all changes to the "act_id" field.
+func (m *RoutineActMutation) ResetActID() {
+	m.act = nil
 }
 
-// AddedActID returns the value that was added to the "act_id" field in this mutation.
-func (m *RoutineActMutation) AddedActID() (r int64, exists bool) {
-	v := m.addact_id
+// SetDailyRoutineID sets the "daily_routine_id" field.
+func (m *RoutineActMutation) SetDailyRoutineID(u uint64) {
+	m.daily_routine = &u
+}
+
+// DailyRoutineID returns the value of the "daily_routine_id" field in the mutation.
+func (m *RoutineActMutation) DailyRoutineID() (r uint64, exists bool) {
+	v := m.daily_routine
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// ResetActID resets all changes to the "act_id" field.
-func (m *RoutineActMutation) ResetActID() {
-	m.act_id = nil
-	m.addact_id = nil
+// OldDailyRoutineID returns the old "daily_routine_id" field's value of the RoutineAct entity.
+// If the RoutineAct object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RoutineActMutation) OldDailyRoutineID(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDailyRoutineID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDailyRoutineID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDailyRoutineID: %w", err)
+	}
+	return oldValue.DailyRoutineID, nil
+}
+
+// ResetDailyRoutineID resets all changes to the "daily_routine_id" field.
+func (m *RoutineActMutation) ResetDailyRoutineID() {
+	m.daily_routine = nil
 }
 
 // SetOrder sets the "order" field.
@@ -5896,6 +8460,42 @@ func (m *RoutineActMutation) ResetLap() {
 	delete(m.clearedFields, routineact.FieldLap)
 }
 
+// SetWarmup sets the "warmup" field.
+func (m *RoutineActMutation) SetWarmup(b bool) {
+	m.warmup = &b
+}
+
+// Warmup returns the value of the "warmup" field in the mutation.
+func (m *RoutineActMutation) Warmup() (r bool, exists bool) {
+	v := m.warmup
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWarmup returns the old "warmup" field's value of the RoutineAct entity.
+// If the RoutineAct object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RoutineActMutation) OldWarmup(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWarmup is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWarmup requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWarmup: %w", err)
+	}
+	return oldValue.Warmup, nil
+}
+
+// ResetWarmup resets all changes to the "warmup" field.
+func (m *RoutineActMutation) ResetWarmup() {
+	m.warmup = nil
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *RoutineActMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -5968,11 +8568,6 @@ func (m *RoutineActMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// SetActID sets the "act" edge to the Act entity by id.
-func (m *RoutineActMutation) SetActID(id uint64) {
-	m.act = &id
-}
-
 // ClearAct clears the "act" edge to the Act entity.
 func (m *RoutineActMutation) ClearAct() {
 	m.clearedact = true
@@ -5981,14 +8576,6 @@ func (m *RoutineActMutation) ClearAct() {
 // ActCleared reports if the "act" edge to the Act entity was cleared.
 func (m *RoutineActMutation) ActCleared() bool {
 	return m.clearedact
-}
-
-// ActID returns the "act" edge ID in the mutation.
-func (m *RoutineActMutation) ActID() (id uint64, exists bool) {
-	if m.act != nil {
-		return *m.act, true
-	}
-	return
 }
 
 // ActIDs returns the "act" edge IDs in the mutation.
@@ -6007,11 +8594,6 @@ func (m *RoutineActMutation) ResetAct() {
 	m.clearedact = false
 }
 
-// SetDailyRoutineID sets the "daily_routine" edge to the DailyRoutine entity by id.
-func (m *RoutineActMutation) SetDailyRoutineID(id uint64) {
-	m.daily_routine = &id
-}
-
 // ClearDailyRoutine clears the "daily_routine" edge to the DailyRoutine entity.
 func (m *RoutineActMutation) ClearDailyRoutine() {
 	m.cleareddaily_routine = true
@@ -6020,14 +8602,6 @@ func (m *RoutineActMutation) ClearDailyRoutine() {
 // DailyRoutineCleared reports if the "daily_routine" edge to the DailyRoutine entity was cleared.
 func (m *RoutineActMutation) DailyRoutineCleared() bool {
 	return m.cleareddaily_routine
-}
-
-// DailyRoutineID returns the "daily_routine" edge ID in the mutation.
-func (m *RoutineActMutation) DailyRoutineID() (id uint64, exists bool) {
-	if m.daily_routine != nil {
-		return *m.daily_routine, true
-	}
-	return
 }
 
 // DailyRoutineIDs returns the "daily_routine" edge IDs in the mutation.
@@ -6134,12 +8708,12 @@ func (m *RoutineActMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RoutineActMutation) Fields() []string {
-	fields := make([]string, 0, 7)
-	if m.daily_routine_id != nil {
-		fields = append(fields, routineact.FieldDailyRoutineID)
-	}
-	if m.act_id != nil {
+	fields := make([]string, 0, 8)
+	if m.act != nil {
 		fields = append(fields, routineact.FieldActID)
+	}
+	if m.daily_routine != nil {
+		fields = append(fields, routineact.FieldDailyRoutineID)
 	}
 	if m._order != nil {
 		fields = append(fields, routineact.FieldOrder)
@@ -6149,6 +8723,9 @@ func (m *RoutineActMutation) Fields() []string {
 	}
 	if m.lap != nil {
 		fields = append(fields, routineact.FieldLap)
+	}
+	if m.warmup != nil {
+		fields = append(fields, routineact.FieldWarmup)
 	}
 	if m.created_at != nil {
 		fields = append(fields, routineact.FieldCreatedAt)
@@ -6164,16 +8741,18 @@ func (m *RoutineActMutation) Fields() []string {
 // schema.
 func (m *RoutineActMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case routineact.FieldDailyRoutineID:
-		return m.DailyRoutineID()
 	case routineact.FieldActID:
 		return m.ActID()
+	case routineact.FieldDailyRoutineID:
+		return m.DailyRoutineID()
 	case routineact.FieldOrder:
 		return m.Order()
 	case routineact.FieldReps:
 		return m.Reps()
 	case routineact.FieldLap:
 		return m.Lap()
+	case routineact.FieldWarmup:
+		return m.Warmup()
 	case routineact.FieldCreatedAt:
 		return m.CreatedAt()
 	case routineact.FieldUpdatedAt:
@@ -6187,16 +8766,18 @@ func (m *RoutineActMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *RoutineActMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case routineact.FieldDailyRoutineID:
-		return m.OldDailyRoutineID(ctx)
 	case routineact.FieldActID:
 		return m.OldActID(ctx)
+	case routineact.FieldDailyRoutineID:
+		return m.OldDailyRoutineID(ctx)
 	case routineact.FieldOrder:
 		return m.OldOrder(ctx)
 	case routineact.FieldReps:
 		return m.OldReps(ctx)
 	case routineact.FieldLap:
 		return m.OldLap(ctx)
+	case routineact.FieldWarmup:
+		return m.OldWarmup(ctx)
 	case routineact.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case routineact.FieldUpdatedAt:
@@ -6210,19 +8791,19 @@ func (m *RoutineActMutation) OldField(ctx context.Context, name string) (ent.Val
 // type.
 func (m *RoutineActMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case routineact.FieldDailyRoutineID:
-		v, ok := value.(uint64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDailyRoutineID(v)
-		return nil
 	case routineact.FieldActID:
 		v, ok := value.(uint64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetActID(v)
+		return nil
+	case routineact.FieldDailyRoutineID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDailyRoutineID(v)
 		return nil
 	case routineact.FieldOrder:
 		v, ok := value.(int)
@@ -6244,6 +8825,13 @@ func (m *RoutineActMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetLap(v)
+		return nil
+	case routineact.FieldWarmup:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWarmup(v)
 		return nil
 	case routineact.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -6267,12 +8855,6 @@ func (m *RoutineActMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *RoutineActMutation) AddedFields() []string {
 	var fields []string
-	if m.adddaily_routine_id != nil {
-		fields = append(fields, routineact.FieldDailyRoutineID)
-	}
-	if m.addact_id != nil {
-		fields = append(fields, routineact.FieldActID)
-	}
 	if m.add_order != nil {
 		fields = append(fields, routineact.FieldOrder)
 	}
@@ -6290,10 +8872,6 @@ func (m *RoutineActMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *RoutineActMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case routineact.FieldDailyRoutineID:
-		return m.AddedDailyRoutineID()
-	case routineact.FieldActID:
-		return m.AddedActID()
 	case routineact.FieldOrder:
 		return m.AddedOrder()
 	case routineact.FieldReps:
@@ -6309,20 +8887,6 @@ func (m *RoutineActMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *RoutineActMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case routineact.FieldDailyRoutineID:
-		v, ok := value.(int64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddDailyRoutineID(v)
-		return nil
-	case routineact.FieldActID:
-		v, ok := value.(int64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddActID(v)
-		return nil
 	case routineact.FieldOrder:
 		v, ok := value.(int)
 		if !ok {
@@ -6386,11 +8950,11 @@ func (m *RoutineActMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *RoutineActMutation) ResetField(name string) error {
 	switch name {
-	case routineact.FieldDailyRoutineID:
-		m.ResetDailyRoutineID()
-		return nil
 	case routineact.FieldActID:
 		m.ResetActID()
+		return nil
+	case routineact.FieldDailyRoutineID:
+		m.ResetDailyRoutineID()
 		return nil
 	case routineact.FieldOrder:
 		m.ResetOrder()
@@ -6400,6 +8964,9 @@ func (m *RoutineActMutation) ResetField(name string) error {
 		return nil
 	case routineact.FieldLap:
 		m.ResetLap()
+		return nil
+	case routineact.FieldWarmup:
+		m.ResetWarmup()
 		return nil
 	case routineact.FieldCreatedAt:
 		m.ResetCreatedAt()
@@ -6537,12 +9104,8 @@ type RoutineActRecMutation struct {
 	op                       Op
 	typ                      string
 	id                       *uint64
-	daily_routine_rec_id     *uint64
-	adddaily_routine_rec_id  *int64
 	routine_act_id           *uint64
 	addroutine_act_id        *int64
-	act_id                   *uint64
-	addact_id                *int64
 	_order                   *int
 	add_order                *int
 	reps                     *int
@@ -6676,13 +9239,12 @@ func (m *RoutineActRecMutation) IDs(ctx context.Context) ([]uint64, error) {
 
 // SetDailyRoutineRecID sets the "daily_routine_rec_id" field.
 func (m *RoutineActRecMutation) SetDailyRoutineRecID(u uint64) {
-	m.daily_routine_rec_id = &u
-	m.adddaily_routine_rec_id = nil
+	m.daily_routine_rec = &u
 }
 
 // DailyRoutineRecID returns the value of the "daily_routine_rec_id" field in the mutation.
 func (m *RoutineActRecMutation) DailyRoutineRecID() (r uint64, exists bool) {
-	v := m.daily_routine_rec_id
+	v := m.daily_routine_rec
 	if v == nil {
 		return
 	}
@@ -6706,28 +9268,9 @@ func (m *RoutineActRecMutation) OldDailyRoutineRecID(ctx context.Context) (v uin
 	return oldValue.DailyRoutineRecID, nil
 }
 
-// AddDailyRoutineRecID adds u to the "daily_routine_rec_id" field.
-func (m *RoutineActRecMutation) AddDailyRoutineRecID(u int64) {
-	if m.adddaily_routine_rec_id != nil {
-		*m.adddaily_routine_rec_id += u
-	} else {
-		m.adddaily_routine_rec_id = &u
-	}
-}
-
-// AddedDailyRoutineRecID returns the value that was added to the "daily_routine_rec_id" field in this mutation.
-func (m *RoutineActRecMutation) AddedDailyRoutineRecID() (r int64, exists bool) {
-	v := m.adddaily_routine_rec_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
 // ResetDailyRoutineRecID resets all changes to the "daily_routine_rec_id" field.
 func (m *RoutineActRecMutation) ResetDailyRoutineRecID() {
-	m.daily_routine_rec_id = nil
-	m.adddaily_routine_rec_id = nil
+	m.daily_routine_rec = nil
 }
 
 // SetRoutineActID sets the "routine_act_id" field.
@@ -6802,13 +9345,12 @@ func (m *RoutineActRecMutation) ResetRoutineActID() {
 
 // SetActID sets the "act_id" field.
 func (m *RoutineActRecMutation) SetActID(u uint64) {
-	m.act_id = &u
-	m.addact_id = nil
+	m.act = &u
 }
 
 // ActID returns the value of the "act_id" field in the mutation.
 func (m *RoutineActRecMutation) ActID() (r uint64, exists bool) {
-	v := m.act_id
+	v := m.act
 	if v == nil {
 		return
 	}
@@ -6818,7 +9360,7 @@ func (m *RoutineActRecMutation) ActID() (r uint64, exists bool) {
 // OldActID returns the old "act_id" field's value of the RoutineActRec entity.
 // If the RoutineActRec object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RoutineActRecMutation) OldActID(ctx context.Context) (v *uint64, err error) {
+func (m *RoutineActRecMutation) OldActID(ctx context.Context) (v uint64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldActID is only allowed on UpdateOne operations")
 	}
@@ -6832,42 +9374,9 @@ func (m *RoutineActRecMutation) OldActID(ctx context.Context) (v *uint64, err er
 	return oldValue.ActID, nil
 }
 
-// AddActID adds u to the "act_id" field.
-func (m *RoutineActRecMutation) AddActID(u int64) {
-	if m.addact_id != nil {
-		*m.addact_id += u
-	} else {
-		m.addact_id = &u
-	}
-}
-
-// AddedActID returns the value that was added to the "act_id" field in this mutation.
-func (m *RoutineActRecMutation) AddedActID() (r int64, exists bool) {
-	v := m.addact_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ClearActID clears the value of the "act_id" field.
-func (m *RoutineActRecMutation) ClearActID() {
-	m.act_id = nil
-	m.addact_id = nil
-	m.clearedFields[routineactrec.FieldActID] = struct{}{}
-}
-
-// ActIDCleared returns if the "act_id" field was cleared in this mutation.
-func (m *RoutineActRecMutation) ActIDCleared() bool {
-	_, ok := m.clearedFields[routineactrec.FieldActID]
-	return ok
-}
-
 // ResetActID resets all changes to the "act_id" field.
 func (m *RoutineActRecMutation) ResetActID() {
-	m.act_id = nil
-	m.addact_id = nil
-	delete(m.clearedFields, routineactrec.FieldActID)
+	m.act = nil
 }
 
 // SetOrder sets the "order" field.
@@ -7384,11 +9893,6 @@ func (m *RoutineActRecMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// SetDailyRoutineRecID sets the "daily_routine_rec" edge to the DailyRoutineRec entity by id.
-func (m *RoutineActRecMutation) SetDailyRoutineRecID(id uint64) {
-	m.daily_routine_rec = &id
-}
-
 // ClearDailyRoutineRec clears the "daily_routine_rec" edge to the DailyRoutineRec entity.
 func (m *RoutineActRecMutation) ClearDailyRoutineRec() {
 	m.cleareddaily_routine_rec = true
@@ -7397,14 +9901,6 @@ func (m *RoutineActRecMutation) ClearDailyRoutineRec() {
 // DailyRoutineRecCleared reports if the "daily_routine_rec" edge to the DailyRoutineRec entity was cleared.
 func (m *RoutineActRecMutation) DailyRoutineRecCleared() bool {
 	return m.cleareddaily_routine_rec
-}
-
-// DailyRoutineRecID returns the "daily_routine_rec" edge ID in the mutation.
-func (m *RoutineActRecMutation) DailyRoutineRecID() (id uint64, exists bool) {
-	if m.daily_routine_rec != nil {
-		return *m.daily_routine_rec, true
-	}
-	return
 }
 
 // DailyRoutineRecIDs returns the "daily_routine_rec" edge IDs in the mutation.
@@ -7423,11 +9919,6 @@ func (m *RoutineActRecMutation) ResetDailyRoutineRec() {
 	m.cleareddaily_routine_rec = false
 }
 
-// SetActID sets the "act" edge to the Act entity by id.
-func (m *RoutineActRecMutation) SetActID(id uint64) {
-	m.act = &id
-}
-
 // ClearAct clears the "act" edge to the Act entity.
 func (m *RoutineActRecMutation) ClearAct() {
 	m.clearedact = true
@@ -7436,14 +9927,6 @@ func (m *RoutineActRecMutation) ClearAct() {
 // ActCleared reports if the "act" edge to the Act entity was cleared.
 func (m *RoutineActRecMutation) ActCleared() bool {
 	return m.clearedact
-}
-
-// ActID returns the "act" edge ID in the mutation.
-func (m *RoutineActRecMutation) ActID() (id uint64, exists bool) {
-	if m.act != nil {
-		return *m.act, true
-	}
-	return
 }
 
 // ActIDs returns the "act" edge IDs in the mutation.
@@ -7536,13 +10019,13 @@ func (m *RoutineActRecMutation) Type() string {
 // AddedFields().
 func (m *RoutineActRecMutation) Fields() []string {
 	fields := make([]string, 0, 13)
-	if m.daily_routine_rec_id != nil {
+	if m.daily_routine_rec != nil {
 		fields = append(fields, routineactrec.FieldDailyRoutineRecID)
 	}
 	if m.routine_act_id != nil {
 		fields = append(fields, routineactrec.FieldRoutineActID)
 	}
-	if m.act_id != nil {
+	if m.act != nil {
 		fields = append(fields, routineactrec.FieldActID)
 	}
 	if m._order != nil {
@@ -7752,14 +10235,8 @@ func (m *RoutineActRecMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *RoutineActRecMutation) AddedFields() []string {
 	var fields []string
-	if m.adddaily_routine_rec_id != nil {
-		fields = append(fields, routineactrec.FieldDailyRoutineRecID)
-	}
 	if m.addroutine_act_id != nil {
 		fields = append(fields, routineactrec.FieldRoutineActID)
-	}
-	if m.addact_id != nil {
-		fields = append(fields, routineactrec.FieldActID)
 	}
 	if m.add_order != nil {
 		fields = append(fields, routineactrec.FieldOrder)
@@ -7784,12 +10261,8 @@ func (m *RoutineActRecMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *RoutineActRecMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case routineactrec.FieldDailyRoutineRecID:
-		return m.AddedDailyRoutineRecID()
 	case routineactrec.FieldRoutineActID:
 		return m.AddedRoutineActID()
-	case routineactrec.FieldActID:
-		return m.AddedActID()
 	case routineactrec.FieldOrder:
 		return m.AddedOrder()
 	case routineactrec.FieldReps:
@@ -7809,26 +10282,12 @@ func (m *RoutineActRecMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *RoutineActRecMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case routineactrec.FieldDailyRoutineRecID:
-		v, ok := value.(int64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddDailyRoutineRecID(v)
-		return nil
 	case routineactrec.FieldRoutineActID:
 		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddRoutineActID(v)
-		return nil
-	case routineactrec.FieldActID:
-		v, ok := value.(int64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddActID(v)
 		return nil
 	case routineactrec.FieldOrder:
 		v, ok := value.(int)
@@ -7876,9 +10335,6 @@ func (m *RoutineActRecMutation) ClearedFields() []string {
 	if m.FieldCleared(routineactrec.FieldRoutineActID) {
 		fields = append(fields, routineactrec.FieldRoutineActID)
 	}
-	if m.FieldCleared(routineactrec.FieldActID) {
-		fields = append(fields, routineactrec.FieldActID)
-	}
 	if m.FieldCleared(routineactrec.FieldReps) {
 		fields = append(fields, routineactrec.FieldReps)
 	}
@@ -7907,9 +10363,6 @@ func (m *RoutineActRecMutation) ClearField(name string) error {
 	switch name {
 	case routineactrec.FieldRoutineActID:
 		m.ClearRoutineActID()
-		return nil
-	case routineactrec.FieldActID:
-		m.ClearActID()
 		return nil
 	case routineactrec.FieldReps:
 		m.ClearReps()
@@ -8598,15 +11051,12 @@ type WeeklyRoutineMutation struct {
 	op                         Op
 	typ                        string
 	id                         *uint64
-	program_id                 *uint64
-	addprogram_id              *int64
 	week                       *int
 	addweek                    *int
 	created_at                 *time.Time
 	updated_at                 *time.Time
 	clearedFields              map[string]struct{}
-	program                    map[uint64]struct{}
-	removedprogram             map[uint64]struct{}
+	program                    *uint64
 	clearedprogram             bool
 	daily_routines             map[uint64]struct{}
 	removeddaily_routines      map[uint64]struct{}
@@ -8725,13 +11175,12 @@ func (m *WeeklyRoutineMutation) IDs(ctx context.Context) ([]uint64, error) {
 
 // SetProgramID sets the "program_id" field.
 func (m *WeeklyRoutineMutation) SetProgramID(u uint64) {
-	m.program_id = &u
-	m.addprogram_id = nil
+	m.program = &u
 }
 
 // ProgramID returns the value of the "program_id" field in the mutation.
 func (m *WeeklyRoutineMutation) ProgramID() (r uint64, exists bool) {
-	v := m.program_id
+	v := m.program
 	if v == nil {
 		return
 	}
@@ -8755,28 +11204,9 @@ func (m *WeeklyRoutineMutation) OldProgramID(ctx context.Context) (v uint64, err
 	return oldValue.ProgramID, nil
 }
 
-// AddProgramID adds u to the "program_id" field.
-func (m *WeeklyRoutineMutation) AddProgramID(u int64) {
-	if m.addprogram_id != nil {
-		*m.addprogram_id += u
-	} else {
-		m.addprogram_id = &u
-	}
-}
-
-// AddedProgramID returns the value that was added to the "program_id" field in this mutation.
-func (m *WeeklyRoutineMutation) AddedProgramID() (r int64, exists bool) {
-	v := m.addprogram_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
 // ResetProgramID resets all changes to the "program_id" field.
 func (m *WeeklyRoutineMutation) ResetProgramID() {
-	m.program_id = nil
-	m.addprogram_id = nil
+	m.program = nil
 }
 
 // SetWeek sets the "week" field.
@@ -8907,16 +11337,6 @@ func (m *WeeklyRoutineMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// AddProgramIDs adds the "program" edge to the Program entity by ids.
-func (m *WeeklyRoutineMutation) AddProgramIDs(ids ...uint64) {
-	if m.program == nil {
-		m.program = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		m.program[ids[i]] = struct{}{}
-	}
-}
-
 // ClearProgram clears the "program" edge to the Program entity.
 func (m *WeeklyRoutineMutation) ClearProgram() {
 	m.clearedprogram = true
@@ -8927,29 +11347,12 @@ func (m *WeeklyRoutineMutation) ProgramCleared() bool {
 	return m.clearedprogram
 }
 
-// RemoveProgramIDs removes the "program" edge to the Program entity by IDs.
-func (m *WeeklyRoutineMutation) RemoveProgramIDs(ids ...uint64) {
-	if m.removedprogram == nil {
-		m.removedprogram = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		delete(m.program, ids[i])
-		m.removedprogram[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProgram returns the removed IDs of the "program" edge to the Program entity.
-func (m *WeeklyRoutineMutation) RemovedProgramIDs() (ids []uint64) {
-	for id := range m.removedprogram {
-		ids = append(ids, id)
-	}
-	return
-}
-
 // ProgramIDs returns the "program" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProgramID instead. It exists only for internal usage by the builders.
 func (m *WeeklyRoutineMutation) ProgramIDs() (ids []uint64) {
-	for id := range m.program {
-		ids = append(ids, id)
+	if id := m.program; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -8958,7 +11361,6 @@ func (m *WeeklyRoutineMutation) ProgramIDs() (ids []uint64) {
 func (m *WeeklyRoutineMutation) ResetProgram() {
 	m.program = nil
 	m.clearedprogram = false
-	m.removedprogram = nil
 }
 
 // AddDailyRoutineIDs adds the "daily_routines" edge to the DailyRoutine entity by ids.
@@ -9104,7 +11506,7 @@ func (m *WeeklyRoutineMutation) Type() string {
 // AddedFields().
 func (m *WeeklyRoutineMutation) Fields() []string {
 	fields := make([]string, 0, 4)
-	if m.program_id != nil {
+	if m.program != nil {
 		fields = append(fields, weeklyroutine.FieldProgramID)
 	}
 	if m.week != nil {
@@ -9194,9 +11596,6 @@ func (m *WeeklyRoutineMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *WeeklyRoutineMutation) AddedFields() []string {
 	var fields []string
-	if m.addprogram_id != nil {
-		fields = append(fields, weeklyroutine.FieldProgramID)
-	}
 	if m.addweek != nil {
 		fields = append(fields, weeklyroutine.FieldWeek)
 	}
@@ -9208,8 +11607,6 @@ func (m *WeeklyRoutineMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *WeeklyRoutineMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case weeklyroutine.FieldProgramID:
-		return m.AddedProgramID()
 	case weeklyroutine.FieldWeek:
 		return m.AddedWeek()
 	}
@@ -9221,13 +11618,6 @@ func (m *WeeklyRoutineMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *WeeklyRoutineMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case weeklyroutine.FieldProgramID:
-		v, ok := value.(int64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddProgramID(v)
-		return nil
 	case weeklyroutine.FieldWeek:
 		v, ok := value.(int)
 		if !ok {
@@ -9298,11 +11688,9 @@ func (m *WeeklyRoutineMutation) AddedEdges() []string {
 func (m *WeeklyRoutineMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case weeklyroutine.EdgeProgram:
-		ids := make([]ent.Value, 0, len(m.program))
-		for id := range m.program {
-			ids = append(ids, id)
+		if id := m.program; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case weeklyroutine.EdgeDailyRoutines:
 		ids := make([]ent.Value, 0, len(m.daily_routines))
 		for id := range m.daily_routines {
@@ -9322,9 +11710,6 @@ func (m *WeeklyRoutineMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *WeeklyRoutineMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 3)
-	if m.removedprogram != nil {
-		edges = append(edges, weeklyroutine.EdgeProgram)
-	}
 	if m.removeddaily_routines != nil {
 		edges = append(edges, weeklyroutine.EdgeDailyRoutines)
 	}
@@ -9338,12 +11723,6 @@ func (m *WeeklyRoutineMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *WeeklyRoutineMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case weeklyroutine.EdgeProgram:
-		ids := make([]ent.Value, 0, len(m.removedprogram))
-		for id := range m.removedprogram {
-			ids = append(ids, id)
-		}
-		return ids
 	case weeklyroutine.EdgeDailyRoutines:
 		ids := make([]ent.Value, 0, len(m.removeddaily_routines))
 		for id := range m.removeddaily_routines {
@@ -9393,6 +11772,9 @@ func (m *WeeklyRoutineMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *WeeklyRoutineMutation) ClearEdge(name string) error {
 	switch name {
+	case weeklyroutine.EdgeProgram:
+		m.ClearProgram()
+		return nil
 	}
 	return fmt.Errorf("unknown WeeklyRoutine unique edge %s", name)
 }
@@ -9420,10 +11802,6 @@ type WeeklyRoutineRecMutation struct {
 	op                        Op
 	typ                       string
 	id                        *uint64
-	program_rec_id            *uint64
-	addprogram_rec_id         *int64
-	weekly_routine_id         *uint64
-	addweekly_routine_id      *int64
 	start_date                *time.Time
 	created_at                *time.Time
 	updated_at                *time.Time
@@ -9546,13 +11924,12 @@ func (m *WeeklyRoutineRecMutation) IDs(ctx context.Context) ([]uint64, error) {
 
 // SetProgramRecID sets the "program_rec_id" field.
 func (m *WeeklyRoutineRecMutation) SetProgramRecID(u uint64) {
-	m.program_rec_id = &u
-	m.addprogram_rec_id = nil
+	m.program_rec = &u
 }
 
 // ProgramRecID returns the value of the "program_rec_id" field in the mutation.
 func (m *WeeklyRoutineRecMutation) ProgramRecID() (r uint64, exists bool) {
-	v := m.program_rec_id
+	v := m.program_rec
 	if v == nil {
 		return
 	}
@@ -9576,39 +11953,19 @@ func (m *WeeklyRoutineRecMutation) OldProgramRecID(ctx context.Context) (v uint6
 	return oldValue.ProgramRecID, nil
 }
 
-// AddProgramRecID adds u to the "program_rec_id" field.
-func (m *WeeklyRoutineRecMutation) AddProgramRecID(u int64) {
-	if m.addprogram_rec_id != nil {
-		*m.addprogram_rec_id += u
-	} else {
-		m.addprogram_rec_id = &u
-	}
-}
-
-// AddedProgramRecID returns the value that was added to the "program_rec_id" field in this mutation.
-func (m *WeeklyRoutineRecMutation) AddedProgramRecID() (r int64, exists bool) {
-	v := m.addprogram_rec_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
 // ResetProgramRecID resets all changes to the "program_rec_id" field.
 func (m *WeeklyRoutineRecMutation) ResetProgramRecID() {
-	m.program_rec_id = nil
-	m.addprogram_rec_id = nil
+	m.program_rec = nil
 }
 
 // SetWeeklyRoutineID sets the "weekly_routine_id" field.
 func (m *WeeklyRoutineRecMutation) SetWeeklyRoutineID(u uint64) {
-	m.weekly_routine_id = &u
-	m.addweekly_routine_id = nil
+	m.weekly_routine = &u
 }
 
 // WeeklyRoutineID returns the value of the "weekly_routine_id" field in the mutation.
 func (m *WeeklyRoutineRecMutation) WeeklyRoutineID() (r uint64, exists bool) {
-	v := m.weekly_routine_id
+	v := m.weekly_routine
 	if v == nil {
 		return
 	}
@@ -9632,28 +11989,9 @@ func (m *WeeklyRoutineRecMutation) OldWeeklyRoutineID(ctx context.Context) (v ui
 	return oldValue.WeeklyRoutineID, nil
 }
 
-// AddWeeklyRoutineID adds u to the "weekly_routine_id" field.
-func (m *WeeklyRoutineRecMutation) AddWeeklyRoutineID(u int64) {
-	if m.addweekly_routine_id != nil {
-		*m.addweekly_routine_id += u
-	} else {
-		m.addweekly_routine_id = &u
-	}
-}
-
-// AddedWeeklyRoutineID returns the value that was added to the "weekly_routine_id" field in this mutation.
-func (m *WeeklyRoutineRecMutation) AddedWeeklyRoutineID() (r int64, exists bool) {
-	v := m.addweekly_routine_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
 // ResetWeeklyRoutineID resets all changes to the "weekly_routine_id" field.
 func (m *WeeklyRoutineRecMutation) ResetWeeklyRoutineID() {
-	m.weekly_routine_id = nil
-	m.addweekly_routine_id = nil
+	m.weekly_routine = nil
 }
 
 // SetStartDate sets the "start_date" field.
@@ -9764,11 +12102,6 @@ func (m *WeeklyRoutineRecMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// SetWeeklyRoutineID sets the "weekly_routine" edge to the WeeklyRoutine entity by id.
-func (m *WeeklyRoutineRecMutation) SetWeeklyRoutineID(id uint64) {
-	m.weekly_routine = &id
-}
-
 // ClearWeeklyRoutine clears the "weekly_routine" edge to the WeeklyRoutine entity.
 func (m *WeeklyRoutineRecMutation) ClearWeeklyRoutine() {
 	m.clearedweekly_routine = true
@@ -9777,14 +12110,6 @@ func (m *WeeklyRoutineRecMutation) ClearWeeklyRoutine() {
 // WeeklyRoutineCleared reports if the "weekly_routine" edge to the WeeklyRoutine entity was cleared.
 func (m *WeeklyRoutineRecMutation) WeeklyRoutineCleared() bool {
 	return m.clearedweekly_routine
-}
-
-// WeeklyRoutineID returns the "weekly_routine" edge ID in the mutation.
-func (m *WeeklyRoutineRecMutation) WeeklyRoutineID() (id uint64, exists bool) {
-	if m.weekly_routine != nil {
-		return *m.weekly_routine, true
-	}
-	return
 }
 
 // WeeklyRoutineIDs returns the "weekly_routine" edge IDs in the mutation.
@@ -9803,11 +12128,6 @@ func (m *WeeklyRoutineRecMutation) ResetWeeklyRoutine() {
 	m.clearedweekly_routine = false
 }
 
-// SetProgramRecID sets the "program_rec" edge to the ProgramRec entity by id.
-func (m *WeeklyRoutineRecMutation) SetProgramRecID(id uint64) {
-	m.program_rec = &id
-}
-
 // ClearProgramRec clears the "program_rec" edge to the ProgramRec entity.
 func (m *WeeklyRoutineRecMutation) ClearProgramRec() {
 	m.clearedprogram_rec = true
@@ -9816,14 +12136,6 @@ func (m *WeeklyRoutineRecMutation) ClearProgramRec() {
 // ProgramRecCleared reports if the "program_rec" edge to the ProgramRec entity was cleared.
 func (m *WeeklyRoutineRecMutation) ProgramRecCleared() bool {
 	return m.clearedprogram_rec
-}
-
-// ProgramRecID returns the "program_rec" edge ID in the mutation.
-func (m *WeeklyRoutineRecMutation) ProgramRecID() (id uint64, exists bool) {
-	if m.program_rec != nil {
-		return *m.program_rec, true
-	}
-	return
 }
 
 // ProgramRecIDs returns the "program_rec" edge IDs in the mutation.
@@ -9931,10 +12243,10 @@ func (m *WeeklyRoutineRecMutation) Type() string {
 // AddedFields().
 func (m *WeeklyRoutineRecMutation) Fields() []string {
 	fields := make([]string, 0, 5)
-	if m.program_rec_id != nil {
+	if m.program_rec != nil {
 		fields = append(fields, weeklyroutinerec.FieldProgramRecID)
 	}
-	if m.weekly_routine_id != nil {
+	if m.weekly_routine != nil {
 		fields = append(fields, weeklyroutinerec.FieldWeeklyRoutineID)
 	}
 	if m.start_date != nil {
@@ -10035,12 +12347,6 @@ func (m *WeeklyRoutineRecMutation) SetField(name string, value ent.Value) error 
 // this mutation.
 func (m *WeeklyRoutineRecMutation) AddedFields() []string {
 	var fields []string
-	if m.addprogram_rec_id != nil {
-		fields = append(fields, weeklyroutinerec.FieldProgramRecID)
-	}
-	if m.addweekly_routine_id != nil {
-		fields = append(fields, weeklyroutinerec.FieldWeeklyRoutineID)
-	}
 	return fields
 }
 
@@ -10049,10 +12355,6 @@ func (m *WeeklyRoutineRecMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *WeeklyRoutineRecMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case weeklyroutinerec.FieldProgramRecID:
-		return m.AddedProgramRecID()
-	case weeklyroutinerec.FieldWeeklyRoutineID:
-		return m.AddedWeeklyRoutineID()
 	}
 	return nil, false
 }
@@ -10062,20 +12364,6 @@ func (m *WeeklyRoutineRecMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *WeeklyRoutineRecMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case weeklyroutinerec.FieldProgramRecID:
-		v, ok := value.(int64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddProgramRecID(v)
-		return nil
-	case weeklyroutinerec.FieldWeeklyRoutineID:
-		v, ok := value.(int64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddWeeklyRoutineID(v)
-		return nil
 	}
 	return fmt.Errorf("unknown WeeklyRoutineRec numeric field %s", name)
 }

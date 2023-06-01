@@ -18,8 +18,10 @@ type DailyRoutine struct {
 func (DailyRoutine) Fields() []ent.Field {
 	return []ent.Field{
 		field.Uint64("id").Unique(),
+
 		field.Uint64("program_id").Nillable().Optional(),
-		field.Uint64("week_id").Nillable().Optional(),
+		field.Uint64("weekly_routine_id").Nillable().Optional(),
+
 		field.Int("day").Min(1),
 
 		field.Time("created_at").Default(time.Now).Immutable(),
@@ -30,8 +32,8 @@ func (DailyRoutine) Fields() []ent.Field {
 // Edges of the DailyRoutine.
 func (DailyRoutine) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("program", Program.Type).Ref("daily_routines"),
-		edge.From("weekly_routine", WeeklyRoutine.Type).Ref("daily_routines"),
+		edge.From("program", Program.Type).Field("program_id").Ref("daily_routines").Unique(),
+		edge.From("weekly_routine", WeeklyRoutine.Type).Field("weekly_routine_id").Ref("daily_routines").Unique(),
 
 		edge.To("routine_acts", RoutineAct.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 

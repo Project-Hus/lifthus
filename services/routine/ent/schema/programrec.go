@@ -37,9 +37,12 @@ func (ProgramRec) Fields() []ent.Field {
 // Edges of the ProgramRec.
 func (ProgramRec) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("program", Program.Type).Ref("program_recs").Unique(),
+		edge.From("program", Program.Type).Field("program_id").Ref("program_recs").Unique().Required(),
 
 		edge.To("weekly_routine_recs", WeeklyRoutineRec.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("daily_routine_recs", DailyRoutineRec.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+
+		edge.To("body_info", BodyInfo.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+		edge.To("one_rep_max", OneRepMax.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 	}
 }

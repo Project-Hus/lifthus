@@ -33,27 +33,13 @@ func (wrru *WeeklyRoutineRecUpdate) Where(ps ...predicate.WeeklyRoutineRec) *Wee
 
 // SetProgramRecID sets the "program_rec_id" field.
 func (wrru *WeeklyRoutineRecUpdate) SetProgramRecID(u uint64) *WeeklyRoutineRecUpdate {
-	wrru.mutation.ResetProgramRecID()
 	wrru.mutation.SetProgramRecID(u)
-	return wrru
-}
-
-// AddProgramRecID adds u to the "program_rec_id" field.
-func (wrru *WeeklyRoutineRecUpdate) AddProgramRecID(u int64) *WeeklyRoutineRecUpdate {
-	wrru.mutation.AddProgramRecID(u)
 	return wrru
 }
 
 // SetWeeklyRoutineID sets the "weekly_routine_id" field.
 func (wrru *WeeklyRoutineRecUpdate) SetWeeklyRoutineID(u uint64) *WeeklyRoutineRecUpdate {
-	wrru.mutation.ResetWeeklyRoutineID()
 	wrru.mutation.SetWeeklyRoutineID(u)
-	return wrru
-}
-
-// AddWeeklyRoutineID adds u to the "weekly_routine_id" field.
-func (wrru *WeeklyRoutineRecUpdate) AddWeeklyRoutineID(u int64) *WeeklyRoutineRecUpdate {
-	wrru.mutation.AddWeeklyRoutineID(u)
 	return wrru
 }
 
@@ -69,37 +55,9 @@ func (wrru *WeeklyRoutineRecUpdate) SetUpdatedAt(t time.Time) *WeeklyRoutineRecU
 	return wrru
 }
 
-// SetWeeklyRoutineID sets the "weekly_routine" edge to the WeeklyRoutine entity by ID.
-func (wrru *WeeklyRoutineRecUpdate) SetWeeklyRoutineID(id uint64) *WeeklyRoutineRecUpdate {
-	wrru.mutation.SetWeeklyRoutineID(id)
-	return wrru
-}
-
-// SetNillableWeeklyRoutineID sets the "weekly_routine" edge to the WeeklyRoutine entity by ID if the given value is not nil.
-func (wrru *WeeklyRoutineRecUpdate) SetNillableWeeklyRoutineID(id *uint64) *WeeklyRoutineRecUpdate {
-	if id != nil {
-		wrru = wrru.SetWeeklyRoutineID(*id)
-	}
-	return wrru
-}
-
 // SetWeeklyRoutine sets the "weekly_routine" edge to the WeeklyRoutine entity.
 func (wrru *WeeklyRoutineRecUpdate) SetWeeklyRoutine(w *WeeklyRoutine) *WeeklyRoutineRecUpdate {
 	return wrru.SetWeeklyRoutineID(w.ID)
-}
-
-// SetProgramRecID sets the "program_rec" edge to the ProgramRec entity by ID.
-func (wrru *WeeklyRoutineRecUpdate) SetProgramRecID(id uint64) *WeeklyRoutineRecUpdate {
-	wrru.mutation.SetProgramRecID(id)
-	return wrru
-}
-
-// SetNillableProgramRecID sets the "program_rec" edge to the ProgramRec entity by ID if the given value is not nil.
-func (wrru *WeeklyRoutineRecUpdate) SetNillableProgramRecID(id *uint64) *WeeklyRoutineRecUpdate {
-	if id != nil {
-		wrru = wrru.SetProgramRecID(*id)
-	}
-	return wrru
 }
 
 // SetProgramRec sets the "program_rec" edge to the ProgramRec entity.
@@ -196,7 +154,21 @@ func (wrru *WeeklyRoutineRecUpdate) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (wrru *WeeklyRoutineRecUpdate) check() error {
+	if _, ok := wrru.mutation.WeeklyRoutineID(); wrru.mutation.WeeklyRoutineCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "WeeklyRoutineRec.weekly_routine"`)
+	}
+	if _, ok := wrru.mutation.ProgramRecID(); wrru.mutation.ProgramRecCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "WeeklyRoutineRec.program_rec"`)
+	}
+	return nil
+}
+
 func (wrru *WeeklyRoutineRecUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := wrru.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(weeklyroutinerec.Table, weeklyroutinerec.Columns, sqlgraph.NewFieldSpec(weeklyroutinerec.FieldID, field.TypeUint64))
 	if ps := wrru.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -204,18 +176,6 @@ func (wrru *WeeklyRoutineRecUpdate) sqlSave(ctx context.Context) (n int, err err
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := wrru.mutation.ProgramRecID(); ok {
-		_spec.SetField(weeklyroutinerec.FieldProgramRecID, field.TypeUint64, value)
-	}
-	if value, ok := wrru.mutation.AddedProgramRecID(); ok {
-		_spec.AddField(weeklyroutinerec.FieldProgramRecID, field.TypeUint64, value)
-	}
-	if value, ok := wrru.mutation.WeeklyRoutineID(); ok {
-		_spec.SetField(weeklyroutinerec.FieldWeeklyRoutineID, field.TypeUint64, value)
-	}
-	if value, ok := wrru.mutation.AddedWeeklyRoutineID(); ok {
-		_spec.AddField(weeklyroutinerec.FieldWeeklyRoutineID, field.TypeUint64, value)
 	}
 	if value, ok := wrru.mutation.StartDate(); ok {
 		_spec.SetField(weeklyroutinerec.FieldStartDate, field.TypeTime, value)
@@ -348,27 +308,13 @@ type WeeklyRoutineRecUpdateOne struct {
 
 // SetProgramRecID sets the "program_rec_id" field.
 func (wrruo *WeeklyRoutineRecUpdateOne) SetProgramRecID(u uint64) *WeeklyRoutineRecUpdateOne {
-	wrruo.mutation.ResetProgramRecID()
 	wrruo.mutation.SetProgramRecID(u)
-	return wrruo
-}
-
-// AddProgramRecID adds u to the "program_rec_id" field.
-func (wrruo *WeeklyRoutineRecUpdateOne) AddProgramRecID(u int64) *WeeklyRoutineRecUpdateOne {
-	wrruo.mutation.AddProgramRecID(u)
 	return wrruo
 }
 
 // SetWeeklyRoutineID sets the "weekly_routine_id" field.
 func (wrruo *WeeklyRoutineRecUpdateOne) SetWeeklyRoutineID(u uint64) *WeeklyRoutineRecUpdateOne {
-	wrruo.mutation.ResetWeeklyRoutineID()
 	wrruo.mutation.SetWeeklyRoutineID(u)
-	return wrruo
-}
-
-// AddWeeklyRoutineID adds u to the "weekly_routine_id" field.
-func (wrruo *WeeklyRoutineRecUpdateOne) AddWeeklyRoutineID(u int64) *WeeklyRoutineRecUpdateOne {
-	wrruo.mutation.AddWeeklyRoutineID(u)
 	return wrruo
 }
 
@@ -384,37 +330,9 @@ func (wrruo *WeeklyRoutineRecUpdateOne) SetUpdatedAt(t time.Time) *WeeklyRoutine
 	return wrruo
 }
 
-// SetWeeklyRoutineID sets the "weekly_routine" edge to the WeeklyRoutine entity by ID.
-func (wrruo *WeeklyRoutineRecUpdateOne) SetWeeklyRoutineID(id uint64) *WeeklyRoutineRecUpdateOne {
-	wrruo.mutation.SetWeeklyRoutineID(id)
-	return wrruo
-}
-
-// SetNillableWeeklyRoutineID sets the "weekly_routine" edge to the WeeklyRoutine entity by ID if the given value is not nil.
-func (wrruo *WeeklyRoutineRecUpdateOne) SetNillableWeeklyRoutineID(id *uint64) *WeeklyRoutineRecUpdateOne {
-	if id != nil {
-		wrruo = wrruo.SetWeeklyRoutineID(*id)
-	}
-	return wrruo
-}
-
 // SetWeeklyRoutine sets the "weekly_routine" edge to the WeeklyRoutine entity.
 func (wrruo *WeeklyRoutineRecUpdateOne) SetWeeklyRoutine(w *WeeklyRoutine) *WeeklyRoutineRecUpdateOne {
 	return wrruo.SetWeeklyRoutineID(w.ID)
-}
-
-// SetProgramRecID sets the "program_rec" edge to the ProgramRec entity by ID.
-func (wrruo *WeeklyRoutineRecUpdateOne) SetProgramRecID(id uint64) *WeeklyRoutineRecUpdateOne {
-	wrruo.mutation.SetProgramRecID(id)
-	return wrruo
-}
-
-// SetNillableProgramRecID sets the "program_rec" edge to the ProgramRec entity by ID if the given value is not nil.
-func (wrruo *WeeklyRoutineRecUpdateOne) SetNillableProgramRecID(id *uint64) *WeeklyRoutineRecUpdateOne {
-	if id != nil {
-		wrruo = wrruo.SetProgramRecID(*id)
-	}
-	return wrruo
 }
 
 // SetProgramRec sets the "program_rec" edge to the ProgramRec entity.
@@ -524,7 +442,21 @@ func (wrruo *WeeklyRoutineRecUpdateOne) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (wrruo *WeeklyRoutineRecUpdateOne) check() error {
+	if _, ok := wrruo.mutation.WeeklyRoutineID(); wrruo.mutation.WeeklyRoutineCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "WeeklyRoutineRec.weekly_routine"`)
+	}
+	if _, ok := wrruo.mutation.ProgramRecID(); wrruo.mutation.ProgramRecCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "WeeklyRoutineRec.program_rec"`)
+	}
+	return nil
+}
+
 func (wrruo *WeeklyRoutineRecUpdateOne) sqlSave(ctx context.Context) (_node *WeeklyRoutineRec, err error) {
+	if err := wrruo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(weeklyroutinerec.Table, weeklyroutinerec.Columns, sqlgraph.NewFieldSpec(weeklyroutinerec.FieldID, field.TypeUint64))
 	id, ok := wrruo.mutation.ID()
 	if !ok {
@@ -549,18 +481,6 @@ func (wrruo *WeeklyRoutineRecUpdateOne) sqlSave(ctx context.Context) (_node *Wee
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := wrruo.mutation.ProgramRecID(); ok {
-		_spec.SetField(weeklyroutinerec.FieldProgramRecID, field.TypeUint64, value)
-	}
-	if value, ok := wrruo.mutation.AddedProgramRecID(); ok {
-		_spec.AddField(weeklyroutinerec.FieldProgramRecID, field.TypeUint64, value)
-	}
-	if value, ok := wrruo.mutation.WeeklyRoutineID(); ok {
-		_spec.SetField(weeklyroutinerec.FieldWeeklyRoutineID, field.TypeUint64, value)
-	}
-	if value, ok := wrruo.mutation.AddedWeeklyRoutineID(); ok {
-		_spec.AddField(weeklyroutinerec.FieldWeeklyRoutineID, field.TypeUint64, value)
 	}
 	if value, ok := wrruo.mutation.StartDate(); ok {
 		_spec.SetField(weeklyroutinerec.FieldStartDate, field.TypeTime, value)

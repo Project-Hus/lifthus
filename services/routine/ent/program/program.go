@@ -44,23 +44,27 @@ const (
 	// TagsInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
 	TagsInverseTable = "tags"
-	// WeeklyRoutinesTable is the table that holds the weekly_routines relation/edge. The primary key declared below.
-	WeeklyRoutinesTable = "program_weekly_routines"
+	// WeeklyRoutinesTable is the table that holds the weekly_routines relation/edge.
+	WeeklyRoutinesTable = "weekly_routines"
 	// WeeklyRoutinesInverseTable is the table name for the WeeklyRoutine entity.
 	// It exists in this package in order to avoid circular dependency with the "weeklyroutine" package.
 	WeeklyRoutinesInverseTable = "weekly_routines"
-	// DailyRoutinesTable is the table that holds the daily_routines relation/edge. The primary key declared below.
-	DailyRoutinesTable = "program_daily_routines"
+	// WeeklyRoutinesColumn is the table column denoting the weekly_routines relation/edge.
+	WeeklyRoutinesColumn = "program_id"
+	// DailyRoutinesTable is the table that holds the daily_routines relation/edge.
+	DailyRoutinesTable = "daily_routines"
 	// DailyRoutinesInverseTable is the table name for the DailyRoutine entity.
 	// It exists in this package in order to avoid circular dependency with the "dailyroutine" package.
 	DailyRoutinesInverseTable = "daily_routines"
+	// DailyRoutinesColumn is the table column denoting the daily_routines relation/edge.
+	DailyRoutinesColumn = "program_id"
 	// ProgramRecsTable is the table that holds the program_recs relation/edge.
 	ProgramRecsTable = "program_recs"
 	// ProgramRecsInverseTable is the table name for the ProgramRec entity.
 	// It exists in this package in order to avoid circular dependency with the "programrec" package.
 	ProgramRecsInverseTable = "program_recs"
 	// ProgramRecsColumn is the table column denoting the program_recs relation/edge.
-	ProgramRecsColumn = "program_program_recs"
+	ProgramRecsColumn = "program_id"
 )
 
 // Columns holds all SQL columns for program fields.
@@ -79,12 +83,6 @@ var (
 	// TagsPrimaryKey and TagsColumn2 are the table columns denoting the
 	// primary key for the tags relation (M2M).
 	TagsPrimaryKey = []string{"tag_id", "program_id"}
-	// WeeklyRoutinesPrimaryKey and WeeklyRoutinesColumn2 are the table columns denoting the
-	// primary key for the weekly_routines relation (M2M).
-	WeeklyRoutinesPrimaryKey = []string{"program_id", "weekly_routine_id"}
-	// DailyRoutinesPrimaryKey and DailyRoutinesColumn2 are the table columns denoting the
-	// primary key for the daily_routines relation (M2M).
-	DailyRoutinesPrimaryKey = []string{"program_id", "daily_routine_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -240,14 +238,14 @@ func newWeeklyRoutinesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(WeeklyRoutinesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, WeeklyRoutinesTable, WeeklyRoutinesPrimaryKey...),
+		sqlgraph.Edge(sqlgraph.O2M, false, WeeklyRoutinesTable, WeeklyRoutinesColumn),
 	)
 }
 func newDailyRoutinesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DailyRoutinesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, DailyRoutinesTable, DailyRoutinesPrimaryKey...),
+		sqlgraph.Edge(sqlgraph.O2M, false, DailyRoutinesTable, DailyRoutinesColumn),
 	)
 }
 func newProgramRecsStep() *sqlgraph.Step {

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 	"routine/ent/act"
+	"routine/ent/onerepmax"
 	"routine/ent/predicate"
 	"routine/ent/routineact"
 	"routine/ent/routineactrec"
@@ -28,6 +29,7 @@ type ActQuery struct {
 	withTags           *TagQuery
 	withRoutineActs    *RoutineActQuery
 	withRoutineActRecs *RoutineActRecQuery
+	withOneRepMaxes    *OneRepMaxQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -123,6 +125,28 @@ func (aq *ActQuery) QueryRoutineActRecs() *RoutineActRecQuery {
 			sqlgraph.From(act.Table, act.FieldID, selector),
 			sqlgraph.To(routineactrec.Table, routineactrec.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, act.RoutineActRecsTable, act.RoutineActRecsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryOneRepMaxes chains the current query on the "one_rep_maxes" edge.
+func (aq *ActQuery) QueryOneRepMaxes() *OneRepMaxQuery {
+	query := (&OneRepMaxClient{config: aq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(act.Table, act.FieldID, selector),
+			sqlgraph.To(onerepmax.Table, onerepmax.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, act.OneRepMaxesTable, act.OneRepMaxesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
 		return fromU, nil
@@ -325,6 +349,7 @@ func (aq *ActQuery) Clone() *ActQuery {
 		withTags:           aq.withTags.Clone(),
 		withRoutineActs:    aq.withRoutineActs.Clone(),
 		withRoutineActRecs: aq.withRoutineActRecs.Clone(),
+		withOneRepMaxes:    aq.withOneRepMaxes.Clone(),
 		// clone intermediate query.
 		sql:  aq.sql.Clone(),
 		path: aq.path,
@@ -361,6 +386,17 @@ func (aq *ActQuery) WithRoutineActRecs(opts ...func(*RoutineActRecQuery)) *ActQu
 		opt(query)
 	}
 	aq.withRoutineActRecs = query
+	return aq
+}
+
+// WithOneRepMaxes tells the query-builder to eager-load the nodes that are connected to
+// the "one_rep_maxes" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *ActQuery) WithOneRepMaxes(opts ...func(*OneRepMaxQuery)) *ActQuery {
+	query := (&OneRepMaxClient{config: aq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withOneRepMaxes = query
 	return aq
 }
 
@@ -442,10 +478,11 @@ func (aq *ActQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Act, err
 	var (
 		nodes       = []*Act{}
 		_spec       = aq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			aq.withTags != nil,
 			aq.withRoutineActs != nil,
 			aq.withRoutineActRecs != nil,
+			aq.withOneRepMaxes != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -484,6 +521,13 @@ func (aq *ActQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Act, err
 		if err := aq.loadRoutineActRecs(ctx, query, nodes,
 			func(n *Act) { n.Edges.RoutineActRecs = []*RoutineActRec{} },
 			func(n *Act, e *RoutineActRec) { n.Edges.RoutineActRecs = append(n.Edges.RoutineActRecs, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := aq.withOneRepMaxes; query != nil {
+		if err := aq.loadOneRepMaxes(ctx, query, nodes,
+			func(n *Act) { n.Edges.OneRepMaxes = []*OneRepMax{} },
+			func(n *Act, e *OneRepMax) { n.Edges.OneRepMaxes = append(n.Edges.OneRepMaxes, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -561,7 +605,9 @@ func (aq *ActQuery) loadRoutineActs(ctx context.Context, query *RoutineActQuery,
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(routineact.FieldActID)
+	}
 	query.Where(predicate.RoutineAct(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(act.RoutineActsColumn), fks...))
 	}))
@@ -570,13 +616,10 @@ func (aq *ActQuery) loadRoutineActs(ctx context.Context, query *RoutineActQuery,
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.act_routine_acts
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "act_routine_acts" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.ActID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "act_routine_acts" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "act_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -593,6 +636,9 @@ func (aq *ActQuery) loadRoutineActRecs(ctx context.Context, query *RoutineActRec
 		}
 	}
 	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(routineactrec.FieldActID)
+	}
 	query.Where(predicate.RoutineActRec(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(act.RoutineActRecsColumn), fks...))
 	}))
@@ -601,13 +647,40 @@ func (aq *ActQuery) loadRoutineActRecs(ctx context.Context, query *RoutineActRec
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.act_routine_act_recs
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "act_routine_act_recs" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.ActID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "act_routine_act_recs" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "act_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (aq *ActQuery) loadOneRepMaxes(ctx context.Context, query *OneRepMaxQuery, nodes []*Act, init func(*Act), assign func(*Act, *OneRepMax)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint64]*Act)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(onerepmax.FieldActID)
+	}
+	query.Where(predicate.OneRepMax(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(act.OneRepMaxesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ActID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "act_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

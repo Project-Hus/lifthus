@@ -47,7 +47,6 @@ func (drru *DailyRoutineRecUpdate) AddAuthor(u int64) *DailyRoutineRecUpdate {
 
 // SetProgramRecID sets the "program_rec_id" field.
 func (drru *DailyRoutineRecUpdate) SetProgramRecID(u uint64) *DailyRoutineRecUpdate {
-	drru.mutation.ResetProgramRecID()
 	drru.mutation.SetProgramRecID(u)
 	return drru
 }
@@ -60,12 +59,6 @@ func (drru *DailyRoutineRecUpdate) SetNillableProgramRecID(u *uint64) *DailyRout
 	return drru
 }
 
-// AddProgramRecID adds u to the "program_rec_id" field.
-func (drru *DailyRoutineRecUpdate) AddProgramRecID(u int64) *DailyRoutineRecUpdate {
-	drru.mutation.AddProgramRecID(u)
-	return drru
-}
-
 // ClearProgramRecID clears the value of the "program_rec_id" field.
 func (drru *DailyRoutineRecUpdate) ClearProgramRecID() *DailyRoutineRecUpdate {
 	drru.mutation.ClearProgramRecID()
@@ -74,7 +67,6 @@ func (drru *DailyRoutineRecUpdate) ClearProgramRecID() *DailyRoutineRecUpdate {
 
 // SetWeeklyRoutineRecID sets the "weekly_routine_rec_id" field.
 func (drru *DailyRoutineRecUpdate) SetWeeklyRoutineRecID(u uint64) *DailyRoutineRecUpdate {
-	drru.mutation.ResetWeeklyRoutineRecID()
 	drru.mutation.SetWeeklyRoutineRecID(u)
 	return drru
 }
@@ -87,12 +79,6 @@ func (drru *DailyRoutineRecUpdate) SetNillableWeeklyRoutineRecID(u *uint64) *Dai
 	return drru
 }
 
-// AddWeeklyRoutineRecID adds u to the "weekly_routine_rec_id" field.
-func (drru *DailyRoutineRecUpdate) AddWeeklyRoutineRecID(u int64) *DailyRoutineRecUpdate {
-	drru.mutation.AddWeeklyRoutineRecID(u)
-	return drru
-}
-
 // ClearWeeklyRoutineRecID clears the value of the "weekly_routine_rec_id" field.
 func (drru *DailyRoutineRecUpdate) ClearWeeklyRoutineRecID() *DailyRoutineRecUpdate {
 	drru.mutation.ClearWeeklyRoutineRecID()
@@ -101,7 +87,6 @@ func (drru *DailyRoutineRecUpdate) ClearWeeklyRoutineRecID() *DailyRoutineRecUpd
 
 // SetDailyRoutineID sets the "daily_routine_id" field.
 func (drru *DailyRoutineRecUpdate) SetDailyRoutineID(u uint64) *DailyRoutineRecUpdate {
-	drru.mutation.ResetDailyRoutineID()
 	drru.mutation.SetDailyRoutineID(u)
 	return drru
 }
@@ -111,12 +96,6 @@ func (drru *DailyRoutineRecUpdate) SetNillableDailyRoutineID(u *uint64) *DailyRo
 	if u != nil {
 		drru.SetDailyRoutineID(*u)
 	}
-	return drru
-}
-
-// AddDailyRoutineID adds u to the "daily_routine_id" field.
-func (drru *DailyRoutineRecUpdate) AddDailyRoutineID(u int64) *DailyRoutineRecUpdate {
-	drru.mutation.AddDailyRoutineID(u)
 	return drru
 }
 
@@ -164,56 +143,14 @@ func (drru *DailyRoutineRecUpdate) SetUpdatedAt(t time.Time) *DailyRoutineRecUpd
 	return drru
 }
 
-// SetDailyRoutineID sets the "daily_routine" edge to the DailyRoutine entity by ID.
-func (drru *DailyRoutineRecUpdate) SetDailyRoutineID(id uint64) *DailyRoutineRecUpdate {
-	drru.mutation.SetDailyRoutineID(id)
-	return drru
-}
-
-// SetNillableDailyRoutineID sets the "daily_routine" edge to the DailyRoutine entity by ID if the given value is not nil.
-func (drru *DailyRoutineRecUpdate) SetNillableDailyRoutineID(id *uint64) *DailyRoutineRecUpdate {
-	if id != nil {
-		drru = drru.SetDailyRoutineID(*id)
-	}
-	return drru
-}
-
 // SetDailyRoutine sets the "daily_routine" edge to the DailyRoutine entity.
 func (drru *DailyRoutineRecUpdate) SetDailyRoutine(d *DailyRoutine) *DailyRoutineRecUpdate {
 	return drru.SetDailyRoutineID(d.ID)
 }
 
-// SetProgramRecID sets the "program_rec" edge to the ProgramRec entity by ID.
-func (drru *DailyRoutineRecUpdate) SetProgramRecID(id uint64) *DailyRoutineRecUpdate {
-	drru.mutation.SetProgramRecID(id)
-	return drru
-}
-
-// SetNillableProgramRecID sets the "program_rec" edge to the ProgramRec entity by ID if the given value is not nil.
-func (drru *DailyRoutineRecUpdate) SetNillableProgramRecID(id *uint64) *DailyRoutineRecUpdate {
-	if id != nil {
-		drru = drru.SetProgramRecID(*id)
-	}
-	return drru
-}
-
 // SetProgramRec sets the "program_rec" edge to the ProgramRec entity.
 func (drru *DailyRoutineRecUpdate) SetProgramRec(p *ProgramRec) *DailyRoutineRecUpdate {
 	return drru.SetProgramRecID(p.ID)
-}
-
-// SetWeeklyRoutineRecID sets the "weekly_routine_rec" edge to the WeeklyRoutineRec entity by ID.
-func (drru *DailyRoutineRecUpdate) SetWeeklyRoutineRecID(id uint64) *DailyRoutineRecUpdate {
-	drru.mutation.SetWeeklyRoutineRecID(id)
-	return drru
-}
-
-// SetNillableWeeklyRoutineRecID sets the "weekly_routine_rec" edge to the WeeklyRoutineRec entity by ID if the given value is not nil.
-func (drru *DailyRoutineRecUpdate) SetNillableWeeklyRoutineRecID(id *uint64) *DailyRoutineRecUpdate {
-	if id != nil {
-		drru = drru.SetWeeklyRoutineRecID(*id)
-	}
-	return drru
 }
 
 // SetWeeklyRoutineRec sets the "weekly_routine_rec" edge to the WeeklyRoutineRec entity.
@@ -343,33 +280,6 @@ func (drru *DailyRoutineRecUpdate) sqlSave(ctx context.Context) (n int, err erro
 	}
 	if value, ok := drru.mutation.AddedAuthor(); ok {
 		_spec.AddField(dailyroutinerec.FieldAuthor, field.TypeUint64, value)
-	}
-	if value, ok := drru.mutation.ProgramRecID(); ok {
-		_spec.SetField(dailyroutinerec.FieldProgramRecID, field.TypeUint64, value)
-	}
-	if value, ok := drru.mutation.AddedProgramRecID(); ok {
-		_spec.AddField(dailyroutinerec.FieldProgramRecID, field.TypeUint64, value)
-	}
-	if drru.mutation.ProgramRecIDCleared() {
-		_spec.ClearField(dailyroutinerec.FieldProgramRecID, field.TypeUint64)
-	}
-	if value, ok := drru.mutation.WeeklyRoutineRecID(); ok {
-		_spec.SetField(dailyroutinerec.FieldWeeklyRoutineRecID, field.TypeUint64, value)
-	}
-	if value, ok := drru.mutation.AddedWeeklyRoutineRecID(); ok {
-		_spec.AddField(dailyroutinerec.FieldWeeklyRoutineRecID, field.TypeUint64, value)
-	}
-	if drru.mutation.WeeklyRoutineRecIDCleared() {
-		_spec.ClearField(dailyroutinerec.FieldWeeklyRoutineRecID, field.TypeUint64)
-	}
-	if value, ok := drru.mutation.DailyRoutineID(); ok {
-		_spec.SetField(dailyroutinerec.FieldDailyRoutineID, field.TypeUint64, value)
-	}
-	if value, ok := drru.mutation.AddedDailyRoutineID(); ok {
-		_spec.AddField(dailyroutinerec.FieldDailyRoutineID, field.TypeUint64, value)
-	}
-	if drru.mutation.DailyRoutineIDCleared() {
-		_spec.ClearField(dailyroutinerec.FieldDailyRoutineID, field.TypeUint64)
 	}
 	if value, ok := drru.mutation.Date(); ok {
 		_spec.SetField(dailyroutinerec.FieldDate, field.TypeTime, value)
@@ -553,7 +463,6 @@ func (drruo *DailyRoutineRecUpdateOne) AddAuthor(u int64) *DailyRoutineRecUpdate
 
 // SetProgramRecID sets the "program_rec_id" field.
 func (drruo *DailyRoutineRecUpdateOne) SetProgramRecID(u uint64) *DailyRoutineRecUpdateOne {
-	drruo.mutation.ResetProgramRecID()
 	drruo.mutation.SetProgramRecID(u)
 	return drruo
 }
@@ -566,12 +475,6 @@ func (drruo *DailyRoutineRecUpdateOne) SetNillableProgramRecID(u *uint64) *Daily
 	return drruo
 }
 
-// AddProgramRecID adds u to the "program_rec_id" field.
-func (drruo *DailyRoutineRecUpdateOne) AddProgramRecID(u int64) *DailyRoutineRecUpdateOne {
-	drruo.mutation.AddProgramRecID(u)
-	return drruo
-}
-
 // ClearProgramRecID clears the value of the "program_rec_id" field.
 func (drruo *DailyRoutineRecUpdateOne) ClearProgramRecID() *DailyRoutineRecUpdateOne {
 	drruo.mutation.ClearProgramRecID()
@@ -580,7 +483,6 @@ func (drruo *DailyRoutineRecUpdateOne) ClearProgramRecID() *DailyRoutineRecUpdat
 
 // SetWeeklyRoutineRecID sets the "weekly_routine_rec_id" field.
 func (drruo *DailyRoutineRecUpdateOne) SetWeeklyRoutineRecID(u uint64) *DailyRoutineRecUpdateOne {
-	drruo.mutation.ResetWeeklyRoutineRecID()
 	drruo.mutation.SetWeeklyRoutineRecID(u)
 	return drruo
 }
@@ -593,12 +495,6 @@ func (drruo *DailyRoutineRecUpdateOne) SetNillableWeeklyRoutineRecID(u *uint64) 
 	return drruo
 }
 
-// AddWeeklyRoutineRecID adds u to the "weekly_routine_rec_id" field.
-func (drruo *DailyRoutineRecUpdateOne) AddWeeklyRoutineRecID(u int64) *DailyRoutineRecUpdateOne {
-	drruo.mutation.AddWeeklyRoutineRecID(u)
-	return drruo
-}
-
 // ClearWeeklyRoutineRecID clears the value of the "weekly_routine_rec_id" field.
 func (drruo *DailyRoutineRecUpdateOne) ClearWeeklyRoutineRecID() *DailyRoutineRecUpdateOne {
 	drruo.mutation.ClearWeeklyRoutineRecID()
@@ -607,7 +503,6 @@ func (drruo *DailyRoutineRecUpdateOne) ClearWeeklyRoutineRecID() *DailyRoutineRe
 
 // SetDailyRoutineID sets the "daily_routine_id" field.
 func (drruo *DailyRoutineRecUpdateOne) SetDailyRoutineID(u uint64) *DailyRoutineRecUpdateOne {
-	drruo.mutation.ResetDailyRoutineID()
 	drruo.mutation.SetDailyRoutineID(u)
 	return drruo
 }
@@ -617,12 +512,6 @@ func (drruo *DailyRoutineRecUpdateOne) SetNillableDailyRoutineID(u *uint64) *Dai
 	if u != nil {
 		drruo.SetDailyRoutineID(*u)
 	}
-	return drruo
-}
-
-// AddDailyRoutineID adds u to the "daily_routine_id" field.
-func (drruo *DailyRoutineRecUpdateOne) AddDailyRoutineID(u int64) *DailyRoutineRecUpdateOne {
-	drruo.mutation.AddDailyRoutineID(u)
 	return drruo
 }
 
@@ -670,56 +559,14 @@ func (drruo *DailyRoutineRecUpdateOne) SetUpdatedAt(t time.Time) *DailyRoutineRe
 	return drruo
 }
 
-// SetDailyRoutineID sets the "daily_routine" edge to the DailyRoutine entity by ID.
-func (drruo *DailyRoutineRecUpdateOne) SetDailyRoutineID(id uint64) *DailyRoutineRecUpdateOne {
-	drruo.mutation.SetDailyRoutineID(id)
-	return drruo
-}
-
-// SetNillableDailyRoutineID sets the "daily_routine" edge to the DailyRoutine entity by ID if the given value is not nil.
-func (drruo *DailyRoutineRecUpdateOne) SetNillableDailyRoutineID(id *uint64) *DailyRoutineRecUpdateOne {
-	if id != nil {
-		drruo = drruo.SetDailyRoutineID(*id)
-	}
-	return drruo
-}
-
 // SetDailyRoutine sets the "daily_routine" edge to the DailyRoutine entity.
 func (drruo *DailyRoutineRecUpdateOne) SetDailyRoutine(d *DailyRoutine) *DailyRoutineRecUpdateOne {
 	return drruo.SetDailyRoutineID(d.ID)
 }
 
-// SetProgramRecID sets the "program_rec" edge to the ProgramRec entity by ID.
-func (drruo *DailyRoutineRecUpdateOne) SetProgramRecID(id uint64) *DailyRoutineRecUpdateOne {
-	drruo.mutation.SetProgramRecID(id)
-	return drruo
-}
-
-// SetNillableProgramRecID sets the "program_rec" edge to the ProgramRec entity by ID if the given value is not nil.
-func (drruo *DailyRoutineRecUpdateOne) SetNillableProgramRecID(id *uint64) *DailyRoutineRecUpdateOne {
-	if id != nil {
-		drruo = drruo.SetProgramRecID(*id)
-	}
-	return drruo
-}
-
 // SetProgramRec sets the "program_rec" edge to the ProgramRec entity.
 func (drruo *DailyRoutineRecUpdateOne) SetProgramRec(p *ProgramRec) *DailyRoutineRecUpdateOne {
 	return drruo.SetProgramRecID(p.ID)
-}
-
-// SetWeeklyRoutineRecID sets the "weekly_routine_rec" edge to the WeeklyRoutineRec entity by ID.
-func (drruo *DailyRoutineRecUpdateOne) SetWeeklyRoutineRecID(id uint64) *DailyRoutineRecUpdateOne {
-	drruo.mutation.SetWeeklyRoutineRecID(id)
-	return drruo
-}
-
-// SetNillableWeeklyRoutineRecID sets the "weekly_routine_rec" edge to the WeeklyRoutineRec entity by ID if the given value is not nil.
-func (drruo *DailyRoutineRecUpdateOne) SetNillableWeeklyRoutineRecID(id *uint64) *DailyRoutineRecUpdateOne {
-	if id != nil {
-		drruo = drruo.SetWeeklyRoutineRecID(*id)
-	}
-	return drruo
 }
 
 // SetWeeklyRoutineRec sets the "weekly_routine_rec" edge to the WeeklyRoutineRec entity.
@@ -879,33 +726,6 @@ func (drruo *DailyRoutineRecUpdateOne) sqlSave(ctx context.Context) (_node *Dail
 	}
 	if value, ok := drruo.mutation.AddedAuthor(); ok {
 		_spec.AddField(dailyroutinerec.FieldAuthor, field.TypeUint64, value)
-	}
-	if value, ok := drruo.mutation.ProgramRecID(); ok {
-		_spec.SetField(dailyroutinerec.FieldProgramRecID, field.TypeUint64, value)
-	}
-	if value, ok := drruo.mutation.AddedProgramRecID(); ok {
-		_spec.AddField(dailyroutinerec.FieldProgramRecID, field.TypeUint64, value)
-	}
-	if drruo.mutation.ProgramRecIDCleared() {
-		_spec.ClearField(dailyroutinerec.FieldProgramRecID, field.TypeUint64)
-	}
-	if value, ok := drruo.mutation.WeeklyRoutineRecID(); ok {
-		_spec.SetField(dailyroutinerec.FieldWeeklyRoutineRecID, field.TypeUint64, value)
-	}
-	if value, ok := drruo.mutation.AddedWeeklyRoutineRecID(); ok {
-		_spec.AddField(dailyroutinerec.FieldWeeklyRoutineRecID, field.TypeUint64, value)
-	}
-	if drruo.mutation.WeeklyRoutineRecIDCleared() {
-		_spec.ClearField(dailyroutinerec.FieldWeeklyRoutineRecID, field.TypeUint64)
-	}
-	if value, ok := drruo.mutation.DailyRoutineID(); ok {
-		_spec.SetField(dailyroutinerec.FieldDailyRoutineID, field.TypeUint64, value)
-	}
-	if value, ok := drruo.mutation.AddedDailyRoutineID(); ok {
-		_spec.AddField(dailyroutinerec.FieldDailyRoutineID, field.TypeUint64, value)
-	}
-	if drruo.mutation.DailyRoutineIDCleared() {
-		_spec.ClearField(dailyroutinerec.FieldDailyRoutineID, field.TypeUint64)
 	}
 	if value, ok := drruo.mutation.Date(); ok {
 		_spec.SetField(dailyroutinerec.FieldDate, field.TypeTime, value)

@@ -19,26 +19,26 @@ type RoutineAct struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uint64 `json:"id,omitempty"`
-	// DailyRoutineID holds the value of the "daily_routine_id" field.
-	DailyRoutineID uint64 `json:"daily_routine_id,omitempty"`
 	// ActID holds the value of the "act_id" field.
 	ActID uint64 `json:"act_id,omitempty"`
+	// DailyRoutineID holds the value of the "daily_routine_id" field.
+	DailyRoutineID uint64 `json:"daily_routine_id,omitempty"`
 	// Order holds the value of the "order" field.
 	Order int `json:"order,omitempty"`
 	// Reps holds the value of the "reps" field.
 	Reps *int `json:"reps,omitempty"`
 	// Lap holds the value of the "lap" field.
 	Lap *int `json:"lap,omitempty"`
+	// Warmup holds the value of the "warmup" field.
+	Warmup bool `json:"warmup,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RoutineActQuery when eager-loading is set.
-	Edges                      RoutineActEdges `json:"edges"`
-	act_routine_acts           *uint64
-	daily_routine_routine_acts *uint64
-	selectValues               sql.SelectValues
+	Edges        RoutineActEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // RoutineActEdges holds the relations/edges for other nodes in the graph.
@@ -94,14 +94,12 @@ func (*RoutineAct) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case routineact.FieldID, routineact.FieldDailyRoutineID, routineact.FieldActID, routineact.FieldOrder, routineact.FieldReps, routineact.FieldLap:
+		case routineact.FieldWarmup:
+			values[i] = new(sql.NullBool)
+		case routineact.FieldID, routineact.FieldActID, routineact.FieldDailyRoutineID, routineact.FieldOrder, routineact.FieldReps, routineact.FieldLap:
 			values[i] = new(sql.NullInt64)
 		case routineact.FieldCreatedAt, routineact.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case routineact.ForeignKeys[0]: // act_routine_acts
-			values[i] = new(sql.NullInt64)
-		case routineact.ForeignKeys[1]: // daily_routine_routine_acts
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -123,17 +121,17 @@ func (ra *RoutineAct) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			ra.ID = uint64(value.Int64)
-		case routineact.FieldDailyRoutineID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field daily_routine_id", values[i])
-			} else if value.Valid {
-				ra.DailyRoutineID = uint64(value.Int64)
-			}
 		case routineact.FieldActID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field act_id", values[i])
 			} else if value.Valid {
 				ra.ActID = uint64(value.Int64)
+			}
+		case routineact.FieldDailyRoutineID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field daily_routine_id", values[i])
+			} else if value.Valid {
+				ra.DailyRoutineID = uint64(value.Int64)
 			}
 		case routineact.FieldOrder:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -155,6 +153,12 @@ func (ra *RoutineAct) assignValues(columns []string, values []any) error {
 				ra.Lap = new(int)
 				*ra.Lap = int(value.Int64)
 			}
+		case routineact.FieldWarmup:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field warmup", values[i])
+			} else if value.Valid {
+				ra.Warmup = value.Bool
+			}
 		case routineact.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -166,20 +170,6 @@ func (ra *RoutineAct) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				ra.UpdatedAt = value.Time
-			}
-		case routineact.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field act_routine_acts", value)
-			} else if value.Valid {
-				ra.act_routine_acts = new(uint64)
-				*ra.act_routine_acts = uint64(value.Int64)
-			}
-		case routineact.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field daily_routine_routine_acts", value)
-			} else if value.Valid {
-				ra.daily_routine_routine_acts = new(uint64)
-				*ra.daily_routine_routine_acts = uint64(value.Int64)
 			}
 		default:
 			ra.selectValues.Set(columns[i], values[i])
@@ -232,11 +222,11 @@ func (ra *RoutineAct) String() string {
 	var builder strings.Builder
 	builder.WriteString("RoutineAct(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", ra.ID))
-	builder.WriteString("daily_routine_id=")
-	builder.WriteString(fmt.Sprintf("%v", ra.DailyRoutineID))
-	builder.WriteString(", ")
 	builder.WriteString("act_id=")
 	builder.WriteString(fmt.Sprintf("%v", ra.ActID))
+	builder.WriteString(", ")
+	builder.WriteString("daily_routine_id=")
+	builder.WriteString(fmt.Sprintf("%v", ra.DailyRoutineID))
 	builder.WriteString(", ")
 	builder.WriteString("order=")
 	builder.WriteString(fmt.Sprintf("%v", ra.Order))
@@ -250,6 +240,9 @@ func (ra *RoutineAct) String() string {
 		builder.WriteString("lap=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
+	builder.WriteString(", ")
+	builder.WriteString("warmup=")
+	builder.WriteString(fmt.Sprintf("%v", ra.Warmup))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(ra.CreatedAt.Format(time.ANSIC))

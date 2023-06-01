@@ -23,15 +23,15 @@ type RoutineActCreate struct {
 	hooks    []Hook
 }
 
-// SetDailyRoutineID sets the "daily_routine_id" field.
-func (rac *RoutineActCreate) SetDailyRoutineID(u uint64) *RoutineActCreate {
-	rac.mutation.SetDailyRoutineID(u)
-	return rac
-}
-
 // SetActID sets the "act_id" field.
 func (rac *RoutineActCreate) SetActID(u uint64) *RoutineActCreate {
 	rac.mutation.SetActID(u)
+	return rac
+}
+
+// SetDailyRoutineID sets the "daily_routine_id" field.
+func (rac *RoutineActCreate) SetDailyRoutineID(u uint64) *RoutineActCreate {
+	rac.mutation.SetDailyRoutineID(u)
 	return rac
 }
 
@@ -65,6 +65,20 @@ func (rac *RoutineActCreate) SetLap(i int) *RoutineActCreate {
 func (rac *RoutineActCreate) SetNillableLap(i *int) *RoutineActCreate {
 	if i != nil {
 		rac.SetLap(*i)
+	}
+	return rac
+}
+
+// SetWarmup sets the "warmup" field.
+func (rac *RoutineActCreate) SetWarmup(b bool) *RoutineActCreate {
+	rac.mutation.SetWarmup(b)
+	return rac
+}
+
+// SetNillableWarmup sets the "warmup" field if the given value is not nil.
+func (rac *RoutineActCreate) SetNillableWarmup(b *bool) *RoutineActCreate {
+	if b != nil {
+		rac.SetWarmup(*b)
 	}
 	return rac
 }
@@ -103,21 +117,9 @@ func (rac *RoutineActCreate) SetID(u uint64) *RoutineActCreate {
 	return rac
 }
 
-// SetActID sets the "act" edge to the Act entity by ID.
-func (rac *RoutineActCreate) SetActID(id uint64) *RoutineActCreate {
-	rac.mutation.SetActID(id)
-	return rac
-}
-
 // SetAct sets the "act" edge to the Act entity.
 func (rac *RoutineActCreate) SetAct(a *Act) *RoutineActCreate {
 	return rac.SetActID(a.ID)
-}
-
-// SetDailyRoutineID sets the "daily_routine" edge to the DailyRoutine entity by ID.
-func (rac *RoutineActCreate) SetDailyRoutineID(id uint64) *RoutineActCreate {
-	rac.mutation.SetDailyRoutineID(id)
-	return rac
 }
 
 // SetDailyRoutine sets the "daily_routine" edge to the DailyRoutine entity.
@@ -175,6 +177,10 @@ func (rac *RoutineActCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (rac *RoutineActCreate) defaults() {
+	if _, ok := rac.mutation.Warmup(); !ok {
+		v := routineact.DefaultWarmup
+		rac.mutation.SetWarmup(v)
+	}
 	if _, ok := rac.mutation.CreatedAt(); !ok {
 		v := routineact.DefaultCreatedAt()
 		rac.mutation.SetCreatedAt(v)
@@ -187,11 +193,11 @@ func (rac *RoutineActCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (rac *RoutineActCreate) check() error {
-	if _, ok := rac.mutation.DailyRoutineID(); !ok {
-		return &ValidationError{Name: "daily_routine_id", err: errors.New(`ent: missing required field "RoutineAct.daily_routine_id"`)}
-	}
 	if _, ok := rac.mutation.ActID(); !ok {
 		return &ValidationError{Name: "act_id", err: errors.New(`ent: missing required field "RoutineAct.act_id"`)}
+	}
+	if _, ok := rac.mutation.DailyRoutineID(); !ok {
+		return &ValidationError{Name: "daily_routine_id", err: errors.New(`ent: missing required field "RoutineAct.daily_routine_id"`)}
 	}
 	if _, ok := rac.mutation.Order(); !ok {
 		return &ValidationError{Name: "order", err: errors.New(`ent: missing required field "RoutineAct.order"`)}
@@ -210,6 +216,9 @@ func (rac *RoutineActCreate) check() error {
 		if err := routineact.LapValidator(v); err != nil {
 			return &ValidationError{Name: "lap", err: fmt.Errorf(`ent: validator failed for field "RoutineAct.lap": %w`, err)}
 		}
+	}
+	if _, ok := rac.mutation.Warmup(); !ok {
+		return &ValidationError{Name: "warmup", err: errors.New(`ent: missing required field "RoutineAct.warmup"`)}
 	}
 	if _, ok := rac.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "RoutineAct.created_at"`)}
@@ -255,14 +264,6 @@ func (rac *RoutineActCreate) createSpec() (*RoutineAct, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := rac.mutation.DailyRoutineID(); ok {
-		_spec.SetField(routineact.FieldDailyRoutineID, field.TypeUint64, value)
-		_node.DailyRoutineID = value
-	}
-	if value, ok := rac.mutation.ActID(); ok {
-		_spec.SetField(routineact.FieldActID, field.TypeUint64, value)
-		_node.ActID = value
-	}
 	if value, ok := rac.mutation.Order(); ok {
 		_spec.SetField(routineact.FieldOrder, field.TypeInt, value)
 		_node.Order = value
@@ -274,6 +275,10 @@ func (rac *RoutineActCreate) createSpec() (*RoutineAct, *sqlgraph.CreateSpec) {
 	if value, ok := rac.mutation.Lap(); ok {
 		_spec.SetField(routineact.FieldLap, field.TypeInt, value)
 		_node.Lap = &value
+	}
+	if value, ok := rac.mutation.Warmup(); ok {
+		_spec.SetField(routineact.FieldWarmup, field.TypeBool, value)
+		_node.Warmup = value
 	}
 	if value, ok := rac.mutation.CreatedAt(); ok {
 		_spec.SetField(routineact.FieldCreatedAt, field.TypeTime, value)
@@ -297,7 +302,7 @@ func (rac *RoutineActCreate) createSpec() (*RoutineAct, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.act_routine_acts = &nodes[0]
+		_node.ActID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := rac.mutation.DailyRoutineIDs(); len(nodes) > 0 {
@@ -314,7 +319,7 @@ func (rac *RoutineActCreate) createSpec() (*RoutineAct, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.daily_routine_routine_acts = &nodes[0]
+		_node.DailyRoutineID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := rac.mutation.RoutineActRecsIDs(); len(nodes) > 0 {

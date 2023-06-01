@@ -28,7 +28,6 @@ type WeeklyRoutineRecQuery struct {
 	withWeeklyRoutine    *WeeklyRoutineQuery
 	withProgramRec       *ProgramRecQuery
 	withDailyRoutineRecs *DailyRoutineRecQuery
-	withFKs              bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -442,7 +441,6 @@ func (wrrq *WeeklyRoutineRecQuery) prepareQuery(ctx context.Context) error {
 func (wrrq *WeeklyRoutineRecQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*WeeklyRoutineRec, error) {
 	var (
 		nodes       = []*WeeklyRoutineRec{}
-		withFKs     = wrrq.withFKs
 		_spec       = wrrq.querySpec()
 		loadedTypes = [3]bool{
 			wrrq.withWeeklyRoutine != nil,
@@ -450,12 +448,6 @@ func (wrrq *WeeklyRoutineRecQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 			wrrq.withDailyRoutineRecs != nil,
 		}
 	)
-	if wrrq.withWeeklyRoutine != nil || wrrq.withProgramRec != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, weeklyroutinerec.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*WeeklyRoutineRec).scanValues(nil, columns)
 	}
@@ -502,10 +494,7 @@ func (wrrq *WeeklyRoutineRecQuery) loadWeeklyRoutine(ctx context.Context, query 
 	ids := make([]uint64, 0, len(nodes))
 	nodeids := make(map[uint64][]*WeeklyRoutineRec)
 	for i := range nodes {
-		if nodes[i].weekly_routine_weekly_routine_recs == nil {
-			continue
-		}
-		fk := *nodes[i].weekly_routine_weekly_routine_recs
+		fk := nodes[i].WeeklyRoutineID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -522,7 +511,7 @@ func (wrrq *WeeklyRoutineRecQuery) loadWeeklyRoutine(ctx context.Context, query 
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "weekly_routine_weekly_routine_recs" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "weekly_routine_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -534,10 +523,7 @@ func (wrrq *WeeklyRoutineRecQuery) loadProgramRec(ctx context.Context, query *Pr
 	ids := make([]uint64, 0, len(nodes))
 	nodeids := make(map[uint64][]*WeeklyRoutineRec)
 	for i := range nodes {
-		if nodes[i].program_rec_weekly_routine_recs == nil {
-			continue
-		}
-		fk := *nodes[i].program_rec_weekly_routine_recs
+		fk := nodes[i].ProgramRecID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -554,7 +540,7 @@ func (wrrq *WeeklyRoutineRecQuery) loadProgramRec(ctx context.Context, query *Pr
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "program_rec_weekly_routine_recs" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "program_rec_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -572,7 +558,9 @@ func (wrrq *WeeklyRoutineRecQuery) loadDailyRoutineRecs(ctx context.Context, que
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(dailyroutinerec.FieldWeeklyRoutineRecID)
+	}
 	query.Where(predicate.DailyRoutineRec(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(weeklyroutinerec.DailyRoutineRecsColumn), fks...))
 	}))
@@ -581,13 +569,13 @@ func (wrrq *WeeklyRoutineRecQuery) loadDailyRoutineRecs(ctx context.Context, que
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.weekly_routine_rec_daily_routine_recs
+		fk := n.WeeklyRoutineRecID
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "weekly_routine_rec_daily_routine_recs" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "weekly_routine_rec_id" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "weekly_routine_rec_daily_routine_recs" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "weekly_routine_rec_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -618,6 +606,12 @@ func (wrrq *WeeklyRoutineRecQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != weeklyroutinerec.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if wrrq.withWeeklyRoutine != nil {
+			_spec.Node.AddColumnOnce(weeklyroutinerec.FieldWeeklyRoutineID)
+		}
+		if wrrq.withProgramRec != nil {
+			_spec.Node.AddColumnOnce(weeklyroutinerec.FieldProgramRecID)
 		}
 	}
 	if ps := wrrq.predicates; len(ps) > 0 {

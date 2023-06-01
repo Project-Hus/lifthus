@@ -60,9 +60,9 @@ func ProgramID(v uint64) predicate.DailyRoutine {
 	return predicate.DailyRoutine(sql.FieldEQ(FieldProgramID, v))
 }
 
-// WeekID applies equality check predicate on the "week_id" field. It's identical to WeekIDEQ.
-func WeekID(v uint64) predicate.DailyRoutine {
-	return predicate.DailyRoutine(sql.FieldEQ(FieldWeekID, v))
+// WeeklyRoutineID applies equality check predicate on the "weekly_routine_id" field. It's identical to WeeklyRoutineIDEQ.
+func WeeklyRoutineID(v uint64) predicate.DailyRoutine {
+	return predicate.DailyRoutine(sql.FieldEQ(FieldWeeklyRoutineID, v))
 }
 
 // Day applies equality check predicate on the "day" field. It's identical to DayEQ.
@@ -100,26 +100,6 @@ func ProgramIDNotIn(vs ...uint64) predicate.DailyRoutine {
 	return predicate.DailyRoutine(sql.FieldNotIn(FieldProgramID, vs...))
 }
 
-// ProgramIDGT applies the GT predicate on the "program_id" field.
-func ProgramIDGT(v uint64) predicate.DailyRoutine {
-	return predicate.DailyRoutine(sql.FieldGT(FieldProgramID, v))
-}
-
-// ProgramIDGTE applies the GTE predicate on the "program_id" field.
-func ProgramIDGTE(v uint64) predicate.DailyRoutine {
-	return predicate.DailyRoutine(sql.FieldGTE(FieldProgramID, v))
-}
-
-// ProgramIDLT applies the LT predicate on the "program_id" field.
-func ProgramIDLT(v uint64) predicate.DailyRoutine {
-	return predicate.DailyRoutine(sql.FieldLT(FieldProgramID, v))
-}
-
-// ProgramIDLTE applies the LTE predicate on the "program_id" field.
-func ProgramIDLTE(v uint64) predicate.DailyRoutine {
-	return predicate.DailyRoutine(sql.FieldLTE(FieldProgramID, v))
-}
-
 // ProgramIDIsNil applies the IsNil predicate on the "program_id" field.
 func ProgramIDIsNil() predicate.DailyRoutine {
 	return predicate.DailyRoutine(sql.FieldIsNull(FieldProgramID))
@@ -130,54 +110,34 @@ func ProgramIDNotNil() predicate.DailyRoutine {
 	return predicate.DailyRoutine(sql.FieldNotNull(FieldProgramID))
 }
 
-// WeekIDEQ applies the EQ predicate on the "week_id" field.
-func WeekIDEQ(v uint64) predicate.DailyRoutine {
-	return predicate.DailyRoutine(sql.FieldEQ(FieldWeekID, v))
+// WeeklyRoutineIDEQ applies the EQ predicate on the "weekly_routine_id" field.
+func WeeklyRoutineIDEQ(v uint64) predicate.DailyRoutine {
+	return predicate.DailyRoutine(sql.FieldEQ(FieldWeeklyRoutineID, v))
 }
 
-// WeekIDNEQ applies the NEQ predicate on the "week_id" field.
-func WeekIDNEQ(v uint64) predicate.DailyRoutine {
-	return predicate.DailyRoutine(sql.FieldNEQ(FieldWeekID, v))
+// WeeklyRoutineIDNEQ applies the NEQ predicate on the "weekly_routine_id" field.
+func WeeklyRoutineIDNEQ(v uint64) predicate.DailyRoutine {
+	return predicate.DailyRoutine(sql.FieldNEQ(FieldWeeklyRoutineID, v))
 }
 
-// WeekIDIn applies the In predicate on the "week_id" field.
-func WeekIDIn(vs ...uint64) predicate.DailyRoutine {
-	return predicate.DailyRoutine(sql.FieldIn(FieldWeekID, vs...))
+// WeeklyRoutineIDIn applies the In predicate on the "weekly_routine_id" field.
+func WeeklyRoutineIDIn(vs ...uint64) predicate.DailyRoutine {
+	return predicate.DailyRoutine(sql.FieldIn(FieldWeeklyRoutineID, vs...))
 }
 
-// WeekIDNotIn applies the NotIn predicate on the "week_id" field.
-func WeekIDNotIn(vs ...uint64) predicate.DailyRoutine {
-	return predicate.DailyRoutine(sql.FieldNotIn(FieldWeekID, vs...))
+// WeeklyRoutineIDNotIn applies the NotIn predicate on the "weekly_routine_id" field.
+func WeeklyRoutineIDNotIn(vs ...uint64) predicate.DailyRoutine {
+	return predicate.DailyRoutine(sql.FieldNotIn(FieldWeeklyRoutineID, vs...))
 }
 
-// WeekIDGT applies the GT predicate on the "week_id" field.
-func WeekIDGT(v uint64) predicate.DailyRoutine {
-	return predicate.DailyRoutine(sql.FieldGT(FieldWeekID, v))
+// WeeklyRoutineIDIsNil applies the IsNil predicate on the "weekly_routine_id" field.
+func WeeklyRoutineIDIsNil() predicate.DailyRoutine {
+	return predicate.DailyRoutine(sql.FieldIsNull(FieldWeeklyRoutineID))
 }
 
-// WeekIDGTE applies the GTE predicate on the "week_id" field.
-func WeekIDGTE(v uint64) predicate.DailyRoutine {
-	return predicate.DailyRoutine(sql.FieldGTE(FieldWeekID, v))
-}
-
-// WeekIDLT applies the LT predicate on the "week_id" field.
-func WeekIDLT(v uint64) predicate.DailyRoutine {
-	return predicate.DailyRoutine(sql.FieldLT(FieldWeekID, v))
-}
-
-// WeekIDLTE applies the LTE predicate on the "week_id" field.
-func WeekIDLTE(v uint64) predicate.DailyRoutine {
-	return predicate.DailyRoutine(sql.FieldLTE(FieldWeekID, v))
-}
-
-// WeekIDIsNil applies the IsNil predicate on the "week_id" field.
-func WeekIDIsNil() predicate.DailyRoutine {
-	return predicate.DailyRoutine(sql.FieldIsNull(FieldWeekID))
-}
-
-// WeekIDNotNil applies the NotNil predicate on the "week_id" field.
-func WeekIDNotNil() predicate.DailyRoutine {
-	return predicate.DailyRoutine(sql.FieldNotNull(FieldWeekID))
+// WeeklyRoutineIDNotNil applies the NotNil predicate on the "weekly_routine_id" field.
+func WeeklyRoutineIDNotNil() predicate.DailyRoutine {
+	return predicate.DailyRoutine(sql.FieldNotNull(FieldWeeklyRoutineID))
 }
 
 // DayEQ applies the EQ predicate on the "day" field.
@@ -305,7 +265,7 @@ func HasProgram() predicate.DailyRoutine {
 	return predicate.DailyRoutine(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, ProgramTable, ProgramPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, ProgramTable, ProgramColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -328,7 +288,7 @@ func HasWeeklyRoutine() predicate.DailyRoutine {
 	return predicate.DailyRoutine(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, WeeklyRoutineTable, WeeklyRoutinePrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, WeeklyRoutineTable, WeeklyRoutineColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

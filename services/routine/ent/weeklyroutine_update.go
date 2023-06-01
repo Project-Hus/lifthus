@@ -33,14 +33,7 @@ func (wru *WeeklyRoutineUpdate) Where(ps ...predicate.WeeklyRoutine) *WeeklyRout
 
 // SetProgramID sets the "program_id" field.
 func (wru *WeeklyRoutineUpdate) SetProgramID(u uint64) *WeeklyRoutineUpdate {
-	wru.mutation.ResetProgramID()
 	wru.mutation.SetProgramID(u)
-	return wru
-}
-
-// AddProgramID adds u to the "program_id" field.
-func (wru *WeeklyRoutineUpdate) AddProgramID(u int64) *WeeklyRoutineUpdate {
-	wru.mutation.AddProgramID(u)
 	return wru
 }
 
@@ -63,19 +56,9 @@ func (wru *WeeklyRoutineUpdate) SetUpdatedAt(t time.Time) *WeeklyRoutineUpdate {
 	return wru
 }
 
-// AddProgramIDs adds the "program" edge to the Program entity by IDs.
-func (wru *WeeklyRoutineUpdate) AddProgramIDs(ids ...uint64) *WeeklyRoutineUpdate {
-	wru.mutation.AddProgramIDs(ids...)
-	return wru
-}
-
-// AddProgram adds the "program" edges to the Program entity.
-func (wru *WeeklyRoutineUpdate) AddProgram(p ...*Program) *WeeklyRoutineUpdate {
-	ids := make([]uint64, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return wru.AddProgramIDs(ids...)
+// SetProgram sets the "program" edge to the Program entity.
+func (wru *WeeklyRoutineUpdate) SetProgram(p *Program) *WeeklyRoutineUpdate {
+	return wru.SetProgramID(p.ID)
 }
 
 // AddDailyRoutineIDs adds the "daily_routines" edge to the DailyRoutine entity by IDs.
@@ -113,25 +96,10 @@ func (wru *WeeklyRoutineUpdate) Mutation() *WeeklyRoutineMutation {
 	return wru.mutation
 }
 
-// ClearProgram clears all "program" edges to the Program entity.
+// ClearProgram clears the "program" edge to the Program entity.
 func (wru *WeeklyRoutineUpdate) ClearProgram() *WeeklyRoutineUpdate {
 	wru.mutation.ClearProgram()
 	return wru
-}
-
-// RemoveProgramIDs removes the "program" edge to Program entities by IDs.
-func (wru *WeeklyRoutineUpdate) RemoveProgramIDs(ids ...uint64) *WeeklyRoutineUpdate {
-	wru.mutation.RemoveProgramIDs(ids...)
-	return wru
-}
-
-// RemoveProgram removes "program" edges to Program entities.
-func (wru *WeeklyRoutineUpdate) RemoveProgram(p ...*Program) *WeeklyRoutineUpdate {
-	ids := make([]uint64, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return wru.RemoveProgramIDs(ids...)
 }
 
 // ClearDailyRoutines clears all "daily_routines" edges to the DailyRoutine entity.
@@ -219,6 +187,9 @@ func (wru *WeeklyRoutineUpdate) check() error {
 			return &ValidationError{Name: "week", err: fmt.Errorf(`ent: validator failed for field "WeeklyRoutine.week": %w`, err)}
 		}
 	}
+	if _, ok := wru.mutation.ProgramID(); wru.mutation.ProgramCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "WeeklyRoutine.program"`)
+	}
 	return nil
 }
 
@@ -234,12 +205,6 @@ func (wru *WeeklyRoutineUpdate) sqlSave(ctx context.Context) (n int, err error) 
 			}
 		}
 	}
-	if value, ok := wru.mutation.ProgramID(); ok {
-		_spec.SetField(weeklyroutine.FieldProgramID, field.TypeUint64, value)
-	}
-	if value, ok := wru.mutation.AddedProgramID(); ok {
-		_spec.AddField(weeklyroutine.FieldProgramID, field.TypeUint64, value)
-	}
 	if value, ok := wru.mutation.Week(); ok {
 		_spec.SetField(weeklyroutine.FieldWeek, field.TypeInt, value)
 	}
@@ -251,39 +216,23 @@ func (wru *WeeklyRoutineUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	}
 	if wru.mutation.ProgramCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   weeklyroutine.ProgramTable,
-			Columns: weeklyroutine.ProgramPrimaryKey,
+			Columns: []string{weeklyroutine.ProgramColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64),
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := wru.mutation.RemovedProgramIDs(); len(nodes) > 0 && !wru.mutation.ProgramCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   weeklyroutine.ProgramTable,
-			Columns: weeklyroutine.ProgramPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := wru.mutation.ProgramIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   weeklyroutine.ProgramTable,
-			Columns: weeklyroutine.ProgramPrimaryKey,
+			Columns: []string{weeklyroutine.ProgramColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64),
@@ -296,10 +245,10 @@ func (wru *WeeklyRoutineUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	}
 	if wru.mutation.DailyRoutinesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   weeklyroutine.DailyRoutinesTable,
-			Columns: weeklyroutine.DailyRoutinesPrimaryKey,
+			Columns: []string{weeklyroutine.DailyRoutinesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dailyroutine.FieldID, field.TypeUint64),
@@ -309,10 +258,10 @@ func (wru *WeeklyRoutineUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	}
 	if nodes := wru.mutation.RemovedDailyRoutinesIDs(); len(nodes) > 0 && !wru.mutation.DailyRoutinesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   weeklyroutine.DailyRoutinesTable,
-			Columns: weeklyroutine.DailyRoutinesPrimaryKey,
+			Columns: []string{weeklyroutine.DailyRoutinesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dailyroutine.FieldID, field.TypeUint64),
@@ -325,10 +274,10 @@ func (wru *WeeklyRoutineUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	}
 	if nodes := wru.mutation.DailyRoutinesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   weeklyroutine.DailyRoutinesTable,
-			Columns: weeklyroutine.DailyRoutinesPrimaryKey,
+			Columns: []string{weeklyroutine.DailyRoutinesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dailyroutine.FieldID, field.TypeUint64),
@@ -406,14 +355,7 @@ type WeeklyRoutineUpdateOne struct {
 
 // SetProgramID sets the "program_id" field.
 func (wruo *WeeklyRoutineUpdateOne) SetProgramID(u uint64) *WeeklyRoutineUpdateOne {
-	wruo.mutation.ResetProgramID()
 	wruo.mutation.SetProgramID(u)
-	return wruo
-}
-
-// AddProgramID adds u to the "program_id" field.
-func (wruo *WeeklyRoutineUpdateOne) AddProgramID(u int64) *WeeklyRoutineUpdateOne {
-	wruo.mutation.AddProgramID(u)
 	return wruo
 }
 
@@ -436,19 +378,9 @@ func (wruo *WeeklyRoutineUpdateOne) SetUpdatedAt(t time.Time) *WeeklyRoutineUpda
 	return wruo
 }
 
-// AddProgramIDs adds the "program" edge to the Program entity by IDs.
-func (wruo *WeeklyRoutineUpdateOne) AddProgramIDs(ids ...uint64) *WeeklyRoutineUpdateOne {
-	wruo.mutation.AddProgramIDs(ids...)
-	return wruo
-}
-
-// AddProgram adds the "program" edges to the Program entity.
-func (wruo *WeeklyRoutineUpdateOne) AddProgram(p ...*Program) *WeeklyRoutineUpdateOne {
-	ids := make([]uint64, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return wruo.AddProgramIDs(ids...)
+// SetProgram sets the "program" edge to the Program entity.
+func (wruo *WeeklyRoutineUpdateOne) SetProgram(p *Program) *WeeklyRoutineUpdateOne {
+	return wruo.SetProgramID(p.ID)
 }
 
 // AddDailyRoutineIDs adds the "daily_routines" edge to the DailyRoutine entity by IDs.
@@ -486,25 +418,10 @@ func (wruo *WeeklyRoutineUpdateOne) Mutation() *WeeklyRoutineMutation {
 	return wruo.mutation
 }
 
-// ClearProgram clears all "program" edges to the Program entity.
+// ClearProgram clears the "program" edge to the Program entity.
 func (wruo *WeeklyRoutineUpdateOne) ClearProgram() *WeeklyRoutineUpdateOne {
 	wruo.mutation.ClearProgram()
 	return wruo
-}
-
-// RemoveProgramIDs removes the "program" edge to Program entities by IDs.
-func (wruo *WeeklyRoutineUpdateOne) RemoveProgramIDs(ids ...uint64) *WeeklyRoutineUpdateOne {
-	wruo.mutation.RemoveProgramIDs(ids...)
-	return wruo
-}
-
-// RemoveProgram removes "program" edges to Program entities.
-func (wruo *WeeklyRoutineUpdateOne) RemoveProgram(p ...*Program) *WeeklyRoutineUpdateOne {
-	ids := make([]uint64, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return wruo.RemoveProgramIDs(ids...)
 }
 
 // ClearDailyRoutines clears all "daily_routines" edges to the DailyRoutine entity.
@@ -605,6 +522,9 @@ func (wruo *WeeklyRoutineUpdateOne) check() error {
 			return &ValidationError{Name: "week", err: fmt.Errorf(`ent: validator failed for field "WeeklyRoutine.week": %w`, err)}
 		}
 	}
+	if _, ok := wruo.mutation.ProgramID(); wruo.mutation.ProgramCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "WeeklyRoutine.program"`)
+	}
 	return nil
 }
 
@@ -637,12 +557,6 @@ func (wruo *WeeklyRoutineUpdateOne) sqlSave(ctx context.Context) (_node *WeeklyR
 			}
 		}
 	}
-	if value, ok := wruo.mutation.ProgramID(); ok {
-		_spec.SetField(weeklyroutine.FieldProgramID, field.TypeUint64, value)
-	}
-	if value, ok := wruo.mutation.AddedProgramID(); ok {
-		_spec.AddField(weeklyroutine.FieldProgramID, field.TypeUint64, value)
-	}
 	if value, ok := wruo.mutation.Week(); ok {
 		_spec.SetField(weeklyroutine.FieldWeek, field.TypeInt, value)
 	}
@@ -654,39 +568,23 @@ func (wruo *WeeklyRoutineUpdateOne) sqlSave(ctx context.Context) (_node *WeeklyR
 	}
 	if wruo.mutation.ProgramCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   weeklyroutine.ProgramTable,
-			Columns: weeklyroutine.ProgramPrimaryKey,
+			Columns: []string{weeklyroutine.ProgramColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64),
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := wruo.mutation.RemovedProgramIDs(); len(nodes) > 0 && !wruo.mutation.ProgramCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   weeklyroutine.ProgramTable,
-			Columns: weeklyroutine.ProgramPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := wruo.mutation.ProgramIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   weeklyroutine.ProgramTable,
-			Columns: weeklyroutine.ProgramPrimaryKey,
+			Columns: []string{weeklyroutine.ProgramColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64),
@@ -699,10 +597,10 @@ func (wruo *WeeklyRoutineUpdateOne) sqlSave(ctx context.Context) (_node *WeeklyR
 	}
 	if wruo.mutation.DailyRoutinesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   weeklyroutine.DailyRoutinesTable,
-			Columns: weeklyroutine.DailyRoutinesPrimaryKey,
+			Columns: []string{weeklyroutine.DailyRoutinesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dailyroutine.FieldID, field.TypeUint64),
@@ -712,10 +610,10 @@ func (wruo *WeeklyRoutineUpdateOne) sqlSave(ctx context.Context) (_node *WeeklyR
 	}
 	if nodes := wruo.mutation.RemovedDailyRoutinesIDs(); len(nodes) > 0 && !wruo.mutation.DailyRoutinesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   weeklyroutine.DailyRoutinesTable,
-			Columns: weeklyroutine.DailyRoutinesPrimaryKey,
+			Columns: []string{weeklyroutine.DailyRoutinesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dailyroutine.FieldID, field.TypeUint64),
@@ -728,10 +626,10 @@ func (wruo *WeeklyRoutineUpdateOne) sqlSave(ctx context.Context) (_node *WeeklyR
 	}
 	if nodes := wruo.mutation.DailyRoutinesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   weeklyroutine.DailyRoutinesTable,
-			Columns: weeklyroutine.DailyRoutinesPrimaryKey,
+			Columns: []string{weeklyroutine.DailyRoutinesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dailyroutine.FieldID, field.TypeUint64),
