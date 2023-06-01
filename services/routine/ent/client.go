@@ -12,10 +12,14 @@ import (
 
 	"routine/ent/act"
 	"routine/ent/dailyroutine"
+	"routine/ent/dailyroutinerec"
 	"routine/ent/program"
+	"routine/ent/programrec"
 	"routine/ent/routineact"
+	"routine/ent/routineactrec"
 	"routine/ent/tag"
 	"routine/ent/weeklyroutine"
+	"routine/ent/weeklyroutinerec"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
@@ -32,14 +36,22 @@ type Client struct {
 	Act *ActClient
 	// DailyRoutine is the client for interacting with the DailyRoutine builders.
 	DailyRoutine *DailyRoutineClient
+	// DailyRoutineRec is the client for interacting with the DailyRoutineRec builders.
+	DailyRoutineRec *DailyRoutineRecClient
 	// Program is the client for interacting with the Program builders.
 	Program *ProgramClient
+	// ProgramRec is the client for interacting with the ProgramRec builders.
+	ProgramRec *ProgramRecClient
 	// RoutineAct is the client for interacting with the RoutineAct builders.
 	RoutineAct *RoutineActClient
+	// RoutineActRec is the client for interacting with the RoutineActRec builders.
+	RoutineActRec *RoutineActRecClient
 	// Tag is the client for interacting with the Tag builders.
 	Tag *TagClient
 	// WeeklyRoutine is the client for interacting with the WeeklyRoutine builders.
 	WeeklyRoutine *WeeklyRoutineClient
+	// WeeklyRoutineRec is the client for interacting with the WeeklyRoutineRec builders.
+	WeeklyRoutineRec *WeeklyRoutineRecClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -55,10 +67,14 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Act = NewActClient(c.config)
 	c.DailyRoutine = NewDailyRoutineClient(c.config)
+	c.DailyRoutineRec = NewDailyRoutineRecClient(c.config)
 	c.Program = NewProgramClient(c.config)
+	c.ProgramRec = NewProgramRecClient(c.config)
 	c.RoutineAct = NewRoutineActClient(c.config)
+	c.RoutineActRec = NewRoutineActRecClient(c.config)
 	c.Tag = NewTagClient(c.config)
 	c.WeeklyRoutine = NewWeeklyRoutineClient(c.config)
+	c.WeeklyRoutineRec = NewWeeklyRoutineRecClient(c.config)
 }
 
 type (
@@ -139,14 +155,18 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:           ctx,
-		config:        cfg,
-		Act:           NewActClient(cfg),
-		DailyRoutine:  NewDailyRoutineClient(cfg),
-		Program:       NewProgramClient(cfg),
-		RoutineAct:    NewRoutineActClient(cfg),
-		Tag:           NewTagClient(cfg),
-		WeeklyRoutine: NewWeeklyRoutineClient(cfg),
+		ctx:              ctx,
+		config:           cfg,
+		Act:              NewActClient(cfg),
+		DailyRoutine:     NewDailyRoutineClient(cfg),
+		DailyRoutineRec:  NewDailyRoutineRecClient(cfg),
+		Program:          NewProgramClient(cfg),
+		ProgramRec:       NewProgramRecClient(cfg),
+		RoutineAct:       NewRoutineActClient(cfg),
+		RoutineActRec:    NewRoutineActRecClient(cfg),
+		Tag:              NewTagClient(cfg),
+		WeeklyRoutine:    NewWeeklyRoutineClient(cfg),
+		WeeklyRoutineRec: NewWeeklyRoutineRecClient(cfg),
 	}, nil
 }
 
@@ -164,14 +184,18 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:           ctx,
-		config:        cfg,
-		Act:           NewActClient(cfg),
-		DailyRoutine:  NewDailyRoutineClient(cfg),
-		Program:       NewProgramClient(cfg),
-		RoutineAct:    NewRoutineActClient(cfg),
-		Tag:           NewTagClient(cfg),
-		WeeklyRoutine: NewWeeklyRoutineClient(cfg),
+		ctx:              ctx,
+		config:           cfg,
+		Act:              NewActClient(cfg),
+		DailyRoutine:     NewDailyRoutineClient(cfg),
+		DailyRoutineRec:  NewDailyRoutineRecClient(cfg),
+		Program:          NewProgramClient(cfg),
+		ProgramRec:       NewProgramRecClient(cfg),
+		RoutineAct:       NewRoutineActClient(cfg),
+		RoutineActRec:    NewRoutineActRecClient(cfg),
+		Tag:              NewTagClient(cfg),
+		WeeklyRoutine:    NewWeeklyRoutineClient(cfg),
+		WeeklyRoutineRec: NewWeeklyRoutineRecClient(cfg),
 	}, nil
 }
 
@@ -201,7 +225,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Act, c.DailyRoutine, c.Program, c.RoutineAct, c.Tag, c.WeeklyRoutine,
+		c.Act, c.DailyRoutine, c.DailyRoutineRec, c.Program, c.ProgramRec, c.RoutineAct,
+		c.RoutineActRec, c.Tag, c.WeeklyRoutine, c.WeeklyRoutineRec,
 	} {
 		n.Use(hooks...)
 	}
@@ -211,7 +236,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Act, c.DailyRoutine, c.Program, c.RoutineAct, c.Tag, c.WeeklyRoutine,
+		c.Act, c.DailyRoutine, c.DailyRoutineRec, c.Program, c.ProgramRec, c.RoutineAct,
+		c.RoutineActRec, c.Tag, c.WeeklyRoutine, c.WeeklyRoutineRec,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -224,14 +250,22 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Act.mutate(ctx, m)
 	case *DailyRoutineMutation:
 		return c.DailyRoutine.mutate(ctx, m)
+	case *DailyRoutineRecMutation:
+		return c.DailyRoutineRec.mutate(ctx, m)
 	case *ProgramMutation:
 		return c.Program.mutate(ctx, m)
+	case *ProgramRecMutation:
+		return c.ProgramRec.mutate(ctx, m)
 	case *RoutineActMutation:
 		return c.RoutineAct.mutate(ctx, m)
+	case *RoutineActRecMutation:
+		return c.RoutineActRec.mutate(ctx, m)
 	case *TagMutation:
 		return c.Tag.mutate(ctx, m)
 	case *WeeklyRoutineMutation:
 		return c.WeeklyRoutine.mutate(ctx, m)
+	case *WeeklyRoutineRecMutation:
+		return c.WeeklyRoutineRec.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -553,6 +587,124 @@ func (c *DailyRoutineClient) mutate(ctx context.Context, m *DailyRoutineMutation
 	}
 }
 
+// DailyRoutineRecClient is a client for the DailyRoutineRec schema.
+type DailyRoutineRecClient struct {
+	config
+}
+
+// NewDailyRoutineRecClient returns a client for the DailyRoutineRec from the given config.
+func NewDailyRoutineRecClient(c config) *DailyRoutineRecClient {
+	return &DailyRoutineRecClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `dailyroutinerec.Hooks(f(g(h())))`.
+func (c *DailyRoutineRecClient) Use(hooks ...Hook) {
+	c.hooks.DailyRoutineRec = append(c.hooks.DailyRoutineRec, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `dailyroutinerec.Intercept(f(g(h())))`.
+func (c *DailyRoutineRecClient) Intercept(interceptors ...Interceptor) {
+	c.inters.DailyRoutineRec = append(c.inters.DailyRoutineRec, interceptors...)
+}
+
+// Create returns a builder for creating a DailyRoutineRec entity.
+func (c *DailyRoutineRecClient) Create() *DailyRoutineRecCreate {
+	mutation := newDailyRoutineRecMutation(c.config, OpCreate)
+	return &DailyRoutineRecCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of DailyRoutineRec entities.
+func (c *DailyRoutineRecClient) CreateBulk(builders ...*DailyRoutineRecCreate) *DailyRoutineRecCreateBulk {
+	return &DailyRoutineRecCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for DailyRoutineRec.
+func (c *DailyRoutineRecClient) Update() *DailyRoutineRecUpdate {
+	mutation := newDailyRoutineRecMutation(c.config, OpUpdate)
+	return &DailyRoutineRecUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DailyRoutineRecClient) UpdateOne(drr *DailyRoutineRec) *DailyRoutineRecUpdateOne {
+	mutation := newDailyRoutineRecMutation(c.config, OpUpdateOne, withDailyRoutineRec(drr))
+	return &DailyRoutineRecUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DailyRoutineRecClient) UpdateOneID(id uint64) *DailyRoutineRecUpdateOne {
+	mutation := newDailyRoutineRecMutation(c.config, OpUpdateOne, withDailyRoutineRecID(id))
+	return &DailyRoutineRecUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for DailyRoutineRec.
+func (c *DailyRoutineRecClient) Delete() *DailyRoutineRecDelete {
+	mutation := newDailyRoutineRecMutation(c.config, OpDelete)
+	return &DailyRoutineRecDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DailyRoutineRecClient) DeleteOne(drr *DailyRoutineRec) *DailyRoutineRecDeleteOne {
+	return c.DeleteOneID(drr.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DailyRoutineRecClient) DeleteOneID(id uint64) *DailyRoutineRecDeleteOne {
+	builder := c.Delete().Where(dailyroutinerec.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DailyRoutineRecDeleteOne{builder}
+}
+
+// Query returns a query builder for DailyRoutineRec.
+func (c *DailyRoutineRecClient) Query() *DailyRoutineRecQuery {
+	return &DailyRoutineRecQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDailyRoutineRec},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a DailyRoutineRec entity by its id.
+func (c *DailyRoutineRecClient) Get(ctx context.Context, id uint64) (*DailyRoutineRec, error) {
+	return c.Query().Where(dailyroutinerec.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DailyRoutineRecClient) GetX(ctx context.Context, id uint64) *DailyRoutineRec {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *DailyRoutineRecClient) Hooks() []Hook {
+	return c.hooks.DailyRoutineRec
+}
+
+// Interceptors returns the client interceptors.
+func (c *DailyRoutineRecClient) Interceptors() []Interceptor {
+	return c.inters.DailyRoutineRec
+}
+
+func (c *DailyRoutineRecClient) mutate(ctx context.Context, m *DailyRoutineRecMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DailyRoutineRecCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DailyRoutineRecUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DailyRoutineRecUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DailyRoutineRecDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown DailyRoutineRec mutation op: %q", m.Op())
+	}
+}
+
 // ProgramClient is a client for the Program schema.
 type ProgramClient struct {
 	config
@@ -719,6 +871,124 @@ func (c *ProgramClient) mutate(ctx context.Context, m *ProgramMutation) (Value, 
 	}
 }
 
+// ProgramRecClient is a client for the ProgramRec schema.
+type ProgramRecClient struct {
+	config
+}
+
+// NewProgramRecClient returns a client for the ProgramRec from the given config.
+func NewProgramRecClient(c config) *ProgramRecClient {
+	return &ProgramRecClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `programrec.Hooks(f(g(h())))`.
+func (c *ProgramRecClient) Use(hooks ...Hook) {
+	c.hooks.ProgramRec = append(c.hooks.ProgramRec, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `programrec.Intercept(f(g(h())))`.
+func (c *ProgramRecClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ProgramRec = append(c.inters.ProgramRec, interceptors...)
+}
+
+// Create returns a builder for creating a ProgramRec entity.
+func (c *ProgramRecClient) Create() *ProgramRecCreate {
+	mutation := newProgramRecMutation(c.config, OpCreate)
+	return &ProgramRecCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ProgramRec entities.
+func (c *ProgramRecClient) CreateBulk(builders ...*ProgramRecCreate) *ProgramRecCreateBulk {
+	return &ProgramRecCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ProgramRec.
+func (c *ProgramRecClient) Update() *ProgramRecUpdate {
+	mutation := newProgramRecMutation(c.config, OpUpdate)
+	return &ProgramRecUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ProgramRecClient) UpdateOne(pr *ProgramRec) *ProgramRecUpdateOne {
+	mutation := newProgramRecMutation(c.config, OpUpdateOne, withProgramRec(pr))
+	return &ProgramRecUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ProgramRecClient) UpdateOneID(id uint64) *ProgramRecUpdateOne {
+	mutation := newProgramRecMutation(c.config, OpUpdateOne, withProgramRecID(id))
+	return &ProgramRecUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ProgramRec.
+func (c *ProgramRecClient) Delete() *ProgramRecDelete {
+	mutation := newProgramRecMutation(c.config, OpDelete)
+	return &ProgramRecDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ProgramRecClient) DeleteOne(pr *ProgramRec) *ProgramRecDeleteOne {
+	return c.DeleteOneID(pr.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ProgramRecClient) DeleteOneID(id uint64) *ProgramRecDeleteOne {
+	builder := c.Delete().Where(programrec.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ProgramRecDeleteOne{builder}
+}
+
+// Query returns a query builder for ProgramRec.
+func (c *ProgramRecClient) Query() *ProgramRecQuery {
+	return &ProgramRecQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeProgramRec},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ProgramRec entity by its id.
+func (c *ProgramRecClient) Get(ctx context.Context, id uint64) (*ProgramRec, error) {
+	return c.Query().Where(programrec.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ProgramRecClient) GetX(ctx context.Context, id uint64) *ProgramRec {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *ProgramRecClient) Hooks() []Hook {
+	return c.hooks.ProgramRec
+}
+
+// Interceptors returns the client interceptors.
+func (c *ProgramRecClient) Interceptors() []Interceptor {
+	return c.inters.ProgramRec
+}
+
+func (c *ProgramRecClient) mutate(ctx context.Context, m *ProgramRecMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ProgramRecCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ProgramRecUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ProgramRecUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ProgramRecDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ProgramRec mutation op: %q", m.Op())
+	}
+}
+
 // RoutineActClient is a client for the RoutineAct schema.
 type RoutineActClient struct {
 	config
@@ -866,6 +1136,124 @@ func (c *RoutineActClient) mutate(ctx context.Context, m *RoutineActMutation) (V
 		return (&RoutineActDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown RoutineAct mutation op: %q", m.Op())
+	}
+}
+
+// RoutineActRecClient is a client for the RoutineActRec schema.
+type RoutineActRecClient struct {
+	config
+}
+
+// NewRoutineActRecClient returns a client for the RoutineActRec from the given config.
+func NewRoutineActRecClient(c config) *RoutineActRecClient {
+	return &RoutineActRecClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `routineactrec.Hooks(f(g(h())))`.
+func (c *RoutineActRecClient) Use(hooks ...Hook) {
+	c.hooks.RoutineActRec = append(c.hooks.RoutineActRec, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `routineactrec.Intercept(f(g(h())))`.
+func (c *RoutineActRecClient) Intercept(interceptors ...Interceptor) {
+	c.inters.RoutineActRec = append(c.inters.RoutineActRec, interceptors...)
+}
+
+// Create returns a builder for creating a RoutineActRec entity.
+func (c *RoutineActRecClient) Create() *RoutineActRecCreate {
+	mutation := newRoutineActRecMutation(c.config, OpCreate)
+	return &RoutineActRecCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of RoutineActRec entities.
+func (c *RoutineActRecClient) CreateBulk(builders ...*RoutineActRecCreate) *RoutineActRecCreateBulk {
+	return &RoutineActRecCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for RoutineActRec.
+func (c *RoutineActRecClient) Update() *RoutineActRecUpdate {
+	mutation := newRoutineActRecMutation(c.config, OpUpdate)
+	return &RoutineActRecUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *RoutineActRecClient) UpdateOne(rar *RoutineActRec) *RoutineActRecUpdateOne {
+	mutation := newRoutineActRecMutation(c.config, OpUpdateOne, withRoutineActRec(rar))
+	return &RoutineActRecUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *RoutineActRecClient) UpdateOneID(id uint64) *RoutineActRecUpdateOne {
+	mutation := newRoutineActRecMutation(c.config, OpUpdateOne, withRoutineActRecID(id))
+	return &RoutineActRecUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for RoutineActRec.
+func (c *RoutineActRecClient) Delete() *RoutineActRecDelete {
+	mutation := newRoutineActRecMutation(c.config, OpDelete)
+	return &RoutineActRecDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *RoutineActRecClient) DeleteOne(rar *RoutineActRec) *RoutineActRecDeleteOne {
+	return c.DeleteOneID(rar.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *RoutineActRecClient) DeleteOneID(id uint64) *RoutineActRecDeleteOne {
+	builder := c.Delete().Where(routineactrec.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &RoutineActRecDeleteOne{builder}
+}
+
+// Query returns a query builder for RoutineActRec.
+func (c *RoutineActRecClient) Query() *RoutineActRecQuery {
+	return &RoutineActRecQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeRoutineActRec},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a RoutineActRec entity by its id.
+func (c *RoutineActRecClient) Get(ctx context.Context, id uint64) (*RoutineActRec, error) {
+	return c.Query().Where(routineactrec.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *RoutineActRecClient) GetX(ctx context.Context, id uint64) *RoutineActRec {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *RoutineActRecClient) Hooks() []Hook {
+	return c.hooks.RoutineActRec
+}
+
+// Interceptors returns the client interceptors.
+func (c *RoutineActRecClient) Interceptors() []Interceptor {
+	return c.inters.RoutineActRec
+}
+
+func (c *RoutineActRecClient) mutate(ctx context.Context, m *RoutineActRecMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&RoutineActRecCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&RoutineActRecUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&RoutineActRecUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&RoutineActRecDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown RoutineActRec mutation op: %q", m.Op())
 	}
 }
 
@@ -1169,12 +1557,132 @@ func (c *WeeklyRoutineClient) mutate(ctx context.Context, m *WeeklyRoutineMutati
 	}
 }
 
+// WeeklyRoutineRecClient is a client for the WeeklyRoutineRec schema.
+type WeeklyRoutineRecClient struct {
+	config
+}
+
+// NewWeeklyRoutineRecClient returns a client for the WeeklyRoutineRec from the given config.
+func NewWeeklyRoutineRecClient(c config) *WeeklyRoutineRecClient {
+	return &WeeklyRoutineRecClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `weeklyroutinerec.Hooks(f(g(h())))`.
+func (c *WeeklyRoutineRecClient) Use(hooks ...Hook) {
+	c.hooks.WeeklyRoutineRec = append(c.hooks.WeeklyRoutineRec, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `weeklyroutinerec.Intercept(f(g(h())))`.
+func (c *WeeklyRoutineRecClient) Intercept(interceptors ...Interceptor) {
+	c.inters.WeeklyRoutineRec = append(c.inters.WeeklyRoutineRec, interceptors...)
+}
+
+// Create returns a builder for creating a WeeklyRoutineRec entity.
+func (c *WeeklyRoutineRecClient) Create() *WeeklyRoutineRecCreate {
+	mutation := newWeeklyRoutineRecMutation(c.config, OpCreate)
+	return &WeeklyRoutineRecCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of WeeklyRoutineRec entities.
+func (c *WeeklyRoutineRecClient) CreateBulk(builders ...*WeeklyRoutineRecCreate) *WeeklyRoutineRecCreateBulk {
+	return &WeeklyRoutineRecCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for WeeklyRoutineRec.
+func (c *WeeklyRoutineRecClient) Update() *WeeklyRoutineRecUpdate {
+	mutation := newWeeklyRoutineRecMutation(c.config, OpUpdate)
+	return &WeeklyRoutineRecUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *WeeklyRoutineRecClient) UpdateOne(wrr *WeeklyRoutineRec) *WeeklyRoutineRecUpdateOne {
+	mutation := newWeeklyRoutineRecMutation(c.config, OpUpdateOne, withWeeklyRoutineRec(wrr))
+	return &WeeklyRoutineRecUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *WeeklyRoutineRecClient) UpdateOneID(id uint64) *WeeklyRoutineRecUpdateOne {
+	mutation := newWeeklyRoutineRecMutation(c.config, OpUpdateOne, withWeeklyRoutineRecID(id))
+	return &WeeklyRoutineRecUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for WeeklyRoutineRec.
+func (c *WeeklyRoutineRecClient) Delete() *WeeklyRoutineRecDelete {
+	mutation := newWeeklyRoutineRecMutation(c.config, OpDelete)
+	return &WeeklyRoutineRecDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *WeeklyRoutineRecClient) DeleteOne(wrr *WeeklyRoutineRec) *WeeklyRoutineRecDeleteOne {
+	return c.DeleteOneID(wrr.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *WeeklyRoutineRecClient) DeleteOneID(id uint64) *WeeklyRoutineRecDeleteOne {
+	builder := c.Delete().Where(weeklyroutinerec.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &WeeklyRoutineRecDeleteOne{builder}
+}
+
+// Query returns a query builder for WeeklyRoutineRec.
+func (c *WeeklyRoutineRecClient) Query() *WeeklyRoutineRecQuery {
+	return &WeeklyRoutineRecQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeWeeklyRoutineRec},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a WeeklyRoutineRec entity by its id.
+func (c *WeeklyRoutineRecClient) Get(ctx context.Context, id uint64) (*WeeklyRoutineRec, error) {
+	return c.Query().Where(weeklyroutinerec.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *WeeklyRoutineRecClient) GetX(ctx context.Context, id uint64) *WeeklyRoutineRec {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *WeeklyRoutineRecClient) Hooks() []Hook {
+	return c.hooks.WeeklyRoutineRec
+}
+
+// Interceptors returns the client interceptors.
+func (c *WeeklyRoutineRecClient) Interceptors() []Interceptor {
+	return c.inters.WeeklyRoutineRec
+}
+
+func (c *WeeklyRoutineRecClient) mutate(ctx context.Context, m *WeeklyRoutineRecMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&WeeklyRoutineRecCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&WeeklyRoutineRecUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&WeeklyRoutineRecUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&WeeklyRoutineRecDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown WeeklyRoutineRec mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Act, DailyRoutine, Program, RoutineAct, Tag, WeeklyRoutine []ent.Hook
+		Act, DailyRoutine, DailyRoutineRec, Program, ProgramRec, RoutineAct,
+		RoutineActRec, Tag, WeeklyRoutine, WeeklyRoutineRec []ent.Hook
 	}
 	inters struct {
-		Act, DailyRoutine, Program, RoutineAct, Tag, WeeklyRoutine []ent.Interceptor
+		Act, DailyRoutine, DailyRoutineRec, Program, ProgramRec, RoutineAct,
+		RoutineActRec, Tag, WeeklyRoutine, WeeklyRoutineRec []ent.Interceptor
 	}
 )

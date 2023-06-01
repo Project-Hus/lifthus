@@ -40,6 +40,24 @@ var (
 		Columns:    DailyRoutinesColumns,
 		PrimaryKey: []*schema.Column{DailyRoutinesColumns[0]},
 	}
+	// DailyRoutineRecsColumns holds the columns for the "daily_routine_recs" table.
+	DailyRoutineRecsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "program_rec_id", Type: field.TypeUint64, Nullable: true},
+		{Name: "weekly_routine_rec_id", Type: field.TypeUint64, Nullable: true},
+		{Name: "daily_routine_id", Type: field.TypeUint64, Nullable: true},
+		{Name: "date", Type: field.TypeTime},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"history", "waiting", "proceeding", "completed", "failed", "canceled"}},
+		{Name: "comment", Type: field.TypeString, Nullable: true, Size: 1000},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// DailyRoutineRecsTable holds the schema information for the "daily_routine_recs" table.
+	DailyRoutineRecsTable = &schema.Table{
+		Name:       "daily_routine_recs",
+		Columns:    DailyRoutineRecsColumns,
+		PrimaryKey: []*schema.Column{DailyRoutineRecsColumns[0]},
+	}
 	// ProgramsColumns holds the columns for the "programs" table.
 	ProgramsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
@@ -56,6 +74,24 @@ var (
 		Name:       "programs",
 		Columns:    ProgramsColumns,
 		PrimaryKey: []*schema.Column{ProgramsColumns[0]},
+	}
+	// ProgramRecsColumns holds the columns for the "program_recs" table.
+	ProgramRecsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "author", Type: field.TypeUint64},
+		{Name: "program_id", Type: field.TypeUint64},
+		{Name: "start_date", Type: field.TypeTime},
+		{Name: "end_date", Type: field.TypeTime},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"history", "waiting", "proceeding", "completed", "failed", "canceled"}},
+		{Name: "comment", Type: field.TypeString, Nullable: true, Size: 1000},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// ProgramRecsTable holds the schema information for the "program_recs" table.
+	ProgramRecsTable = &schema.Table{
+		Name:       "program_recs",
+		Columns:    ProgramRecsColumns,
+		PrimaryKey: []*schema.Column{ProgramRecsColumns[0]},
 	}
 	// RoutineActsColumns holds the columns for the "routine_acts" table.
 	RoutineActsColumns = []*schema.Column{
@@ -90,6 +126,29 @@ var (
 			},
 		},
 	}
+	// RoutineActRecsColumns holds the columns for the "routine_act_recs" table.
+	RoutineActRecsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "daily_routine_rec_id", Type: field.TypeUint64},
+		{Name: "routine_act_id", Type: field.TypeUint64, Nullable: true},
+		{Name: "act_id", Type: field.TypeUint64, Nullable: true},
+		{Name: "order", Type: field.TypeInt},
+		{Name: "reps", Type: field.TypeInt, Nullable: true},
+		{Name: "lap", Type: field.TypeInt, Nullable: true},
+		{Name: "current_reps", Type: field.TypeInt, Default: 0},
+		{Name: "current_lap", Type: field.TypeInt, Default: 0},
+		{Name: "image", Type: field.TypeString, Nullable: true},
+		{Name: "comment", Type: field.TypeString, Nullable: true},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"history", "waiting", "proceeding", "completed", "failed", "canceled"}},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// RoutineActRecsTable holds the schema information for the "routine_act_recs" table.
+	RoutineActRecsTable = &schema.Table{
+		Name:       "routine_act_recs",
+		Columns:    RoutineActRecsColumns,
+		PrimaryKey: []*schema.Column{RoutineActRecsColumns[0]},
+	}
 	// TagsColumns holds the columns for the "tags" table.
 	TagsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
@@ -114,6 +173,21 @@ var (
 		Name:       "weekly_routines",
 		Columns:    WeeklyRoutinesColumns,
 		PrimaryKey: []*schema.Column{WeeklyRoutinesColumns[0]},
+	}
+	// WeeklyRoutineRecsColumns holds the columns for the "weekly_routine_recs" table.
+	WeeklyRoutineRecsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "program_rec_id", Type: field.TypeUint64},
+		{Name: "weekly_routine_id", Type: field.TypeUint64},
+		{Name: "start_date", Type: field.TypeTime},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// WeeklyRoutineRecsTable holds the schema information for the "weekly_routine_recs" table.
+	WeeklyRoutineRecsTable = &schema.Table{
+		Name:       "weekly_routine_recs",
+		Columns:    WeeklyRoutineRecsColumns,
+		PrimaryKey: []*schema.Column{WeeklyRoutineRecsColumns[0]},
 	}
 	// ProgramWeeklyRoutinesColumns holds the columns for the "program_weekly_routines" table.
 	ProgramWeeklyRoutinesColumns = []*schema.Column{
@@ -244,10 +318,14 @@ var (
 	Tables = []*schema.Table{
 		ActsTable,
 		DailyRoutinesTable,
+		DailyRoutineRecsTable,
 		ProgramsTable,
+		ProgramRecsTable,
 		RoutineActsTable,
+		RoutineActRecsTable,
 		TagsTable,
 		WeeklyRoutinesTable,
+		WeeklyRoutineRecsTable,
 		ProgramWeeklyRoutinesTable,
 		ProgramDailyRoutinesTable,
 		TagActsTable,

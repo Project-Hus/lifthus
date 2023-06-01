@@ -5,11 +5,15 @@ package ent
 import (
 	"routine/ent/act"
 	"routine/ent/dailyroutine"
+	"routine/ent/dailyroutinerec"
 	"routine/ent/program"
+	"routine/ent/programrec"
 	"routine/ent/routineact"
+	"routine/ent/routineactrec"
 	"routine/ent/schema"
 	"routine/ent/tag"
 	"routine/ent/weeklyroutine"
+	"routine/ent/weeklyroutinerec"
 	"time"
 )
 
@@ -49,6 +53,18 @@ func init() {
 	dailyroutine.DefaultUpdatedAt = dailyroutineDescUpdatedAt.Default.(func() time.Time)
 	// dailyroutine.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	dailyroutine.UpdateDefaultUpdatedAt = dailyroutineDescUpdatedAt.UpdateDefault.(func() time.Time)
+	dailyroutinerecFields := schema.DailyRoutineRec{}.Fields()
+	_ = dailyroutinerecFields
+	// dailyroutinerecDescCreatedAt is the schema descriptor for created_at field.
+	dailyroutinerecDescCreatedAt := dailyroutinerecFields[7].Descriptor()
+	// dailyroutinerec.DefaultCreatedAt holds the default value on creation for the created_at field.
+	dailyroutinerec.DefaultCreatedAt = dailyroutinerecDescCreatedAt.Default.(func() time.Time)
+	// dailyroutinerecDescUpdatedAt is the schema descriptor for updated_at field.
+	dailyroutinerecDescUpdatedAt := dailyroutinerecFields[8].Descriptor()
+	// dailyroutinerec.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	dailyroutinerec.DefaultUpdatedAt = dailyroutinerecDescUpdatedAt.Default.(func() time.Time)
+	// dailyroutinerec.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	dailyroutinerec.UpdateDefaultUpdatedAt = dailyroutinerecDescUpdatedAt.UpdateDefault.(func() time.Time)
 	programFields := schema.Program{}.Fields()
 	_ = programFields
 	// programDescTitle is the schema descriptor for title field.
@@ -65,6 +81,18 @@ func init() {
 	program.DefaultUpdatedAt = programDescUpdatedAt.Default.(func() time.Time)
 	// program.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	program.UpdateDefaultUpdatedAt = programDescUpdatedAt.UpdateDefault.(func() time.Time)
+	programrecFields := schema.ProgramRec{}.Fields()
+	_ = programrecFields
+	// programrecDescCreatedAt is the schema descriptor for created_at field.
+	programrecDescCreatedAt := programrecFields[7].Descriptor()
+	// programrec.DefaultCreatedAt holds the default value on creation for the created_at field.
+	programrec.DefaultCreatedAt = programrecDescCreatedAt.Default.(func() time.Time)
+	// programrecDescUpdatedAt is the schema descriptor for updated_at field.
+	programrecDescUpdatedAt := programrecFields[8].Descriptor()
+	// programrec.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	programrec.DefaultUpdatedAt = programrecDescUpdatedAt.Default.(func() time.Time)
+	// programrec.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	programrec.UpdateDefaultUpdatedAt = programrecDescUpdatedAt.UpdateDefault.(func() time.Time)
 	routineactFields := schema.RoutineAct{}.Fields()
 	_ = routineactFields
 	// routineactDescOrder is the schema descriptor for order field.
@@ -89,6 +117,42 @@ func init() {
 	routineact.DefaultUpdatedAt = routineactDescUpdatedAt.Default.(func() time.Time)
 	// routineact.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	routineact.UpdateDefaultUpdatedAt = routineactDescUpdatedAt.UpdateDefault.(func() time.Time)
+	routineactrecFields := schema.RoutineActRec{}.Fields()
+	_ = routineactrecFields
+	// routineactrecDescOrder is the schema descriptor for order field.
+	routineactrecDescOrder := routineactrecFields[4].Descriptor()
+	// routineactrec.OrderValidator is a validator for the "order" field. It is called by the builders before save.
+	routineactrec.OrderValidator = routineactrecDescOrder.Validators[0].(func(int) error)
+	// routineactrecDescReps is the schema descriptor for reps field.
+	routineactrecDescReps := routineactrecFields[5].Descriptor()
+	// routineactrec.RepsValidator is a validator for the "reps" field. It is called by the builders before save.
+	routineactrec.RepsValidator = routineactrecDescReps.Validators[0].(func(int) error)
+	// routineactrecDescLap is the schema descriptor for lap field.
+	routineactrecDescLap := routineactrecFields[6].Descriptor()
+	// routineactrec.LapValidator is a validator for the "lap" field. It is called by the builders before save.
+	routineactrec.LapValidator = routineactrecDescLap.Validators[0].(func(int) error)
+	// routineactrecDescCurrentReps is the schema descriptor for current_reps field.
+	routineactrecDescCurrentReps := routineactrecFields[7].Descriptor()
+	// routineactrec.DefaultCurrentReps holds the default value on creation for the current_reps field.
+	routineactrec.DefaultCurrentReps = routineactrecDescCurrentReps.Default.(int)
+	// routineactrec.CurrentRepsValidator is a validator for the "current_reps" field. It is called by the builders before save.
+	routineactrec.CurrentRepsValidator = routineactrecDescCurrentReps.Validators[0].(func(int) error)
+	// routineactrecDescCurrentLap is the schema descriptor for current_lap field.
+	routineactrecDescCurrentLap := routineactrecFields[8].Descriptor()
+	// routineactrec.DefaultCurrentLap holds the default value on creation for the current_lap field.
+	routineactrec.DefaultCurrentLap = routineactrecDescCurrentLap.Default.(int)
+	// routineactrec.CurrentLapValidator is a validator for the "current_lap" field. It is called by the builders before save.
+	routineactrec.CurrentLapValidator = routineactrecDescCurrentLap.Validators[0].(func(int) error)
+	// routineactrecDescCreatedAt is the schema descriptor for created_at field.
+	routineactrecDescCreatedAt := routineactrecFields[12].Descriptor()
+	// routineactrec.DefaultCreatedAt holds the default value on creation for the created_at field.
+	routineactrec.DefaultCreatedAt = routineactrecDescCreatedAt.Default.(func() time.Time)
+	// routineactrecDescUpdatedAt is the schema descriptor for updated_at field.
+	routineactrecDescUpdatedAt := routineactrecFields[13].Descriptor()
+	// routineactrec.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	routineactrec.DefaultUpdatedAt = routineactrecDescUpdatedAt.Default.(func() time.Time)
+	// routineactrec.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	routineactrec.UpdateDefaultUpdatedAt = routineactrecDescUpdatedAt.UpdateDefault.(func() time.Time)
 	tagFields := schema.Tag{}.Fields()
 	_ = tagFields
 	// tagDescTag is the schema descriptor for tag field.
@@ -111,4 +175,16 @@ func init() {
 	weeklyroutine.DefaultUpdatedAt = weeklyroutineDescUpdatedAt.Default.(func() time.Time)
 	// weeklyroutine.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	weeklyroutine.UpdateDefaultUpdatedAt = weeklyroutineDescUpdatedAt.UpdateDefault.(func() time.Time)
+	weeklyroutinerecFields := schema.WeeklyRoutineRec{}.Fields()
+	_ = weeklyroutinerecFields
+	// weeklyroutinerecDescCreatedAt is the schema descriptor for created_at field.
+	weeklyroutinerecDescCreatedAt := weeklyroutinerecFields[4].Descriptor()
+	// weeklyroutinerec.DefaultCreatedAt holds the default value on creation for the created_at field.
+	weeklyroutinerec.DefaultCreatedAt = weeklyroutinerecDescCreatedAt.Default.(func() time.Time)
+	// weeklyroutinerecDescUpdatedAt is the schema descriptor for updated_at field.
+	weeklyroutinerecDescUpdatedAt := weeklyroutinerecFields[5].Descriptor()
+	// weeklyroutinerec.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	weeklyroutinerec.DefaultUpdatedAt = weeklyroutinerecDescUpdatedAt.Default.(func() time.Time)
+	// weeklyroutinerec.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	weeklyroutinerec.UpdateDefaultUpdatedAt = weeklyroutinerecDescUpdatedAt.UpdateDefault.(func() time.Time)
 }

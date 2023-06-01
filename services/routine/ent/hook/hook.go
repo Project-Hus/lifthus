@@ -32,6 +32,18 @@ func (f DailyRoutineFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DailyRoutineMutation", m)
 }
 
+// The DailyRoutineRecFunc type is an adapter to allow the use of ordinary
+// function as DailyRoutineRec mutator.
+type DailyRoutineRecFunc func(context.Context, *ent.DailyRoutineRecMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DailyRoutineRecFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DailyRoutineRecMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DailyRoutineRecMutation", m)
+}
+
 // The ProgramFunc type is an adapter to allow the use of ordinary
 // function as Program mutator.
 type ProgramFunc func(context.Context, *ent.ProgramMutation) (ent.Value, error)
@@ -44,6 +56,18 @@ func (f ProgramFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProgramMutation", m)
 }
 
+// The ProgramRecFunc type is an adapter to allow the use of ordinary
+// function as ProgramRec mutator.
+type ProgramRecFunc func(context.Context, *ent.ProgramRecMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProgramRecFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ProgramRecMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProgramRecMutation", m)
+}
+
 // The RoutineActFunc type is an adapter to allow the use of ordinary
 // function as RoutineAct mutator.
 type RoutineActFunc func(context.Context, *ent.RoutineActMutation) (ent.Value, error)
@@ -54,6 +78,18 @@ func (f RoutineActFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RoutineActMutation", m)
+}
+
+// The RoutineActRecFunc type is an adapter to allow the use of ordinary
+// function as RoutineActRec mutator.
+type RoutineActRecFunc func(context.Context, *ent.RoutineActRecMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f RoutineActRecFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.RoutineActRecMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RoutineActRecMutation", m)
 }
 
 // The TagFunc type is an adapter to allow the use of ordinary
@@ -78,6 +114,18 @@ func (f WeeklyRoutineFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Valu
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WeeklyRoutineMutation", m)
+}
+
+// The WeeklyRoutineRecFunc type is an adapter to allow the use of ordinary
+// function as WeeklyRoutineRec mutator.
+type WeeklyRoutineRecFunc func(context.Context, *ent.WeeklyRoutineRecMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f WeeklyRoutineRecFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.WeeklyRoutineRecMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.WeeklyRoutineRecMutation", m)
 }
 
 // Condition is a hook condition function.

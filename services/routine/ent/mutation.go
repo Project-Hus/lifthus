@@ -8,11 +8,15 @@ import (
 	"fmt"
 	"routine/ent/act"
 	"routine/ent/dailyroutine"
+	"routine/ent/dailyroutinerec"
 	"routine/ent/predicate"
 	"routine/ent/program"
+	"routine/ent/programrec"
 	"routine/ent/routineact"
+	"routine/ent/routineactrec"
 	"routine/ent/tag"
 	"routine/ent/weeklyroutine"
+	"routine/ent/weeklyroutinerec"
 	"sync"
 	"time"
 
@@ -29,12 +33,16 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeAct           = "Act"
-	TypeDailyRoutine  = "DailyRoutine"
-	TypeProgram       = "Program"
-	TypeRoutineAct    = "RoutineAct"
-	TypeTag           = "Tag"
-	TypeWeeklyRoutine = "WeeklyRoutine"
+	TypeAct              = "Act"
+	TypeDailyRoutine     = "DailyRoutine"
+	TypeDailyRoutineRec  = "DailyRoutineRec"
+	TypeProgram          = "Program"
+	TypeProgramRec       = "ProgramRec"
+	TypeRoutineAct       = "RoutineAct"
+	TypeRoutineActRec    = "RoutineActRec"
+	TypeTag              = "Tag"
+	TypeWeeklyRoutine    = "WeeklyRoutine"
+	TypeWeeklyRoutineRec = "WeeklyRoutineRec"
 )
 
 // ActMutation represents an operation that mutates the Act nodes in the graph.
@@ -1917,6 +1925,900 @@ func (m *DailyRoutineMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown DailyRoutine edge %s", name)
 }
 
+// DailyRoutineRecMutation represents an operation that mutates the DailyRoutineRec nodes in the graph.
+type DailyRoutineRecMutation struct {
+	config
+	op                       Op
+	typ                      string
+	id                       *uint64
+	program_rec_id           *uint64
+	addprogram_rec_id        *int64
+	weekly_routine_rec_id    *uint64
+	addweekly_routine_rec_id *int64
+	daily_routine_id         *uint64
+	adddaily_routine_id      *int64
+	date                     *time.Time
+	status                   *dailyroutinerec.Status
+	comment                  *string
+	created_at               *time.Time
+	updated_at               *time.Time
+	clearedFields            map[string]struct{}
+	done                     bool
+	oldValue                 func(context.Context) (*DailyRoutineRec, error)
+	predicates               []predicate.DailyRoutineRec
+}
+
+var _ ent.Mutation = (*DailyRoutineRecMutation)(nil)
+
+// dailyroutinerecOption allows management of the mutation configuration using functional options.
+type dailyroutinerecOption func(*DailyRoutineRecMutation)
+
+// newDailyRoutineRecMutation creates new mutation for the DailyRoutineRec entity.
+func newDailyRoutineRecMutation(c config, op Op, opts ...dailyroutinerecOption) *DailyRoutineRecMutation {
+	m := &DailyRoutineRecMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeDailyRoutineRec,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withDailyRoutineRecID sets the ID field of the mutation.
+func withDailyRoutineRecID(id uint64) dailyroutinerecOption {
+	return func(m *DailyRoutineRecMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *DailyRoutineRec
+		)
+		m.oldValue = func(ctx context.Context) (*DailyRoutineRec, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().DailyRoutineRec.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withDailyRoutineRec sets the old DailyRoutineRec of the mutation.
+func withDailyRoutineRec(node *DailyRoutineRec) dailyroutinerecOption {
+	return func(m *DailyRoutineRecMutation) {
+		m.oldValue = func(context.Context) (*DailyRoutineRec, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m DailyRoutineRecMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m DailyRoutineRecMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of DailyRoutineRec entities.
+func (m *DailyRoutineRecMutation) SetID(id uint64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *DailyRoutineRecMutation) ID() (id uint64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *DailyRoutineRecMutation) IDs(ctx context.Context) ([]uint64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().DailyRoutineRec.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetProgramRecID sets the "program_rec_id" field.
+func (m *DailyRoutineRecMutation) SetProgramRecID(u uint64) {
+	m.program_rec_id = &u
+	m.addprogram_rec_id = nil
+}
+
+// ProgramRecID returns the value of the "program_rec_id" field in the mutation.
+func (m *DailyRoutineRecMutation) ProgramRecID() (r uint64, exists bool) {
+	v := m.program_rec_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProgramRecID returns the old "program_rec_id" field's value of the DailyRoutineRec entity.
+// If the DailyRoutineRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyRoutineRecMutation) OldProgramRecID(ctx context.Context) (v *uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProgramRecID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProgramRecID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProgramRecID: %w", err)
+	}
+	return oldValue.ProgramRecID, nil
+}
+
+// AddProgramRecID adds u to the "program_rec_id" field.
+func (m *DailyRoutineRecMutation) AddProgramRecID(u int64) {
+	if m.addprogram_rec_id != nil {
+		*m.addprogram_rec_id += u
+	} else {
+		m.addprogram_rec_id = &u
+	}
+}
+
+// AddedProgramRecID returns the value that was added to the "program_rec_id" field in this mutation.
+func (m *DailyRoutineRecMutation) AddedProgramRecID() (r int64, exists bool) {
+	v := m.addprogram_rec_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearProgramRecID clears the value of the "program_rec_id" field.
+func (m *DailyRoutineRecMutation) ClearProgramRecID() {
+	m.program_rec_id = nil
+	m.addprogram_rec_id = nil
+	m.clearedFields[dailyroutinerec.FieldProgramRecID] = struct{}{}
+}
+
+// ProgramRecIDCleared returns if the "program_rec_id" field was cleared in this mutation.
+func (m *DailyRoutineRecMutation) ProgramRecIDCleared() bool {
+	_, ok := m.clearedFields[dailyroutinerec.FieldProgramRecID]
+	return ok
+}
+
+// ResetProgramRecID resets all changes to the "program_rec_id" field.
+func (m *DailyRoutineRecMutation) ResetProgramRecID() {
+	m.program_rec_id = nil
+	m.addprogram_rec_id = nil
+	delete(m.clearedFields, dailyroutinerec.FieldProgramRecID)
+}
+
+// SetWeeklyRoutineRecID sets the "weekly_routine_rec_id" field.
+func (m *DailyRoutineRecMutation) SetWeeklyRoutineRecID(u uint64) {
+	m.weekly_routine_rec_id = &u
+	m.addweekly_routine_rec_id = nil
+}
+
+// WeeklyRoutineRecID returns the value of the "weekly_routine_rec_id" field in the mutation.
+func (m *DailyRoutineRecMutation) WeeklyRoutineRecID() (r uint64, exists bool) {
+	v := m.weekly_routine_rec_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWeeklyRoutineRecID returns the old "weekly_routine_rec_id" field's value of the DailyRoutineRec entity.
+// If the DailyRoutineRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyRoutineRecMutation) OldWeeklyRoutineRecID(ctx context.Context) (v *uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWeeklyRoutineRecID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWeeklyRoutineRecID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWeeklyRoutineRecID: %w", err)
+	}
+	return oldValue.WeeklyRoutineRecID, nil
+}
+
+// AddWeeklyRoutineRecID adds u to the "weekly_routine_rec_id" field.
+func (m *DailyRoutineRecMutation) AddWeeklyRoutineRecID(u int64) {
+	if m.addweekly_routine_rec_id != nil {
+		*m.addweekly_routine_rec_id += u
+	} else {
+		m.addweekly_routine_rec_id = &u
+	}
+}
+
+// AddedWeeklyRoutineRecID returns the value that was added to the "weekly_routine_rec_id" field in this mutation.
+func (m *DailyRoutineRecMutation) AddedWeeklyRoutineRecID() (r int64, exists bool) {
+	v := m.addweekly_routine_rec_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearWeeklyRoutineRecID clears the value of the "weekly_routine_rec_id" field.
+func (m *DailyRoutineRecMutation) ClearWeeklyRoutineRecID() {
+	m.weekly_routine_rec_id = nil
+	m.addweekly_routine_rec_id = nil
+	m.clearedFields[dailyroutinerec.FieldWeeklyRoutineRecID] = struct{}{}
+}
+
+// WeeklyRoutineRecIDCleared returns if the "weekly_routine_rec_id" field was cleared in this mutation.
+func (m *DailyRoutineRecMutation) WeeklyRoutineRecIDCleared() bool {
+	_, ok := m.clearedFields[dailyroutinerec.FieldWeeklyRoutineRecID]
+	return ok
+}
+
+// ResetWeeklyRoutineRecID resets all changes to the "weekly_routine_rec_id" field.
+func (m *DailyRoutineRecMutation) ResetWeeklyRoutineRecID() {
+	m.weekly_routine_rec_id = nil
+	m.addweekly_routine_rec_id = nil
+	delete(m.clearedFields, dailyroutinerec.FieldWeeklyRoutineRecID)
+}
+
+// SetDailyRoutineID sets the "daily_routine_id" field.
+func (m *DailyRoutineRecMutation) SetDailyRoutineID(u uint64) {
+	m.daily_routine_id = &u
+	m.adddaily_routine_id = nil
+}
+
+// DailyRoutineID returns the value of the "daily_routine_id" field in the mutation.
+func (m *DailyRoutineRecMutation) DailyRoutineID() (r uint64, exists bool) {
+	v := m.daily_routine_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDailyRoutineID returns the old "daily_routine_id" field's value of the DailyRoutineRec entity.
+// If the DailyRoutineRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyRoutineRecMutation) OldDailyRoutineID(ctx context.Context) (v *uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDailyRoutineID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDailyRoutineID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDailyRoutineID: %w", err)
+	}
+	return oldValue.DailyRoutineID, nil
+}
+
+// AddDailyRoutineID adds u to the "daily_routine_id" field.
+func (m *DailyRoutineRecMutation) AddDailyRoutineID(u int64) {
+	if m.adddaily_routine_id != nil {
+		*m.adddaily_routine_id += u
+	} else {
+		m.adddaily_routine_id = &u
+	}
+}
+
+// AddedDailyRoutineID returns the value that was added to the "daily_routine_id" field in this mutation.
+func (m *DailyRoutineRecMutation) AddedDailyRoutineID() (r int64, exists bool) {
+	v := m.adddaily_routine_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDailyRoutineID clears the value of the "daily_routine_id" field.
+func (m *DailyRoutineRecMutation) ClearDailyRoutineID() {
+	m.daily_routine_id = nil
+	m.adddaily_routine_id = nil
+	m.clearedFields[dailyroutinerec.FieldDailyRoutineID] = struct{}{}
+}
+
+// DailyRoutineIDCleared returns if the "daily_routine_id" field was cleared in this mutation.
+func (m *DailyRoutineRecMutation) DailyRoutineIDCleared() bool {
+	_, ok := m.clearedFields[dailyroutinerec.FieldDailyRoutineID]
+	return ok
+}
+
+// ResetDailyRoutineID resets all changes to the "daily_routine_id" field.
+func (m *DailyRoutineRecMutation) ResetDailyRoutineID() {
+	m.daily_routine_id = nil
+	m.adddaily_routine_id = nil
+	delete(m.clearedFields, dailyroutinerec.FieldDailyRoutineID)
+}
+
+// SetDate sets the "date" field.
+func (m *DailyRoutineRecMutation) SetDate(t time.Time) {
+	m.date = &t
+}
+
+// Date returns the value of the "date" field in the mutation.
+func (m *DailyRoutineRecMutation) Date() (r time.Time, exists bool) {
+	v := m.date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDate returns the old "date" field's value of the DailyRoutineRec entity.
+// If the DailyRoutineRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyRoutineRecMutation) OldDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDate: %w", err)
+	}
+	return oldValue.Date, nil
+}
+
+// ResetDate resets all changes to the "date" field.
+func (m *DailyRoutineRecMutation) ResetDate() {
+	m.date = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *DailyRoutineRecMutation) SetStatus(d dailyroutinerec.Status) {
+	m.status = &d
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *DailyRoutineRecMutation) Status() (r dailyroutinerec.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the DailyRoutineRec entity.
+// If the DailyRoutineRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyRoutineRecMutation) OldStatus(ctx context.Context) (v dailyroutinerec.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *DailyRoutineRecMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetComment sets the "comment" field.
+func (m *DailyRoutineRecMutation) SetComment(s string) {
+	m.comment = &s
+}
+
+// Comment returns the value of the "comment" field in the mutation.
+func (m *DailyRoutineRecMutation) Comment() (r string, exists bool) {
+	v := m.comment
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldComment returns the old "comment" field's value of the DailyRoutineRec entity.
+// If the DailyRoutineRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyRoutineRecMutation) OldComment(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldComment is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldComment requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldComment: %w", err)
+	}
+	return oldValue.Comment, nil
+}
+
+// ClearComment clears the value of the "comment" field.
+func (m *DailyRoutineRecMutation) ClearComment() {
+	m.comment = nil
+	m.clearedFields[dailyroutinerec.FieldComment] = struct{}{}
+}
+
+// CommentCleared returns if the "comment" field was cleared in this mutation.
+func (m *DailyRoutineRecMutation) CommentCleared() bool {
+	_, ok := m.clearedFields[dailyroutinerec.FieldComment]
+	return ok
+}
+
+// ResetComment resets all changes to the "comment" field.
+func (m *DailyRoutineRecMutation) ResetComment() {
+	m.comment = nil
+	delete(m.clearedFields, dailyroutinerec.FieldComment)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *DailyRoutineRecMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *DailyRoutineRecMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the DailyRoutineRec entity.
+// If the DailyRoutineRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyRoutineRecMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *DailyRoutineRecMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *DailyRoutineRecMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *DailyRoutineRecMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the DailyRoutineRec entity.
+// If the DailyRoutineRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyRoutineRecMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *DailyRoutineRecMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the DailyRoutineRecMutation builder.
+func (m *DailyRoutineRecMutation) Where(ps ...predicate.DailyRoutineRec) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the DailyRoutineRecMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *DailyRoutineRecMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.DailyRoutineRec, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *DailyRoutineRecMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *DailyRoutineRecMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (DailyRoutineRec).
+func (m *DailyRoutineRecMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *DailyRoutineRecMutation) Fields() []string {
+	fields := make([]string, 0, 8)
+	if m.program_rec_id != nil {
+		fields = append(fields, dailyroutinerec.FieldProgramRecID)
+	}
+	if m.weekly_routine_rec_id != nil {
+		fields = append(fields, dailyroutinerec.FieldWeeklyRoutineRecID)
+	}
+	if m.daily_routine_id != nil {
+		fields = append(fields, dailyroutinerec.FieldDailyRoutineID)
+	}
+	if m.date != nil {
+		fields = append(fields, dailyroutinerec.FieldDate)
+	}
+	if m.status != nil {
+		fields = append(fields, dailyroutinerec.FieldStatus)
+	}
+	if m.comment != nil {
+		fields = append(fields, dailyroutinerec.FieldComment)
+	}
+	if m.created_at != nil {
+		fields = append(fields, dailyroutinerec.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, dailyroutinerec.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *DailyRoutineRecMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case dailyroutinerec.FieldProgramRecID:
+		return m.ProgramRecID()
+	case dailyroutinerec.FieldWeeklyRoutineRecID:
+		return m.WeeklyRoutineRecID()
+	case dailyroutinerec.FieldDailyRoutineID:
+		return m.DailyRoutineID()
+	case dailyroutinerec.FieldDate:
+		return m.Date()
+	case dailyroutinerec.FieldStatus:
+		return m.Status()
+	case dailyroutinerec.FieldComment:
+		return m.Comment()
+	case dailyroutinerec.FieldCreatedAt:
+		return m.CreatedAt()
+	case dailyroutinerec.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *DailyRoutineRecMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case dailyroutinerec.FieldProgramRecID:
+		return m.OldProgramRecID(ctx)
+	case dailyroutinerec.FieldWeeklyRoutineRecID:
+		return m.OldWeeklyRoutineRecID(ctx)
+	case dailyroutinerec.FieldDailyRoutineID:
+		return m.OldDailyRoutineID(ctx)
+	case dailyroutinerec.FieldDate:
+		return m.OldDate(ctx)
+	case dailyroutinerec.FieldStatus:
+		return m.OldStatus(ctx)
+	case dailyroutinerec.FieldComment:
+		return m.OldComment(ctx)
+	case dailyroutinerec.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case dailyroutinerec.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown DailyRoutineRec field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DailyRoutineRecMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case dailyroutinerec.FieldProgramRecID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProgramRecID(v)
+		return nil
+	case dailyroutinerec.FieldWeeklyRoutineRecID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWeeklyRoutineRecID(v)
+		return nil
+	case dailyroutinerec.FieldDailyRoutineID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDailyRoutineID(v)
+		return nil
+	case dailyroutinerec.FieldDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDate(v)
+		return nil
+	case dailyroutinerec.FieldStatus:
+		v, ok := value.(dailyroutinerec.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case dailyroutinerec.FieldComment:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetComment(v)
+		return nil
+	case dailyroutinerec.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case dailyroutinerec.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown DailyRoutineRec field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *DailyRoutineRecMutation) AddedFields() []string {
+	var fields []string
+	if m.addprogram_rec_id != nil {
+		fields = append(fields, dailyroutinerec.FieldProgramRecID)
+	}
+	if m.addweekly_routine_rec_id != nil {
+		fields = append(fields, dailyroutinerec.FieldWeeklyRoutineRecID)
+	}
+	if m.adddaily_routine_id != nil {
+		fields = append(fields, dailyroutinerec.FieldDailyRoutineID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *DailyRoutineRecMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case dailyroutinerec.FieldProgramRecID:
+		return m.AddedProgramRecID()
+	case dailyroutinerec.FieldWeeklyRoutineRecID:
+		return m.AddedWeeklyRoutineRecID()
+	case dailyroutinerec.FieldDailyRoutineID:
+		return m.AddedDailyRoutineID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DailyRoutineRecMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case dailyroutinerec.FieldProgramRecID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddProgramRecID(v)
+		return nil
+	case dailyroutinerec.FieldWeeklyRoutineRecID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWeeklyRoutineRecID(v)
+		return nil
+	case dailyroutinerec.FieldDailyRoutineID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDailyRoutineID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown DailyRoutineRec numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *DailyRoutineRecMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(dailyroutinerec.FieldProgramRecID) {
+		fields = append(fields, dailyroutinerec.FieldProgramRecID)
+	}
+	if m.FieldCleared(dailyroutinerec.FieldWeeklyRoutineRecID) {
+		fields = append(fields, dailyroutinerec.FieldWeeklyRoutineRecID)
+	}
+	if m.FieldCleared(dailyroutinerec.FieldDailyRoutineID) {
+		fields = append(fields, dailyroutinerec.FieldDailyRoutineID)
+	}
+	if m.FieldCleared(dailyroutinerec.FieldComment) {
+		fields = append(fields, dailyroutinerec.FieldComment)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *DailyRoutineRecMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *DailyRoutineRecMutation) ClearField(name string) error {
+	switch name {
+	case dailyroutinerec.FieldProgramRecID:
+		m.ClearProgramRecID()
+		return nil
+	case dailyroutinerec.FieldWeeklyRoutineRecID:
+		m.ClearWeeklyRoutineRecID()
+		return nil
+	case dailyroutinerec.FieldDailyRoutineID:
+		m.ClearDailyRoutineID()
+		return nil
+	case dailyroutinerec.FieldComment:
+		m.ClearComment()
+		return nil
+	}
+	return fmt.Errorf("unknown DailyRoutineRec nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *DailyRoutineRecMutation) ResetField(name string) error {
+	switch name {
+	case dailyroutinerec.FieldProgramRecID:
+		m.ResetProgramRecID()
+		return nil
+	case dailyroutinerec.FieldWeeklyRoutineRecID:
+		m.ResetWeeklyRoutineRecID()
+		return nil
+	case dailyroutinerec.FieldDailyRoutineID:
+		m.ResetDailyRoutineID()
+		return nil
+	case dailyroutinerec.FieldDate:
+		m.ResetDate()
+		return nil
+	case dailyroutinerec.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case dailyroutinerec.FieldComment:
+		m.ResetComment()
+		return nil
+	case dailyroutinerec.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case dailyroutinerec.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown DailyRoutineRec field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *DailyRoutineRecMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *DailyRoutineRecMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *DailyRoutineRecMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *DailyRoutineRecMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *DailyRoutineRecMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *DailyRoutineRecMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *DailyRoutineRecMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown DailyRoutineRec unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *DailyRoutineRecMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown DailyRoutineRec edge %s", name)
+}
+
 // ProgramMutation represents an operation that mutates the Program nodes in the graph.
 type ProgramMutation struct {
 	config
@@ -2907,6 +3809,807 @@ func (m *ProgramMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown Program edge %s", name)
+}
+
+// ProgramRecMutation represents an operation that mutates the ProgramRec nodes in the graph.
+type ProgramRecMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uint64
+	author        *uint64
+	addauthor     *int64
+	program_id    *uint64
+	addprogram_id *int64
+	start_date    *time.Time
+	end_date      *time.Time
+	status        *programrec.Status
+	comment       *string
+	created_at    *time.Time
+	updated_at    *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*ProgramRec, error)
+	predicates    []predicate.ProgramRec
+}
+
+var _ ent.Mutation = (*ProgramRecMutation)(nil)
+
+// programrecOption allows management of the mutation configuration using functional options.
+type programrecOption func(*ProgramRecMutation)
+
+// newProgramRecMutation creates new mutation for the ProgramRec entity.
+func newProgramRecMutation(c config, op Op, opts ...programrecOption) *ProgramRecMutation {
+	m := &ProgramRecMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeProgramRec,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withProgramRecID sets the ID field of the mutation.
+func withProgramRecID(id uint64) programrecOption {
+	return func(m *ProgramRecMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *ProgramRec
+		)
+		m.oldValue = func(ctx context.Context) (*ProgramRec, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().ProgramRec.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withProgramRec sets the old ProgramRec of the mutation.
+func withProgramRec(node *ProgramRec) programrecOption {
+	return func(m *ProgramRecMutation) {
+		m.oldValue = func(context.Context) (*ProgramRec, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ProgramRecMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ProgramRecMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of ProgramRec entities.
+func (m *ProgramRecMutation) SetID(id uint64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ProgramRecMutation) ID() (id uint64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ProgramRecMutation) IDs(ctx context.Context) ([]uint64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().ProgramRec.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetAuthor sets the "author" field.
+func (m *ProgramRecMutation) SetAuthor(u uint64) {
+	m.author = &u
+	m.addauthor = nil
+}
+
+// Author returns the value of the "author" field in the mutation.
+func (m *ProgramRecMutation) Author() (r uint64, exists bool) {
+	v := m.author
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAuthor returns the old "author" field's value of the ProgramRec entity.
+// If the ProgramRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProgramRecMutation) OldAuthor(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAuthor is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAuthor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAuthor: %w", err)
+	}
+	return oldValue.Author, nil
+}
+
+// AddAuthor adds u to the "author" field.
+func (m *ProgramRecMutation) AddAuthor(u int64) {
+	if m.addauthor != nil {
+		*m.addauthor += u
+	} else {
+		m.addauthor = &u
+	}
+}
+
+// AddedAuthor returns the value that was added to the "author" field in this mutation.
+func (m *ProgramRecMutation) AddedAuthor() (r int64, exists bool) {
+	v := m.addauthor
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetAuthor resets all changes to the "author" field.
+func (m *ProgramRecMutation) ResetAuthor() {
+	m.author = nil
+	m.addauthor = nil
+}
+
+// SetProgramID sets the "program_id" field.
+func (m *ProgramRecMutation) SetProgramID(u uint64) {
+	m.program_id = &u
+	m.addprogram_id = nil
+}
+
+// ProgramID returns the value of the "program_id" field in the mutation.
+func (m *ProgramRecMutation) ProgramID() (r uint64, exists bool) {
+	v := m.program_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProgramID returns the old "program_id" field's value of the ProgramRec entity.
+// If the ProgramRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProgramRecMutation) OldProgramID(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProgramID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProgramID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProgramID: %w", err)
+	}
+	return oldValue.ProgramID, nil
+}
+
+// AddProgramID adds u to the "program_id" field.
+func (m *ProgramRecMutation) AddProgramID(u int64) {
+	if m.addprogram_id != nil {
+		*m.addprogram_id += u
+	} else {
+		m.addprogram_id = &u
+	}
+}
+
+// AddedProgramID returns the value that was added to the "program_id" field in this mutation.
+func (m *ProgramRecMutation) AddedProgramID() (r int64, exists bool) {
+	v := m.addprogram_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetProgramID resets all changes to the "program_id" field.
+func (m *ProgramRecMutation) ResetProgramID() {
+	m.program_id = nil
+	m.addprogram_id = nil
+}
+
+// SetStartDate sets the "start_date" field.
+func (m *ProgramRecMutation) SetStartDate(t time.Time) {
+	m.start_date = &t
+}
+
+// StartDate returns the value of the "start_date" field in the mutation.
+func (m *ProgramRecMutation) StartDate() (r time.Time, exists bool) {
+	v := m.start_date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStartDate returns the old "start_date" field's value of the ProgramRec entity.
+// If the ProgramRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProgramRecMutation) OldStartDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStartDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStartDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStartDate: %w", err)
+	}
+	return oldValue.StartDate, nil
+}
+
+// ResetStartDate resets all changes to the "start_date" field.
+func (m *ProgramRecMutation) ResetStartDate() {
+	m.start_date = nil
+}
+
+// SetEndDate sets the "end_date" field.
+func (m *ProgramRecMutation) SetEndDate(t time.Time) {
+	m.end_date = &t
+}
+
+// EndDate returns the value of the "end_date" field in the mutation.
+func (m *ProgramRecMutation) EndDate() (r time.Time, exists bool) {
+	v := m.end_date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEndDate returns the old "end_date" field's value of the ProgramRec entity.
+// If the ProgramRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProgramRecMutation) OldEndDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEndDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEndDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEndDate: %w", err)
+	}
+	return oldValue.EndDate, nil
+}
+
+// ResetEndDate resets all changes to the "end_date" field.
+func (m *ProgramRecMutation) ResetEndDate() {
+	m.end_date = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *ProgramRecMutation) SetStatus(pr programrec.Status) {
+	m.status = &pr
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *ProgramRecMutation) Status() (r programrec.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the ProgramRec entity.
+// If the ProgramRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProgramRecMutation) OldStatus(ctx context.Context) (v programrec.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *ProgramRecMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetComment sets the "comment" field.
+func (m *ProgramRecMutation) SetComment(s string) {
+	m.comment = &s
+}
+
+// Comment returns the value of the "comment" field in the mutation.
+func (m *ProgramRecMutation) Comment() (r string, exists bool) {
+	v := m.comment
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldComment returns the old "comment" field's value of the ProgramRec entity.
+// If the ProgramRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProgramRecMutation) OldComment(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldComment is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldComment requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldComment: %w", err)
+	}
+	return oldValue.Comment, nil
+}
+
+// ClearComment clears the value of the "comment" field.
+func (m *ProgramRecMutation) ClearComment() {
+	m.comment = nil
+	m.clearedFields[programrec.FieldComment] = struct{}{}
+}
+
+// CommentCleared returns if the "comment" field was cleared in this mutation.
+func (m *ProgramRecMutation) CommentCleared() bool {
+	_, ok := m.clearedFields[programrec.FieldComment]
+	return ok
+}
+
+// ResetComment resets all changes to the "comment" field.
+func (m *ProgramRecMutation) ResetComment() {
+	m.comment = nil
+	delete(m.clearedFields, programrec.FieldComment)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *ProgramRecMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *ProgramRecMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the ProgramRec entity.
+// If the ProgramRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProgramRecMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *ProgramRecMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *ProgramRecMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *ProgramRecMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the ProgramRec entity.
+// If the ProgramRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProgramRecMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *ProgramRecMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the ProgramRecMutation builder.
+func (m *ProgramRecMutation) Where(ps ...predicate.ProgramRec) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ProgramRecMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ProgramRecMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.ProgramRec, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ProgramRecMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ProgramRecMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (ProgramRec).
+func (m *ProgramRecMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ProgramRecMutation) Fields() []string {
+	fields := make([]string, 0, 8)
+	if m.author != nil {
+		fields = append(fields, programrec.FieldAuthor)
+	}
+	if m.program_id != nil {
+		fields = append(fields, programrec.FieldProgramID)
+	}
+	if m.start_date != nil {
+		fields = append(fields, programrec.FieldStartDate)
+	}
+	if m.end_date != nil {
+		fields = append(fields, programrec.FieldEndDate)
+	}
+	if m.status != nil {
+		fields = append(fields, programrec.FieldStatus)
+	}
+	if m.comment != nil {
+		fields = append(fields, programrec.FieldComment)
+	}
+	if m.created_at != nil {
+		fields = append(fields, programrec.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, programrec.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ProgramRecMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case programrec.FieldAuthor:
+		return m.Author()
+	case programrec.FieldProgramID:
+		return m.ProgramID()
+	case programrec.FieldStartDate:
+		return m.StartDate()
+	case programrec.FieldEndDate:
+		return m.EndDate()
+	case programrec.FieldStatus:
+		return m.Status()
+	case programrec.FieldComment:
+		return m.Comment()
+	case programrec.FieldCreatedAt:
+		return m.CreatedAt()
+	case programrec.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ProgramRecMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case programrec.FieldAuthor:
+		return m.OldAuthor(ctx)
+	case programrec.FieldProgramID:
+		return m.OldProgramID(ctx)
+	case programrec.FieldStartDate:
+		return m.OldStartDate(ctx)
+	case programrec.FieldEndDate:
+		return m.OldEndDate(ctx)
+	case programrec.FieldStatus:
+		return m.OldStatus(ctx)
+	case programrec.FieldComment:
+		return m.OldComment(ctx)
+	case programrec.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case programrec.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown ProgramRec field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ProgramRecMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case programrec.FieldAuthor:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAuthor(v)
+		return nil
+	case programrec.FieldProgramID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProgramID(v)
+		return nil
+	case programrec.FieldStartDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStartDate(v)
+		return nil
+	case programrec.FieldEndDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEndDate(v)
+		return nil
+	case programrec.FieldStatus:
+		v, ok := value.(programrec.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case programrec.FieldComment:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetComment(v)
+		return nil
+	case programrec.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case programrec.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ProgramRec field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ProgramRecMutation) AddedFields() []string {
+	var fields []string
+	if m.addauthor != nil {
+		fields = append(fields, programrec.FieldAuthor)
+	}
+	if m.addprogram_id != nil {
+		fields = append(fields, programrec.FieldProgramID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ProgramRecMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case programrec.FieldAuthor:
+		return m.AddedAuthor()
+	case programrec.FieldProgramID:
+		return m.AddedProgramID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ProgramRecMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case programrec.FieldAuthor:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAuthor(v)
+		return nil
+	case programrec.FieldProgramID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddProgramID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ProgramRec numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ProgramRecMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(programrec.FieldComment) {
+		fields = append(fields, programrec.FieldComment)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ProgramRecMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ProgramRecMutation) ClearField(name string) error {
+	switch name {
+	case programrec.FieldComment:
+		m.ClearComment()
+		return nil
+	}
+	return fmt.Errorf("unknown ProgramRec nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ProgramRecMutation) ResetField(name string) error {
+	switch name {
+	case programrec.FieldAuthor:
+		m.ResetAuthor()
+		return nil
+	case programrec.FieldProgramID:
+		m.ResetProgramID()
+		return nil
+	case programrec.FieldStartDate:
+		m.ResetStartDate()
+		return nil
+	case programrec.FieldEndDate:
+		m.ResetEndDate()
+		return nil
+	case programrec.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case programrec.FieldComment:
+		m.ResetComment()
+		return nil
+	case programrec.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case programrec.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown ProgramRec field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ProgramRecMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ProgramRecMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ProgramRecMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ProgramRecMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ProgramRecMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ProgramRecMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ProgramRecMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown ProgramRec unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ProgramRecMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown ProgramRec edge %s", name)
 }
 
 // RoutineActMutation represents an operation that mutates the RoutineAct nodes in the graph.
@@ -3900,6 +5603,1374 @@ func (m *RoutineActMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown RoutineAct edge %s", name)
+}
+
+// RoutineActRecMutation represents an operation that mutates the RoutineActRec nodes in the graph.
+type RoutineActRecMutation struct {
+	config
+	op                      Op
+	typ                     string
+	id                      *uint64
+	daily_routine_rec_id    *uint64
+	adddaily_routine_rec_id *int64
+	routine_act_id          *uint64
+	addroutine_act_id       *int64
+	act_id                  *uint64
+	addact_id               *int64
+	_order                  *int
+	add_order               *int
+	reps                    *int
+	addreps                 *int
+	lap                     *int
+	addlap                  *int
+	current_reps            *int
+	addcurrent_reps         *int
+	current_lap             *int
+	addcurrent_lap          *int
+	image                   *string
+	comment                 *string
+	status                  *routineactrec.Status
+	created_at              *time.Time
+	updated_at              *time.Time
+	clearedFields           map[string]struct{}
+	done                    bool
+	oldValue                func(context.Context) (*RoutineActRec, error)
+	predicates              []predicate.RoutineActRec
+}
+
+var _ ent.Mutation = (*RoutineActRecMutation)(nil)
+
+// routineactrecOption allows management of the mutation configuration using functional options.
+type routineactrecOption func(*RoutineActRecMutation)
+
+// newRoutineActRecMutation creates new mutation for the RoutineActRec entity.
+func newRoutineActRecMutation(c config, op Op, opts ...routineactrecOption) *RoutineActRecMutation {
+	m := &RoutineActRecMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeRoutineActRec,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withRoutineActRecID sets the ID field of the mutation.
+func withRoutineActRecID(id uint64) routineactrecOption {
+	return func(m *RoutineActRecMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *RoutineActRec
+		)
+		m.oldValue = func(ctx context.Context) (*RoutineActRec, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().RoutineActRec.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withRoutineActRec sets the old RoutineActRec of the mutation.
+func withRoutineActRec(node *RoutineActRec) routineactrecOption {
+	return func(m *RoutineActRecMutation) {
+		m.oldValue = func(context.Context) (*RoutineActRec, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m RoutineActRecMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m RoutineActRecMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of RoutineActRec entities.
+func (m *RoutineActRecMutation) SetID(id uint64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *RoutineActRecMutation) ID() (id uint64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *RoutineActRecMutation) IDs(ctx context.Context) ([]uint64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().RoutineActRec.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetDailyRoutineRecID sets the "daily_routine_rec_id" field.
+func (m *RoutineActRecMutation) SetDailyRoutineRecID(u uint64) {
+	m.daily_routine_rec_id = &u
+	m.adddaily_routine_rec_id = nil
+}
+
+// DailyRoutineRecID returns the value of the "daily_routine_rec_id" field in the mutation.
+func (m *RoutineActRecMutation) DailyRoutineRecID() (r uint64, exists bool) {
+	v := m.daily_routine_rec_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDailyRoutineRecID returns the old "daily_routine_rec_id" field's value of the RoutineActRec entity.
+// If the RoutineActRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RoutineActRecMutation) OldDailyRoutineRecID(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDailyRoutineRecID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDailyRoutineRecID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDailyRoutineRecID: %w", err)
+	}
+	return oldValue.DailyRoutineRecID, nil
+}
+
+// AddDailyRoutineRecID adds u to the "daily_routine_rec_id" field.
+func (m *RoutineActRecMutation) AddDailyRoutineRecID(u int64) {
+	if m.adddaily_routine_rec_id != nil {
+		*m.adddaily_routine_rec_id += u
+	} else {
+		m.adddaily_routine_rec_id = &u
+	}
+}
+
+// AddedDailyRoutineRecID returns the value that was added to the "daily_routine_rec_id" field in this mutation.
+func (m *RoutineActRecMutation) AddedDailyRoutineRecID() (r int64, exists bool) {
+	v := m.adddaily_routine_rec_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDailyRoutineRecID resets all changes to the "daily_routine_rec_id" field.
+func (m *RoutineActRecMutation) ResetDailyRoutineRecID() {
+	m.daily_routine_rec_id = nil
+	m.adddaily_routine_rec_id = nil
+}
+
+// SetRoutineActID sets the "routine_act_id" field.
+func (m *RoutineActRecMutation) SetRoutineActID(u uint64) {
+	m.routine_act_id = &u
+	m.addroutine_act_id = nil
+}
+
+// RoutineActID returns the value of the "routine_act_id" field in the mutation.
+func (m *RoutineActRecMutation) RoutineActID() (r uint64, exists bool) {
+	v := m.routine_act_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRoutineActID returns the old "routine_act_id" field's value of the RoutineActRec entity.
+// If the RoutineActRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RoutineActRecMutation) OldRoutineActID(ctx context.Context) (v *uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRoutineActID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRoutineActID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRoutineActID: %w", err)
+	}
+	return oldValue.RoutineActID, nil
+}
+
+// AddRoutineActID adds u to the "routine_act_id" field.
+func (m *RoutineActRecMutation) AddRoutineActID(u int64) {
+	if m.addroutine_act_id != nil {
+		*m.addroutine_act_id += u
+	} else {
+		m.addroutine_act_id = &u
+	}
+}
+
+// AddedRoutineActID returns the value that was added to the "routine_act_id" field in this mutation.
+func (m *RoutineActRecMutation) AddedRoutineActID() (r int64, exists bool) {
+	v := m.addroutine_act_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearRoutineActID clears the value of the "routine_act_id" field.
+func (m *RoutineActRecMutation) ClearRoutineActID() {
+	m.routine_act_id = nil
+	m.addroutine_act_id = nil
+	m.clearedFields[routineactrec.FieldRoutineActID] = struct{}{}
+}
+
+// RoutineActIDCleared returns if the "routine_act_id" field was cleared in this mutation.
+func (m *RoutineActRecMutation) RoutineActIDCleared() bool {
+	_, ok := m.clearedFields[routineactrec.FieldRoutineActID]
+	return ok
+}
+
+// ResetRoutineActID resets all changes to the "routine_act_id" field.
+func (m *RoutineActRecMutation) ResetRoutineActID() {
+	m.routine_act_id = nil
+	m.addroutine_act_id = nil
+	delete(m.clearedFields, routineactrec.FieldRoutineActID)
+}
+
+// SetActID sets the "act_id" field.
+func (m *RoutineActRecMutation) SetActID(u uint64) {
+	m.act_id = &u
+	m.addact_id = nil
+}
+
+// ActID returns the value of the "act_id" field in the mutation.
+func (m *RoutineActRecMutation) ActID() (r uint64, exists bool) {
+	v := m.act_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldActID returns the old "act_id" field's value of the RoutineActRec entity.
+// If the RoutineActRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RoutineActRecMutation) OldActID(ctx context.Context) (v *uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldActID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldActID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldActID: %w", err)
+	}
+	return oldValue.ActID, nil
+}
+
+// AddActID adds u to the "act_id" field.
+func (m *RoutineActRecMutation) AddActID(u int64) {
+	if m.addact_id != nil {
+		*m.addact_id += u
+	} else {
+		m.addact_id = &u
+	}
+}
+
+// AddedActID returns the value that was added to the "act_id" field in this mutation.
+func (m *RoutineActRecMutation) AddedActID() (r int64, exists bool) {
+	v := m.addact_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearActID clears the value of the "act_id" field.
+func (m *RoutineActRecMutation) ClearActID() {
+	m.act_id = nil
+	m.addact_id = nil
+	m.clearedFields[routineactrec.FieldActID] = struct{}{}
+}
+
+// ActIDCleared returns if the "act_id" field was cleared in this mutation.
+func (m *RoutineActRecMutation) ActIDCleared() bool {
+	_, ok := m.clearedFields[routineactrec.FieldActID]
+	return ok
+}
+
+// ResetActID resets all changes to the "act_id" field.
+func (m *RoutineActRecMutation) ResetActID() {
+	m.act_id = nil
+	m.addact_id = nil
+	delete(m.clearedFields, routineactrec.FieldActID)
+}
+
+// SetOrder sets the "order" field.
+func (m *RoutineActRecMutation) SetOrder(i int) {
+	m._order = &i
+	m.add_order = nil
+}
+
+// Order returns the value of the "order" field in the mutation.
+func (m *RoutineActRecMutation) Order() (r int, exists bool) {
+	v := m._order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOrder returns the old "order" field's value of the RoutineActRec entity.
+// If the RoutineActRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RoutineActRecMutation) OldOrder(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOrder is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOrder requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOrder: %w", err)
+	}
+	return oldValue.Order, nil
+}
+
+// AddOrder adds i to the "order" field.
+func (m *RoutineActRecMutation) AddOrder(i int) {
+	if m.add_order != nil {
+		*m.add_order += i
+	} else {
+		m.add_order = &i
+	}
+}
+
+// AddedOrder returns the value that was added to the "order" field in this mutation.
+func (m *RoutineActRecMutation) AddedOrder() (r int, exists bool) {
+	v := m.add_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetOrder resets all changes to the "order" field.
+func (m *RoutineActRecMutation) ResetOrder() {
+	m._order = nil
+	m.add_order = nil
+}
+
+// SetReps sets the "reps" field.
+func (m *RoutineActRecMutation) SetReps(i int) {
+	m.reps = &i
+	m.addreps = nil
+}
+
+// Reps returns the value of the "reps" field in the mutation.
+func (m *RoutineActRecMutation) Reps() (r int, exists bool) {
+	v := m.reps
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReps returns the old "reps" field's value of the RoutineActRec entity.
+// If the RoutineActRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RoutineActRecMutation) OldReps(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReps is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReps requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReps: %w", err)
+	}
+	return oldValue.Reps, nil
+}
+
+// AddReps adds i to the "reps" field.
+func (m *RoutineActRecMutation) AddReps(i int) {
+	if m.addreps != nil {
+		*m.addreps += i
+	} else {
+		m.addreps = &i
+	}
+}
+
+// AddedReps returns the value that was added to the "reps" field in this mutation.
+func (m *RoutineActRecMutation) AddedReps() (r int, exists bool) {
+	v := m.addreps
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearReps clears the value of the "reps" field.
+func (m *RoutineActRecMutation) ClearReps() {
+	m.reps = nil
+	m.addreps = nil
+	m.clearedFields[routineactrec.FieldReps] = struct{}{}
+}
+
+// RepsCleared returns if the "reps" field was cleared in this mutation.
+func (m *RoutineActRecMutation) RepsCleared() bool {
+	_, ok := m.clearedFields[routineactrec.FieldReps]
+	return ok
+}
+
+// ResetReps resets all changes to the "reps" field.
+func (m *RoutineActRecMutation) ResetReps() {
+	m.reps = nil
+	m.addreps = nil
+	delete(m.clearedFields, routineactrec.FieldReps)
+}
+
+// SetLap sets the "lap" field.
+func (m *RoutineActRecMutation) SetLap(i int) {
+	m.lap = &i
+	m.addlap = nil
+}
+
+// Lap returns the value of the "lap" field in the mutation.
+func (m *RoutineActRecMutation) Lap() (r int, exists bool) {
+	v := m.lap
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLap returns the old "lap" field's value of the RoutineActRec entity.
+// If the RoutineActRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RoutineActRecMutation) OldLap(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLap is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLap requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLap: %w", err)
+	}
+	return oldValue.Lap, nil
+}
+
+// AddLap adds i to the "lap" field.
+func (m *RoutineActRecMutation) AddLap(i int) {
+	if m.addlap != nil {
+		*m.addlap += i
+	} else {
+		m.addlap = &i
+	}
+}
+
+// AddedLap returns the value that was added to the "lap" field in this mutation.
+func (m *RoutineActRecMutation) AddedLap() (r int, exists bool) {
+	v := m.addlap
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearLap clears the value of the "lap" field.
+func (m *RoutineActRecMutation) ClearLap() {
+	m.lap = nil
+	m.addlap = nil
+	m.clearedFields[routineactrec.FieldLap] = struct{}{}
+}
+
+// LapCleared returns if the "lap" field was cleared in this mutation.
+func (m *RoutineActRecMutation) LapCleared() bool {
+	_, ok := m.clearedFields[routineactrec.FieldLap]
+	return ok
+}
+
+// ResetLap resets all changes to the "lap" field.
+func (m *RoutineActRecMutation) ResetLap() {
+	m.lap = nil
+	m.addlap = nil
+	delete(m.clearedFields, routineactrec.FieldLap)
+}
+
+// SetCurrentReps sets the "current_reps" field.
+func (m *RoutineActRecMutation) SetCurrentReps(i int) {
+	m.current_reps = &i
+	m.addcurrent_reps = nil
+}
+
+// CurrentReps returns the value of the "current_reps" field in the mutation.
+func (m *RoutineActRecMutation) CurrentReps() (r int, exists bool) {
+	v := m.current_reps
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCurrentReps returns the old "current_reps" field's value of the RoutineActRec entity.
+// If the RoutineActRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RoutineActRecMutation) OldCurrentReps(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCurrentReps is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCurrentReps requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCurrentReps: %w", err)
+	}
+	return oldValue.CurrentReps, nil
+}
+
+// AddCurrentReps adds i to the "current_reps" field.
+func (m *RoutineActRecMutation) AddCurrentReps(i int) {
+	if m.addcurrent_reps != nil {
+		*m.addcurrent_reps += i
+	} else {
+		m.addcurrent_reps = &i
+	}
+}
+
+// AddedCurrentReps returns the value that was added to the "current_reps" field in this mutation.
+func (m *RoutineActRecMutation) AddedCurrentReps() (r int, exists bool) {
+	v := m.addcurrent_reps
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCurrentReps resets all changes to the "current_reps" field.
+func (m *RoutineActRecMutation) ResetCurrentReps() {
+	m.current_reps = nil
+	m.addcurrent_reps = nil
+}
+
+// SetCurrentLap sets the "current_lap" field.
+func (m *RoutineActRecMutation) SetCurrentLap(i int) {
+	m.current_lap = &i
+	m.addcurrent_lap = nil
+}
+
+// CurrentLap returns the value of the "current_lap" field in the mutation.
+func (m *RoutineActRecMutation) CurrentLap() (r int, exists bool) {
+	v := m.current_lap
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCurrentLap returns the old "current_lap" field's value of the RoutineActRec entity.
+// If the RoutineActRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RoutineActRecMutation) OldCurrentLap(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCurrentLap is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCurrentLap requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCurrentLap: %w", err)
+	}
+	return oldValue.CurrentLap, nil
+}
+
+// AddCurrentLap adds i to the "current_lap" field.
+func (m *RoutineActRecMutation) AddCurrentLap(i int) {
+	if m.addcurrent_lap != nil {
+		*m.addcurrent_lap += i
+	} else {
+		m.addcurrent_lap = &i
+	}
+}
+
+// AddedCurrentLap returns the value that was added to the "current_lap" field in this mutation.
+func (m *RoutineActRecMutation) AddedCurrentLap() (r int, exists bool) {
+	v := m.addcurrent_lap
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCurrentLap resets all changes to the "current_lap" field.
+func (m *RoutineActRecMutation) ResetCurrentLap() {
+	m.current_lap = nil
+	m.addcurrent_lap = nil
+}
+
+// SetImage sets the "image" field.
+func (m *RoutineActRecMutation) SetImage(s string) {
+	m.image = &s
+}
+
+// Image returns the value of the "image" field in the mutation.
+func (m *RoutineActRecMutation) Image() (r string, exists bool) {
+	v := m.image
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldImage returns the old "image" field's value of the RoutineActRec entity.
+// If the RoutineActRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RoutineActRecMutation) OldImage(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldImage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldImage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldImage: %w", err)
+	}
+	return oldValue.Image, nil
+}
+
+// ClearImage clears the value of the "image" field.
+func (m *RoutineActRecMutation) ClearImage() {
+	m.image = nil
+	m.clearedFields[routineactrec.FieldImage] = struct{}{}
+}
+
+// ImageCleared returns if the "image" field was cleared in this mutation.
+func (m *RoutineActRecMutation) ImageCleared() bool {
+	_, ok := m.clearedFields[routineactrec.FieldImage]
+	return ok
+}
+
+// ResetImage resets all changes to the "image" field.
+func (m *RoutineActRecMutation) ResetImage() {
+	m.image = nil
+	delete(m.clearedFields, routineactrec.FieldImage)
+}
+
+// SetComment sets the "comment" field.
+func (m *RoutineActRecMutation) SetComment(s string) {
+	m.comment = &s
+}
+
+// Comment returns the value of the "comment" field in the mutation.
+func (m *RoutineActRecMutation) Comment() (r string, exists bool) {
+	v := m.comment
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldComment returns the old "comment" field's value of the RoutineActRec entity.
+// If the RoutineActRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RoutineActRecMutation) OldComment(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldComment is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldComment requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldComment: %w", err)
+	}
+	return oldValue.Comment, nil
+}
+
+// ClearComment clears the value of the "comment" field.
+func (m *RoutineActRecMutation) ClearComment() {
+	m.comment = nil
+	m.clearedFields[routineactrec.FieldComment] = struct{}{}
+}
+
+// CommentCleared returns if the "comment" field was cleared in this mutation.
+func (m *RoutineActRecMutation) CommentCleared() bool {
+	_, ok := m.clearedFields[routineactrec.FieldComment]
+	return ok
+}
+
+// ResetComment resets all changes to the "comment" field.
+func (m *RoutineActRecMutation) ResetComment() {
+	m.comment = nil
+	delete(m.clearedFields, routineactrec.FieldComment)
+}
+
+// SetStatus sets the "status" field.
+func (m *RoutineActRecMutation) SetStatus(r routineactrec.Status) {
+	m.status = &r
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *RoutineActRecMutation) Status() (r routineactrec.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the RoutineActRec entity.
+// If the RoutineActRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RoutineActRecMutation) OldStatus(ctx context.Context) (v routineactrec.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *RoutineActRecMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *RoutineActRecMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *RoutineActRecMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the RoutineActRec entity.
+// If the RoutineActRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RoutineActRecMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *RoutineActRecMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *RoutineActRecMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *RoutineActRecMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the RoutineActRec entity.
+// If the RoutineActRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RoutineActRecMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *RoutineActRecMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the RoutineActRecMutation builder.
+func (m *RoutineActRecMutation) Where(ps ...predicate.RoutineActRec) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the RoutineActRecMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *RoutineActRecMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.RoutineActRec, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *RoutineActRecMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *RoutineActRecMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (RoutineActRec).
+func (m *RoutineActRecMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *RoutineActRecMutation) Fields() []string {
+	fields := make([]string, 0, 13)
+	if m.daily_routine_rec_id != nil {
+		fields = append(fields, routineactrec.FieldDailyRoutineRecID)
+	}
+	if m.routine_act_id != nil {
+		fields = append(fields, routineactrec.FieldRoutineActID)
+	}
+	if m.act_id != nil {
+		fields = append(fields, routineactrec.FieldActID)
+	}
+	if m._order != nil {
+		fields = append(fields, routineactrec.FieldOrder)
+	}
+	if m.reps != nil {
+		fields = append(fields, routineactrec.FieldReps)
+	}
+	if m.lap != nil {
+		fields = append(fields, routineactrec.FieldLap)
+	}
+	if m.current_reps != nil {
+		fields = append(fields, routineactrec.FieldCurrentReps)
+	}
+	if m.current_lap != nil {
+		fields = append(fields, routineactrec.FieldCurrentLap)
+	}
+	if m.image != nil {
+		fields = append(fields, routineactrec.FieldImage)
+	}
+	if m.comment != nil {
+		fields = append(fields, routineactrec.FieldComment)
+	}
+	if m.status != nil {
+		fields = append(fields, routineactrec.FieldStatus)
+	}
+	if m.created_at != nil {
+		fields = append(fields, routineactrec.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, routineactrec.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *RoutineActRecMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case routineactrec.FieldDailyRoutineRecID:
+		return m.DailyRoutineRecID()
+	case routineactrec.FieldRoutineActID:
+		return m.RoutineActID()
+	case routineactrec.FieldActID:
+		return m.ActID()
+	case routineactrec.FieldOrder:
+		return m.Order()
+	case routineactrec.FieldReps:
+		return m.Reps()
+	case routineactrec.FieldLap:
+		return m.Lap()
+	case routineactrec.FieldCurrentReps:
+		return m.CurrentReps()
+	case routineactrec.FieldCurrentLap:
+		return m.CurrentLap()
+	case routineactrec.FieldImage:
+		return m.Image()
+	case routineactrec.FieldComment:
+		return m.Comment()
+	case routineactrec.FieldStatus:
+		return m.Status()
+	case routineactrec.FieldCreatedAt:
+		return m.CreatedAt()
+	case routineactrec.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *RoutineActRecMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case routineactrec.FieldDailyRoutineRecID:
+		return m.OldDailyRoutineRecID(ctx)
+	case routineactrec.FieldRoutineActID:
+		return m.OldRoutineActID(ctx)
+	case routineactrec.FieldActID:
+		return m.OldActID(ctx)
+	case routineactrec.FieldOrder:
+		return m.OldOrder(ctx)
+	case routineactrec.FieldReps:
+		return m.OldReps(ctx)
+	case routineactrec.FieldLap:
+		return m.OldLap(ctx)
+	case routineactrec.FieldCurrentReps:
+		return m.OldCurrentReps(ctx)
+	case routineactrec.FieldCurrentLap:
+		return m.OldCurrentLap(ctx)
+	case routineactrec.FieldImage:
+		return m.OldImage(ctx)
+	case routineactrec.FieldComment:
+		return m.OldComment(ctx)
+	case routineactrec.FieldStatus:
+		return m.OldStatus(ctx)
+	case routineactrec.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case routineactrec.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown RoutineActRec field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RoutineActRecMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case routineactrec.FieldDailyRoutineRecID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDailyRoutineRecID(v)
+		return nil
+	case routineactrec.FieldRoutineActID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRoutineActID(v)
+		return nil
+	case routineactrec.FieldActID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetActID(v)
+		return nil
+	case routineactrec.FieldOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOrder(v)
+		return nil
+	case routineactrec.FieldReps:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReps(v)
+		return nil
+	case routineactrec.FieldLap:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLap(v)
+		return nil
+	case routineactrec.FieldCurrentReps:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCurrentReps(v)
+		return nil
+	case routineactrec.FieldCurrentLap:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCurrentLap(v)
+		return nil
+	case routineactrec.FieldImage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetImage(v)
+		return nil
+	case routineactrec.FieldComment:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetComment(v)
+		return nil
+	case routineactrec.FieldStatus:
+		v, ok := value.(routineactrec.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case routineactrec.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case routineactrec.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown RoutineActRec field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *RoutineActRecMutation) AddedFields() []string {
+	var fields []string
+	if m.adddaily_routine_rec_id != nil {
+		fields = append(fields, routineactrec.FieldDailyRoutineRecID)
+	}
+	if m.addroutine_act_id != nil {
+		fields = append(fields, routineactrec.FieldRoutineActID)
+	}
+	if m.addact_id != nil {
+		fields = append(fields, routineactrec.FieldActID)
+	}
+	if m.add_order != nil {
+		fields = append(fields, routineactrec.FieldOrder)
+	}
+	if m.addreps != nil {
+		fields = append(fields, routineactrec.FieldReps)
+	}
+	if m.addlap != nil {
+		fields = append(fields, routineactrec.FieldLap)
+	}
+	if m.addcurrent_reps != nil {
+		fields = append(fields, routineactrec.FieldCurrentReps)
+	}
+	if m.addcurrent_lap != nil {
+		fields = append(fields, routineactrec.FieldCurrentLap)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *RoutineActRecMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case routineactrec.FieldDailyRoutineRecID:
+		return m.AddedDailyRoutineRecID()
+	case routineactrec.FieldRoutineActID:
+		return m.AddedRoutineActID()
+	case routineactrec.FieldActID:
+		return m.AddedActID()
+	case routineactrec.FieldOrder:
+		return m.AddedOrder()
+	case routineactrec.FieldReps:
+		return m.AddedReps()
+	case routineactrec.FieldLap:
+		return m.AddedLap()
+	case routineactrec.FieldCurrentReps:
+		return m.AddedCurrentReps()
+	case routineactrec.FieldCurrentLap:
+		return m.AddedCurrentLap()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RoutineActRecMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case routineactrec.FieldDailyRoutineRecID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDailyRoutineRecID(v)
+		return nil
+	case routineactrec.FieldRoutineActID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddRoutineActID(v)
+		return nil
+	case routineactrec.FieldActID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddActID(v)
+		return nil
+	case routineactrec.FieldOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOrder(v)
+		return nil
+	case routineactrec.FieldReps:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddReps(v)
+		return nil
+	case routineactrec.FieldLap:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLap(v)
+		return nil
+	case routineactrec.FieldCurrentReps:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCurrentReps(v)
+		return nil
+	case routineactrec.FieldCurrentLap:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCurrentLap(v)
+		return nil
+	}
+	return fmt.Errorf("unknown RoutineActRec numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *RoutineActRecMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(routineactrec.FieldRoutineActID) {
+		fields = append(fields, routineactrec.FieldRoutineActID)
+	}
+	if m.FieldCleared(routineactrec.FieldActID) {
+		fields = append(fields, routineactrec.FieldActID)
+	}
+	if m.FieldCleared(routineactrec.FieldReps) {
+		fields = append(fields, routineactrec.FieldReps)
+	}
+	if m.FieldCleared(routineactrec.FieldLap) {
+		fields = append(fields, routineactrec.FieldLap)
+	}
+	if m.FieldCleared(routineactrec.FieldImage) {
+		fields = append(fields, routineactrec.FieldImage)
+	}
+	if m.FieldCleared(routineactrec.FieldComment) {
+		fields = append(fields, routineactrec.FieldComment)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *RoutineActRecMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *RoutineActRecMutation) ClearField(name string) error {
+	switch name {
+	case routineactrec.FieldRoutineActID:
+		m.ClearRoutineActID()
+		return nil
+	case routineactrec.FieldActID:
+		m.ClearActID()
+		return nil
+	case routineactrec.FieldReps:
+		m.ClearReps()
+		return nil
+	case routineactrec.FieldLap:
+		m.ClearLap()
+		return nil
+	case routineactrec.FieldImage:
+		m.ClearImage()
+		return nil
+	case routineactrec.FieldComment:
+		m.ClearComment()
+		return nil
+	}
+	return fmt.Errorf("unknown RoutineActRec nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *RoutineActRecMutation) ResetField(name string) error {
+	switch name {
+	case routineactrec.FieldDailyRoutineRecID:
+		m.ResetDailyRoutineRecID()
+		return nil
+	case routineactrec.FieldRoutineActID:
+		m.ResetRoutineActID()
+		return nil
+	case routineactrec.FieldActID:
+		m.ResetActID()
+		return nil
+	case routineactrec.FieldOrder:
+		m.ResetOrder()
+		return nil
+	case routineactrec.FieldReps:
+		m.ResetReps()
+		return nil
+	case routineactrec.FieldLap:
+		m.ResetLap()
+		return nil
+	case routineactrec.FieldCurrentReps:
+		m.ResetCurrentReps()
+		return nil
+	case routineactrec.FieldCurrentLap:
+		m.ResetCurrentLap()
+		return nil
+	case routineactrec.FieldImage:
+		m.ResetImage()
+		return nil
+	case routineactrec.FieldComment:
+		m.ResetComment()
+		return nil
+	case routineactrec.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case routineactrec.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case routineactrec.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown RoutineActRec field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *RoutineActRecMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *RoutineActRecMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *RoutineActRecMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *RoutineActRecMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *RoutineActRecMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *RoutineActRecMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *RoutineActRecMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown RoutineActRec unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *RoutineActRecMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown RoutineActRec edge %s", name)
 }
 
 // TagMutation represents an operation that mutates the Tag nodes in the graph.
@@ -5147,4 +8218,621 @@ func (m *WeeklyRoutineMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown WeeklyRoutine edge %s", name)
+}
+
+// WeeklyRoutineRecMutation represents an operation that mutates the WeeklyRoutineRec nodes in the graph.
+type WeeklyRoutineRecMutation struct {
+	config
+	op                   Op
+	typ                  string
+	id                   *uint64
+	program_rec_id       *uint64
+	addprogram_rec_id    *int64
+	weekly_routine_id    *uint64
+	addweekly_routine_id *int64
+	start_date           *time.Time
+	created_at           *time.Time
+	updated_at           *time.Time
+	clearedFields        map[string]struct{}
+	done                 bool
+	oldValue             func(context.Context) (*WeeklyRoutineRec, error)
+	predicates           []predicate.WeeklyRoutineRec
+}
+
+var _ ent.Mutation = (*WeeklyRoutineRecMutation)(nil)
+
+// weeklyroutinerecOption allows management of the mutation configuration using functional options.
+type weeklyroutinerecOption func(*WeeklyRoutineRecMutation)
+
+// newWeeklyRoutineRecMutation creates new mutation for the WeeklyRoutineRec entity.
+func newWeeklyRoutineRecMutation(c config, op Op, opts ...weeklyroutinerecOption) *WeeklyRoutineRecMutation {
+	m := &WeeklyRoutineRecMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeWeeklyRoutineRec,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withWeeklyRoutineRecID sets the ID field of the mutation.
+func withWeeklyRoutineRecID(id uint64) weeklyroutinerecOption {
+	return func(m *WeeklyRoutineRecMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *WeeklyRoutineRec
+		)
+		m.oldValue = func(ctx context.Context) (*WeeklyRoutineRec, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().WeeklyRoutineRec.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withWeeklyRoutineRec sets the old WeeklyRoutineRec of the mutation.
+func withWeeklyRoutineRec(node *WeeklyRoutineRec) weeklyroutinerecOption {
+	return func(m *WeeklyRoutineRecMutation) {
+		m.oldValue = func(context.Context) (*WeeklyRoutineRec, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m WeeklyRoutineRecMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m WeeklyRoutineRecMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of WeeklyRoutineRec entities.
+func (m *WeeklyRoutineRecMutation) SetID(id uint64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *WeeklyRoutineRecMutation) ID() (id uint64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *WeeklyRoutineRecMutation) IDs(ctx context.Context) ([]uint64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uint64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().WeeklyRoutineRec.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetProgramRecID sets the "program_rec_id" field.
+func (m *WeeklyRoutineRecMutation) SetProgramRecID(u uint64) {
+	m.program_rec_id = &u
+	m.addprogram_rec_id = nil
+}
+
+// ProgramRecID returns the value of the "program_rec_id" field in the mutation.
+func (m *WeeklyRoutineRecMutation) ProgramRecID() (r uint64, exists bool) {
+	v := m.program_rec_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProgramRecID returns the old "program_rec_id" field's value of the WeeklyRoutineRec entity.
+// If the WeeklyRoutineRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeeklyRoutineRecMutation) OldProgramRecID(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProgramRecID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProgramRecID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProgramRecID: %w", err)
+	}
+	return oldValue.ProgramRecID, nil
+}
+
+// AddProgramRecID adds u to the "program_rec_id" field.
+func (m *WeeklyRoutineRecMutation) AddProgramRecID(u int64) {
+	if m.addprogram_rec_id != nil {
+		*m.addprogram_rec_id += u
+	} else {
+		m.addprogram_rec_id = &u
+	}
+}
+
+// AddedProgramRecID returns the value that was added to the "program_rec_id" field in this mutation.
+func (m *WeeklyRoutineRecMutation) AddedProgramRecID() (r int64, exists bool) {
+	v := m.addprogram_rec_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetProgramRecID resets all changes to the "program_rec_id" field.
+func (m *WeeklyRoutineRecMutation) ResetProgramRecID() {
+	m.program_rec_id = nil
+	m.addprogram_rec_id = nil
+}
+
+// SetWeeklyRoutineID sets the "weekly_routine_id" field.
+func (m *WeeklyRoutineRecMutation) SetWeeklyRoutineID(u uint64) {
+	m.weekly_routine_id = &u
+	m.addweekly_routine_id = nil
+}
+
+// WeeklyRoutineID returns the value of the "weekly_routine_id" field in the mutation.
+func (m *WeeklyRoutineRecMutation) WeeklyRoutineID() (r uint64, exists bool) {
+	v := m.weekly_routine_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWeeklyRoutineID returns the old "weekly_routine_id" field's value of the WeeklyRoutineRec entity.
+// If the WeeklyRoutineRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeeklyRoutineRecMutation) OldWeeklyRoutineID(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWeeklyRoutineID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWeeklyRoutineID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWeeklyRoutineID: %w", err)
+	}
+	return oldValue.WeeklyRoutineID, nil
+}
+
+// AddWeeklyRoutineID adds u to the "weekly_routine_id" field.
+func (m *WeeklyRoutineRecMutation) AddWeeklyRoutineID(u int64) {
+	if m.addweekly_routine_id != nil {
+		*m.addweekly_routine_id += u
+	} else {
+		m.addweekly_routine_id = &u
+	}
+}
+
+// AddedWeeklyRoutineID returns the value that was added to the "weekly_routine_id" field in this mutation.
+func (m *WeeklyRoutineRecMutation) AddedWeeklyRoutineID() (r int64, exists bool) {
+	v := m.addweekly_routine_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWeeklyRoutineID resets all changes to the "weekly_routine_id" field.
+func (m *WeeklyRoutineRecMutation) ResetWeeklyRoutineID() {
+	m.weekly_routine_id = nil
+	m.addweekly_routine_id = nil
+}
+
+// SetStartDate sets the "start_date" field.
+func (m *WeeklyRoutineRecMutation) SetStartDate(t time.Time) {
+	m.start_date = &t
+}
+
+// StartDate returns the value of the "start_date" field in the mutation.
+func (m *WeeklyRoutineRecMutation) StartDate() (r time.Time, exists bool) {
+	v := m.start_date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStartDate returns the old "start_date" field's value of the WeeklyRoutineRec entity.
+// If the WeeklyRoutineRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeeklyRoutineRecMutation) OldStartDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStartDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStartDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStartDate: %w", err)
+	}
+	return oldValue.StartDate, nil
+}
+
+// ResetStartDate resets all changes to the "start_date" field.
+func (m *WeeklyRoutineRecMutation) ResetStartDate() {
+	m.start_date = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *WeeklyRoutineRecMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *WeeklyRoutineRecMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the WeeklyRoutineRec entity.
+// If the WeeklyRoutineRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeeklyRoutineRecMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *WeeklyRoutineRecMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *WeeklyRoutineRecMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *WeeklyRoutineRecMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the WeeklyRoutineRec entity.
+// If the WeeklyRoutineRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeeklyRoutineRecMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *WeeklyRoutineRecMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// Where appends a list predicates to the WeeklyRoutineRecMutation builder.
+func (m *WeeklyRoutineRecMutation) Where(ps ...predicate.WeeklyRoutineRec) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the WeeklyRoutineRecMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *WeeklyRoutineRecMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.WeeklyRoutineRec, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *WeeklyRoutineRecMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *WeeklyRoutineRecMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (WeeklyRoutineRec).
+func (m *WeeklyRoutineRecMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *WeeklyRoutineRecMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.program_rec_id != nil {
+		fields = append(fields, weeklyroutinerec.FieldProgramRecID)
+	}
+	if m.weekly_routine_id != nil {
+		fields = append(fields, weeklyroutinerec.FieldWeeklyRoutineID)
+	}
+	if m.start_date != nil {
+		fields = append(fields, weeklyroutinerec.FieldStartDate)
+	}
+	if m.created_at != nil {
+		fields = append(fields, weeklyroutinerec.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, weeklyroutinerec.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *WeeklyRoutineRecMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case weeklyroutinerec.FieldProgramRecID:
+		return m.ProgramRecID()
+	case weeklyroutinerec.FieldWeeklyRoutineID:
+		return m.WeeklyRoutineID()
+	case weeklyroutinerec.FieldStartDate:
+		return m.StartDate()
+	case weeklyroutinerec.FieldCreatedAt:
+		return m.CreatedAt()
+	case weeklyroutinerec.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *WeeklyRoutineRecMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case weeklyroutinerec.FieldProgramRecID:
+		return m.OldProgramRecID(ctx)
+	case weeklyroutinerec.FieldWeeklyRoutineID:
+		return m.OldWeeklyRoutineID(ctx)
+	case weeklyroutinerec.FieldStartDate:
+		return m.OldStartDate(ctx)
+	case weeklyroutinerec.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case weeklyroutinerec.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown WeeklyRoutineRec field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *WeeklyRoutineRecMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case weeklyroutinerec.FieldProgramRecID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProgramRecID(v)
+		return nil
+	case weeklyroutinerec.FieldWeeklyRoutineID:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWeeklyRoutineID(v)
+		return nil
+	case weeklyroutinerec.FieldStartDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStartDate(v)
+		return nil
+	case weeklyroutinerec.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case weeklyroutinerec.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown WeeklyRoutineRec field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *WeeklyRoutineRecMutation) AddedFields() []string {
+	var fields []string
+	if m.addprogram_rec_id != nil {
+		fields = append(fields, weeklyroutinerec.FieldProgramRecID)
+	}
+	if m.addweekly_routine_id != nil {
+		fields = append(fields, weeklyroutinerec.FieldWeeklyRoutineID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *WeeklyRoutineRecMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case weeklyroutinerec.FieldProgramRecID:
+		return m.AddedProgramRecID()
+	case weeklyroutinerec.FieldWeeklyRoutineID:
+		return m.AddedWeeklyRoutineID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *WeeklyRoutineRecMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case weeklyroutinerec.FieldProgramRecID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddProgramRecID(v)
+		return nil
+	case weeklyroutinerec.FieldWeeklyRoutineID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWeeklyRoutineID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown WeeklyRoutineRec numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *WeeklyRoutineRecMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *WeeklyRoutineRecMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *WeeklyRoutineRecMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown WeeklyRoutineRec nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *WeeklyRoutineRecMutation) ResetField(name string) error {
+	switch name {
+	case weeklyroutinerec.FieldProgramRecID:
+		m.ResetProgramRecID()
+		return nil
+	case weeklyroutinerec.FieldWeeklyRoutineID:
+		m.ResetWeeklyRoutineID()
+		return nil
+	case weeklyroutinerec.FieldStartDate:
+		m.ResetStartDate()
+		return nil
+	case weeklyroutinerec.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case weeklyroutinerec.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown WeeklyRoutineRec field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *WeeklyRoutineRecMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *WeeklyRoutineRecMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *WeeklyRoutineRecMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *WeeklyRoutineRecMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *WeeklyRoutineRecMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *WeeklyRoutineRecMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *WeeklyRoutineRecMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown WeeklyRoutineRec unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *WeeklyRoutineRecMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown WeeklyRoutineRec edge %s", name)
 }
