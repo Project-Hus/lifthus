@@ -396,6 +396,22 @@ func (c *ActClient) QueryRoutineActs(a *Act) *RoutineActQuery {
 	return query
 }
 
+// QueryRoutineActRecs queries the routine_act_recs edge of a Act.
+func (c *ActClient) QueryRoutineActRecs(a *Act) *RoutineActRecQuery {
+	query := (&RoutineActRecClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(act.Table, act.FieldID, id),
+			sqlgraph.To(routineactrec.Table, routineactrec.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, act.RoutineActRecsTable, act.RoutineActRecsColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ActClient) Hooks() []Hook {
 	return c.hooks.Act
@@ -562,6 +578,22 @@ func (c *DailyRoutineClient) QueryRoutineActs(dr *DailyRoutine) *RoutineActQuery
 	return query
 }
 
+// QueryDailyRoutineRecs queries the daily_routine_recs edge of a DailyRoutine.
+func (c *DailyRoutineClient) QueryDailyRoutineRecs(dr *DailyRoutine) *DailyRoutineRecQuery {
+	query := (&DailyRoutineRecClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := dr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dailyroutine.Table, dailyroutine.FieldID, id),
+			sqlgraph.To(dailyroutinerec.Table, dailyroutinerec.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, dailyroutine.DailyRoutineRecsTable, dailyroutine.DailyRoutineRecsColumn),
+		)
+		fromV = sqlgraph.Neighbors(dr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *DailyRoutineClient) Hooks() []Hook {
 	return c.hooks.DailyRoutine
@@ -678,6 +710,70 @@ func (c *DailyRoutineRecClient) GetX(ctx context.Context, id uint64) *DailyRouti
 		panic(err)
 	}
 	return obj
+}
+
+// QueryDailyRoutine queries the daily_routine edge of a DailyRoutineRec.
+func (c *DailyRoutineRecClient) QueryDailyRoutine(drr *DailyRoutineRec) *DailyRoutineQuery {
+	query := (&DailyRoutineClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := drr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dailyroutinerec.Table, dailyroutinerec.FieldID, id),
+			sqlgraph.To(dailyroutine.Table, dailyroutine.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, dailyroutinerec.DailyRoutineTable, dailyroutinerec.DailyRoutineColumn),
+		)
+		fromV = sqlgraph.Neighbors(drr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProgramRec queries the program_rec edge of a DailyRoutineRec.
+func (c *DailyRoutineRecClient) QueryProgramRec(drr *DailyRoutineRec) *ProgramRecQuery {
+	query := (&ProgramRecClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := drr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dailyroutinerec.Table, dailyroutinerec.FieldID, id),
+			sqlgraph.To(programrec.Table, programrec.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, dailyroutinerec.ProgramRecTable, dailyroutinerec.ProgramRecColumn),
+		)
+		fromV = sqlgraph.Neighbors(drr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryWeeklyRoutineRec queries the weekly_routine_rec edge of a DailyRoutineRec.
+func (c *DailyRoutineRecClient) QueryWeeklyRoutineRec(drr *DailyRoutineRec) *WeeklyRoutineRecQuery {
+	query := (&WeeklyRoutineRecClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := drr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dailyroutinerec.Table, dailyroutinerec.FieldID, id),
+			sqlgraph.To(weeklyroutinerec.Table, weeklyroutinerec.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, dailyroutinerec.WeeklyRoutineRecTable, dailyroutinerec.WeeklyRoutineRecColumn),
+		)
+		fromV = sqlgraph.Neighbors(drr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRoutineActRecs queries the routine_act_recs edge of a DailyRoutineRec.
+func (c *DailyRoutineRecClient) QueryRoutineActRecs(drr *DailyRoutineRec) *RoutineActRecQuery {
+	query := (&RoutineActRecClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := drr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dailyroutinerec.Table, dailyroutinerec.FieldID, id),
+			sqlgraph.To(routineactrec.Table, routineactrec.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, dailyroutinerec.RoutineActRecsTable, dailyroutinerec.RoutineActRecsColumn),
+		)
+		fromV = sqlgraph.Neighbors(drr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.
@@ -846,6 +942,22 @@ func (c *ProgramClient) QueryDailyRoutines(pr *Program) *DailyRoutineQuery {
 	return query
 }
 
+// QueryProgramRecs queries the program_recs edge of a Program.
+func (c *ProgramClient) QueryProgramRecs(pr *Program) *ProgramRecQuery {
+	query := (&ProgramRecClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(program.Table, program.FieldID, id),
+			sqlgraph.To(programrec.Table, programrec.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, program.ProgramRecsTable, program.ProgramRecsColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ProgramClient) Hooks() []Hook {
 	return c.hooks.Program
@@ -962,6 +1074,54 @@ func (c *ProgramRecClient) GetX(ctx context.Context, id uint64) *ProgramRec {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryProgram queries the program edge of a ProgramRec.
+func (c *ProgramRecClient) QueryProgram(pr *ProgramRec) *ProgramQuery {
+	query := (&ProgramClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(programrec.Table, programrec.FieldID, id),
+			sqlgraph.To(program.Table, program.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, programrec.ProgramTable, programrec.ProgramColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryWeeklyRoutineRecs queries the weekly_routine_recs edge of a ProgramRec.
+func (c *ProgramRecClient) QueryWeeklyRoutineRecs(pr *ProgramRec) *WeeklyRoutineRecQuery {
+	query := (&WeeklyRoutineRecClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(programrec.Table, programrec.FieldID, id),
+			sqlgraph.To(weeklyroutinerec.Table, weeklyroutinerec.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, programrec.WeeklyRoutineRecsTable, programrec.WeeklyRoutineRecsColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDailyRoutineRecs queries the daily_routine_recs edge of a ProgramRec.
+func (c *ProgramRecClient) QueryDailyRoutineRecs(pr *ProgramRec) *DailyRoutineRecQuery {
+	query := (&DailyRoutineRecClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(programrec.Table, programrec.FieldID, id),
+			sqlgraph.To(dailyroutinerec.Table, dailyroutinerec.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, programrec.DailyRoutineRecsTable, programrec.DailyRoutineRecsColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.
@@ -1114,6 +1274,22 @@ func (c *RoutineActClient) QueryDailyRoutine(ra *RoutineAct) *DailyRoutineQuery 
 	return query
 }
 
+// QueryRoutineActRecs queries the routine_act_recs edge of a RoutineAct.
+func (c *RoutineActClient) QueryRoutineActRecs(ra *RoutineAct) *RoutineActRecQuery {
+	query := (&RoutineActRecClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ra.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(routineact.Table, routineact.FieldID, id),
+			sqlgraph.To(routineactrec.Table, routineactrec.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, routineact.RoutineActRecsTable, routineact.RoutineActRecsColumn),
+		)
+		fromV = sqlgraph.Neighbors(ra.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *RoutineActClient) Hooks() []Hook {
 	return c.hooks.RoutineAct
@@ -1230,6 +1406,54 @@ func (c *RoutineActRecClient) GetX(ctx context.Context, id uint64) *RoutineActRe
 		panic(err)
 	}
 	return obj
+}
+
+// QueryDailyRoutineRec queries the daily_routine_rec edge of a RoutineActRec.
+func (c *RoutineActRecClient) QueryDailyRoutineRec(rar *RoutineActRec) *DailyRoutineRecQuery {
+	query := (&DailyRoutineRecClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := rar.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(routineactrec.Table, routineactrec.FieldID, id),
+			sqlgraph.To(dailyroutinerec.Table, dailyroutinerec.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, routineactrec.DailyRoutineRecTable, routineactrec.DailyRoutineRecColumn),
+		)
+		fromV = sqlgraph.Neighbors(rar.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAct queries the act edge of a RoutineActRec.
+func (c *RoutineActRecClient) QueryAct(rar *RoutineActRec) *ActQuery {
+	query := (&ActClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := rar.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(routineactrec.Table, routineactrec.FieldID, id),
+			sqlgraph.To(act.Table, act.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, routineactrec.ActTable, routineactrec.ActColumn),
+		)
+		fromV = sqlgraph.Neighbors(rar.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRoutineAct queries the routine_act edge of a RoutineActRec.
+func (c *RoutineActRecClient) QueryRoutineAct(rar *RoutineActRec) *RoutineActQuery {
+	query := (&RoutineActClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := rar.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(routineactrec.Table, routineactrec.FieldID, id),
+			sqlgraph.To(routineact.Table, routineact.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, routineactrec.RoutineActTable, routineactrec.RoutineActColumn),
+		)
+		fromV = sqlgraph.Neighbors(rar.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.
@@ -1532,6 +1756,22 @@ func (c *WeeklyRoutineClient) QueryDailyRoutines(wr *WeeklyRoutine) *DailyRoutin
 	return query
 }
 
+// QueryWeeklyRoutineRecs queries the weekly_routine_recs edge of a WeeklyRoutine.
+func (c *WeeklyRoutineClient) QueryWeeklyRoutineRecs(wr *WeeklyRoutine) *WeeklyRoutineRecQuery {
+	query := (&WeeklyRoutineRecClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := wr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(weeklyroutine.Table, weeklyroutine.FieldID, id),
+			sqlgraph.To(weeklyroutinerec.Table, weeklyroutinerec.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, weeklyroutine.WeeklyRoutineRecsTable, weeklyroutine.WeeklyRoutineRecsColumn),
+		)
+		fromV = sqlgraph.Neighbors(wr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *WeeklyRoutineClient) Hooks() []Hook {
 	return c.hooks.WeeklyRoutine
@@ -1648,6 +1888,54 @@ func (c *WeeklyRoutineRecClient) GetX(ctx context.Context, id uint64) *WeeklyRou
 		panic(err)
 	}
 	return obj
+}
+
+// QueryWeeklyRoutine queries the weekly_routine edge of a WeeklyRoutineRec.
+func (c *WeeklyRoutineRecClient) QueryWeeklyRoutine(wrr *WeeklyRoutineRec) *WeeklyRoutineQuery {
+	query := (&WeeklyRoutineClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := wrr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(weeklyroutinerec.Table, weeklyroutinerec.FieldID, id),
+			sqlgraph.To(weeklyroutine.Table, weeklyroutine.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, weeklyroutinerec.WeeklyRoutineTable, weeklyroutinerec.WeeklyRoutineColumn),
+		)
+		fromV = sqlgraph.Neighbors(wrr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProgramRec queries the program_rec edge of a WeeklyRoutineRec.
+func (c *WeeklyRoutineRecClient) QueryProgramRec(wrr *WeeklyRoutineRec) *ProgramRecQuery {
+	query := (&ProgramRecClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := wrr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(weeklyroutinerec.Table, weeklyroutinerec.FieldID, id),
+			sqlgraph.To(programrec.Table, programrec.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, weeklyroutinerec.ProgramRecTable, weeklyroutinerec.ProgramRecColumn),
+		)
+		fromV = sqlgraph.Neighbors(wrr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDailyRoutineRecs queries the daily_routine_recs edge of a WeeklyRoutineRec.
+func (c *WeeklyRoutineRecClient) QueryDailyRoutineRecs(wrr *WeeklyRoutineRec) *DailyRoutineRecQuery {
+	query := (&DailyRoutineRecClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := wrr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(weeklyroutinerec.Table, weeklyroutinerec.FieldID, id),
+			sqlgraph.To(dailyroutinerec.Table, dailyroutinerec.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, weeklyroutinerec.DailyRoutineRecsTable, weeklyroutinerec.DailyRoutineRecsColumn),
+		)
+		fromV = sqlgraph.Neighbors(wrr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.

@@ -9,6 +9,7 @@ import (
 	"routine/ent/act"
 	"routine/ent/dailyroutine"
 	"routine/ent/routineact"
+	"routine/ent/routineactrec"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -122,6 +123,21 @@ func (rac *RoutineActCreate) SetDailyRoutineID(id uint64) *RoutineActCreate {
 // SetDailyRoutine sets the "daily_routine" edge to the DailyRoutine entity.
 func (rac *RoutineActCreate) SetDailyRoutine(d *DailyRoutine) *RoutineActCreate {
 	return rac.SetDailyRoutineID(d.ID)
+}
+
+// AddRoutineActRecIDs adds the "routine_act_recs" edge to the RoutineActRec entity by IDs.
+func (rac *RoutineActCreate) AddRoutineActRecIDs(ids ...uint64) *RoutineActCreate {
+	rac.mutation.AddRoutineActRecIDs(ids...)
+	return rac
+}
+
+// AddRoutineActRecs adds the "routine_act_recs" edges to the RoutineActRec entity.
+func (rac *RoutineActCreate) AddRoutineActRecs(r ...*RoutineActRec) *RoutineActCreate {
+	ids := make([]uint64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return rac.AddRoutineActRecIDs(ids...)
 }
 
 // Mutation returns the RoutineActMutation object of the builder.
@@ -299,6 +315,22 @@ func (rac *RoutineActCreate) createSpec() (*RoutineAct, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.daily_routine_routine_acts = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := rac.mutation.RoutineActRecsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   routineact.RoutineActRecsTable,
+			Columns: []string{routineact.RoutineActRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineactrec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

@@ -5,6 +5,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -17,6 +18,7 @@ type DailyRoutineRec struct {
 func (DailyRoutineRec) Fields() []ent.Field {
 	return []ent.Field{
 		field.Uint64("id").Unique(),
+		field.Uint64("author"),
 		field.Uint64("program_rec_id").Nillable().Optional(),
 		field.Uint64("weekly_routine_rec_id").Nillable().Optional(),
 		field.Uint64("daily_routine_id").Nillable().Optional(),
@@ -32,5 +34,12 @@ func (DailyRoutineRec) Fields() []ent.Field {
 
 // Edges of the DailyRoutineRec.
 func (DailyRoutineRec) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.From("daily_routine", DailyRoutine.Type).Ref("daily_routine_recs").Unique(),
+
+		edge.From("program_rec", ProgramRec.Type).Ref("daily_routine_recs").Unique(),
+		edge.From("weekly_routine_rec", WeeklyRoutineRec.Type).Ref("daily_routine_recs").Unique(),
+
+		edge.To("routine_act_recs", RoutineActRec.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+	}
 }

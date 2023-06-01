@@ -33,6 +33,8 @@ const (
 	EdgeTags = "tags"
 	// EdgeRoutineActs holds the string denoting the routine_acts edge name in mutations.
 	EdgeRoutineActs = "routine_acts"
+	// EdgeRoutineActRecs holds the string denoting the routine_act_recs edge name in mutations.
+	EdgeRoutineActRecs = "routine_act_recs"
 	// Table holds the table name of the act in the database.
 	Table = "acts"
 	// TagsTable is the table that holds the tags relation/edge. The primary key declared below.
@@ -47,6 +49,13 @@ const (
 	RoutineActsInverseTable = "routine_acts"
 	// RoutineActsColumn is the table column denoting the routine_acts relation/edge.
 	RoutineActsColumn = "act_routine_acts"
+	// RoutineActRecsTable is the table that holds the routine_act_recs relation/edge.
+	RoutineActRecsTable = "routine_act_recs"
+	// RoutineActRecsInverseTable is the table name for the RoutineActRec entity.
+	// It exists in this package in order to avoid circular dependency with the "routineactrec" package.
+	RoutineActRecsInverseTable = "routine_act_recs"
+	// RoutineActRecsColumn is the table column denoting the routine_act_recs relation/edge.
+	RoutineActRecsColumn = "act_routine_act_recs"
 )
 
 // Columns holds all SQL columns for act fields.
@@ -181,6 +190,20 @@ func ByRoutineActs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newRoutineActsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByRoutineActRecsCount orders the results by routine_act_recs count.
+func ByRoutineActRecsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newRoutineActRecsStep(), opts...)
+	}
+}
+
+// ByRoutineActRecs orders the results by routine_act_recs terms.
+func ByRoutineActRecs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRoutineActRecsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTagsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -193,5 +216,12 @@ func newRoutineActsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RoutineActsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, RoutineActsTable, RoutineActsColumn),
+	)
+}
+func newRoutineActRecsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RoutineActRecsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, RoutineActRecsTable, RoutineActRecsColumn),
 	)
 }

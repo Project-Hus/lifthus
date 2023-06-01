@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -28,5 +30,10 @@ func (WeeklyRoutineRec) Fields() []ent.Field {
 
 // Edges of the WeeklyRoutineRec.
 func (WeeklyRoutineRec) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.From("weekly_routine", WeeklyRoutine.Type).Ref("weekly_routine_recs").Unique(),
+
+		edge.From("program_rec", ProgramRec.Type).Ref("weekly_routine_recs").Unique(),
+		edge.To("daily_routine_recs", DailyRoutineRec.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+	}
 }

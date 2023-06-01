@@ -509,6 +509,29 @@ func HasDailyRoutinesWith(preds ...predicate.DailyRoutine) predicate.Program {
 	})
 }
 
+// HasProgramRecs applies the HasEdge predicate on the "program_recs" edge.
+func HasProgramRecs() predicate.Program {
+	return predicate.Program(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ProgramRecsTable, ProgramRecsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProgramRecsWith applies the HasEdge predicate on the "program_recs" edge with a given conditions (other predicates).
+func HasProgramRecsWith(preds ...predicate.ProgramRec) predicate.Program {
+	return predicate.Program(func(s *sql.Selector) {
+		step := newProgramRecsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Program) predicate.Program {
 	return predicate.Program(func(s *sql.Selector) {

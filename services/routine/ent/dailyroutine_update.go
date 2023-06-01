@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"routine/ent/dailyroutine"
+	"routine/ent/dailyroutinerec"
 	"routine/ent/predicate"
 	"routine/ent/program"
 	"routine/ent/routineact"
@@ -149,6 +150,21 @@ func (dru *DailyRoutineUpdate) AddRoutineActs(r ...*RoutineAct) *DailyRoutineUpd
 	return dru.AddRoutineActIDs(ids...)
 }
 
+// AddDailyRoutineRecIDs adds the "daily_routine_recs" edge to the DailyRoutineRec entity by IDs.
+func (dru *DailyRoutineUpdate) AddDailyRoutineRecIDs(ids ...uint64) *DailyRoutineUpdate {
+	dru.mutation.AddDailyRoutineRecIDs(ids...)
+	return dru
+}
+
+// AddDailyRoutineRecs adds the "daily_routine_recs" edges to the DailyRoutineRec entity.
+func (dru *DailyRoutineUpdate) AddDailyRoutineRecs(d ...*DailyRoutineRec) *DailyRoutineUpdate {
+	ids := make([]uint64, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return dru.AddDailyRoutineRecIDs(ids...)
+}
+
 // Mutation returns the DailyRoutineMutation object of the builder.
 func (dru *DailyRoutineUpdate) Mutation() *DailyRoutineMutation {
 	return dru.mutation
@@ -215,6 +231,27 @@ func (dru *DailyRoutineUpdate) RemoveRoutineActs(r ...*RoutineAct) *DailyRoutine
 		ids[i] = r[i].ID
 	}
 	return dru.RemoveRoutineActIDs(ids...)
+}
+
+// ClearDailyRoutineRecs clears all "daily_routine_recs" edges to the DailyRoutineRec entity.
+func (dru *DailyRoutineUpdate) ClearDailyRoutineRecs() *DailyRoutineUpdate {
+	dru.mutation.ClearDailyRoutineRecs()
+	return dru
+}
+
+// RemoveDailyRoutineRecIDs removes the "daily_routine_recs" edge to DailyRoutineRec entities by IDs.
+func (dru *DailyRoutineUpdate) RemoveDailyRoutineRecIDs(ids ...uint64) *DailyRoutineUpdate {
+	dru.mutation.RemoveDailyRoutineRecIDs(ids...)
+	return dru
+}
+
+// RemoveDailyRoutineRecs removes "daily_routine_recs" edges to DailyRoutineRec entities.
+func (dru *DailyRoutineUpdate) RemoveDailyRoutineRecs(d ...*DailyRoutineRec) *DailyRoutineUpdate {
+	ids := make([]uint64, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return dru.RemoveDailyRoutineRecIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -437,6 +474,51 @@ func (dru *DailyRoutineUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if dru.mutation.DailyRoutineRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dailyroutine.DailyRoutineRecsTable,
+			Columns: []string{dailyroutine.DailyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := dru.mutation.RemovedDailyRoutineRecsIDs(); len(nodes) > 0 && !dru.mutation.DailyRoutineRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dailyroutine.DailyRoutineRecsTable,
+			Columns: []string{dailyroutine.DailyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := dru.mutation.DailyRoutineRecsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dailyroutine.DailyRoutineRecsTable,
+			Columns: []string{dailyroutine.DailyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, dru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{dailyroutine.Label}
@@ -575,6 +657,21 @@ func (druo *DailyRoutineUpdateOne) AddRoutineActs(r ...*RoutineAct) *DailyRoutin
 	return druo.AddRoutineActIDs(ids...)
 }
 
+// AddDailyRoutineRecIDs adds the "daily_routine_recs" edge to the DailyRoutineRec entity by IDs.
+func (druo *DailyRoutineUpdateOne) AddDailyRoutineRecIDs(ids ...uint64) *DailyRoutineUpdateOne {
+	druo.mutation.AddDailyRoutineRecIDs(ids...)
+	return druo
+}
+
+// AddDailyRoutineRecs adds the "daily_routine_recs" edges to the DailyRoutineRec entity.
+func (druo *DailyRoutineUpdateOne) AddDailyRoutineRecs(d ...*DailyRoutineRec) *DailyRoutineUpdateOne {
+	ids := make([]uint64, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return druo.AddDailyRoutineRecIDs(ids...)
+}
+
 // Mutation returns the DailyRoutineMutation object of the builder.
 func (druo *DailyRoutineUpdateOne) Mutation() *DailyRoutineMutation {
 	return druo.mutation
@@ -641,6 +738,27 @@ func (druo *DailyRoutineUpdateOne) RemoveRoutineActs(r ...*RoutineAct) *DailyRou
 		ids[i] = r[i].ID
 	}
 	return druo.RemoveRoutineActIDs(ids...)
+}
+
+// ClearDailyRoutineRecs clears all "daily_routine_recs" edges to the DailyRoutineRec entity.
+func (druo *DailyRoutineUpdateOne) ClearDailyRoutineRecs() *DailyRoutineUpdateOne {
+	druo.mutation.ClearDailyRoutineRecs()
+	return druo
+}
+
+// RemoveDailyRoutineRecIDs removes the "daily_routine_recs" edge to DailyRoutineRec entities by IDs.
+func (druo *DailyRoutineUpdateOne) RemoveDailyRoutineRecIDs(ids ...uint64) *DailyRoutineUpdateOne {
+	druo.mutation.RemoveDailyRoutineRecIDs(ids...)
+	return druo
+}
+
+// RemoveDailyRoutineRecs removes "daily_routine_recs" edges to DailyRoutineRec entities.
+func (druo *DailyRoutineUpdateOne) RemoveDailyRoutineRecs(d ...*DailyRoutineRec) *DailyRoutineUpdateOne {
+	ids := make([]uint64, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return druo.RemoveDailyRoutineRecIDs(ids...)
 }
 
 // Where appends a list predicates to the DailyRoutineUpdate builder.
@@ -886,6 +1004,51 @@ func (druo *DailyRoutineUpdateOne) sqlSave(ctx context.Context) (_node *DailyRou
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if druo.mutation.DailyRoutineRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dailyroutine.DailyRoutineRecsTable,
+			Columns: []string{dailyroutine.DailyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := druo.mutation.RemovedDailyRoutineRecsIDs(); len(nodes) > 0 && !druo.mutation.DailyRoutineRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dailyroutine.DailyRoutineRecsTable,
+			Columns: []string{dailyroutine.DailyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := druo.mutation.DailyRoutineRecsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dailyroutine.DailyRoutineRecsTable,
+			Columns: []string{dailyroutine.DailyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutinerec.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

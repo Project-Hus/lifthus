@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -38,5 +39,10 @@ func (RoutineActRec) Fields() []ent.Field {
 
 // Edges of the RoutineActRec.
 func (RoutineActRec) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.From("daily_routine_rec", DailyRoutineRec.Type).Ref("routine_act_recs").Unique().Required(),
+		edge.From("act", Act.Type).Ref("routine_act_recs").Unique().Required(),
+
+		edge.From("routine_act", RoutineAct.Type).Ref("routine_act_recs").Unique(),
+	}
 }

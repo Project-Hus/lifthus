@@ -37,9 +37,11 @@ type WeeklyRoutineEdges struct {
 	Program []*Program `json:"program,omitempty"`
 	// DailyRoutines holds the value of the daily_routines edge.
 	DailyRoutines []*DailyRoutine `json:"daily_routines,omitempty"`
+	// WeeklyRoutineRecs holds the value of the weekly_routine_recs edge.
+	WeeklyRoutineRecs []*WeeklyRoutineRec `json:"weekly_routine_recs,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // ProgramOrErr returns the Program value or an error if the edge
@@ -58,6 +60,15 @@ func (e WeeklyRoutineEdges) DailyRoutinesOrErr() ([]*DailyRoutine, error) {
 		return e.DailyRoutines, nil
 	}
 	return nil, &NotLoadedError{edge: "daily_routines"}
+}
+
+// WeeklyRoutineRecsOrErr returns the WeeklyRoutineRecs value or an error if the edge
+// was not loaded in eager-loading.
+func (e WeeklyRoutineEdges) WeeklyRoutineRecsOrErr() ([]*WeeklyRoutineRec, error) {
+	if e.loadedTypes[2] {
+		return e.WeeklyRoutineRecs, nil
+	}
+	return nil, &NotLoadedError{edge: "weekly_routine_recs"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -135,6 +146,11 @@ func (wr *WeeklyRoutine) QueryProgram() *ProgramQuery {
 // QueryDailyRoutines queries the "daily_routines" edge of the WeeklyRoutine entity.
 func (wr *WeeklyRoutine) QueryDailyRoutines() *DailyRoutineQuery {
 	return NewWeeklyRoutineClient(wr.config).QueryDailyRoutines(wr)
+}
+
+// QueryWeeklyRoutineRecs queries the "weekly_routine_recs" edge of the WeeklyRoutine entity.
+func (wr *WeeklyRoutine) QueryWeeklyRoutineRecs() *WeeklyRoutineRecQuery {
+	return NewWeeklyRoutineClient(wr.config).QueryWeeklyRoutineRecs(wr)
 }
 
 // Update returns a builder for updating this WeeklyRoutine.

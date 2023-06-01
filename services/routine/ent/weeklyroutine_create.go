@@ -9,6 +9,7 @@ import (
 	"routine/ent/dailyroutine"
 	"routine/ent/program"
 	"routine/ent/weeklyroutine"
+	"routine/ent/weeklyroutinerec"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -96,6 +97,21 @@ func (wrc *WeeklyRoutineCreate) AddDailyRoutines(d ...*DailyRoutine) *WeeklyRout
 		ids[i] = d[i].ID
 	}
 	return wrc.AddDailyRoutineIDs(ids...)
+}
+
+// AddWeeklyRoutineRecIDs adds the "weekly_routine_recs" edge to the WeeklyRoutineRec entity by IDs.
+func (wrc *WeeklyRoutineCreate) AddWeeklyRoutineRecIDs(ids ...uint64) *WeeklyRoutineCreate {
+	wrc.mutation.AddWeeklyRoutineRecIDs(ids...)
+	return wrc
+}
+
+// AddWeeklyRoutineRecs adds the "weekly_routine_recs" edges to the WeeklyRoutineRec entity.
+func (wrc *WeeklyRoutineCreate) AddWeeklyRoutineRecs(w ...*WeeklyRoutineRec) *WeeklyRoutineCreate {
+	ids := make([]uint64, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return wrc.AddWeeklyRoutineRecIDs(ids...)
 }
 
 // Mutation returns the WeeklyRoutineMutation object of the builder.
@@ -235,6 +251,22 @@ func (wrc *WeeklyRoutineCreate) createSpec() (*WeeklyRoutine, *sqlgraph.CreateSp
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dailyroutine.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := wrc.mutation.WeeklyRoutineRecsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   weeklyroutine.WeeklyRoutineRecsTable,
+			Columns: []string{weeklyroutine.WeeklyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(weeklyroutinerec.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

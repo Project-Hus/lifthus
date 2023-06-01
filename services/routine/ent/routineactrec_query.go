@@ -6,7 +6,10 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"routine/ent/act"
+	"routine/ent/dailyroutinerec"
 	"routine/ent/predicate"
+	"routine/ent/routineact"
 	"routine/ent/routineactrec"
 
 	"entgo.io/ent/dialect/sql"
@@ -17,10 +20,14 @@ import (
 // RoutineActRecQuery is the builder for querying RoutineActRec entities.
 type RoutineActRecQuery struct {
 	config
-	ctx        *QueryContext
-	order      []routineactrec.OrderOption
-	inters     []Interceptor
-	predicates []predicate.RoutineActRec
+	ctx                 *QueryContext
+	order               []routineactrec.OrderOption
+	inters              []Interceptor
+	predicates          []predicate.RoutineActRec
+	withDailyRoutineRec *DailyRoutineRecQuery
+	withAct             *ActQuery
+	withRoutineAct      *RoutineActQuery
+	withFKs             bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -55,6 +62,72 @@ func (rarq *RoutineActRecQuery) Unique(unique bool) *RoutineActRecQuery {
 func (rarq *RoutineActRecQuery) Order(o ...routineactrec.OrderOption) *RoutineActRecQuery {
 	rarq.order = append(rarq.order, o...)
 	return rarq
+}
+
+// QueryDailyRoutineRec chains the current query on the "daily_routine_rec" edge.
+func (rarq *RoutineActRecQuery) QueryDailyRoutineRec() *DailyRoutineRecQuery {
+	query := (&DailyRoutineRecClient{config: rarq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := rarq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := rarq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(routineactrec.Table, routineactrec.FieldID, selector),
+			sqlgraph.To(dailyroutinerec.Table, dailyroutinerec.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, routineactrec.DailyRoutineRecTable, routineactrec.DailyRoutineRecColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(rarq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAct chains the current query on the "act" edge.
+func (rarq *RoutineActRecQuery) QueryAct() *ActQuery {
+	query := (&ActClient{config: rarq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := rarq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := rarq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(routineactrec.Table, routineactrec.FieldID, selector),
+			sqlgraph.To(act.Table, act.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, routineactrec.ActTable, routineactrec.ActColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(rarq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRoutineAct chains the current query on the "routine_act" edge.
+func (rarq *RoutineActRecQuery) QueryRoutineAct() *RoutineActQuery {
+	query := (&RoutineActClient{config: rarq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := rarq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := rarq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(routineactrec.Table, routineactrec.FieldID, selector),
+			sqlgraph.To(routineact.Table, routineact.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, routineactrec.RoutineActTable, routineactrec.RoutineActColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(rarq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first RoutineActRec entity from the query.
@@ -244,15 +317,51 @@ func (rarq *RoutineActRecQuery) Clone() *RoutineActRecQuery {
 		return nil
 	}
 	return &RoutineActRecQuery{
-		config:     rarq.config,
-		ctx:        rarq.ctx.Clone(),
-		order:      append([]routineactrec.OrderOption{}, rarq.order...),
-		inters:     append([]Interceptor{}, rarq.inters...),
-		predicates: append([]predicate.RoutineActRec{}, rarq.predicates...),
+		config:              rarq.config,
+		ctx:                 rarq.ctx.Clone(),
+		order:               append([]routineactrec.OrderOption{}, rarq.order...),
+		inters:              append([]Interceptor{}, rarq.inters...),
+		predicates:          append([]predicate.RoutineActRec{}, rarq.predicates...),
+		withDailyRoutineRec: rarq.withDailyRoutineRec.Clone(),
+		withAct:             rarq.withAct.Clone(),
+		withRoutineAct:      rarq.withRoutineAct.Clone(),
 		// clone intermediate query.
 		sql:  rarq.sql.Clone(),
 		path: rarq.path,
 	}
+}
+
+// WithDailyRoutineRec tells the query-builder to eager-load the nodes that are connected to
+// the "daily_routine_rec" edge. The optional arguments are used to configure the query builder of the edge.
+func (rarq *RoutineActRecQuery) WithDailyRoutineRec(opts ...func(*DailyRoutineRecQuery)) *RoutineActRecQuery {
+	query := (&DailyRoutineRecClient{config: rarq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	rarq.withDailyRoutineRec = query
+	return rarq
+}
+
+// WithAct tells the query-builder to eager-load the nodes that are connected to
+// the "act" edge. The optional arguments are used to configure the query builder of the edge.
+func (rarq *RoutineActRecQuery) WithAct(opts ...func(*ActQuery)) *RoutineActRecQuery {
+	query := (&ActClient{config: rarq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	rarq.withAct = query
+	return rarq
+}
+
+// WithRoutineAct tells the query-builder to eager-load the nodes that are connected to
+// the "routine_act" edge. The optional arguments are used to configure the query builder of the edge.
+func (rarq *RoutineActRecQuery) WithRoutineAct(opts ...func(*RoutineActQuery)) *RoutineActRecQuery {
+	query := (&RoutineActClient{config: rarq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	rarq.withRoutineAct = query
+	return rarq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -331,15 +440,28 @@ func (rarq *RoutineActRecQuery) prepareQuery(ctx context.Context) error {
 
 func (rarq *RoutineActRecQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*RoutineActRec, error) {
 	var (
-		nodes = []*RoutineActRec{}
-		_spec = rarq.querySpec()
+		nodes       = []*RoutineActRec{}
+		withFKs     = rarq.withFKs
+		_spec       = rarq.querySpec()
+		loadedTypes = [3]bool{
+			rarq.withDailyRoutineRec != nil,
+			rarq.withAct != nil,
+			rarq.withRoutineAct != nil,
+		}
 	)
+	if rarq.withDailyRoutineRec != nil || rarq.withAct != nil || rarq.withRoutineAct != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, routineactrec.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*RoutineActRec).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &RoutineActRec{config: rarq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -351,7 +473,122 @@ func (rarq *RoutineActRecQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := rarq.withDailyRoutineRec; query != nil {
+		if err := rarq.loadDailyRoutineRec(ctx, query, nodes, nil,
+			func(n *RoutineActRec, e *DailyRoutineRec) { n.Edges.DailyRoutineRec = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := rarq.withAct; query != nil {
+		if err := rarq.loadAct(ctx, query, nodes, nil,
+			func(n *RoutineActRec, e *Act) { n.Edges.Act = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := rarq.withRoutineAct; query != nil {
+		if err := rarq.loadRoutineAct(ctx, query, nodes, nil,
+			func(n *RoutineActRec, e *RoutineAct) { n.Edges.RoutineAct = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (rarq *RoutineActRecQuery) loadDailyRoutineRec(ctx context.Context, query *DailyRoutineRecQuery, nodes []*RoutineActRec, init func(*RoutineActRec), assign func(*RoutineActRec, *DailyRoutineRec)) error {
+	ids := make([]uint64, 0, len(nodes))
+	nodeids := make(map[uint64][]*RoutineActRec)
+	for i := range nodes {
+		if nodes[i].daily_routine_rec_routine_act_recs == nil {
+			continue
+		}
+		fk := *nodes[i].daily_routine_rec_routine_act_recs
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(dailyroutinerec.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "daily_routine_rec_routine_act_recs" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (rarq *RoutineActRecQuery) loadAct(ctx context.Context, query *ActQuery, nodes []*RoutineActRec, init func(*RoutineActRec), assign func(*RoutineActRec, *Act)) error {
+	ids := make([]uint64, 0, len(nodes))
+	nodeids := make(map[uint64][]*RoutineActRec)
+	for i := range nodes {
+		if nodes[i].act_routine_act_recs == nil {
+			continue
+		}
+		fk := *nodes[i].act_routine_act_recs
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(act.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "act_routine_act_recs" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (rarq *RoutineActRecQuery) loadRoutineAct(ctx context.Context, query *RoutineActQuery, nodes []*RoutineActRec, init func(*RoutineActRec), assign func(*RoutineActRec, *RoutineAct)) error {
+	ids := make([]uint64, 0, len(nodes))
+	nodeids := make(map[uint64][]*RoutineActRec)
+	for i := range nodes {
+		if nodes[i].routine_act_routine_act_recs == nil {
+			continue
+		}
+		fk := *nodes[i].routine_act_routine_act_recs
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(routineact.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "routine_act_routine_act_recs" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (rarq *RoutineActRecQuery) sqlCount(ctx context.Context) (int, error) {

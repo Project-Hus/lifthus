@@ -32,6 +32,8 @@ const (
 	EdgeAct = "act"
 	// EdgeDailyRoutine holds the string denoting the daily_routine edge name in mutations.
 	EdgeDailyRoutine = "daily_routine"
+	// EdgeRoutineActRecs holds the string denoting the routine_act_recs edge name in mutations.
+	EdgeRoutineActRecs = "routine_act_recs"
 	// Table holds the table name of the routineact in the database.
 	Table = "routine_acts"
 	// ActTable is the table that holds the act relation/edge.
@@ -48,6 +50,13 @@ const (
 	DailyRoutineInverseTable = "daily_routines"
 	// DailyRoutineColumn is the table column denoting the daily_routine relation/edge.
 	DailyRoutineColumn = "daily_routine_routine_acts"
+	// RoutineActRecsTable is the table that holds the routine_act_recs relation/edge.
+	RoutineActRecsTable = "routine_act_recs"
+	// RoutineActRecsInverseTable is the table name for the RoutineActRec entity.
+	// It exists in this package in order to avoid circular dependency with the "routineactrec" package.
+	RoutineActRecsInverseTable = "routine_act_recs"
+	// RoutineActRecsColumn is the table column denoting the routine_act_recs relation/edge.
+	RoutineActRecsColumn = "routine_act_routine_act_recs"
 )
 
 // Columns holds all SQL columns for routineact fields.
@@ -155,6 +164,20 @@ func ByDailyRoutineField(field string, opts ...sql.OrderTermOption) OrderOption 
 		sqlgraph.OrderByNeighborTerms(s, newDailyRoutineStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByRoutineActRecsCount orders the results by routine_act_recs count.
+func ByRoutineActRecsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newRoutineActRecsStep(), opts...)
+	}
+}
+
+// ByRoutineActRecs orders the results by routine_act_recs terms.
+func ByRoutineActRecs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRoutineActRecsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newActStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -167,5 +190,12 @@ func newDailyRoutineStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DailyRoutineInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, DailyRoutineTable, DailyRoutineColumn),
+	)
+}
+func newRoutineActRecsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RoutineActRecsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, RoutineActRecsTable, RoutineActRecsColumn),
 	)
 }

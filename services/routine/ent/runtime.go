@@ -56,11 +56,11 @@ func init() {
 	dailyroutinerecFields := schema.DailyRoutineRec{}.Fields()
 	_ = dailyroutinerecFields
 	// dailyroutinerecDescCreatedAt is the schema descriptor for created_at field.
-	dailyroutinerecDescCreatedAt := dailyroutinerecFields[7].Descriptor()
+	dailyroutinerecDescCreatedAt := dailyroutinerecFields[8].Descriptor()
 	// dailyroutinerec.DefaultCreatedAt holds the default value on creation for the created_at field.
 	dailyroutinerec.DefaultCreatedAt = dailyroutinerecDescCreatedAt.Default.(func() time.Time)
 	// dailyroutinerecDescUpdatedAt is the schema descriptor for updated_at field.
-	dailyroutinerecDescUpdatedAt := dailyroutinerecFields[8].Descriptor()
+	dailyroutinerecDescUpdatedAt := dailyroutinerecFields[9].Descriptor()
 	// dailyroutinerec.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	dailyroutinerec.DefaultUpdatedAt = dailyroutinerecDescUpdatedAt.Default.(func() time.Time)
 	// dailyroutinerec.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

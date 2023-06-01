@@ -4,9 +4,13 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
+	"routine/ent/dailyroutinerec"
 	"routine/ent/predicate"
+	"routine/ent/programrec"
+	"routine/ent/weeklyroutine"
 	"routine/ent/weeklyroutinerec"
 
 	"entgo.io/ent/dialect/sql"
@@ -17,10 +21,14 @@ import (
 // WeeklyRoutineRecQuery is the builder for querying WeeklyRoutineRec entities.
 type WeeklyRoutineRecQuery struct {
 	config
-	ctx        *QueryContext
-	order      []weeklyroutinerec.OrderOption
-	inters     []Interceptor
-	predicates []predicate.WeeklyRoutineRec
+	ctx                  *QueryContext
+	order                []weeklyroutinerec.OrderOption
+	inters               []Interceptor
+	predicates           []predicate.WeeklyRoutineRec
+	withWeeklyRoutine    *WeeklyRoutineQuery
+	withProgramRec       *ProgramRecQuery
+	withDailyRoutineRecs *DailyRoutineRecQuery
+	withFKs              bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -55,6 +63,72 @@ func (wrrq *WeeklyRoutineRecQuery) Unique(unique bool) *WeeklyRoutineRecQuery {
 func (wrrq *WeeklyRoutineRecQuery) Order(o ...weeklyroutinerec.OrderOption) *WeeklyRoutineRecQuery {
 	wrrq.order = append(wrrq.order, o...)
 	return wrrq
+}
+
+// QueryWeeklyRoutine chains the current query on the "weekly_routine" edge.
+func (wrrq *WeeklyRoutineRecQuery) QueryWeeklyRoutine() *WeeklyRoutineQuery {
+	query := (&WeeklyRoutineClient{config: wrrq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := wrrq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := wrrq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(weeklyroutinerec.Table, weeklyroutinerec.FieldID, selector),
+			sqlgraph.To(weeklyroutine.Table, weeklyroutine.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, weeklyroutinerec.WeeklyRoutineTable, weeklyroutinerec.WeeklyRoutineColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(wrrq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProgramRec chains the current query on the "program_rec" edge.
+func (wrrq *WeeklyRoutineRecQuery) QueryProgramRec() *ProgramRecQuery {
+	query := (&ProgramRecClient{config: wrrq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := wrrq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := wrrq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(weeklyroutinerec.Table, weeklyroutinerec.FieldID, selector),
+			sqlgraph.To(programrec.Table, programrec.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, weeklyroutinerec.ProgramRecTable, weeklyroutinerec.ProgramRecColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(wrrq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDailyRoutineRecs chains the current query on the "daily_routine_recs" edge.
+func (wrrq *WeeklyRoutineRecQuery) QueryDailyRoutineRecs() *DailyRoutineRecQuery {
+	query := (&DailyRoutineRecClient{config: wrrq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := wrrq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := wrrq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(weeklyroutinerec.Table, weeklyroutinerec.FieldID, selector),
+			sqlgraph.To(dailyroutinerec.Table, dailyroutinerec.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, weeklyroutinerec.DailyRoutineRecsTable, weeklyroutinerec.DailyRoutineRecsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(wrrq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first WeeklyRoutineRec entity from the query.
@@ -244,15 +318,51 @@ func (wrrq *WeeklyRoutineRecQuery) Clone() *WeeklyRoutineRecQuery {
 		return nil
 	}
 	return &WeeklyRoutineRecQuery{
-		config:     wrrq.config,
-		ctx:        wrrq.ctx.Clone(),
-		order:      append([]weeklyroutinerec.OrderOption{}, wrrq.order...),
-		inters:     append([]Interceptor{}, wrrq.inters...),
-		predicates: append([]predicate.WeeklyRoutineRec{}, wrrq.predicates...),
+		config:               wrrq.config,
+		ctx:                  wrrq.ctx.Clone(),
+		order:                append([]weeklyroutinerec.OrderOption{}, wrrq.order...),
+		inters:               append([]Interceptor{}, wrrq.inters...),
+		predicates:           append([]predicate.WeeklyRoutineRec{}, wrrq.predicates...),
+		withWeeklyRoutine:    wrrq.withWeeklyRoutine.Clone(),
+		withProgramRec:       wrrq.withProgramRec.Clone(),
+		withDailyRoutineRecs: wrrq.withDailyRoutineRecs.Clone(),
 		// clone intermediate query.
 		sql:  wrrq.sql.Clone(),
 		path: wrrq.path,
 	}
+}
+
+// WithWeeklyRoutine tells the query-builder to eager-load the nodes that are connected to
+// the "weekly_routine" edge. The optional arguments are used to configure the query builder of the edge.
+func (wrrq *WeeklyRoutineRecQuery) WithWeeklyRoutine(opts ...func(*WeeklyRoutineQuery)) *WeeklyRoutineRecQuery {
+	query := (&WeeklyRoutineClient{config: wrrq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	wrrq.withWeeklyRoutine = query
+	return wrrq
+}
+
+// WithProgramRec tells the query-builder to eager-load the nodes that are connected to
+// the "program_rec" edge. The optional arguments are used to configure the query builder of the edge.
+func (wrrq *WeeklyRoutineRecQuery) WithProgramRec(opts ...func(*ProgramRecQuery)) *WeeklyRoutineRecQuery {
+	query := (&ProgramRecClient{config: wrrq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	wrrq.withProgramRec = query
+	return wrrq
+}
+
+// WithDailyRoutineRecs tells the query-builder to eager-load the nodes that are connected to
+// the "daily_routine_recs" edge. The optional arguments are used to configure the query builder of the edge.
+func (wrrq *WeeklyRoutineRecQuery) WithDailyRoutineRecs(opts ...func(*DailyRoutineRecQuery)) *WeeklyRoutineRecQuery {
+	query := (&DailyRoutineRecClient{config: wrrq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	wrrq.withDailyRoutineRecs = query
+	return wrrq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -331,15 +441,28 @@ func (wrrq *WeeklyRoutineRecQuery) prepareQuery(ctx context.Context) error {
 
 func (wrrq *WeeklyRoutineRecQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*WeeklyRoutineRec, error) {
 	var (
-		nodes = []*WeeklyRoutineRec{}
-		_spec = wrrq.querySpec()
+		nodes       = []*WeeklyRoutineRec{}
+		withFKs     = wrrq.withFKs
+		_spec       = wrrq.querySpec()
+		loadedTypes = [3]bool{
+			wrrq.withWeeklyRoutine != nil,
+			wrrq.withProgramRec != nil,
+			wrrq.withDailyRoutineRecs != nil,
+		}
 	)
+	if wrrq.withWeeklyRoutine != nil || wrrq.withProgramRec != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, weeklyroutinerec.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*WeeklyRoutineRec).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &WeeklyRoutineRec{config: wrrq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -351,7 +474,124 @@ func (wrrq *WeeklyRoutineRecQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := wrrq.withWeeklyRoutine; query != nil {
+		if err := wrrq.loadWeeklyRoutine(ctx, query, nodes, nil,
+			func(n *WeeklyRoutineRec, e *WeeklyRoutine) { n.Edges.WeeklyRoutine = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := wrrq.withProgramRec; query != nil {
+		if err := wrrq.loadProgramRec(ctx, query, nodes, nil,
+			func(n *WeeklyRoutineRec, e *ProgramRec) { n.Edges.ProgramRec = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := wrrq.withDailyRoutineRecs; query != nil {
+		if err := wrrq.loadDailyRoutineRecs(ctx, query, nodes,
+			func(n *WeeklyRoutineRec) { n.Edges.DailyRoutineRecs = []*DailyRoutineRec{} },
+			func(n *WeeklyRoutineRec, e *DailyRoutineRec) {
+				n.Edges.DailyRoutineRecs = append(n.Edges.DailyRoutineRecs, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (wrrq *WeeklyRoutineRecQuery) loadWeeklyRoutine(ctx context.Context, query *WeeklyRoutineQuery, nodes []*WeeklyRoutineRec, init func(*WeeklyRoutineRec), assign func(*WeeklyRoutineRec, *WeeklyRoutine)) error {
+	ids := make([]uint64, 0, len(nodes))
+	nodeids := make(map[uint64][]*WeeklyRoutineRec)
+	for i := range nodes {
+		if nodes[i].weekly_routine_weekly_routine_recs == nil {
+			continue
+		}
+		fk := *nodes[i].weekly_routine_weekly_routine_recs
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(weeklyroutine.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "weekly_routine_weekly_routine_recs" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (wrrq *WeeklyRoutineRecQuery) loadProgramRec(ctx context.Context, query *ProgramRecQuery, nodes []*WeeklyRoutineRec, init func(*WeeklyRoutineRec), assign func(*WeeklyRoutineRec, *ProgramRec)) error {
+	ids := make([]uint64, 0, len(nodes))
+	nodeids := make(map[uint64][]*WeeklyRoutineRec)
+	for i := range nodes {
+		if nodes[i].program_rec_weekly_routine_recs == nil {
+			continue
+		}
+		fk := *nodes[i].program_rec_weekly_routine_recs
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(programrec.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "program_rec_weekly_routine_recs" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (wrrq *WeeklyRoutineRecQuery) loadDailyRoutineRecs(ctx context.Context, query *DailyRoutineRecQuery, nodes []*WeeklyRoutineRec, init func(*WeeklyRoutineRec), assign func(*WeeklyRoutineRec, *DailyRoutineRec)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint64]*WeeklyRoutineRec)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.DailyRoutineRec(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(weeklyroutinerec.DailyRoutineRecsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.weekly_routine_rec_daily_routine_recs
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "weekly_routine_rec_daily_routine_recs" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "weekly_routine_rec_daily_routine_recs" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (wrrq *WeeklyRoutineRecQuery) sqlCount(ctx context.Context) (int, error) {

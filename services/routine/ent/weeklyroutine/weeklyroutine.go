@@ -26,6 +26,8 @@ const (
 	EdgeProgram = "program"
 	// EdgeDailyRoutines holds the string denoting the daily_routines edge name in mutations.
 	EdgeDailyRoutines = "daily_routines"
+	// EdgeWeeklyRoutineRecs holds the string denoting the weekly_routine_recs edge name in mutations.
+	EdgeWeeklyRoutineRecs = "weekly_routine_recs"
 	// Table holds the table name of the weeklyroutine in the database.
 	Table = "weekly_routines"
 	// ProgramTable is the table that holds the program relation/edge. The primary key declared below.
@@ -38,6 +40,13 @@ const (
 	// DailyRoutinesInverseTable is the table name for the DailyRoutine entity.
 	// It exists in this package in order to avoid circular dependency with the "dailyroutine" package.
 	DailyRoutinesInverseTable = "daily_routines"
+	// WeeklyRoutineRecsTable is the table that holds the weekly_routine_recs relation/edge.
+	WeeklyRoutineRecsTable = "weekly_routine_recs"
+	// WeeklyRoutineRecsInverseTable is the table name for the WeeklyRoutineRec entity.
+	// It exists in this package in order to avoid circular dependency with the "weeklyroutinerec" package.
+	WeeklyRoutineRecsInverseTable = "weekly_routine_recs"
+	// WeeklyRoutineRecsColumn is the table column denoting the weekly_routine_recs relation/edge.
+	WeeklyRoutineRecsColumn = "weekly_routine_weekly_routine_recs"
 )
 
 // Columns holds all SQL columns for weeklyroutine fields.
@@ -134,6 +143,20 @@ func ByDailyRoutines(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newDailyRoutinesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByWeeklyRoutineRecsCount orders the results by weekly_routine_recs count.
+func ByWeeklyRoutineRecsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newWeeklyRoutineRecsStep(), opts...)
+	}
+}
+
+// ByWeeklyRoutineRecs orders the results by weekly_routine_recs terms.
+func ByWeeklyRoutineRecs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newWeeklyRoutineRecsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newProgramStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -146,5 +169,12 @@ func newDailyRoutinesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DailyRoutinesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, DailyRoutinesTable, DailyRoutinesPrimaryKey...),
+	)
+}
+func newWeeklyRoutineRecsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(WeeklyRoutineRecsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, WeeklyRoutineRecsTable, WeeklyRoutineRecsColumn),
 	)
 }

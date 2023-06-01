@@ -4,6 +4,7 @@ package ent
 
 import (
 	"fmt"
+	"routine/ent/program"
 	"routine/ent/programrec"
 	"strings"
 	"time"
@@ -32,8 +33,56 @@ type ProgramRec struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
-	selectValues sql.SelectValues
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the ProgramRecQuery when eager-loading is set.
+	Edges                ProgramRecEdges `json:"edges"`
+	program_program_recs *uint64
+	selectValues         sql.SelectValues
+}
+
+// ProgramRecEdges holds the relations/edges for other nodes in the graph.
+type ProgramRecEdges struct {
+	// Program holds the value of the program edge.
+	Program *Program `json:"program,omitempty"`
+	// WeeklyRoutineRecs holds the value of the weekly_routine_recs edge.
+	WeeklyRoutineRecs []*WeeklyRoutineRec `json:"weekly_routine_recs,omitempty"`
+	// DailyRoutineRecs holds the value of the daily_routine_recs edge.
+	DailyRoutineRecs []*DailyRoutineRec `json:"daily_routine_recs,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [3]bool
+}
+
+// ProgramOrErr returns the Program value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ProgramRecEdges) ProgramOrErr() (*Program, error) {
+	if e.loadedTypes[0] {
+		if e.Program == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: program.Label}
+		}
+		return e.Program, nil
+	}
+	return nil, &NotLoadedError{edge: "program"}
+}
+
+// WeeklyRoutineRecsOrErr returns the WeeklyRoutineRecs value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProgramRecEdges) WeeklyRoutineRecsOrErr() ([]*WeeklyRoutineRec, error) {
+	if e.loadedTypes[1] {
+		return e.WeeklyRoutineRecs, nil
+	}
+	return nil, &NotLoadedError{edge: "weekly_routine_recs"}
+}
+
+// DailyRoutineRecsOrErr returns the DailyRoutineRecs value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProgramRecEdges) DailyRoutineRecsOrErr() ([]*DailyRoutineRec, error) {
+	if e.loadedTypes[2] {
+		return e.DailyRoutineRecs, nil
+	}
+	return nil, &NotLoadedError{edge: "daily_routine_recs"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -47,6 +96,8 @@ func (*ProgramRec) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case programrec.FieldStartDate, programrec.FieldEndDate, programrec.FieldCreatedAt, programrec.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
+		case programrec.ForeignKeys[0]: // program_program_recs
+			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -117,6 +168,13 @@ func (pr *ProgramRec) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pr.UpdatedAt = value.Time
 			}
+		case programrec.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field program_program_recs", value)
+			} else if value.Valid {
+				pr.program_program_recs = new(uint64)
+				*pr.program_program_recs = uint64(value.Int64)
+			}
 		default:
 			pr.selectValues.Set(columns[i], values[i])
 		}
@@ -128,6 +186,21 @@ func (pr *ProgramRec) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (pr *ProgramRec) Value(name string) (ent.Value, error) {
 	return pr.selectValues.Get(name)
+}
+
+// QueryProgram queries the "program" edge of the ProgramRec entity.
+func (pr *ProgramRec) QueryProgram() *ProgramQuery {
+	return NewProgramRecClient(pr.config).QueryProgram(pr)
+}
+
+// QueryWeeklyRoutineRecs queries the "weekly_routine_recs" edge of the ProgramRec entity.
+func (pr *ProgramRec) QueryWeeklyRoutineRecs() *WeeklyRoutineRecQuery {
+	return NewProgramRecClient(pr.config).QueryWeeklyRoutineRecs(pr)
+}
+
+// QueryDailyRoutineRecs queries the "daily_routine_recs" edge of the ProgramRec entity.
+func (pr *ProgramRec) QueryDailyRoutineRecs() *DailyRoutineRecQuery {
+	return NewProgramRecClient(pr.config).QueryDailyRoutineRecs(pr)
 }
 
 // Update returns a builder for updating this ProgramRec.

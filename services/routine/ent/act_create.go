@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"routine/ent/act"
 	"routine/ent/routineact"
+	"routine/ent/routineactrec"
 	"routine/ent/tag"
 	"time"
 
@@ -138,6 +139,21 @@ func (ac *ActCreate) AddRoutineActs(r ...*RoutineAct) *ActCreate {
 		ids[i] = r[i].ID
 	}
 	return ac.AddRoutineActIDs(ids...)
+}
+
+// AddRoutineActRecIDs adds the "routine_act_recs" edge to the RoutineActRec entity by IDs.
+func (ac *ActCreate) AddRoutineActRecIDs(ids ...uint64) *ActCreate {
+	ac.mutation.AddRoutineActRecIDs(ids...)
+	return ac
+}
+
+// AddRoutineActRecs adds the "routine_act_recs" edges to the RoutineActRec entity.
+func (ac *ActCreate) AddRoutineActRecs(r ...*RoutineActRec) *ActCreate {
+	ids := make([]uint64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return ac.AddRoutineActRecIDs(ids...)
 }
 
 // Mutation returns the ActMutation object of the builder.
@@ -294,6 +310,22 @@ func (ac *ActCreate) createSpec() (*Act, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ac.mutation.RoutineActRecsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.RoutineActRecsTable,
+			Columns: []string{act.RoutineActRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineactrec.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

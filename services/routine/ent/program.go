@@ -45,9 +45,11 @@ type ProgramEdges struct {
 	WeeklyRoutines []*WeeklyRoutine `json:"weekly_routines,omitempty"`
 	// DailyRoutines holds the value of the daily_routines edge.
 	DailyRoutines []*DailyRoutine `json:"daily_routines,omitempty"`
+	// ProgramRecs holds the value of the program_recs edge.
+	ProgramRecs []*ProgramRec `json:"program_recs,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // TagsOrErr returns the Tags value or an error if the edge
@@ -75,6 +77,15 @@ func (e ProgramEdges) DailyRoutinesOrErr() ([]*DailyRoutine, error) {
 		return e.DailyRoutines, nil
 	}
 	return nil, &NotLoadedError{edge: "daily_routines"}
+}
+
+// ProgramRecsOrErr returns the ProgramRecs value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProgramEdges) ProgramRecsOrErr() ([]*ProgramRec, error) {
+	if e.loadedTypes[3] {
+		return e.ProgramRecs, nil
+	}
+	return nil, &NotLoadedError{edge: "program_recs"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -179,6 +190,11 @@ func (pr *Program) QueryWeeklyRoutines() *WeeklyRoutineQuery {
 // QueryDailyRoutines queries the "daily_routines" edge of the Program entity.
 func (pr *Program) QueryDailyRoutines() *DailyRoutineQuery {
 	return NewProgramClient(pr.config).QueryDailyRoutines(pr)
+}
+
+// QueryProgramRecs queries the "program_recs" edge of the Program entity.
+func (pr *Program) QueryProgramRecs() *ProgramRecQuery {
+	return NewProgramClient(pr.config).QueryProgramRecs(pr)
 }
 
 // Update returns a builder for updating this Program.

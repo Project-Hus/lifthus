@@ -436,6 +436,29 @@ func HasDailyRoutineWith(preds ...predicate.DailyRoutine) predicate.RoutineAct {
 	})
 }
 
+// HasRoutineActRecs applies the HasEdge predicate on the "routine_act_recs" edge.
+func HasRoutineActRecs() predicate.RoutineAct {
+	return predicate.RoutineAct(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, RoutineActRecsTable, RoutineActRecsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRoutineActRecsWith applies the HasEdge predicate on the "routine_act_recs" edge with a given conditions (other predicates).
+func HasRoutineActRecsWith(preds ...predicate.RoutineActRec) predicate.RoutineAct {
+	return predicate.RoutineAct(func(s *sql.Selector) {
+		step := newRoutineActRecsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.RoutineAct) predicate.RoutineAct {
 	return predicate.RoutineAct(func(s *sql.Selector) {

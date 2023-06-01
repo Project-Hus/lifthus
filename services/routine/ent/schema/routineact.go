@@ -33,5 +33,7 @@ func (RoutineAct) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("act", Act.Type).Ref("routine_acts").Required().Unique(),
 		edge.From("daily_routine", DailyRoutine.Type).Ref("routine_acts").Required().Unique(),
+
+		edge.To("routine_act_recs", RoutineActRec.Type),
 	}
 }

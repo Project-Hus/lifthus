@@ -6,7 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"routine/ent/dailyroutinerec"
+	"routine/ent/program"
 	"routine/ent/programrec"
+	"routine/ent/weeklyroutinerec"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -96,6 +99,55 @@ func (prc *ProgramRecCreate) SetNillableUpdatedAt(t *time.Time) *ProgramRecCreat
 func (prc *ProgramRecCreate) SetID(u uint64) *ProgramRecCreate {
 	prc.mutation.SetID(u)
 	return prc
+}
+
+// SetProgramID sets the "program" edge to the Program entity by ID.
+func (prc *ProgramRecCreate) SetProgramID(id uint64) *ProgramRecCreate {
+	prc.mutation.SetProgramID(id)
+	return prc
+}
+
+// SetNillableProgramID sets the "program" edge to the Program entity by ID if the given value is not nil.
+func (prc *ProgramRecCreate) SetNillableProgramID(id *uint64) *ProgramRecCreate {
+	if id != nil {
+		prc = prc.SetProgramID(*id)
+	}
+	return prc
+}
+
+// SetProgram sets the "program" edge to the Program entity.
+func (prc *ProgramRecCreate) SetProgram(p *Program) *ProgramRecCreate {
+	return prc.SetProgramID(p.ID)
+}
+
+// AddWeeklyRoutineRecIDs adds the "weekly_routine_recs" edge to the WeeklyRoutineRec entity by IDs.
+func (prc *ProgramRecCreate) AddWeeklyRoutineRecIDs(ids ...uint64) *ProgramRecCreate {
+	prc.mutation.AddWeeklyRoutineRecIDs(ids...)
+	return prc
+}
+
+// AddWeeklyRoutineRecs adds the "weekly_routine_recs" edges to the WeeklyRoutineRec entity.
+func (prc *ProgramRecCreate) AddWeeklyRoutineRecs(w ...*WeeklyRoutineRec) *ProgramRecCreate {
+	ids := make([]uint64, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return prc.AddWeeklyRoutineRecIDs(ids...)
+}
+
+// AddDailyRoutineRecIDs adds the "daily_routine_recs" edge to the DailyRoutineRec entity by IDs.
+func (prc *ProgramRecCreate) AddDailyRoutineRecIDs(ids ...uint64) *ProgramRecCreate {
+	prc.mutation.AddDailyRoutineRecIDs(ids...)
+	return prc
+}
+
+// AddDailyRoutineRecs adds the "daily_routine_recs" edges to the DailyRoutineRec entity.
+func (prc *ProgramRecCreate) AddDailyRoutineRecs(d ...*DailyRoutineRec) *ProgramRecCreate {
+	ids := make([]uint64, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return prc.AddDailyRoutineRecIDs(ids...)
 }
 
 // Mutation returns the ProgramRecMutation object of the builder.
@@ -234,6 +286,55 @@ func (prc *ProgramRecCreate) createSpec() (*ProgramRec, *sqlgraph.CreateSpec) {
 	if value, ok := prc.mutation.UpdatedAt(); ok {
 		_spec.SetField(programrec.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := prc.mutation.ProgramIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   programrec.ProgramTable,
+			Columns: []string{programrec.ProgramColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.program_program_recs = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := prc.mutation.WeeklyRoutineRecsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.WeeklyRoutineRecsTable,
+			Columns: []string{programrec.WeeklyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(weeklyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := prc.mutation.DailyRoutineRecsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.DailyRoutineRecsTable,
+			Columns: []string{programrec.DailyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

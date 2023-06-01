@@ -4,6 +4,9 @@ package ent
 
 import (
 	"fmt"
+	"routine/ent/act"
+	"routine/ent/dailyroutinerec"
+	"routine/ent/routineact"
 	"routine/ent/routineactrec"
 	"strings"
 	"time"
@@ -42,8 +45,66 @@ type RoutineActRec struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
-	selectValues sql.SelectValues
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the RoutineActRecQuery when eager-loading is set.
+	Edges                              RoutineActRecEdges `json:"edges"`
+	act_routine_act_recs               *uint64
+	daily_routine_rec_routine_act_recs *uint64
+	routine_act_routine_act_recs       *uint64
+	selectValues                       sql.SelectValues
+}
+
+// RoutineActRecEdges holds the relations/edges for other nodes in the graph.
+type RoutineActRecEdges struct {
+	// DailyRoutineRec holds the value of the daily_routine_rec edge.
+	DailyRoutineRec *DailyRoutineRec `json:"daily_routine_rec,omitempty"`
+	// Act holds the value of the act edge.
+	Act *Act `json:"act,omitempty"`
+	// RoutineAct holds the value of the routine_act edge.
+	RoutineAct *RoutineAct `json:"routine_act,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [3]bool
+}
+
+// DailyRoutineRecOrErr returns the DailyRoutineRec value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e RoutineActRecEdges) DailyRoutineRecOrErr() (*DailyRoutineRec, error) {
+	if e.loadedTypes[0] {
+		if e.DailyRoutineRec == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: dailyroutinerec.Label}
+		}
+		return e.DailyRoutineRec, nil
+	}
+	return nil, &NotLoadedError{edge: "daily_routine_rec"}
+}
+
+// ActOrErr returns the Act value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e RoutineActRecEdges) ActOrErr() (*Act, error) {
+	if e.loadedTypes[1] {
+		if e.Act == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: act.Label}
+		}
+		return e.Act, nil
+	}
+	return nil, &NotLoadedError{edge: "act"}
+}
+
+// RoutineActOrErr returns the RoutineAct value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e RoutineActRecEdges) RoutineActOrErr() (*RoutineAct, error) {
+	if e.loadedTypes[2] {
+		if e.RoutineAct == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: routineact.Label}
+		}
+		return e.RoutineAct, nil
+	}
+	return nil, &NotLoadedError{edge: "routine_act"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -57,6 +118,12 @@ func (*RoutineActRec) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case routineactrec.FieldCreatedAt, routineactrec.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
+		case routineactrec.ForeignKeys[0]: // act_routine_act_recs
+			values[i] = new(sql.NullInt64)
+		case routineactrec.ForeignKeys[1]: // daily_routine_rec_routine_act_recs
+			values[i] = new(sql.NullInt64)
+		case routineactrec.ForeignKeys[2]: // routine_act_routine_act_recs
+			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -162,6 +229,27 @@ func (rar *RoutineActRec) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				rar.UpdatedAt = value.Time
 			}
+		case routineactrec.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field act_routine_act_recs", value)
+			} else if value.Valid {
+				rar.act_routine_act_recs = new(uint64)
+				*rar.act_routine_act_recs = uint64(value.Int64)
+			}
+		case routineactrec.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field daily_routine_rec_routine_act_recs", value)
+			} else if value.Valid {
+				rar.daily_routine_rec_routine_act_recs = new(uint64)
+				*rar.daily_routine_rec_routine_act_recs = uint64(value.Int64)
+			}
+		case routineactrec.ForeignKeys[2]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field routine_act_routine_act_recs", value)
+			} else if value.Valid {
+				rar.routine_act_routine_act_recs = new(uint64)
+				*rar.routine_act_routine_act_recs = uint64(value.Int64)
+			}
 		default:
 			rar.selectValues.Set(columns[i], values[i])
 		}
@@ -173,6 +261,21 @@ func (rar *RoutineActRec) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (rar *RoutineActRec) Value(name string) (ent.Value, error) {
 	return rar.selectValues.Get(name)
+}
+
+// QueryDailyRoutineRec queries the "daily_routine_rec" edge of the RoutineActRec entity.
+func (rar *RoutineActRec) QueryDailyRoutineRec() *DailyRoutineRecQuery {
+	return NewRoutineActRecClient(rar.config).QueryDailyRoutineRec(rar)
+}
+
+// QueryAct queries the "act" edge of the RoutineActRec entity.
+func (rar *RoutineActRec) QueryAct() *ActQuery {
+	return NewRoutineActRecClient(rar.config).QueryAct(rar)
+}
+
+// QueryRoutineAct queries the "routine_act" edge of the RoutineActRec entity.
+func (rar *RoutineActRec) QueryRoutineAct() *RoutineActQuery {
+	return NewRoutineActRecClient(rar.config).QueryRoutineAct(rar)
 }
 
 // Update returns a builder for updating this RoutineActRec.

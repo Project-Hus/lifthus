@@ -31,5 +31,7 @@ func (WeeklyRoutine) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("program", Program.Type).Ref("weekly_routines"),
 		edge.To("daily_routines", DailyRoutine.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+
+		edge.To("weekly_routine_recs", WeeklyRoutineRec.Type),
 	}
 }

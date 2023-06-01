@@ -4,7 +4,10 @@ package ent
 
 import (
 	"fmt"
+	"routine/ent/dailyroutine"
 	"routine/ent/dailyroutinerec"
+	"routine/ent/programrec"
+	"routine/ent/weeklyroutinerec"
 	"strings"
 	"time"
 
@@ -17,6 +20,8 @@ type DailyRoutineRec struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uint64 `json:"id,omitempty"`
+	// Author holds the value of the "author" field.
+	Author uint64 `json:"author,omitempty"`
 	// ProgramRecID holds the value of the "program_rec_id" field.
 	ProgramRecID *uint64 `json:"program_rec_id,omitempty"`
 	// WeeklyRoutineRecID holds the value of the "weekly_routine_rec_id" field.
@@ -32,8 +37,77 @@ type DailyRoutineRec struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
-	selectValues sql.SelectValues
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the DailyRoutineRecQuery when eager-loading is set.
+	Edges                                 DailyRoutineRecEdges `json:"edges"`
+	daily_routine_daily_routine_recs      *uint64
+	program_rec_daily_routine_recs        *uint64
+	weekly_routine_rec_daily_routine_recs *uint64
+	selectValues                          sql.SelectValues
+}
+
+// DailyRoutineRecEdges holds the relations/edges for other nodes in the graph.
+type DailyRoutineRecEdges struct {
+	// DailyRoutine holds the value of the daily_routine edge.
+	DailyRoutine *DailyRoutine `json:"daily_routine,omitempty"`
+	// ProgramRec holds the value of the program_rec edge.
+	ProgramRec *ProgramRec `json:"program_rec,omitempty"`
+	// WeeklyRoutineRec holds the value of the weekly_routine_rec edge.
+	WeeklyRoutineRec *WeeklyRoutineRec `json:"weekly_routine_rec,omitempty"`
+	// RoutineActRecs holds the value of the routine_act_recs edge.
+	RoutineActRecs []*RoutineActRec `json:"routine_act_recs,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [4]bool
+}
+
+// DailyRoutineOrErr returns the DailyRoutine value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DailyRoutineRecEdges) DailyRoutineOrErr() (*DailyRoutine, error) {
+	if e.loadedTypes[0] {
+		if e.DailyRoutine == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: dailyroutine.Label}
+		}
+		return e.DailyRoutine, nil
+	}
+	return nil, &NotLoadedError{edge: "daily_routine"}
+}
+
+// ProgramRecOrErr returns the ProgramRec value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DailyRoutineRecEdges) ProgramRecOrErr() (*ProgramRec, error) {
+	if e.loadedTypes[1] {
+		if e.ProgramRec == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: programrec.Label}
+		}
+		return e.ProgramRec, nil
+	}
+	return nil, &NotLoadedError{edge: "program_rec"}
+}
+
+// WeeklyRoutineRecOrErr returns the WeeklyRoutineRec value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e DailyRoutineRecEdges) WeeklyRoutineRecOrErr() (*WeeklyRoutineRec, error) {
+	if e.loadedTypes[2] {
+		if e.WeeklyRoutineRec == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: weeklyroutinerec.Label}
+		}
+		return e.WeeklyRoutineRec, nil
+	}
+	return nil, &NotLoadedError{edge: "weekly_routine_rec"}
+}
+
+// RoutineActRecsOrErr returns the RoutineActRecs value or an error if the edge
+// was not loaded in eager-loading.
+func (e DailyRoutineRecEdges) RoutineActRecsOrErr() ([]*RoutineActRec, error) {
+	if e.loadedTypes[3] {
+		return e.RoutineActRecs, nil
+	}
+	return nil, &NotLoadedError{edge: "routine_act_recs"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -41,12 +115,18 @@ func (*DailyRoutineRec) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case dailyroutinerec.FieldID, dailyroutinerec.FieldProgramRecID, dailyroutinerec.FieldWeeklyRoutineRecID, dailyroutinerec.FieldDailyRoutineID:
+		case dailyroutinerec.FieldID, dailyroutinerec.FieldAuthor, dailyroutinerec.FieldProgramRecID, dailyroutinerec.FieldWeeklyRoutineRecID, dailyroutinerec.FieldDailyRoutineID:
 			values[i] = new(sql.NullInt64)
 		case dailyroutinerec.FieldStatus, dailyroutinerec.FieldComment:
 			values[i] = new(sql.NullString)
 		case dailyroutinerec.FieldDate, dailyroutinerec.FieldCreatedAt, dailyroutinerec.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
+		case dailyroutinerec.ForeignKeys[0]: // daily_routine_daily_routine_recs
+			values[i] = new(sql.NullInt64)
+		case dailyroutinerec.ForeignKeys[1]: // program_rec_daily_routine_recs
+			values[i] = new(sql.NullInt64)
+		case dailyroutinerec.ForeignKeys[2]: // weekly_routine_rec_daily_routine_recs
+			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -68,6 +148,12 @@ func (drr *DailyRoutineRec) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			drr.ID = uint64(value.Int64)
+		case dailyroutinerec.FieldAuthor:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field author", values[i])
+			} else if value.Valid {
+				drr.Author = uint64(value.Int64)
+			}
 		case dailyroutinerec.FieldProgramRecID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field program_rec_id", values[i])
@@ -120,6 +206,27 @@ func (drr *DailyRoutineRec) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				drr.UpdatedAt = value.Time
 			}
+		case dailyroutinerec.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field daily_routine_daily_routine_recs", value)
+			} else if value.Valid {
+				drr.daily_routine_daily_routine_recs = new(uint64)
+				*drr.daily_routine_daily_routine_recs = uint64(value.Int64)
+			}
+		case dailyroutinerec.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field program_rec_daily_routine_recs", value)
+			} else if value.Valid {
+				drr.program_rec_daily_routine_recs = new(uint64)
+				*drr.program_rec_daily_routine_recs = uint64(value.Int64)
+			}
+		case dailyroutinerec.ForeignKeys[2]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field weekly_routine_rec_daily_routine_recs", value)
+			} else if value.Valid {
+				drr.weekly_routine_rec_daily_routine_recs = new(uint64)
+				*drr.weekly_routine_rec_daily_routine_recs = uint64(value.Int64)
+			}
 		default:
 			drr.selectValues.Set(columns[i], values[i])
 		}
@@ -131,6 +238,26 @@ func (drr *DailyRoutineRec) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (drr *DailyRoutineRec) Value(name string) (ent.Value, error) {
 	return drr.selectValues.Get(name)
+}
+
+// QueryDailyRoutine queries the "daily_routine" edge of the DailyRoutineRec entity.
+func (drr *DailyRoutineRec) QueryDailyRoutine() *DailyRoutineQuery {
+	return NewDailyRoutineRecClient(drr.config).QueryDailyRoutine(drr)
+}
+
+// QueryProgramRec queries the "program_rec" edge of the DailyRoutineRec entity.
+func (drr *DailyRoutineRec) QueryProgramRec() *ProgramRecQuery {
+	return NewDailyRoutineRecClient(drr.config).QueryProgramRec(drr)
+}
+
+// QueryWeeklyRoutineRec queries the "weekly_routine_rec" edge of the DailyRoutineRec entity.
+func (drr *DailyRoutineRec) QueryWeeklyRoutineRec() *WeeklyRoutineRecQuery {
+	return NewDailyRoutineRecClient(drr.config).QueryWeeklyRoutineRec(drr)
+}
+
+// QueryRoutineActRecs queries the "routine_act_recs" edge of the DailyRoutineRec entity.
+func (drr *DailyRoutineRec) QueryRoutineActRecs() *RoutineActRecQuery {
+	return NewDailyRoutineRecClient(drr.config).QueryRoutineActRecs(drr)
 }
 
 // Update returns a builder for updating this DailyRoutineRec.
@@ -156,6 +283,9 @@ func (drr *DailyRoutineRec) String() string {
 	var builder strings.Builder
 	builder.WriteString("DailyRoutineRec(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", drr.ID))
+	builder.WriteString("author=")
+	builder.WriteString(fmt.Sprintf("%v", drr.Author))
+	builder.WriteString(", ")
 	if v := drr.ProgramRecID; v != nil {
 		builder.WriteString("program_rec_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))

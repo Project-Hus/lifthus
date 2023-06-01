@@ -4,6 +4,8 @@ package ent
 
 import (
 	"fmt"
+	"routine/ent/programrec"
+	"routine/ent/weeklyroutine"
 	"routine/ent/weeklyroutinerec"
 	"strings"
 	"time"
@@ -26,8 +28,61 @@ type WeeklyRoutineRec struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
-	selectValues sql.SelectValues
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the WeeklyRoutineRecQuery when eager-loading is set.
+	Edges                              WeeklyRoutineRecEdges `json:"edges"`
+	program_rec_weekly_routine_recs    *uint64
+	weekly_routine_weekly_routine_recs *uint64
+	selectValues                       sql.SelectValues
+}
+
+// WeeklyRoutineRecEdges holds the relations/edges for other nodes in the graph.
+type WeeklyRoutineRecEdges struct {
+	// WeeklyRoutine holds the value of the weekly_routine edge.
+	WeeklyRoutine *WeeklyRoutine `json:"weekly_routine,omitempty"`
+	// ProgramRec holds the value of the program_rec edge.
+	ProgramRec *ProgramRec `json:"program_rec,omitempty"`
+	// DailyRoutineRecs holds the value of the daily_routine_recs edge.
+	DailyRoutineRecs []*DailyRoutineRec `json:"daily_routine_recs,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [3]bool
+}
+
+// WeeklyRoutineOrErr returns the WeeklyRoutine value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e WeeklyRoutineRecEdges) WeeklyRoutineOrErr() (*WeeklyRoutine, error) {
+	if e.loadedTypes[0] {
+		if e.WeeklyRoutine == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: weeklyroutine.Label}
+		}
+		return e.WeeklyRoutine, nil
+	}
+	return nil, &NotLoadedError{edge: "weekly_routine"}
+}
+
+// ProgramRecOrErr returns the ProgramRec value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e WeeklyRoutineRecEdges) ProgramRecOrErr() (*ProgramRec, error) {
+	if e.loadedTypes[1] {
+		if e.ProgramRec == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: programrec.Label}
+		}
+		return e.ProgramRec, nil
+	}
+	return nil, &NotLoadedError{edge: "program_rec"}
+}
+
+// DailyRoutineRecsOrErr returns the DailyRoutineRecs value or an error if the edge
+// was not loaded in eager-loading.
+func (e WeeklyRoutineRecEdges) DailyRoutineRecsOrErr() ([]*DailyRoutineRec, error) {
+	if e.loadedTypes[2] {
+		return e.DailyRoutineRecs, nil
+	}
+	return nil, &NotLoadedError{edge: "daily_routine_recs"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -39,6 +94,10 @@ func (*WeeklyRoutineRec) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case weeklyroutinerec.FieldStartDate, weeklyroutinerec.FieldCreatedAt, weeklyroutinerec.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
+		case weeklyroutinerec.ForeignKeys[0]: // program_rec_weekly_routine_recs
+			values[i] = new(sql.NullInt64)
+		case weeklyroutinerec.ForeignKeys[1]: // weekly_routine_weekly_routine_recs
+			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -90,6 +149,20 @@ func (wrr *WeeklyRoutineRec) assignValues(columns []string, values []any) error 
 			} else if value.Valid {
 				wrr.UpdatedAt = value.Time
 			}
+		case weeklyroutinerec.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field program_rec_weekly_routine_recs", value)
+			} else if value.Valid {
+				wrr.program_rec_weekly_routine_recs = new(uint64)
+				*wrr.program_rec_weekly_routine_recs = uint64(value.Int64)
+			}
+		case weeklyroutinerec.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field weekly_routine_weekly_routine_recs", value)
+			} else if value.Valid {
+				wrr.weekly_routine_weekly_routine_recs = new(uint64)
+				*wrr.weekly_routine_weekly_routine_recs = uint64(value.Int64)
+			}
 		default:
 			wrr.selectValues.Set(columns[i], values[i])
 		}
@@ -101,6 +174,21 @@ func (wrr *WeeklyRoutineRec) assignValues(columns []string, values []any) error 
 // This includes values selected through modifiers, order, etc.
 func (wrr *WeeklyRoutineRec) Value(name string) (ent.Value, error) {
 	return wrr.selectValues.Get(name)
+}
+
+// QueryWeeklyRoutine queries the "weekly_routine" edge of the WeeklyRoutineRec entity.
+func (wrr *WeeklyRoutineRec) QueryWeeklyRoutine() *WeeklyRoutineQuery {
+	return NewWeeklyRoutineRecClient(wrr.config).QueryWeeklyRoutine(wrr)
+}
+
+// QueryProgramRec queries the "program_rec" edge of the WeeklyRoutineRec entity.
+func (wrr *WeeklyRoutineRec) QueryProgramRec() *ProgramRecQuery {
+	return NewWeeklyRoutineRecClient(wrr.config).QueryProgramRec(wrr)
+}
+
+// QueryDailyRoutineRecs queries the "daily_routine_recs" edge of the WeeklyRoutineRec entity.
+func (wrr *WeeklyRoutineRec) QueryDailyRoutineRecs() *DailyRoutineRecQuery {
+	return NewWeeklyRoutineRecClient(wrr.config).QueryDailyRoutineRecs(wrr)
 }
 
 // Update returns a builder for updating this WeeklyRoutineRec.

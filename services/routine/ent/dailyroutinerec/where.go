@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // ID filters vertices based on their ID field.
@@ -54,6 +55,11 @@ func IDLTE(id uint64) predicate.DailyRoutineRec {
 	return predicate.DailyRoutineRec(sql.FieldLTE(FieldID, id))
 }
 
+// Author applies equality check predicate on the "author" field. It's identical to AuthorEQ.
+func Author(v uint64) predicate.DailyRoutineRec {
+	return predicate.DailyRoutineRec(sql.FieldEQ(FieldAuthor, v))
+}
+
 // ProgramRecID applies equality check predicate on the "program_rec_id" field. It's identical to ProgramRecIDEQ.
 func ProgramRecID(v uint64) predicate.DailyRoutineRec {
 	return predicate.DailyRoutineRec(sql.FieldEQ(FieldProgramRecID, v))
@@ -87,6 +93,46 @@ func CreatedAt(v time.Time) predicate.DailyRoutineRec {
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.DailyRoutineRec {
 	return predicate.DailyRoutineRec(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// AuthorEQ applies the EQ predicate on the "author" field.
+func AuthorEQ(v uint64) predicate.DailyRoutineRec {
+	return predicate.DailyRoutineRec(sql.FieldEQ(FieldAuthor, v))
+}
+
+// AuthorNEQ applies the NEQ predicate on the "author" field.
+func AuthorNEQ(v uint64) predicate.DailyRoutineRec {
+	return predicate.DailyRoutineRec(sql.FieldNEQ(FieldAuthor, v))
+}
+
+// AuthorIn applies the In predicate on the "author" field.
+func AuthorIn(vs ...uint64) predicate.DailyRoutineRec {
+	return predicate.DailyRoutineRec(sql.FieldIn(FieldAuthor, vs...))
+}
+
+// AuthorNotIn applies the NotIn predicate on the "author" field.
+func AuthorNotIn(vs ...uint64) predicate.DailyRoutineRec {
+	return predicate.DailyRoutineRec(sql.FieldNotIn(FieldAuthor, vs...))
+}
+
+// AuthorGT applies the GT predicate on the "author" field.
+func AuthorGT(v uint64) predicate.DailyRoutineRec {
+	return predicate.DailyRoutineRec(sql.FieldGT(FieldAuthor, v))
+}
+
+// AuthorGTE applies the GTE predicate on the "author" field.
+func AuthorGTE(v uint64) predicate.DailyRoutineRec {
+	return predicate.DailyRoutineRec(sql.FieldGTE(FieldAuthor, v))
+}
+
+// AuthorLT applies the LT predicate on the "author" field.
+func AuthorLT(v uint64) predicate.DailyRoutineRec {
+	return predicate.DailyRoutineRec(sql.FieldLT(FieldAuthor, v))
+}
+
+// AuthorLTE applies the LTE predicate on the "author" field.
+func AuthorLTE(v uint64) predicate.DailyRoutineRec {
+	return predicate.DailyRoutineRec(sql.FieldLTE(FieldAuthor, v))
 }
 
 // ProgramRecIDEQ applies the EQ predicate on the "program_rec_id" field.
@@ -452,6 +498,98 @@ func UpdatedAtLT(v time.Time) predicate.DailyRoutineRec {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.DailyRoutineRec {
 	return predicate.DailyRoutineRec(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// HasDailyRoutine applies the HasEdge predicate on the "daily_routine" edge.
+func HasDailyRoutine() predicate.DailyRoutineRec {
+	return predicate.DailyRoutineRec(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, DailyRoutineTable, DailyRoutineColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDailyRoutineWith applies the HasEdge predicate on the "daily_routine" edge with a given conditions (other predicates).
+func HasDailyRoutineWith(preds ...predicate.DailyRoutine) predicate.DailyRoutineRec {
+	return predicate.DailyRoutineRec(func(s *sql.Selector) {
+		step := newDailyRoutineStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasProgramRec applies the HasEdge predicate on the "program_rec" edge.
+func HasProgramRec() predicate.DailyRoutineRec {
+	return predicate.DailyRoutineRec(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ProgramRecTable, ProgramRecColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProgramRecWith applies the HasEdge predicate on the "program_rec" edge with a given conditions (other predicates).
+func HasProgramRecWith(preds ...predicate.ProgramRec) predicate.DailyRoutineRec {
+	return predicate.DailyRoutineRec(func(s *sql.Selector) {
+		step := newProgramRecStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasWeeklyRoutineRec applies the HasEdge predicate on the "weekly_routine_rec" edge.
+func HasWeeklyRoutineRec() predicate.DailyRoutineRec {
+	return predicate.DailyRoutineRec(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, WeeklyRoutineRecTable, WeeklyRoutineRecColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasWeeklyRoutineRecWith applies the HasEdge predicate on the "weekly_routine_rec" edge with a given conditions (other predicates).
+func HasWeeklyRoutineRecWith(preds ...predicate.WeeklyRoutineRec) predicate.DailyRoutineRec {
+	return predicate.DailyRoutineRec(func(s *sql.Selector) {
+		step := newWeeklyRoutineRecStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasRoutineActRecs applies the HasEdge predicate on the "routine_act_recs" edge.
+func HasRoutineActRecs() predicate.DailyRoutineRec {
+	return predicate.DailyRoutineRec(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, RoutineActRecsTable, RoutineActRecsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRoutineActRecsWith applies the HasEdge predicate on the "routine_act_recs" edge with a given conditions (other predicates).
+func HasRoutineActRecsWith(preds ...predicate.RoutineActRec) predicate.DailyRoutineRec {
+	return predicate.DailyRoutineRec(func(s *sql.Selector) {
+		step := newRoutineActRecsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

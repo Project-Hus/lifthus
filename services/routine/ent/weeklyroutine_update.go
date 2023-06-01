@@ -10,6 +10,7 @@ import (
 	"routine/ent/predicate"
 	"routine/ent/program"
 	"routine/ent/weeklyroutine"
+	"routine/ent/weeklyroutinerec"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -92,6 +93,21 @@ func (wru *WeeklyRoutineUpdate) AddDailyRoutines(d ...*DailyRoutine) *WeeklyRout
 	return wru.AddDailyRoutineIDs(ids...)
 }
 
+// AddWeeklyRoutineRecIDs adds the "weekly_routine_recs" edge to the WeeklyRoutineRec entity by IDs.
+func (wru *WeeklyRoutineUpdate) AddWeeklyRoutineRecIDs(ids ...uint64) *WeeklyRoutineUpdate {
+	wru.mutation.AddWeeklyRoutineRecIDs(ids...)
+	return wru
+}
+
+// AddWeeklyRoutineRecs adds the "weekly_routine_recs" edges to the WeeklyRoutineRec entity.
+func (wru *WeeklyRoutineUpdate) AddWeeklyRoutineRecs(w ...*WeeklyRoutineRec) *WeeklyRoutineUpdate {
+	ids := make([]uint64, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return wru.AddWeeklyRoutineRecIDs(ids...)
+}
+
 // Mutation returns the WeeklyRoutineMutation object of the builder.
 func (wru *WeeklyRoutineUpdate) Mutation() *WeeklyRoutineMutation {
 	return wru.mutation
@@ -137,6 +153,27 @@ func (wru *WeeklyRoutineUpdate) RemoveDailyRoutines(d ...*DailyRoutine) *WeeklyR
 		ids[i] = d[i].ID
 	}
 	return wru.RemoveDailyRoutineIDs(ids...)
+}
+
+// ClearWeeklyRoutineRecs clears all "weekly_routine_recs" edges to the WeeklyRoutineRec entity.
+func (wru *WeeklyRoutineUpdate) ClearWeeklyRoutineRecs() *WeeklyRoutineUpdate {
+	wru.mutation.ClearWeeklyRoutineRecs()
+	return wru
+}
+
+// RemoveWeeklyRoutineRecIDs removes the "weekly_routine_recs" edge to WeeklyRoutineRec entities by IDs.
+func (wru *WeeklyRoutineUpdate) RemoveWeeklyRoutineRecIDs(ids ...uint64) *WeeklyRoutineUpdate {
+	wru.mutation.RemoveWeeklyRoutineRecIDs(ids...)
+	return wru
+}
+
+// RemoveWeeklyRoutineRecs removes "weekly_routine_recs" edges to WeeklyRoutineRec entities.
+func (wru *WeeklyRoutineUpdate) RemoveWeeklyRoutineRecs(w ...*WeeklyRoutineRec) *WeeklyRoutineUpdate {
+	ids := make([]uint64, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return wru.RemoveWeeklyRoutineRecIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -302,6 +339,51 @@ func (wru *WeeklyRoutineUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if wru.mutation.WeeklyRoutineRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   weeklyroutine.WeeklyRoutineRecsTable,
+			Columns: []string{weeklyroutine.WeeklyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(weeklyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := wru.mutation.RemovedWeeklyRoutineRecsIDs(); len(nodes) > 0 && !wru.mutation.WeeklyRoutineRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   weeklyroutine.WeeklyRoutineRecsTable,
+			Columns: []string{weeklyroutine.WeeklyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(weeklyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := wru.mutation.WeeklyRoutineRecsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   weeklyroutine.WeeklyRoutineRecsTable,
+			Columns: []string{weeklyroutine.WeeklyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(weeklyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, wru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{weeklyroutine.Label}
@@ -384,6 +466,21 @@ func (wruo *WeeklyRoutineUpdateOne) AddDailyRoutines(d ...*DailyRoutine) *Weekly
 	return wruo.AddDailyRoutineIDs(ids...)
 }
 
+// AddWeeklyRoutineRecIDs adds the "weekly_routine_recs" edge to the WeeklyRoutineRec entity by IDs.
+func (wruo *WeeklyRoutineUpdateOne) AddWeeklyRoutineRecIDs(ids ...uint64) *WeeklyRoutineUpdateOne {
+	wruo.mutation.AddWeeklyRoutineRecIDs(ids...)
+	return wruo
+}
+
+// AddWeeklyRoutineRecs adds the "weekly_routine_recs" edges to the WeeklyRoutineRec entity.
+func (wruo *WeeklyRoutineUpdateOne) AddWeeklyRoutineRecs(w ...*WeeklyRoutineRec) *WeeklyRoutineUpdateOne {
+	ids := make([]uint64, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return wruo.AddWeeklyRoutineRecIDs(ids...)
+}
+
 // Mutation returns the WeeklyRoutineMutation object of the builder.
 func (wruo *WeeklyRoutineUpdateOne) Mutation() *WeeklyRoutineMutation {
 	return wruo.mutation
@@ -429,6 +526,27 @@ func (wruo *WeeklyRoutineUpdateOne) RemoveDailyRoutines(d ...*DailyRoutine) *Wee
 		ids[i] = d[i].ID
 	}
 	return wruo.RemoveDailyRoutineIDs(ids...)
+}
+
+// ClearWeeklyRoutineRecs clears all "weekly_routine_recs" edges to the WeeklyRoutineRec entity.
+func (wruo *WeeklyRoutineUpdateOne) ClearWeeklyRoutineRecs() *WeeklyRoutineUpdateOne {
+	wruo.mutation.ClearWeeklyRoutineRecs()
+	return wruo
+}
+
+// RemoveWeeklyRoutineRecIDs removes the "weekly_routine_recs" edge to WeeklyRoutineRec entities by IDs.
+func (wruo *WeeklyRoutineUpdateOne) RemoveWeeklyRoutineRecIDs(ids ...uint64) *WeeklyRoutineUpdateOne {
+	wruo.mutation.RemoveWeeklyRoutineRecIDs(ids...)
+	return wruo
+}
+
+// RemoveWeeklyRoutineRecs removes "weekly_routine_recs" edges to WeeklyRoutineRec entities.
+func (wruo *WeeklyRoutineUpdateOne) RemoveWeeklyRoutineRecs(w ...*WeeklyRoutineRec) *WeeklyRoutineUpdateOne {
+	ids := make([]uint64, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return wruo.RemoveWeeklyRoutineRecIDs(ids...)
 }
 
 // Where appends a list predicates to the WeeklyRoutineUpdate builder.
@@ -617,6 +735,51 @@ func (wruo *WeeklyRoutineUpdateOne) sqlSave(ctx context.Context) (_node *WeeklyR
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dailyroutine.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if wruo.mutation.WeeklyRoutineRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   weeklyroutine.WeeklyRoutineRecsTable,
+			Columns: []string{weeklyroutine.WeeklyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(weeklyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := wruo.mutation.RemovedWeeklyRoutineRecsIDs(); len(nodes) > 0 && !wruo.mutation.WeeklyRoutineRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   weeklyroutine.WeeklyRoutineRecsTable,
+			Columns: []string{weeklyroutine.WeeklyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(weeklyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := wruo.mutation.WeeklyRoutineRecsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   weeklyroutine.WeeklyRoutineRecsTable,
+			Columns: []string{weeklyroutine.WeeklyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(weeklyroutinerec.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

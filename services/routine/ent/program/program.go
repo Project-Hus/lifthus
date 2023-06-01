@@ -35,6 +35,8 @@ const (
 	EdgeWeeklyRoutines = "weekly_routines"
 	// EdgeDailyRoutines holds the string denoting the daily_routines edge name in mutations.
 	EdgeDailyRoutines = "daily_routines"
+	// EdgeProgramRecs holds the string denoting the program_recs edge name in mutations.
+	EdgeProgramRecs = "program_recs"
 	// Table holds the table name of the program in the database.
 	Table = "programs"
 	// TagsTable is the table that holds the tags relation/edge. The primary key declared below.
@@ -52,6 +54,13 @@ const (
 	// DailyRoutinesInverseTable is the table name for the DailyRoutine entity.
 	// It exists in this package in order to avoid circular dependency with the "dailyroutine" package.
 	DailyRoutinesInverseTable = "daily_routines"
+	// ProgramRecsTable is the table that holds the program_recs relation/edge.
+	ProgramRecsTable = "program_recs"
+	// ProgramRecsInverseTable is the table name for the ProgramRec entity.
+	// It exists in this package in order to avoid circular dependency with the "programrec" package.
+	ProgramRecsInverseTable = "program_recs"
+	// ProgramRecsColumn is the table column denoting the program_recs relation/edge.
+	ProgramRecsColumn = "program_program_recs"
 )
 
 // Columns holds all SQL columns for program fields.
@@ -206,6 +215,20 @@ func ByDailyRoutines(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newDailyRoutinesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByProgramRecsCount orders the results by program_recs count.
+func ByProgramRecsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newProgramRecsStep(), opts...)
+	}
+}
+
+// ByProgramRecs orders the results by program_recs terms.
+func ByProgramRecs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newProgramRecsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTagsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -225,5 +248,12 @@ func newDailyRoutinesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DailyRoutinesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, DailyRoutinesTable, DailyRoutinesPrimaryKey...),
+	)
+}
+func newProgramRecsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ProgramRecsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ProgramRecsTable, ProgramRecsColumn),
 	)
 }

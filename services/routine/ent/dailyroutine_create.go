@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"routine/ent/dailyroutine"
+	"routine/ent/dailyroutinerec"
 	"routine/ent/program"
 	"routine/ent/routineact"
 	"routine/ent/weeklyroutine"
@@ -134,6 +135,21 @@ func (drc *DailyRoutineCreate) AddRoutineActs(r ...*RoutineAct) *DailyRoutineCre
 		ids[i] = r[i].ID
 	}
 	return drc.AddRoutineActIDs(ids...)
+}
+
+// AddDailyRoutineRecIDs adds the "daily_routine_recs" edge to the DailyRoutineRec entity by IDs.
+func (drc *DailyRoutineCreate) AddDailyRoutineRecIDs(ids ...uint64) *DailyRoutineCreate {
+	drc.mutation.AddDailyRoutineRecIDs(ids...)
+	return drc
+}
+
+// AddDailyRoutineRecs adds the "daily_routine_recs" edges to the DailyRoutineRec entity.
+func (drc *DailyRoutineCreate) AddDailyRoutineRecs(d ...*DailyRoutineRec) *DailyRoutineCreate {
+	ids := make([]uint64, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return drc.AddDailyRoutineRecIDs(ids...)
 }
 
 // Mutation returns the DailyRoutineMutation object of the builder.
@@ -290,6 +306,22 @@ func (drc *DailyRoutineCreate) createSpec() (*DailyRoutine, *sqlgraph.CreateSpec
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := drc.mutation.DailyRoutineRecsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dailyroutine.DailyRoutineRecsTable,
+			Columns: []string{dailyroutine.DailyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutinerec.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

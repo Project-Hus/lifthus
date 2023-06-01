@@ -6,7 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"routine/ent/act"
+	"routine/ent/dailyroutinerec"
 	"routine/ent/predicate"
+	"routine/ent/routineact"
 	"routine/ent/routineactrec"
 	"time"
 
@@ -256,9 +259,68 @@ func (raru *RoutineActRecUpdate) SetUpdatedAt(t time.Time) *RoutineActRecUpdate 
 	return raru
 }
 
+// SetDailyRoutineRecID sets the "daily_routine_rec" edge to the DailyRoutineRec entity by ID.
+func (raru *RoutineActRecUpdate) SetDailyRoutineRecID(id uint64) *RoutineActRecUpdate {
+	raru.mutation.SetDailyRoutineRecID(id)
+	return raru
+}
+
+// SetDailyRoutineRec sets the "daily_routine_rec" edge to the DailyRoutineRec entity.
+func (raru *RoutineActRecUpdate) SetDailyRoutineRec(d *DailyRoutineRec) *RoutineActRecUpdate {
+	return raru.SetDailyRoutineRecID(d.ID)
+}
+
+// SetActID sets the "act" edge to the Act entity by ID.
+func (raru *RoutineActRecUpdate) SetActID(id uint64) *RoutineActRecUpdate {
+	raru.mutation.SetActID(id)
+	return raru
+}
+
+// SetAct sets the "act" edge to the Act entity.
+func (raru *RoutineActRecUpdate) SetAct(a *Act) *RoutineActRecUpdate {
+	return raru.SetActID(a.ID)
+}
+
+// SetRoutineActID sets the "routine_act" edge to the RoutineAct entity by ID.
+func (raru *RoutineActRecUpdate) SetRoutineActID(id uint64) *RoutineActRecUpdate {
+	raru.mutation.SetRoutineActID(id)
+	return raru
+}
+
+// SetNillableRoutineActID sets the "routine_act" edge to the RoutineAct entity by ID if the given value is not nil.
+func (raru *RoutineActRecUpdate) SetNillableRoutineActID(id *uint64) *RoutineActRecUpdate {
+	if id != nil {
+		raru = raru.SetRoutineActID(*id)
+	}
+	return raru
+}
+
+// SetRoutineAct sets the "routine_act" edge to the RoutineAct entity.
+func (raru *RoutineActRecUpdate) SetRoutineAct(r *RoutineAct) *RoutineActRecUpdate {
+	return raru.SetRoutineActID(r.ID)
+}
+
 // Mutation returns the RoutineActRecMutation object of the builder.
 func (raru *RoutineActRecUpdate) Mutation() *RoutineActRecMutation {
 	return raru.mutation
+}
+
+// ClearDailyRoutineRec clears the "daily_routine_rec" edge to the DailyRoutineRec entity.
+func (raru *RoutineActRecUpdate) ClearDailyRoutineRec() *RoutineActRecUpdate {
+	raru.mutation.ClearDailyRoutineRec()
+	return raru
+}
+
+// ClearAct clears the "act" edge to the Act entity.
+func (raru *RoutineActRecUpdate) ClearAct() *RoutineActRecUpdate {
+	raru.mutation.ClearAct()
+	return raru
+}
+
+// ClearRoutineAct clears the "routine_act" edge to the RoutineAct entity.
+func (raru *RoutineActRecUpdate) ClearRoutineAct() *RoutineActRecUpdate {
+	raru.mutation.ClearRoutineAct()
+	return raru
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -328,6 +390,12 @@ func (raru *RoutineActRecUpdate) check() error {
 		if err := routineactrec.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "RoutineActRec.status": %w`, err)}
 		}
+	}
+	if _, ok := raru.mutation.DailyRoutineRecID(); raru.mutation.DailyRoutineRecCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "RoutineActRec.daily_routine_rec"`)
+	}
+	if _, ok := raru.mutation.ActID(); raru.mutation.ActCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "RoutineActRec.act"`)
 	}
 	return nil
 }
@@ -421,6 +489,93 @@ func (raru *RoutineActRecUpdate) sqlSave(ctx context.Context) (n int, err error)
 	}
 	if value, ok := raru.mutation.UpdatedAt(); ok {
 		_spec.SetField(routineactrec.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if raru.mutation.DailyRoutineRecCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   routineactrec.DailyRoutineRecTable,
+			Columns: []string{routineactrec.DailyRoutineRecColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := raru.mutation.DailyRoutineRecIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   routineactrec.DailyRoutineRecTable,
+			Columns: []string{routineactrec.DailyRoutineRecColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if raru.mutation.ActCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   routineactrec.ActTable,
+			Columns: []string{routineactrec.ActColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(act.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := raru.mutation.ActIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   routineactrec.ActTable,
+			Columns: []string{routineactrec.ActColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(act.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if raru.mutation.RoutineActCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   routineactrec.RoutineActTable,
+			Columns: []string{routineactrec.RoutineActColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := raru.mutation.RoutineActIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   routineactrec.RoutineActTable,
+			Columns: []string{routineactrec.RoutineActColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, raru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -670,9 +825,68 @@ func (raruo *RoutineActRecUpdateOne) SetUpdatedAt(t time.Time) *RoutineActRecUpd
 	return raruo
 }
 
+// SetDailyRoutineRecID sets the "daily_routine_rec" edge to the DailyRoutineRec entity by ID.
+func (raruo *RoutineActRecUpdateOne) SetDailyRoutineRecID(id uint64) *RoutineActRecUpdateOne {
+	raruo.mutation.SetDailyRoutineRecID(id)
+	return raruo
+}
+
+// SetDailyRoutineRec sets the "daily_routine_rec" edge to the DailyRoutineRec entity.
+func (raruo *RoutineActRecUpdateOne) SetDailyRoutineRec(d *DailyRoutineRec) *RoutineActRecUpdateOne {
+	return raruo.SetDailyRoutineRecID(d.ID)
+}
+
+// SetActID sets the "act" edge to the Act entity by ID.
+func (raruo *RoutineActRecUpdateOne) SetActID(id uint64) *RoutineActRecUpdateOne {
+	raruo.mutation.SetActID(id)
+	return raruo
+}
+
+// SetAct sets the "act" edge to the Act entity.
+func (raruo *RoutineActRecUpdateOne) SetAct(a *Act) *RoutineActRecUpdateOne {
+	return raruo.SetActID(a.ID)
+}
+
+// SetRoutineActID sets the "routine_act" edge to the RoutineAct entity by ID.
+func (raruo *RoutineActRecUpdateOne) SetRoutineActID(id uint64) *RoutineActRecUpdateOne {
+	raruo.mutation.SetRoutineActID(id)
+	return raruo
+}
+
+// SetNillableRoutineActID sets the "routine_act" edge to the RoutineAct entity by ID if the given value is not nil.
+func (raruo *RoutineActRecUpdateOne) SetNillableRoutineActID(id *uint64) *RoutineActRecUpdateOne {
+	if id != nil {
+		raruo = raruo.SetRoutineActID(*id)
+	}
+	return raruo
+}
+
+// SetRoutineAct sets the "routine_act" edge to the RoutineAct entity.
+func (raruo *RoutineActRecUpdateOne) SetRoutineAct(r *RoutineAct) *RoutineActRecUpdateOne {
+	return raruo.SetRoutineActID(r.ID)
+}
+
 // Mutation returns the RoutineActRecMutation object of the builder.
 func (raruo *RoutineActRecUpdateOne) Mutation() *RoutineActRecMutation {
 	return raruo.mutation
+}
+
+// ClearDailyRoutineRec clears the "daily_routine_rec" edge to the DailyRoutineRec entity.
+func (raruo *RoutineActRecUpdateOne) ClearDailyRoutineRec() *RoutineActRecUpdateOne {
+	raruo.mutation.ClearDailyRoutineRec()
+	return raruo
+}
+
+// ClearAct clears the "act" edge to the Act entity.
+func (raruo *RoutineActRecUpdateOne) ClearAct() *RoutineActRecUpdateOne {
+	raruo.mutation.ClearAct()
+	return raruo
+}
+
+// ClearRoutineAct clears the "routine_act" edge to the RoutineAct entity.
+func (raruo *RoutineActRecUpdateOne) ClearRoutineAct() *RoutineActRecUpdateOne {
+	raruo.mutation.ClearRoutineAct()
+	return raruo
 }
 
 // Where appends a list predicates to the RoutineActRecUpdate builder.
@@ -755,6 +969,12 @@ func (raruo *RoutineActRecUpdateOne) check() error {
 		if err := routineactrec.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "RoutineActRec.status": %w`, err)}
 		}
+	}
+	if _, ok := raruo.mutation.DailyRoutineRecID(); raruo.mutation.DailyRoutineRecCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "RoutineActRec.daily_routine_rec"`)
+	}
+	if _, ok := raruo.mutation.ActID(); raruo.mutation.ActCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "RoutineActRec.act"`)
 	}
 	return nil
 }
@@ -865,6 +1085,93 @@ func (raruo *RoutineActRecUpdateOne) sqlSave(ctx context.Context) (_node *Routin
 	}
 	if value, ok := raruo.mutation.UpdatedAt(); ok {
 		_spec.SetField(routineactrec.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if raruo.mutation.DailyRoutineRecCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   routineactrec.DailyRoutineRecTable,
+			Columns: []string{routineactrec.DailyRoutineRecColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := raruo.mutation.DailyRoutineRecIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   routineactrec.DailyRoutineRecTable,
+			Columns: []string{routineactrec.DailyRoutineRecColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if raruo.mutation.ActCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   routineactrec.ActTable,
+			Columns: []string{routineactrec.ActColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(act.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := raruo.mutation.ActIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   routineactrec.ActTable,
+			Columns: []string{routineactrec.ActColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(act.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if raruo.mutation.RoutineActCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   routineactrec.RoutineActTable,
+			Columns: []string{routineactrec.RoutineActColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := raruo.mutation.RoutineActIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   routineactrec.RoutineActTable,
+			Columns: []string{routineactrec.RoutineActColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &RoutineActRec{config: raruo.config}
 	_spec.Assign = _node.assignValues

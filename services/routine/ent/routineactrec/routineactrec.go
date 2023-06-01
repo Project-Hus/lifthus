@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -40,8 +41,35 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgeDailyRoutineRec holds the string denoting the daily_routine_rec edge name in mutations.
+	EdgeDailyRoutineRec = "daily_routine_rec"
+	// EdgeAct holds the string denoting the act edge name in mutations.
+	EdgeAct = "act"
+	// EdgeRoutineAct holds the string denoting the routine_act edge name in mutations.
+	EdgeRoutineAct = "routine_act"
 	// Table holds the table name of the routineactrec in the database.
 	Table = "routine_act_recs"
+	// DailyRoutineRecTable is the table that holds the daily_routine_rec relation/edge.
+	DailyRoutineRecTable = "routine_act_recs"
+	// DailyRoutineRecInverseTable is the table name for the DailyRoutineRec entity.
+	// It exists in this package in order to avoid circular dependency with the "dailyroutinerec" package.
+	DailyRoutineRecInverseTable = "daily_routine_recs"
+	// DailyRoutineRecColumn is the table column denoting the daily_routine_rec relation/edge.
+	DailyRoutineRecColumn = "daily_routine_rec_routine_act_recs"
+	// ActTable is the table that holds the act relation/edge.
+	ActTable = "routine_act_recs"
+	// ActInverseTable is the table name for the Act entity.
+	// It exists in this package in order to avoid circular dependency with the "act" package.
+	ActInverseTable = "acts"
+	// ActColumn is the table column denoting the act relation/edge.
+	ActColumn = "act_routine_act_recs"
+	// RoutineActTable is the table that holds the routine_act relation/edge.
+	RoutineActTable = "routine_act_recs"
+	// RoutineActInverseTable is the table name for the RoutineAct entity.
+	// It exists in this package in order to avoid circular dependency with the "routineact" package.
+	RoutineActInverseTable = "routine_acts"
+	// RoutineActColumn is the table column denoting the routine_act relation/edge.
+	RoutineActColumn = "routine_act_routine_act_recs"
 )
 
 // Columns holds all SQL columns for routineactrec fields.
@@ -62,10 +90,23 @@ var Columns = []string{
 	FieldUpdatedAt,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the "routine_act_recs"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"act_routine_act_recs",
+	"daily_routine_rec_routine_act_recs",
+	"routine_act_routine_act_recs",
+}
+
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -193,4 +234,46 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByDailyRoutineRecField orders the results by daily_routine_rec field.
+func ByDailyRoutineRecField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDailyRoutineRecStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByActField orders the results by act field.
+func ByActField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newActStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByRoutineActField orders the results by routine_act field.
+func ByRoutineActField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRoutineActStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newDailyRoutineRecStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DailyRoutineRecInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, DailyRoutineRecTable, DailyRoutineRecColumn),
+	)
+}
+func newActStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ActInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, ActTable, ActColumn),
+	)
+}
+func newRoutineActStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RoutineActInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, RoutineActTable, RoutineActColumn),
+	)
 }

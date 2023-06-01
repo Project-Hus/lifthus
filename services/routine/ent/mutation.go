@@ -48,27 +48,30 @@ const (
 // ActMutation represents an operation that mutates the Act nodes in the graph.
 type ActMutation struct {
 	config
-	op                  Op
-	typ                 string
-	id                  *uint64
-	name                *string
-	_type               *act.Type
-	author              *uint64
-	addauthor           *int64
-	image               *string
-	description         *string
-	created_at          *time.Time
-	updated_at          *time.Time
-	clearedFields       map[string]struct{}
-	tags                map[uint64]struct{}
-	removedtags         map[uint64]struct{}
-	clearedtags         bool
-	routine_acts        map[uint64]struct{}
-	removedroutine_acts map[uint64]struct{}
-	clearedroutine_acts bool
-	done                bool
-	oldValue            func(context.Context) (*Act, error)
-	predicates          []predicate.Act
+	op                      Op
+	typ                     string
+	id                      *uint64
+	name                    *string
+	_type                   *act.Type
+	author                  *uint64
+	addauthor               *int64
+	image                   *string
+	description             *string
+	created_at              *time.Time
+	updated_at              *time.Time
+	clearedFields           map[string]struct{}
+	tags                    map[uint64]struct{}
+	removedtags             map[uint64]struct{}
+	clearedtags             bool
+	routine_acts            map[uint64]struct{}
+	removedroutine_acts     map[uint64]struct{}
+	clearedroutine_acts     bool
+	routine_act_recs        map[uint64]struct{}
+	removedroutine_act_recs map[uint64]struct{}
+	clearedroutine_act_recs bool
+	done                    bool
+	oldValue                func(context.Context) (*Act, error)
+	predicates              []predicate.Act
 }
 
 var _ ent.Mutation = (*ActMutation)(nil)
@@ -594,6 +597,60 @@ func (m *ActMutation) ResetRoutineActs() {
 	m.removedroutine_acts = nil
 }
 
+// AddRoutineActRecIDs adds the "routine_act_recs" edge to the RoutineActRec entity by ids.
+func (m *ActMutation) AddRoutineActRecIDs(ids ...uint64) {
+	if m.routine_act_recs == nil {
+		m.routine_act_recs = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.routine_act_recs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRoutineActRecs clears the "routine_act_recs" edge to the RoutineActRec entity.
+func (m *ActMutation) ClearRoutineActRecs() {
+	m.clearedroutine_act_recs = true
+}
+
+// RoutineActRecsCleared reports if the "routine_act_recs" edge to the RoutineActRec entity was cleared.
+func (m *ActMutation) RoutineActRecsCleared() bool {
+	return m.clearedroutine_act_recs
+}
+
+// RemoveRoutineActRecIDs removes the "routine_act_recs" edge to the RoutineActRec entity by IDs.
+func (m *ActMutation) RemoveRoutineActRecIDs(ids ...uint64) {
+	if m.removedroutine_act_recs == nil {
+		m.removedroutine_act_recs = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.routine_act_recs, ids[i])
+		m.removedroutine_act_recs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRoutineActRecs returns the removed IDs of the "routine_act_recs" edge to the RoutineActRec entity.
+func (m *ActMutation) RemovedRoutineActRecsIDs() (ids []uint64) {
+	for id := range m.removedroutine_act_recs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RoutineActRecsIDs returns the "routine_act_recs" edge IDs in the mutation.
+func (m *ActMutation) RoutineActRecsIDs() (ids []uint64) {
+	for id := range m.routine_act_recs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRoutineActRecs resets all changes to the "routine_act_recs" edge.
+func (m *ActMutation) ResetRoutineActRecs() {
+	m.routine_act_recs = nil
+	m.clearedroutine_act_recs = false
+	m.removedroutine_act_recs = nil
+}
+
 // Where appends a list predicates to the ActMutation builder.
 func (m *ActMutation) Where(ps ...predicate.Act) {
 	m.predicates = append(m.predicates, ps...)
@@ -865,12 +922,15 @@ func (m *ActMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ActMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.tags != nil {
 		edges = append(edges, act.EdgeTags)
 	}
 	if m.routine_acts != nil {
 		edges = append(edges, act.EdgeRoutineActs)
+	}
+	if m.routine_act_recs != nil {
+		edges = append(edges, act.EdgeRoutineActRecs)
 	}
 	return edges
 }
@@ -891,18 +951,27 @@ func (m *ActMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case act.EdgeRoutineActRecs:
+		ids := make([]ent.Value, 0, len(m.routine_act_recs))
+		for id := range m.routine_act_recs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ActMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedtags != nil {
 		edges = append(edges, act.EdgeTags)
 	}
 	if m.removedroutine_acts != nil {
 		edges = append(edges, act.EdgeRoutineActs)
+	}
+	if m.removedroutine_act_recs != nil {
+		edges = append(edges, act.EdgeRoutineActRecs)
 	}
 	return edges
 }
@@ -923,18 +992,27 @@ func (m *ActMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case act.EdgeRoutineActRecs:
+		ids := make([]ent.Value, 0, len(m.removedroutine_act_recs))
+		for id := range m.removedroutine_act_recs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ActMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedtags {
 		edges = append(edges, act.EdgeTags)
 	}
 	if m.clearedroutine_acts {
 		edges = append(edges, act.EdgeRoutineActs)
+	}
+	if m.clearedroutine_act_recs {
+		edges = append(edges, act.EdgeRoutineActRecs)
 	}
 	return edges
 }
@@ -947,6 +1025,8 @@ func (m *ActMutation) EdgeCleared(name string) bool {
 		return m.clearedtags
 	case act.EdgeRoutineActs:
 		return m.clearedroutine_acts
+	case act.EdgeRoutineActRecs:
+		return m.clearedroutine_act_recs
 	}
 	return false
 }
@@ -969,6 +1049,9 @@ func (m *ActMutation) ResetEdge(name string) error {
 	case act.EdgeRoutineActs:
 		m.ResetRoutineActs()
 		return nil
+	case act.EdgeRoutineActRecs:
+		m.ResetRoutineActRecs()
+		return nil
 	}
 	return fmt.Errorf("unknown Act edge %s", name)
 }
@@ -976,30 +1059,33 @@ func (m *ActMutation) ResetEdge(name string) error {
 // DailyRoutineMutation represents an operation that mutates the DailyRoutine nodes in the graph.
 type DailyRoutineMutation struct {
 	config
-	op                    Op
-	typ                   string
-	id                    *uint64
-	program_id            *uint64
-	addprogram_id         *int64
-	week_id               *uint64
-	addweek_id            *int64
-	day                   *int
-	addday                *int
-	created_at            *time.Time
-	updated_at            *time.Time
-	clearedFields         map[string]struct{}
-	program               map[uint64]struct{}
-	removedprogram        map[uint64]struct{}
-	clearedprogram        bool
-	weekly_routine        map[uint64]struct{}
-	removedweekly_routine map[uint64]struct{}
-	clearedweekly_routine bool
-	routine_acts          map[uint64]struct{}
-	removedroutine_acts   map[uint64]struct{}
-	clearedroutine_acts   bool
-	done                  bool
-	oldValue              func(context.Context) (*DailyRoutine, error)
-	predicates            []predicate.DailyRoutine
+	op                        Op
+	typ                       string
+	id                        *uint64
+	program_id                *uint64
+	addprogram_id             *int64
+	week_id                   *uint64
+	addweek_id                *int64
+	day                       *int
+	addday                    *int
+	created_at                *time.Time
+	updated_at                *time.Time
+	clearedFields             map[string]struct{}
+	program                   map[uint64]struct{}
+	removedprogram            map[uint64]struct{}
+	clearedprogram            bool
+	weekly_routine            map[uint64]struct{}
+	removedweekly_routine     map[uint64]struct{}
+	clearedweekly_routine     bool
+	routine_acts              map[uint64]struct{}
+	removedroutine_acts       map[uint64]struct{}
+	clearedroutine_acts       bool
+	daily_routine_recs        map[uint64]struct{}
+	removeddaily_routine_recs map[uint64]struct{}
+	cleareddaily_routine_recs bool
+	done                      bool
+	oldValue                  func(context.Context) (*DailyRoutine, error)
+	predicates                []predicate.DailyRoutine
 }
 
 var _ ent.Mutation = (*DailyRoutineMutation)(nil)
@@ -1536,6 +1622,60 @@ func (m *DailyRoutineMutation) ResetRoutineActs() {
 	m.removedroutine_acts = nil
 }
 
+// AddDailyRoutineRecIDs adds the "daily_routine_recs" edge to the DailyRoutineRec entity by ids.
+func (m *DailyRoutineMutation) AddDailyRoutineRecIDs(ids ...uint64) {
+	if m.daily_routine_recs == nil {
+		m.daily_routine_recs = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.daily_routine_recs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDailyRoutineRecs clears the "daily_routine_recs" edge to the DailyRoutineRec entity.
+func (m *DailyRoutineMutation) ClearDailyRoutineRecs() {
+	m.cleareddaily_routine_recs = true
+}
+
+// DailyRoutineRecsCleared reports if the "daily_routine_recs" edge to the DailyRoutineRec entity was cleared.
+func (m *DailyRoutineMutation) DailyRoutineRecsCleared() bool {
+	return m.cleareddaily_routine_recs
+}
+
+// RemoveDailyRoutineRecIDs removes the "daily_routine_recs" edge to the DailyRoutineRec entity by IDs.
+func (m *DailyRoutineMutation) RemoveDailyRoutineRecIDs(ids ...uint64) {
+	if m.removeddaily_routine_recs == nil {
+		m.removeddaily_routine_recs = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.daily_routine_recs, ids[i])
+		m.removeddaily_routine_recs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDailyRoutineRecs returns the removed IDs of the "daily_routine_recs" edge to the DailyRoutineRec entity.
+func (m *DailyRoutineMutation) RemovedDailyRoutineRecsIDs() (ids []uint64) {
+	for id := range m.removeddaily_routine_recs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DailyRoutineRecsIDs returns the "daily_routine_recs" edge IDs in the mutation.
+func (m *DailyRoutineMutation) DailyRoutineRecsIDs() (ids []uint64) {
+	for id := range m.daily_routine_recs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDailyRoutineRecs resets all changes to the "daily_routine_recs" edge.
+func (m *DailyRoutineMutation) ResetDailyRoutineRecs() {
+	m.daily_routine_recs = nil
+	m.cleareddaily_routine_recs = false
+	m.removeddaily_routine_recs = nil
+}
+
 // Where appends a list predicates to the DailyRoutineMutation builder.
 func (m *DailyRoutineMutation) Where(ps ...predicate.DailyRoutine) {
 	m.predicates = append(m.predicates, ps...)
@@ -1791,7 +1931,7 @@ func (m *DailyRoutineMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DailyRoutineMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.program != nil {
 		edges = append(edges, dailyroutine.EdgeProgram)
 	}
@@ -1800,6 +1940,9 @@ func (m *DailyRoutineMutation) AddedEdges() []string {
 	}
 	if m.routine_acts != nil {
 		edges = append(edges, dailyroutine.EdgeRoutineActs)
+	}
+	if m.daily_routine_recs != nil {
+		edges = append(edges, dailyroutine.EdgeDailyRoutineRecs)
 	}
 	return edges
 }
@@ -1826,13 +1969,19 @@ func (m *DailyRoutineMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case dailyroutine.EdgeDailyRoutineRecs:
+		ids := make([]ent.Value, 0, len(m.daily_routine_recs))
+		for id := range m.daily_routine_recs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DailyRoutineMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedprogram != nil {
 		edges = append(edges, dailyroutine.EdgeProgram)
 	}
@@ -1841,6 +1990,9 @@ func (m *DailyRoutineMutation) RemovedEdges() []string {
 	}
 	if m.removedroutine_acts != nil {
 		edges = append(edges, dailyroutine.EdgeRoutineActs)
+	}
+	if m.removeddaily_routine_recs != nil {
+		edges = append(edges, dailyroutine.EdgeDailyRoutineRecs)
 	}
 	return edges
 }
@@ -1867,13 +2019,19 @@ func (m *DailyRoutineMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case dailyroutine.EdgeDailyRoutineRecs:
+		ids := make([]ent.Value, 0, len(m.removeddaily_routine_recs))
+		for id := range m.removeddaily_routine_recs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DailyRoutineMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedprogram {
 		edges = append(edges, dailyroutine.EdgeProgram)
 	}
@@ -1882,6 +2040,9 @@ func (m *DailyRoutineMutation) ClearedEdges() []string {
 	}
 	if m.clearedroutine_acts {
 		edges = append(edges, dailyroutine.EdgeRoutineActs)
+	}
+	if m.cleareddaily_routine_recs {
+		edges = append(edges, dailyroutine.EdgeDailyRoutineRecs)
 	}
 	return edges
 }
@@ -1896,6 +2057,8 @@ func (m *DailyRoutineMutation) EdgeCleared(name string) bool {
 		return m.clearedweekly_routine
 	case dailyroutine.EdgeRoutineActs:
 		return m.clearedroutine_acts
+	case dailyroutine.EdgeDailyRoutineRecs:
+		return m.cleareddaily_routine_recs
 	}
 	return false
 }
@@ -1921,6 +2084,9 @@ func (m *DailyRoutineMutation) ResetEdge(name string) error {
 	case dailyroutine.EdgeRoutineActs:
 		m.ResetRoutineActs()
 		return nil
+	case dailyroutine.EdgeDailyRoutineRecs:
+		m.ResetDailyRoutineRecs()
+		return nil
 	}
 	return fmt.Errorf("unknown DailyRoutine edge %s", name)
 }
@@ -1928,24 +2094,35 @@ func (m *DailyRoutineMutation) ResetEdge(name string) error {
 // DailyRoutineRecMutation represents an operation that mutates the DailyRoutineRec nodes in the graph.
 type DailyRoutineRecMutation struct {
 	config
-	op                       Op
-	typ                      string
-	id                       *uint64
-	program_rec_id           *uint64
-	addprogram_rec_id        *int64
-	weekly_routine_rec_id    *uint64
-	addweekly_routine_rec_id *int64
-	daily_routine_id         *uint64
-	adddaily_routine_id      *int64
-	date                     *time.Time
-	status                   *dailyroutinerec.Status
-	comment                  *string
-	created_at               *time.Time
-	updated_at               *time.Time
-	clearedFields            map[string]struct{}
-	done                     bool
-	oldValue                 func(context.Context) (*DailyRoutineRec, error)
-	predicates               []predicate.DailyRoutineRec
+	op                        Op
+	typ                       string
+	id                        *uint64
+	author                    *uint64
+	addauthor                 *int64
+	program_rec_id            *uint64
+	addprogram_rec_id         *int64
+	weekly_routine_rec_id     *uint64
+	addweekly_routine_rec_id  *int64
+	daily_routine_id          *uint64
+	adddaily_routine_id       *int64
+	date                      *time.Time
+	status                    *dailyroutinerec.Status
+	comment                   *string
+	created_at                *time.Time
+	updated_at                *time.Time
+	clearedFields             map[string]struct{}
+	daily_routine             *uint64
+	cleareddaily_routine      bool
+	program_rec               *uint64
+	clearedprogram_rec        bool
+	weekly_routine_rec        *uint64
+	clearedweekly_routine_rec bool
+	routine_act_recs          map[uint64]struct{}
+	removedroutine_act_recs   map[uint64]struct{}
+	clearedroutine_act_recs   bool
+	done                      bool
+	oldValue                  func(context.Context) (*DailyRoutineRec, error)
+	predicates                []predicate.DailyRoutineRec
 }
 
 var _ ent.Mutation = (*DailyRoutineRecMutation)(nil)
@@ -2050,6 +2227,62 @@ func (m *DailyRoutineRecMutation) IDs(ctx context.Context) ([]uint64, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetAuthor sets the "author" field.
+func (m *DailyRoutineRecMutation) SetAuthor(u uint64) {
+	m.author = &u
+	m.addauthor = nil
+}
+
+// Author returns the value of the "author" field in the mutation.
+func (m *DailyRoutineRecMutation) Author() (r uint64, exists bool) {
+	v := m.author
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAuthor returns the old "author" field's value of the DailyRoutineRec entity.
+// If the DailyRoutineRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyRoutineRecMutation) OldAuthor(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAuthor is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAuthor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAuthor: %w", err)
+	}
+	return oldValue.Author, nil
+}
+
+// AddAuthor adds u to the "author" field.
+func (m *DailyRoutineRecMutation) AddAuthor(u int64) {
+	if m.addauthor != nil {
+		*m.addauthor += u
+	} else {
+		m.addauthor = &u
+	}
+}
+
+// AddedAuthor returns the value that was added to the "author" field in this mutation.
+func (m *DailyRoutineRecMutation) AddedAuthor() (r int64, exists bool) {
+	v := m.addauthor
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetAuthor resets all changes to the "author" field.
+func (m *DailyRoutineRecMutation) ResetAuthor() {
+	m.author = nil
+	m.addauthor = nil
 }
 
 // SetProgramRecID sets the "program_rec_id" field.
@@ -2455,6 +2688,177 @@ func (m *DailyRoutineRecMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// SetDailyRoutineID sets the "daily_routine" edge to the DailyRoutine entity by id.
+func (m *DailyRoutineRecMutation) SetDailyRoutineID(id uint64) {
+	m.daily_routine = &id
+}
+
+// ClearDailyRoutine clears the "daily_routine" edge to the DailyRoutine entity.
+func (m *DailyRoutineRecMutation) ClearDailyRoutine() {
+	m.cleareddaily_routine = true
+}
+
+// DailyRoutineCleared reports if the "daily_routine" edge to the DailyRoutine entity was cleared.
+func (m *DailyRoutineRecMutation) DailyRoutineCleared() bool {
+	return m.cleareddaily_routine
+}
+
+// DailyRoutineID returns the "daily_routine" edge ID in the mutation.
+func (m *DailyRoutineRecMutation) DailyRoutineID() (id uint64, exists bool) {
+	if m.daily_routine != nil {
+		return *m.daily_routine, true
+	}
+	return
+}
+
+// DailyRoutineIDs returns the "daily_routine" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// DailyRoutineID instead. It exists only for internal usage by the builders.
+func (m *DailyRoutineRecMutation) DailyRoutineIDs() (ids []uint64) {
+	if id := m.daily_routine; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetDailyRoutine resets all changes to the "daily_routine" edge.
+func (m *DailyRoutineRecMutation) ResetDailyRoutine() {
+	m.daily_routine = nil
+	m.cleareddaily_routine = false
+}
+
+// SetProgramRecID sets the "program_rec" edge to the ProgramRec entity by id.
+func (m *DailyRoutineRecMutation) SetProgramRecID(id uint64) {
+	m.program_rec = &id
+}
+
+// ClearProgramRec clears the "program_rec" edge to the ProgramRec entity.
+func (m *DailyRoutineRecMutation) ClearProgramRec() {
+	m.clearedprogram_rec = true
+}
+
+// ProgramRecCleared reports if the "program_rec" edge to the ProgramRec entity was cleared.
+func (m *DailyRoutineRecMutation) ProgramRecCleared() bool {
+	return m.clearedprogram_rec
+}
+
+// ProgramRecID returns the "program_rec" edge ID in the mutation.
+func (m *DailyRoutineRecMutation) ProgramRecID() (id uint64, exists bool) {
+	if m.program_rec != nil {
+		return *m.program_rec, true
+	}
+	return
+}
+
+// ProgramRecIDs returns the "program_rec" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProgramRecID instead. It exists only for internal usage by the builders.
+func (m *DailyRoutineRecMutation) ProgramRecIDs() (ids []uint64) {
+	if id := m.program_rec; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProgramRec resets all changes to the "program_rec" edge.
+func (m *DailyRoutineRecMutation) ResetProgramRec() {
+	m.program_rec = nil
+	m.clearedprogram_rec = false
+}
+
+// SetWeeklyRoutineRecID sets the "weekly_routine_rec" edge to the WeeklyRoutineRec entity by id.
+func (m *DailyRoutineRecMutation) SetWeeklyRoutineRecID(id uint64) {
+	m.weekly_routine_rec = &id
+}
+
+// ClearWeeklyRoutineRec clears the "weekly_routine_rec" edge to the WeeklyRoutineRec entity.
+func (m *DailyRoutineRecMutation) ClearWeeklyRoutineRec() {
+	m.clearedweekly_routine_rec = true
+}
+
+// WeeklyRoutineRecCleared reports if the "weekly_routine_rec" edge to the WeeklyRoutineRec entity was cleared.
+func (m *DailyRoutineRecMutation) WeeklyRoutineRecCleared() bool {
+	return m.clearedweekly_routine_rec
+}
+
+// WeeklyRoutineRecID returns the "weekly_routine_rec" edge ID in the mutation.
+func (m *DailyRoutineRecMutation) WeeklyRoutineRecID() (id uint64, exists bool) {
+	if m.weekly_routine_rec != nil {
+		return *m.weekly_routine_rec, true
+	}
+	return
+}
+
+// WeeklyRoutineRecIDs returns the "weekly_routine_rec" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// WeeklyRoutineRecID instead. It exists only for internal usage by the builders.
+func (m *DailyRoutineRecMutation) WeeklyRoutineRecIDs() (ids []uint64) {
+	if id := m.weekly_routine_rec; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetWeeklyRoutineRec resets all changes to the "weekly_routine_rec" edge.
+func (m *DailyRoutineRecMutation) ResetWeeklyRoutineRec() {
+	m.weekly_routine_rec = nil
+	m.clearedweekly_routine_rec = false
+}
+
+// AddRoutineActRecIDs adds the "routine_act_recs" edge to the RoutineActRec entity by ids.
+func (m *DailyRoutineRecMutation) AddRoutineActRecIDs(ids ...uint64) {
+	if m.routine_act_recs == nil {
+		m.routine_act_recs = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.routine_act_recs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRoutineActRecs clears the "routine_act_recs" edge to the RoutineActRec entity.
+func (m *DailyRoutineRecMutation) ClearRoutineActRecs() {
+	m.clearedroutine_act_recs = true
+}
+
+// RoutineActRecsCleared reports if the "routine_act_recs" edge to the RoutineActRec entity was cleared.
+func (m *DailyRoutineRecMutation) RoutineActRecsCleared() bool {
+	return m.clearedroutine_act_recs
+}
+
+// RemoveRoutineActRecIDs removes the "routine_act_recs" edge to the RoutineActRec entity by IDs.
+func (m *DailyRoutineRecMutation) RemoveRoutineActRecIDs(ids ...uint64) {
+	if m.removedroutine_act_recs == nil {
+		m.removedroutine_act_recs = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.routine_act_recs, ids[i])
+		m.removedroutine_act_recs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRoutineActRecs returns the removed IDs of the "routine_act_recs" edge to the RoutineActRec entity.
+func (m *DailyRoutineRecMutation) RemovedRoutineActRecsIDs() (ids []uint64) {
+	for id := range m.removedroutine_act_recs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RoutineActRecsIDs returns the "routine_act_recs" edge IDs in the mutation.
+func (m *DailyRoutineRecMutation) RoutineActRecsIDs() (ids []uint64) {
+	for id := range m.routine_act_recs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRoutineActRecs resets all changes to the "routine_act_recs" edge.
+func (m *DailyRoutineRecMutation) ResetRoutineActRecs() {
+	m.routine_act_recs = nil
+	m.clearedroutine_act_recs = false
+	m.removedroutine_act_recs = nil
+}
+
 // Where appends a list predicates to the DailyRoutineRecMutation builder.
 func (m *DailyRoutineRecMutation) Where(ps ...predicate.DailyRoutineRec) {
 	m.predicates = append(m.predicates, ps...)
@@ -2489,7 +2893,10 @@ func (m *DailyRoutineRecMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DailyRoutineRecMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 9)
+	if m.author != nil {
+		fields = append(fields, dailyroutinerec.FieldAuthor)
+	}
 	if m.program_rec_id != nil {
 		fields = append(fields, dailyroutinerec.FieldProgramRecID)
 	}
@@ -2522,6 +2929,8 @@ func (m *DailyRoutineRecMutation) Fields() []string {
 // schema.
 func (m *DailyRoutineRecMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case dailyroutinerec.FieldAuthor:
+		return m.Author()
 	case dailyroutinerec.FieldProgramRecID:
 		return m.ProgramRecID()
 	case dailyroutinerec.FieldWeeklyRoutineRecID:
@@ -2547,6 +2956,8 @@ func (m *DailyRoutineRecMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *DailyRoutineRecMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case dailyroutinerec.FieldAuthor:
+		return m.OldAuthor(ctx)
 	case dailyroutinerec.FieldProgramRecID:
 		return m.OldProgramRecID(ctx)
 	case dailyroutinerec.FieldWeeklyRoutineRecID:
@@ -2572,6 +2983,13 @@ func (m *DailyRoutineRecMutation) OldField(ctx context.Context, name string) (en
 // type.
 func (m *DailyRoutineRecMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case dailyroutinerec.FieldAuthor:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAuthor(v)
+		return nil
 	case dailyroutinerec.FieldProgramRecID:
 		v, ok := value.(uint64)
 		if !ok {
@@ -2636,6 +3054,9 @@ func (m *DailyRoutineRecMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *DailyRoutineRecMutation) AddedFields() []string {
 	var fields []string
+	if m.addauthor != nil {
+		fields = append(fields, dailyroutinerec.FieldAuthor)
+	}
 	if m.addprogram_rec_id != nil {
 		fields = append(fields, dailyroutinerec.FieldProgramRecID)
 	}
@@ -2653,6 +3074,8 @@ func (m *DailyRoutineRecMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *DailyRoutineRecMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case dailyroutinerec.FieldAuthor:
+		return m.AddedAuthor()
 	case dailyroutinerec.FieldProgramRecID:
 		return m.AddedProgramRecID()
 	case dailyroutinerec.FieldWeeklyRoutineRecID:
@@ -2668,6 +3091,13 @@ func (m *DailyRoutineRecMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *DailyRoutineRecMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case dailyroutinerec.FieldAuthor:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAuthor(v)
+		return nil
 	case dailyroutinerec.FieldProgramRecID:
 		v, ok := value.(int64)
 		if !ok {
@@ -2743,6 +3173,9 @@ func (m *DailyRoutineRecMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *DailyRoutineRecMutation) ResetField(name string) error {
 	switch name {
+	case dailyroutinerec.FieldAuthor:
+		m.ResetAuthor()
+		return nil
 	case dailyroutinerec.FieldProgramRecID:
 		m.ResetProgramRecID()
 		return nil
@@ -2773,49 +3206,139 @@ func (m *DailyRoutineRecMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DailyRoutineRecMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 4)
+	if m.daily_routine != nil {
+		edges = append(edges, dailyroutinerec.EdgeDailyRoutine)
+	}
+	if m.program_rec != nil {
+		edges = append(edges, dailyroutinerec.EdgeProgramRec)
+	}
+	if m.weekly_routine_rec != nil {
+		edges = append(edges, dailyroutinerec.EdgeWeeklyRoutineRec)
+	}
+	if m.routine_act_recs != nil {
+		edges = append(edges, dailyroutinerec.EdgeRoutineActRecs)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *DailyRoutineRecMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case dailyroutinerec.EdgeDailyRoutine:
+		if id := m.daily_routine; id != nil {
+			return []ent.Value{*id}
+		}
+	case dailyroutinerec.EdgeProgramRec:
+		if id := m.program_rec; id != nil {
+			return []ent.Value{*id}
+		}
+	case dailyroutinerec.EdgeWeeklyRoutineRec:
+		if id := m.weekly_routine_rec; id != nil {
+			return []ent.Value{*id}
+		}
+	case dailyroutinerec.EdgeRoutineActRecs:
+		ids := make([]ent.Value, 0, len(m.routine_act_recs))
+		for id := range m.routine_act_recs {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DailyRoutineRecMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 4)
+	if m.removedroutine_act_recs != nil {
+		edges = append(edges, dailyroutinerec.EdgeRoutineActRecs)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *DailyRoutineRecMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case dailyroutinerec.EdgeRoutineActRecs:
+		ids := make([]ent.Value, 0, len(m.removedroutine_act_recs))
+		for id := range m.removedroutine_act_recs {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DailyRoutineRecMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 4)
+	if m.cleareddaily_routine {
+		edges = append(edges, dailyroutinerec.EdgeDailyRoutine)
+	}
+	if m.clearedprogram_rec {
+		edges = append(edges, dailyroutinerec.EdgeProgramRec)
+	}
+	if m.clearedweekly_routine_rec {
+		edges = append(edges, dailyroutinerec.EdgeWeeklyRoutineRec)
+	}
+	if m.clearedroutine_act_recs {
+		edges = append(edges, dailyroutinerec.EdgeRoutineActRecs)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *DailyRoutineRecMutation) EdgeCleared(name string) bool {
+	switch name {
+	case dailyroutinerec.EdgeDailyRoutine:
+		return m.cleareddaily_routine
+	case dailyroutinerec.EdgeProgramRec:
+		return m.clearedprogram_rec
+	case dailyroutinerec.EdgeWeeklyRoutineRec:
+		return m.clearedweekly_routine_rec
+	case dailyroutinerec.EdgeRoutineActRecs:
+		return m.clearedroutine_act_recs
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *DailyRoutineRecMutation) ClearEdge(name string) error {
+	switch name {
+	case dailyroutinerec.EdgeDailyRoutine:
+		m.ClearDailyRoutine()
+		return nil
+	case dailyroutinerec.EdgeProgramRec:
+		m.ClearProgramRec()
+		return nil
+	case dailyroutinerec.EdgeWeeklyRoutineRec:
+		m.ClearWeeklyRoutineRec()
+		return nil
+	}
 	return fmt.Errorf("unknown DailyRoutineRec unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *DailyRoutineRecMutation) ResetEdge(name string) error {
+	switch name {
+	case dailyroutinerec.EdgeDailyRoutine:
+		m.ResetDailyRoutine()
+		return nil
+	case dailyroutinerec.EdgeProgramRec:
+		m.ResetProgramRec()
+		return nil
+	case dailyroutinerec.EdgeWeeklyRoutineRec:
+		m.ResetWeeklyRoutineRec()
+		return nil
+	case dailyroutinerec.EdgeRoutineActRecs:
+		m.ResetRoutineActRecs()
+		return nil
+	}
 	return fmt.Errorf("unknown DailyRoutineRec edge %s", name)
 }
 
@@ -2843,6 +3366,9 @@ type ProgramMutation struct {
 	daily_routines         map[uint64]struct{}
 	removeddaily_routines  map[uint64]struct{}
 	cleareddaily_routines  bool
+	program_recs           map[uint64]struct{}
+	removedprogram_recs    map[uint64]struct{}
+	clearedprogram_recs    bool
 	done                   bool
 	oldValue               func(context.Context) (*Program, error)
 	predicates             []predicate.Program
@@ -3412,6 +3938,60 @@ func (m *ProgramMutation) ResetDailyRoutines() {
 	m.removeddaily_routines = nil
 }
 
+// AddProgramRecIDs adds the "program_recs" edge to the ProgramRec entity by ids.
+func (m *ProgramMutation) AddProgramRecIDs(ids ...uint64) {
+	if m.program_recs == nil {
+		m.program_recs = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.program_recs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProgramRecs clears the "program_recs" edge to the ProgramRec entity.
+func (m *ProgramMutation) ClearProgramRecs() {
+	m.clearedprogram_recs = true
+}
+
+// ProgramRecsCleared reports if the "program_recs" edge to the ProgramRec entity was cleared.
+func (m *ProgramMutation) ProgramRecsCleared() bool {
+	return m.clearedprogram_recs
+}
+
+// RemoveProgramRecIDs removes the "program_recs" edge to the ProgramRec entity by IDs.
+func (m *ProgramMutation) RemoveProgramRecIDs(ids ...uint64) {
+	if m.removedprogram_recs == nil {
+		m.removedprogram_recs = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.program_recs, ids[i])
+		m.removedprogram_recs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProgramRecs returns the removed IDs of the "program_recs" edge to the ProgramRec entity.
+func (m *ProgramMutation) RemovedProgramRecsIDs() (ids []uint64) {
+	for id := range m.removedprogram_recs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProgramRecsIDs returns the "program_recs" edge IDs in the mutation.
+func (m *ProgramMutation) ProgramRecsIDs() (ids []uint64) {
+	for id := range m.program_recs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProgramRecs resets all changes to the "program_recs" edge.
+func (m *ProgramMutation) ResetProgramRecs() {
+	m.program_recs = nil
+	m.clearedprogram_recs = false
+	m.removedprogram_recs = nil
+}
+
 // Where appends a list predicates to the ProgramMutation builder.
 func (m *ProgramMutation) Where(ps ...predicate.Program) {
 	m.predicates = append(m.predicates, ps...)
@@ -3677,7 +4257,7 @@ func (m *ProgramMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProgramMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.tags != nil {
 		edges = append(edges, program.EdgeTags)
 	}
@@ -3686,6 +4266,9 @@ func (m *ProgramMutation) AddedEdges() []string {
 	}
 	if m.daily_routines != nil {
 		edges = append(edges, program.EdgeDailyRoutines)
+	}
+	if m.program_recs != nil {
+		edges = append(edges, program.EdgeProgramRecs)
 	}
 	return edges
 }
@@ -3712,13 +4295,19 @@ func (m *ProgramMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case program.EdgeProgramRecs:
+		ids := make([]ent.Value, 0, len(m.program_recs))
+		for id := range m.program_recs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProgramMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedtags != nil {
 		edges = append(edges, program.EdgeTags)
 	}
@@ -3727,6 +4316,9 @@ func (m *ProgramMutation) RemovedEdges() []string {
 	}
 	if m.removeddaily_routines != nil {
 		edges = append(edges, program.EdgeDailyRoutines)
+	}
+	if m.removedprogram_recs != nil {
+		edges = append(edges, program.EdgeProgramRecs)
 	}
 	return edges
 }
@@ -3753,13 +4345,19 @@ func (m *ProgramMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case program.EdgeProgramRecs:
+		ids := make([]ent.Value, 0, len(m.removedprogram_recs))
+		for id := range m.removedprogram_recs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProgramMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedtags {
 		edges = append(edges, program.EdgeTags)
 	}
@@ -3768,6 +4366,9 @@ func (m *ProgramMutation) ClearedEdges() []string {
 	}
 	if m.cleareddaily_routines {
 		edges = append(edges, program.EdgeDailyRoutines)
+	}
+	if m.clearedprogram_recs {
+		edges = append(edges, program.EdgeProgramRecs)
 	}
 	return edges
 }
@@ -3782,6 +4383,8 @@ func (m *ProgramMutation) EdgeCleared(name string) bool {
 		return m.clearedweekly_routines
 	case program.EdgeDailyRoutines:
 		return m.cleareddaily_routines
+	case program.EdgeProgramRecs:
+		return m.clearedprogram_recs
 	}
 	return false
 }
@@ -3807,6 +4410,9 @@ func (m *ProgramMutation) ResetEdge(name string) error {
 	case program.EdgeDailyRoutines:
 		m.ResetDailyRoutines()
 		return nil
+	case program.EdgeProgramRecs:
+		m.ResetProgramRecs()
+		return nil
 	}
 	return fmt.Errorf("unknown Program edge %s", name)
 }
@@ -3814,23 +4420,31 @@ func (m *ProgramMutation) ResetEdge(name string) error {
 // ProgramRecMutation represents an operation that mutates the ProgramRec nodes in the graph.
 type ProgramRecMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *uint64
-	author        *uint64
-	addauthor     *int64
-	program_id    *uint64
-	addprogram_id *int64
-	start_date    *time.Time
-	end_date      *time.Time
-	status        *programrec.Status
-	comment       *string
-	created_at    *time.Time
-	updated_at    *time.Time
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*ProgramRec, error)
-	predicates    []predicate.ProgramRec
+	op                         Op
+	typ                        string
+	id                         *uint64
+	author                     *uint64
+	addauthor                  *int64
+	program_id                 *uint64
+	addprogram_id              *int64
+	start_date                 *time.Time
+	end_date                   *time.Time
+	status                     *programrec.Status
+	comment                    *string
+	created_at                 *time.Time
+	updated_at                 *time.Time
+	clearedFields              map[string]struct{}
+	program                    *uint64
+	clearedprogram             bool
+	weekly_routine_recs        map[uint64]struct{}
+	removedweekly_routine_recs map[uint64]struct{}
+	clearedweekly_routine_recs bool
+	daily_routine_recs         map[uint64]struct{}
+	removeddaily_routine_recs  map[uint64]struct{}
+	cleareddaily_routine_recs  bool
+	done                       bool
+	oldValue                   func(context.Context) (*ProgramRec, error)
+	predicates                 []predicate.ProgramRec
 }
 
 var _ ent.Mutation = (*ProgramRecMutation)(nil)
@@ -4278,6 +4892,153 @@ func (m *ProgramRecMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// SetProgramID sets the "program" edge to the Program entity by id.
+func (m *ProgramRecMutation) SetProgramID(id uint64) {
+	m.program = &id
+}
+
+// ClearProgram clears the "program" edge to the Program entity.
+func (m *ProgramRecMutation) ClearProgram() {
+	m.clearedprogram = true
+}
+
+// ProgramCleared reports if the "program" edge to the Program entity was cleared.
+func (m *ProgramRecMutation) ProgramCleared() bool {
+	return m.clearedprogram
+}
+
+// ProgramID returns the "program" edge ID in the mutation.
+func (m *ProgramRecMutation) ProgramID() (id uint64, exists bool) {
+	if m.program != nil {
+		return *m.program, true
+	}
+	return
+}
+
+// ProgramIDs returns the "program" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProgramID instead. It exists only for internal usage by the builders.
+func (m *ProgramRecMutation) ProgramIDs() (ids []uint64) {
+	if id := m.program; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProgram resets all changes to the "program" edge.
+func (m *ProgramRecMutation) ResetProgram() {
+	m.program = nil
+	m.clearedprogram = false
+}
+
+// AddWeeklyRoutineRecIDs adds the "weekly_routine_recs" edge to the WeeklyRoutineRec entity by ids.
+func (m *ProgramRecMutation) AddWeeklyRoutineRecIDs(ids ...uint64) {
+	if m.weekly_routine_recs == nil {
+		m.weekly_routine_recs = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.weekly_routine_recs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearWeeklyRoutineRecs clears the "weekly_routine_recs" edge to the WeeklyRoutineRec entity.
+func (m *ProgramRecMutation) ClearWeeklyRoutineRecs() {
+	m.clearedweekly_routine_recs = true
+}
+
+// WeeklyRoutineRecsCleared reports if the "weekly_routine_recs" edge to the WeeklyRoutineRec entity was cleared.
+func (m *ProgramRecMutation) WeeklyRoutineRecsCleared() bool {
+	return m.clearedweekly_routine_recs
+}
+
+// RemoveWeeklyRoutineRecIDs removes the "weekly_routine_recs" edge to the WeeklyRoutineRec entity by IDs.
+func (m *ProgramRecMutation) RemoveWeeklyRoutineRecIDs(ids ...uint64) {
+	if m.removedweekly_routine_recs == nil {
+		m.removedweekly_routine_recs = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.weekly_routine_recs, ids[i])
+		m.removedweekly_routine_recs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedWeeklyRoutineRecs returns the removed IDs of the "weekly_routine_recs" edge to the WeeklyRoutineRec entity.
+func (m *ProgramRecMutation) RemovedWeeklyRoutineRecsIDs() (ids []uint64) {
+	for id := range m.removedweekly_routine_recs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// WeeklyRoutineRecsIDs returns the "weekly_routine_recs" edge IDs in the mutation.
+func (m *ProgramRecMutation) WeeklyRoutineRecsIDs() (ids []uint64) {
+	for id := range m.weekly_routine_recs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetWeeklyRoutineRecs resets all changes to the "weekly_routine_recs" edge.
+func (m *ProgramRecMutation) ResetWeeklyRoutineRecs() {
+	m.weekly_routine_recs = nil
+	m.clearedweekly_routine_recs = false
+	m.removedweekly_routine_recs = nil
+}
+
+// AddDailyRoutineRecIDs adds the "daily_routine_recs" edge to the DailyRoutineRec entity by ids.
+func (m *ProgramRecMutation) AddDailyRoutineRecIDs(ids ...uint64) {
+	if m.daily_routine_recs == nil {
+		m.daily_routine_recs = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.daily_routine_recs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDailyRoutineRecs clears the "daily_routine_recs" edge to the DailyRoutineRec entity.
+func (m *ProgramRecMutation) ClearDailyRoutineRecs() {
+	m.cleareddaily_routine_recs = true
+}
+
+// DailyRoutineRecsCleared reports if the "daily_routine_recs" edge to the DailyRoutineRec entity was cleared.
+func (m *ProgramRecMutation) DailyRoutineRecsCleared() bool {
+	return m.cleareddaily_routine_recs
+}
+
+// RemoveDailyRoutineRecIDs removes the "daily_routine_recs" edge to the DailyRoutineRec entity by IDs.
+func (m *ProgramRecMutation) RemoveDailyRoutineRecIDs(ids ...uint64) {
+	if m.removeddaily_routine_recs == nil {
+		m.removeddaily_routine_recs = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.daily_routine_recs, ids[i])
+		m.removeddaily_routine_recs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDailyRoutineRecs returns the removed IDs of the "daily_routine_recs" edge to the DailyRoutineRec entity.
+func (m *ProgramRecMutation) RemovedDailyRoutineRecsIDs() (ids []uint64) {
+	for id := range m.removeddaily_routine_recs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DailyRoutineRecsIDs returns the "daily_routine_recs" edge IDs in the mutation.
+func (m *ProgramRecMutation) DailyRoutineRecsIDs() (ids []uint64) {
+	for id := range m.daily_routine_recs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDailyRoutineRecs resets all changes to the "daily_routine_recs" edge.
+func (m *ProgramRecMutation) ResetDailyRoutineRecs() {
+	m.daily_routine_recs = nil
+	m.cleareddaily_routine_recs = false
+	m.removeddaily_routine_recs = nil
+}
+
 // Where appends a list predicates to the ProgramRecMutation builder.
 func (m *ProgramRecMutation) Where(ps ...predicate.ProgramRec) {
 	m.predicates = append(m.predicates, ps...)
@@ -4566,78 +5327,161 @@ func (m *ProgramRecMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProgramRecMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 3)
+	if m.program != nil {
+		edges = append(edges, programrec.EdgeProgram)
+	}
+	if m.weekly_routine_recs != nil {
+		edges = append(edges, programrec.EdgeWeeklyRoutineRecs)
+	}
+	if m.daily_routine_recs != nil {
+		edges = append(edges, programrec.EdgeDailyRoutineRecs)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *ProgramRecMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case programrec.EdgeProgram:
+		if id := m.program; id != nil {
+			return []ent.Value{*id}
+		}
+	case programrec.EdgeWeeklyRoutineRecs:
+		ids := make([]ent.Value, 0, len(m.weekly_routine_recs))
+		for id := range m.weekly_routine_recs {
+			ids = append(ids, id)
+		}
+		return ids
+	case programrec.EdgeDailyRoutineRecs:
+		ids := make([]ent.Value, 0, len(m.daily_routine_recs))
+		for id := range m.daily_routine_recs {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProgramRecMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 3)
+	if m.removedweekly_routine_recs != nil {
+		edges = append(edges, programrec.EdgeWeeklyRoutineRecs)
+	}
+	if m.removeddaily_routine_recs != nil {
+		edges = append(edges, programrec.EdgeDailyRoutineRecs)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *ProgramRecMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case programrec.EdgeWeeklyRoutineRecs:
+		ids := make([]ent.Value, 0, len(m.removedweekly_routine_recs))
+		for id := range m.removedweekly_routine_recs {
+			ids = append(ids, id)
+		}
+		return ids
+	case programrec.EdgeDailyRoutineRecs:
+		ids := make([]ent.Value, 0, len(m.removeddaily_routine_recs))
+		for id := range m.removeddaily_routine_recs {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProgramRecMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 3)
+	if m.clearedprogram {
+		edges = append(edges, programrec.EdgeProgram)
+	}
+	if m.clearedweekly_routine_recs {
+		edges = append(edges, programrec.EdgeWeeklyRoutineRecs)
+	}
+	if m.cleareddaily_routine_recs {
+		edges = append(edges, programrec.EdgeDailyRoutineRecs)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *ProgramRecMutation) EdgeCleared(name string) bool {
+	switch name {
+	case programrec.EdgeProgram:
+		return m.clearedprogram
+	case programrec.EdgeWeeklyRoutineRecs:
+		return m.clearedweekly_routine_recs
+	case programrec.EdgeDailyRoutineRecs:
+		return m.cleareddaily_routine_recs
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *ProgramRecMutation) ClearEdge(name string) error {
+	switch name {
+	case programrec.EdgeProgram:
+		m.ClearProgram()
+		return nil
+	}
 	return fmt.Errorf("unknown ProgramRec unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *ProgramRecMutation) ResetEdge(name string) error {
+	switch name {
+	case programrec.EdgeProgram:
+		m.ResetProgram()
+		return nil
+	case programrec.EdgeWeeklyRoutineRecs:
+		m.ResetWeeklyRoutineRecs()
+		return nil
+	case programrec.EdgeDailyRoutineRecs:
+		m.ResetDailyRoutineRecs()
+		return nil
+	}
 	return fmt.Errorf("unknown ProgramRec edge %s", name)
 }
 
 // RoutineActMutation represents an operation that mutates the RoutineAct nodes in the graph.
 type RoutineActMutation struct {
 	config
-	op                   Op
-	typ                  string
-	id                   *uint64
-	daily_routine_id     *uint64
-	adddaily_routine_id  *int64
-	act_id               *uint64
-	addact_id            *int64
-	_order               *int
-	add_order            *int
-	reps                 *int
-	addreps              *int
-	lap                  *int
-	addlap               *int
-	created_at           *time.Time
-	updated_at           *time.Time
-	clearedFields        map[string]struct{}
-	act                  *uint64
-	clearedact           bool
-	daily_routine        *uint64
-	cleareddaily_routine bool
-	done                 bool
-	oldValue             func(context.Context) (*RoutineAct, error)
-	predicates           []predicate.RoutineAct
+	op                      Op
+	typ                     string
+	id                      *uint64
+	daily_routine_id        *uint64
+	adddaily_routine_id     *int64
+	act_id                  *uint64
+	addact_id               *int64
+	_order                  *int
+	add_order               *int
+	reps                    *int
+	addreps                 *int
+	lap                     *int
+	addlap                  *int
+	created_at              *time.Time
+	updated_at              *time.Time
+	clearedFields           map[string]struct{}
+	act                     *uint64
+	clearedact              bool
+	daily_routine           *uint64
+	cleareddaily_routine    bool
+	routine_act_recs        map[uint64]struct{}
+	removedroutine_act_recs map[uint64]struct{}
+	clearedroutine_act_recs bool
+	done                    bool
+	oldValue                func(context.Context) (*RoutineAct, error)
+	predicates              []predicate.RoutineAct
 }
 
 var _ ent.Mutation = (*RoutineActMutation)(nil)
@@ -5202,6 +6046,60 @@ func (m *RoutineActMutation) ResetDailyRoutine() {
 	m.cleareddaily_routine = false
 }
 
+// AddRoutineActRecIDs adds the "routine_act_recs" edge to the RoutineActRec entity by ids.
+func (m *RoutineActMutation) AddRoutineActRecIDs(ids ...uint64) {
+	if m.routine_act_recs == nil {
+		m.routine_act_recs = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.routine_act_recs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRoutineActRecs clears the "routine_act_recs" edge to the RoutineActRec entity.
+func (m *RoutineActMutation) ClearRoutineActRecs() {
+	m.clearedroutine_act_recs = true
+}
+
+// RoutineActRecsCleared reports if the "routine_act_recs" edge to the RoutineActRec entity was cleared.
+func (m *RoutineActMutation) RoutineActRecsCleared() bool {
+	return m.clearedroutine_act_recs
+}
+
+// RemoveRoutineActRecIDs removes the "routine_act_recs" edge to the RoutineActRec entity by IDs.
+func (m *RoutineActMutation) RemoveRoutineActRecIDs(ids ...uint64) {
+	if m.removedroutine_act_recs == nil {
+		m.removedroutine_act_recs = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.routine_act_recs, ids[i])
+		m.removedroutine_act_recs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRoutineActRecs returns the removed IDs of the "routine_act_recs" edge to the RoutineActRec entity.
+func (m *RoutineActMutation) RemovedRoutineActRecsIDs() (ids []uint64) {
+	for id := range m.removedroutine_act_recs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RoutineActRecsIDs returns the "routine_act_recs" edge IDs in the mutation.
+func (m *RoutineActMutation) RoutineActRecsIDs() (ids []uint64) {
+	for id := range m.routine_act_recs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRoutineActRecs resets all changes to the "routine_act_recs" edge.
+func (m *RoutineActMutation) ResetRoutineActRecs() {
+	m.routine_act_recs = nil
+	m.clearedroutine_act_recs = false
+	m.removedroutine_act_recs = nil
+}
+
 // Where appends a list predicates to the RoutineActMutation builder.
 func (m *RoutineActMutation) Where(ps ...predicate.RoutineAct) {
 	m.predicates = append(m.predicates, ps...)
@@ -5515,12 +6413,15 @@ func (m *RoutineActMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *RoutineActMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.act != nil {
 		edges = append(edges, routineact.EdgeAct)
 	}
 	if m.daily_routine != nil {
 		edges = append(edges, routineact.EdgeDailyRoutine)
+	}
+	if m.routine_act_recs != nil {
+		edges = append(edges, routineact.EdgeRoutineActRecs)
 	}
 	return edges
 }
@@ -5537,30 +6438,50 @@ func (m *RoutineActMutation) AddedIDs(name string) []ent.Value {
 		if id := m.daily_routine; id != nil {
 			return []ent.Value{*id}
 		}
+	case routineact.EdgeRoutineActRecs:
+		ids := make([]ent.Value, 0, len(m.routine_act_recs))
+		for id := range m.routine_act_recs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *RoutineActMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
+	if m.removedroutine_act_recs != nil {
+		edges = append(edges, routineact.EdgeRoutineActRecs)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *RoutineActMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case routineact.EdgeRoutineActRecs:
+		ids := make([]ent.Value, 0, len(m.removedroutine_act_recs))
+		for id := range m.removedroutine_act_recs {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *RoutineActMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedact {
 		edges = append(edges, routineact.EdgeAct)
 	}
 	if m.cleareddaily_routine {
 		edges = append(edges, routineact.EdgeDailyRoutine)
+	}
+	if m.clearedroutine_act_recs {
+		edges = append(edges, routineact.EdgeRoutineActRecs)
 	}
 	return edges
 }
@@ -5573,6 +6494,8 @@ func (m *RoutineActMutation) EdgeCleared(name string) bool {
 		return m.clearedact
 	case routineact.EdgeDailyRoutine:
 		return m.cleareddaily_routine
+	case routineact.EdgeRoutineActRecs:
+		return m.clearedroutine_act_recs
 	}
 	return false
 }
@@ -5601,6 +6524,9 @@ func (m *RoutineActMutation) ResetEdge(name string) error {
 	case routineact.EdgeDailyRoutine:
 		m.ResetDailyRoutine()
 		return nil
+	case routineact.EdgeRoutineActRecs:
+		m.ResetRoutineActRecs()
+		return nil
 	}
 	return fmt.Errorf("unknown RoutineAct edge %s", name)
 }
@@ -5608,34 +6534,40 @@ func (m *RoutineActMutation) ResetEdge(name string) error {
 // RoutineActRecMutation represents an operation that mutates the RoutineActRec nodes in the graph.
 type RoutineActRecMutation struct {
 	config
-	op                      Op
-	typ                     string
-	id                      *uint64
-	daily_routine_rec_id    *uint64
-	adddaily_routine_rec_id *int64
-	routine_act_id          *uint64
-	addroutine_act_id       *int64
-	act_id                  *uint64
-	addact_id               *int64
-	_order                  *int
-	add_order               *int
-	reps                    *int
-	addreps                 *int
-	lap                     *int
-	addlap                  *int
-	current_reps            *int
-	addcurrent_reps         *int
-	current_lap             *int
-	addcurrent_lap          *int
-	image                   *string
-	comment                 *string
-	status                  *routineactrec.Status
-	created_at              *time.Time
-	updated_at              *time.Time
-	clearedFields           map[string]struct{}
-	done                    bool
-	oldValue                func(context.Context) (*RoutineActRec, error)
-	predicates              []predicate.RoutineActRec
+	op                       Op
+	typ                      string
+	id                       *uint64
+	daily_routine_rec_id     *uint64
+	adddaily_routine_rec_id  *int64
+	routine_act_id           *uint64
+	addroutine_act_id        *int64
+	act_id                   *uint64
+	addact_id                *int64
+	_order                   *int
+	add_order                *int
+	reps                     *int
+	addreps                  *int
+	lap                      *int
+	addlap                   *int
+	current_reps             *int
+	addcurrent_reps          *int
+	current_lap              *int
+	addcurrent_lap           *int
+	image                    *string
+	comment                  *string
+	status                   *routineactrec.Status
+	created_at               *time.Time
+	updated_at               *time.Time
+	clearedFields            map[string]struct{}
+	daily_routine_rec        *uint64
+	cleareddaily_routine_rec bool
+	act                      *uint64
+	clearedact               bool
+	routine_act              *uint64
+	clearedroutine_act       bool
+	done                     bool
+	oldValue                 func(context.Context) (*RoutineActRec, error)
+	predicates               []predicate.RoutineActRec
 }
 
 var _ ent.Mutation = (*RoutineActRecMutation)(nil)
@@ -6452,6 +7384,123 @@ func (m *RoutineActRecMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// SetDailyRoutineRecID sets the "daily_routine_rec" edge to the DailyRoutineRec entity by id.
+func (m *RoutineActRecMutation) SetDailyRoutineRecID(id uint64) {
+	m.daily_routine_rec = &id
+}
+
+// ClearDailyRoutineRec clears the "daily_routine_rec" edge to the DailyRoutineRec entity.
+func (m *RoutineActRecMutation) ClearDailyRoutineRec() {
+	m.cleareddaily_routine_rec = true
+}
+
+// DailyRoutineRecCleared reports if the "daily_routine_rec" edge to the DailyRoutineRec entity was cleared.
+func (m *RoutineActRecMutation) DailyRoutineRecCleared() bool {
+	return m.cleareddaily_routine_rec
+}
+
+// DailyRoutineRecID returns the "daily_routine_rec" edge ID in the mutation.
+func (m *RoutineActRecMutation) DailyRoutineRecID() (id uint64, exists bool) {
+	if m.daily_routine_rec != nil {
+		return *m.daily_routine_rec, true
+	}
+	return
+}
+
+// DailyRoutineRecIDs returns the "daily_routine_rec" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// DailyRoutineRecID instead. It exists only for internal usage by the builders.
+func (m *RoutineActRecMutation) DailyRoutineRecIDs() (ids []uint64) {
+	if id := m.daily_routine_rec; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetDailyRoutineRec resets all changes to the "daily_routine_rec" edge.
+func (m *RoutineActRecMutation) ResetDailyRoutineRec() {
+	m.daily_routine_rec = nil
+	m.cleareddaily_routine_rec = false
+}
+
+// SetActID sets the "act" edge to the Act entity by id.
+func (m *RoutineActRecMutation) SetActID(id uint64) {
+	m.act = &id
+}
+
+// ClearAct clears the "act" edge to the Act entity.
+func (m *RoutineActRecMutation) ClearAct() {
+	m.clearedact = true
+}
+
+// ActCleared reports if the "act" edge to the Act entity was cleared.
+func (m *RoutineActRecMutation) ActCleared() bool {
+	return m.clearedact
+}
+
+// ActID returns the "act" edge ID in the mutation.
+func (m *RoutineActRecMutation) ActID() (id uint64, exists bool) {
+	if m.act != nil {
+		return *m.act, true
+	}
+	return
+}
+
+// ActIDs returns the "act" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ActID instead. It exists only for internal usage by the builders.
+func (m *RoutineActRecMutation) ActIDs() (ids []uint64) {
+	if id := m.act; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAct resets all changes to the "act" edge.
+func (m *RoutineActRecMutation) ResetAct() {
+	m.act = nil
+	m.clearedact = false
+}
+
+// SetRoutineActID sets the "routine_act" edge to the RoutineAct entity by id.
+func (m *RoutineActRecMutation) SetRoutineActID(id uint64) {
+	m.routine_act = &id
+}
+
+// ClearRoutineAct clears the "routine_act" edge to the RoutineAct entity.
+func (m *RoutineActRecMutation) ClearRoutineAct() {
+	m.clearedroutine_act = true
+}
+
+// RoutineActCleared reports if the "routine_act" edge to the RoutineAct entity was cleared.
+func (m *RoutineActRecMutation) RoutineActCleared() bool {
+	return m.clearedroutine_act
+}
+
+// RoutineActID returns the "routine_act" edge ID in the mutation.
+func (m *RoutineActRecMutation) RoutineActID() (id uint64, exists bool) {
+	if m.routine_act != nil {
+		return *m.routine_act, true
+	}
+	return
+}
+
+// RoutineActIDs returns the "routine_act" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// RoutineActID instead. It exists only for internal usage by the builders.
+func (m *RoutineActRecMutation) RoutineActIDs() (ids []uint64) {
+	if id := m.routine_act; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetRoutineAct resets all changes to the "routine_act" edge.
+func (m *RoutineActRecMutation) ResetRoutineAct() {
+	m.routine_act = nil
+	m.clearedroutine_act = false
+}
+
 // Where appends a list predicates to the RoutineActRecMutation builder.
 func (m *RoutineActRecMutation) Where(ps ...predicate.RoutineActRec) {
 	m.predicates = append(m.predicates, ps...)
@@ -6927,19 +7976,42 @@ func (m *RoutineActRecMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *RoutineActRecMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 3)
+	if m.daily_routine_rec != nil {
+		edges = append(edges, routineactrec.EdgeDailyRoutineRec)
+	}
+	if m.act != nil {
+		edges = append(edges, routineactrec.EdgeAct)
+	}
+	if m.routine_act != nil {
+		edges = append(edges, routineactrec.EdgeRoutineAct)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *RoutineActRecMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case routineactrec.EdgeDailyRoutineRec:
+		if id := m.daily_routine_rec; id != nil {
+			return []ent.Value{*id}
+		}
+	case routineactrec.EdgeAct:
+		if id := m.act; id != nil {
+			return []ent.Value{*id}
+		}
+	case routineactrec.EdgeRoutineAct:
+		if id := m.routine_act; id != nil {
+			return []ent.Value{*id}
+		}
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *RoutineActRecMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 3)
 	return edges
 }
 
@@ -6951,25 +8023,64 @@ func (m *RoutineActRecMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *RoutineActRecMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 3)
+	if m.cleareddaily_routine_rec {
+		edges = append(edges, routineactrec.EdgeDailyRoutineRec)
+	}
+	if m.clearedact {
+		edges = append(edges, routineactrec.EdgeAct)
+	}
+	if m.clearedroutine_act {
+		edges = append(edges, routineactrec.EdgeRoutineAct)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *RoutineActRecMutation) EdgeCleared(name string) bool {
+	switch name {
+	case routineactrec.EdgeDailyRoutineRec:
+		return m.cleareddaily_routine_rec
+	case routineactrec.EdgeAct:
+		return m.clearedact
+	case routineactrec.EdgeRoutineAct:
+		return m.clearedroutine_act
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *RoutineActRecMutation) ClearEdge(name string) error {
+	switch name {
+	case routineactrec.EdgeDailyRoutineRec:
+		m.ClearDailyRoutineRec()
+		return nil
+	case routineactrec.EdgeAct:
+		m.ClearAct()
+		return nil
+	case routineactrec.EdgeRoutineAct:
+		m.ClearRoutineAct()
+		return nil
+	}
 	return fmt.Errorf("unknown RoutineActRec unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *RoutineActRecMutation) ResetEdge(name string) error {
+	switch name {
+	case routineactrec.EdgeDailyRoutineRec:
+		m.ResetDailyRoutineRec()
+		return nil
+	case routineactrec.EdgeAct:
+		m.ResetAct()
+		return nil
+	case routineactrec.EdgeRoutineAct:
+		m.ResetRoutineAct()
+		return nil
+	}
 	return fmt.Errorf("unknown RoutineActRec edge %s", name)
 }
 
@@ -7484,25 +8595,28 @@ func (m *TagMutation) ResetEdge(name string) error {
 // WeeklyRoutineMutation represents an operation that mutates the WeeklyRoutine nodes in the graph.
 type WeeklyRoutineMutation struct {
 	config
-	op                    Op
-	typ                   string
-	id                    *uint64
-	program_id            *uint64
-	addprogram_id         *int64
-	week                  *int
-	addweek               *int
-	created_at            *time.Time
-	updated_at            *time.Time
-	clearedFields         map[string]struct{}
-	program               map[uint64]struct{}
-	removedprogram        map[uint64]struct{}
-	clearedprogram        bool
-	daily_routines        map[uint64]struct{}
-	removeddaily_routines map[uint64]struct{}
-	cleareddaily_routines bool
-	done                  bool
-	oldValue              func(context.Context) (*WeeklyRoutine, error)
-	predicates            []predicate.WeeklyRoutine
+	op                         Op
+	typ                        string
+	id                         *uint64
+	program_id                 *uint64
+	addprogram_id              *int64
+	week                       *int
+	addweek                    *int
+	created_at                 *time.Time
+	updated_at                 *time.Time
+	clearedFields              map[string]struct{}
+	program                    map[uint64]struct{}
+	removedprogram             map[uint64]struct{}
+	clearedprogram             bool
+	daily_routines             map[uint64]struct{}
+	removeddaily_routines      map[uint64]struct{}
+	cleareddaily_routines      bool
+	weekly_routine_recs        map[uint64]struct{}
+	removedweekly_routine_recs map[uint64]struct{}
+	clearedweekly_routine_recs bool
+	done                       bool
+	oldValue                   func(context.Context) (*WeeklyRoutine, error)
+	predicates                 []predicate.WeeklyRoutine
 }
 
 var _ ent.Mutation = (*WeeklyRoutineMutation)(nil)
@@ -7901,6 +9015,60 @@ func (m *WeeklyRoutineMutation) ResetDailyRoutines() {
 	m.removeddaily_routines = nil
 }
 
+// AddWeeklyRoutineRecIDs adds the "weekly_routine_recs" edge to the WeeklyRoutineRec entity by ids.
+func (m *WeeklyRoutineMutation) AddWeeklyRoutineRecIDs(ids ...uint64) {
+	if m.weekly_routine_recs == nil {
+		m.weekly_routine_recs = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.weekly_routine_recs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearWeeklyRoutineRecs clears the "weekly_routine_recs" edge to the WeeklyRoutineRec entity.
+func (m *WeeklyRoutineMutation) ClearWeeklyRoutineRecs() {
+	m.clearedweekly_routine_recs = true
+}
+
+// WeeklyRoutineRecsCleared reports if the "weekly_routine_recs" edge to the WeeklyRoutineRec entity was cleared.
+func (m *WeeklyRoutineMutation) WeeklyRoutineRecsCleared() bool {
+	return m.clearedweekly_routine_recs
+}
+
+// RemoveWeeklyRoutineRecIDs removes the "weekly_routine_recs" edge to the WeeklyRoutineRec entity by IDs.
+func (m *WeeklyRoutineMutation) RemoveWeeklyRoutineRecIDs(ids ...uint64) {
+	if m.removedweekly_routine_recs == nil {
+		m.removedweekly_routine_recs = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.weekly_routine_recs, ids[i])
+		m.removedweekly_routine_recs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedWeeklyRoutineRecs returns the removed IDs of the "weekly_routine_recs" edge to the WeeklyRoutineRec entity.
+func (m *WeeklyRoutineMutation) RemovedWeeklyRoutineRecsIDs() (ids []uint64) {
+	for id := range m.removedweekly_routine_recs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// WeeklyRoutineRecsIDs returns the "weekly_routine_recs" edge IDs in the mutation.
+func (m *WeeklyRoutineMutation) WeeklyRoutineRecsIDs() (ids []uint64) {
+	for id := range m.weekly_routine_recs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetWeeklyRoutineRecs resets all changes to the "weekly_routine_recs" edge.
+func (m *WeeklyRoutineMutation) ResetWeeklyRoutineRecs() {
+	m.weekly_routine_recs = nil
+	m.clearedweekly_routine_recs = false
+	m.removedweekly_routine_recs = nil
+}
+
 // Where appends a list predicates to the WeeklyRoutineMutation builder.
 func (m *WeeklyRoutineMutation) Where(ps ...predicate.WeeklyRoutine) {
 	m.predicates = append(m.predicates, ps...)
@@ -8112,12 +9280,15 @@ func (m *WeeklyRoutineMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *WeeklyRoutineMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.program != nil {
 		edges = append(edges, weeklyroutine.EdgeProgram)
 	}
 	if m.daily_routines != nil {
 		edges = append(edges, weeklyroutine.EdgeDailyRoutines)
+	}
+	if m.weekly_routine_recs != nil {
+		edges = append(edges, weeklyroutine.EdgeWeeklyRoutineRecs)
 	}
 	return edges
 }
@@ -8138,18 +9309,27 @@ func (m *WeeklyRoutineMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case weeklyroutine.EdgeWeeklyRoutineRecs:
+		ids := make([]ent.Value, 0, len(m.weekly_routine_recs))
+		for id := range m.weekly_routine_recs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *WeeklyRoutineMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedprogram != nil {
 		edges = append(edges, weeklyroutine.EdgeProgram)
 	}
 	if m.removeddaily_routines != nil {
 		edges = append(edges, weeklyroutine.EdgeDailyRoutines)
+	}
+	if m.removedweekly_routine_recs != nil {
+		edges = append(edges, weeklyroutine.EdgeWeeklyRoutineRecs)
 	}
 	return edges
 }
@@ -8170,18 +9350,27 @@ func (m *WeeklyRoutineMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case weeklyroutine.EdgeWeeklyRoutineRecs:
+		ids := make([]ent.Value, 0, len(m.removedweekly_routine_recs))
+		for id := range m.removedweekly_routine_recs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *WeeklyRoutineMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedprogram {
 		edges = append(edges, weeklyroutine.EdgeProgram)
 	}
 	if m.cleareddaily_routines {
 		edges = append(edges, weeklyroutine.EdgeDailyRoutines)
+	}
+	if m.clearedweekly_routine_recs {
+		edges = append(edges, weeklyroutine.EdgeWeeklyRoutineRecs)
 	}
 	return edges
 }
@@ -8194,6 +9383,8 @@ func (m *WeeklyRoutineMutation) EdgeCleared(name string) bool {
 		return m.clearedprogram
 	case weeklyroutine.EdgeDailyRoutines:
 		return m.cleareddaily_routines
+	case weeklyroutine.EdgeWeeklyRoutineRecs:
+		return m.clearedweekly_routine_recs
 	}
 	return false
 }
@@ -8216,6 +9407,9 @@ func (m *WeeklyRoutineMutation) ResetEdge(name string) error {
 	case weeklyroutine.EdgeDailyRoutines:
 		m.ResetDailyRoutines()
 		return nil
+	case weeklyroutine.EdgeWeeklyRoutineRecs:
+		m.ResetWeeklyRoutineRecs()
+		return nil
 	}
 	return fmt.Errorf("unknown WeeklyRoutine edge %s", name)
 }
@@ -8223,20 +9417,27 @@ func (m *WeeklyRoutineMutation) ResetEdge(name string) error {
 // WeeklyRoutineRecMutation represents an operation that mutates the WeeklyRoutineRec nodes in the graph.
 type WeeklyRoutineRecMutation struct {
 	config
-	op                   Op
-	typ                  string
-	id                   *uint64
-	program_rec_id       *uint64
-	addprogram_rec_id    *int64
-	weekly_routine_id    *uint64
-	addweekly_routine_id *int64
-	start_date           *time.Time
-	created_at           *time.Time
-	updated_at           *time.Time
-	clearedFields        map[string]struct{}
-	done                 bool
-	oldValue             func(context.Context) (*WeeklyRoutineRec, error)
-	predicates           []predicate.WeeklyRoutineRec
+	op                        Op
+	typ                       string
+	id                        *uint64
+	program_rec_id            *uint64
+	addprogram_rec_id         *int64
+	weekly_routine_id         *uint64
+	addweekly_routine_id      *int64
+	start_date                *time.Time
+	created_at                *time.Time
+	updated_at                *time.Time
+	clearedFields             map[string]struct{}
+	weekly_routine            *uint64
+	clearedweekly_routine     bool
+	program_rec               *uint64
+	clearedprogram_rec        bool
+	daily_routine_recs        map[uint64]struct{}
+	removeddaily_routine_recs map[uint64]struct{}
+	cleareddaily_routine_recs bool
+	done                      bool
+	oldValue                  func(context.Context) (*WeeklyRoutineRec, error)
+	predicates                []predicate.WeeklyRoutineRec
 }
 
 var _ ent.Mutation = (*WeeklyRoutineRecMutation)(nil)
@@ -8563,6 +9764,138 @@ func (m *WeeklyRoutineRecMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// SetWeeklyRoutineID sets the "weekly_routine" edge to the WeeklyRoutine entity by id.
+func (m *WeeklyRoutineRecMutation) SetWeeklyRoutineID(id uint64) {
+	m.weekly_routine = &id
+}
+
+// ClearWeeklyRoutine clears the "weekly_routine" edge to the WeeklyRoutine entity.
+func (m *WeeklyRoutineRecMutation) ClearWeeklyRoutine() {
+	m.clearedweekly_routine = true
+}
+
+// WeeklyRoutineCleared reports if the "weekly_routine" edge to the WeeklyRoutine entity was cleared.
+func (m *WeeklyRoutineRecMutation) WeeklyRoutineCleared() bool {
+	return m.clearedweekly_routine
+}
+
+// WeeklyRoutineID returns the "weekly_routine" edge ID in the mutation.
+func (m *WeeklyRoutineRecMutation) WeeklyRoutineID() (id uint64, exists bool) {
+	if m.weekly_routine != nil {
+		return *m.weekly_routine, true
+	}
+	return
+}
+
+// WeeklyRoutineIDs returns the "weekly_routine" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// WeeklyRoutineID instead. It exists only for internal usage by the builders.
+func (m *WeeklyRoutineRecMutation) WeeklyRoutineIDs() (ids []uint64) {
+	if id := m.weekly_routine; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetWeeklyRoutine resets all changes to the "weekly_routine" edge.
+func (m *WeeklyRoutineRecMutation) ResetWeeklyRoutine() {
+	m.weekly_routine = nil
+	m.clearedweekly_routine = false
+}
+
+// SetProgramRecID sets the "program_rec" edge to the ProgramRec entity by id.
+func (m *WeeklyRoutineRecMutation) SetProgramRecID(id uint64) {
+	m.program_rec = &id
+}
+
+// ClearProgramRec clears the "program_rec" edge to the ProgramRec entity.
+func (m *WeeklyRoutineRecMutation) ClearProgramRec() {
+	m.clearedprogram_rec = true
+}
+
+// ProgramRecCleared reports if the "program_rec" edge to the ProgramRec entity was cleared.
+func (m *WeeklyRoutineRecMutation) ProgramRecCleared() bool {
+	return m.clearedprogram_rec
+}
+
+// ProgramRecID returns the "program_rec" edge ID in the mutation.
+func (m *WeeklyRoutineRecMutation) ProgramRecID() (id uint64, exists bool) {
+	if m.program_rec != nil {
+		return *m.program_rec, true
+	}
+	return
+}
+
+// ProgramRecIDs returns the "program_rec" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProgramRecID instead. It exists only for internal usage by the builders.
+func (m *WeeklyRoutineRecMutation) ProgramRecIDs() (ids []uint64) {
+	if id := m.program_rec; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProgramRec resets all changes to the "program_rec" edge.
+func (m *WeeklyRoutineRecMutation) ResetProgramRec() {
+	m.program_rec = nil
+	m.clearedprogram_rec = false
+}
+
+// AddDailyRoutineRecIDs adds the "daily_routine_recs" edge to the DailyRoutineRec entity by ids.
+func (m *WeeklyRoutineRecMutation) AddDailyRoutineRecIDs(ids ...uint64) {
+	if m.daily_routine_recs == nil {
+		m.daily_routine_recs = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.daily_routine_recs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDailyRoutineRecs clears the "daily_routine_recs" edge to the DailyRoutineRec entity.
+func (m *WeeklyRoutineRecMutation) ClearDailyRoutineRecs() {
+	m.cleareddaily_routine_recs = true
+}
+
+// DailyRoutineRecsCleared reports if the "daily_routine_recs" edge to the DailyRoutineRec entity was cleared.
+func (m *WeeklyRoutineRecMutation) DailyRoutineRecsCleared() bool {
+	return m.cleareddaily_routine_recs
+}
+
+// RemoveDailyRoutineRecIDs removes the "daily_routine_recs" edge to the DailyRoutineRec entity by IDs.
+func (m *WeeklyRoutineRecMutation) RemoveDailyRoutineRecIDs(ids ...uint64) {
+	if m.removeddaily_routine_recs == nil {
+		m.removeddaily_routine_recs = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.daily_routine_recs, ids[i])
+		m.removeddaily_routine_recs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDailyRoutineRecs returns the removed IDs of the "daily_routine_recs" edge to the DailyRoutineRec entity.
+func (m *WeeklyRoutineRecMutation) RemovedDailyRoutineRecsIDs() (ids []uint64) {
+	for id := range m.removeddaily_routine_recs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DailyRoutineRecsIDs returns the "daily_routine_recs" edge IDs in the mutation.
+func (m *WeeklyRoutineRecMutation) DailyRoutineRecsIDs() (ids []uint64) {
+	for id := range m.daily_routine_recs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDailyRoutineRecs resets all changes to the "daily_routine_recs" edge.
+func (m *WeeklyRoutineRecMutation) ResetDailyRoutineRecs() {
+	m.daily_routine_recs = nil
+	m.cleareddaily_routine_recs = false
+	m.removeddaily_routine_recs = nil
+}
+
 // Where appends a list predicates to the WeeklyRoutineRecMutation builder.
 func (m *WeeklyRoutineRecMutation) Where(ps ...predicate.WeeklyRoutineRec) {
 	m.predicates = append(m.predicates, ps...)
@@ -8791,48 +10124,120 @@ func (m *WeeklyRoutineRecMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *WeeklyRoutineRecMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 3)
+	if m.weekly_routine != nil {
+		edges = append(edges, weeklyroutinerec.EdgeWeeklyRoutine)
+	}
+	if m.program_rec != nil {
+		edges = append(edges, weeklyroutinerec.EdgeProgramRec)
+	}
+	if m.daily_routine_recs != nil {
+		edges = append(edges, weeklyroutinerec.EdgeDailyRoutineRecs)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *WeeklyRoutineRecMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case weeklyroutinerec.EdgeWeeklyRoutine:
+		if id := m.weekly_routine; id != nil {
+			return []ent.Value{*id}
+		}
+	case weeklyroutinerec.EdgeProgramRec:
+		if id := m.program_rec; id != nil {
+			return []ent.Value{*id}
+		}
+	case weeklyroutinerec.EdgeDailyRoutineRecs:
+		ids := make([]ent.Value, 0, len(m.daily_routine_recs))
+		for id := range m.daily_routine_recs {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *WeeklyRoutineRecMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 3)
+	if m.removeddaily_routine_recs != nil {
+		edges = append(edges, weeklyroutinerec.EdgeDailyRoutineRecs)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *WeeklyRoutineRecMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case weeklyroutinerec.EdgeDailyRoutineRecs:
+		ids := make([]ent.Value, 0, len(m.removeddaily_routine_recs))
+		for id := range m.removeddaily_routine_recs {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *WeeklyRoutineRecMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 3)
+	if m.clearedweekly_routine {
+		edges = append(edges, weeklyroutinerec.EdgeWeeklyRoutine)
+	}
+	if m.clearedprogram_rec {
+		edges = append(edges, weeklyroutinerec.EdgeProgramRec)
+	}
+	if m.cleareddaily_routine_recs {
+		edges = append(edges, weeklyroutinerec.EdgeDailyRoutineRecs)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *WeeklyRoutineRecMutation) EdgeCleared(name string) bool {
+	switch name {
+	case weeklyroutinerec.EdgeWeeklyRoutine:
+		return m.clearedweekly_routine
+	case weeklyroutinerec.EdgeProgramRec:
+		return m.clearedprogram_rec
+	case weeklyroutinerec.EdgeDailyRoutineRecs:
+		return m.cleareddaily_routine_recs
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *WeeklyRoutineRecMutation) ClearEdge(name string) error {
+	switch name {
+	case weeklyroutinerec.EdgeWeeklyRoutine:
+		m.ClearWeeklyRoutine()
+		return nil
+	case weeklyroutinerec.EdgeProgramRec:
+		m.ClearProgramRec()
+		return nil
+	}
 	return fmt.Errorf("unknown WeeklyRoutineRec unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *WeeklyRoutineRecMutation) ResetEdge(name string) error {
+	switch name {
+	case weeklyroutinerec.EdgeWeeklyRoutine:
+		m.ResetWeeklyRoutine()
+		return nil
+	case weeklyroutinerec.EdgeProgramRec:
+		m.ResetProgramRec()
+		return nil
+	case weeklyroutinerec.EdgeDailyRoutineRecs:
+		m.ResetDailyRoutineRecs()
+		return nil
+	}
 	return fmt.Errorf("unknown WeeklyRoutineRec edge %s", name)
 }

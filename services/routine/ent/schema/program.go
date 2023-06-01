@@ -38,5 +38,7 @@ func (Program) Edges() []ent.Edge {
 		edge.From("tags", Tag.Type).Ref("programs"),
 		edge.To("weekly_routines", WeeklyRoutine.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
 		edge.To("daily_routines", DailyRoutine.Type).Annotations(entsql.Annotation{OnDelete: entsql.Cascade}),
+
+		edge.To("program_recs", ProgramRec.Type),
 	}
 }

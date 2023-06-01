@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"routine/ent/dailyroutine"
 	"routine/ent/program"
+	"routine/ent/programrec"
 	"routine/ent/tag"
 	"routine/ent/weeklyroutine"
 	"time"
@@ -146,6 +147,21 @@ func (pc *ProgramCreate) AddDailyRoutines(d ...*DailyRoutine) *ProgramCreate {
 		ids[i] = d[i].ID
 	}
 	return pc.AddDailyRoutineIDs(ids...)
+}
+
+// AddProgramRecIDs adds the "program_recs" edge to the ProgramRec entity by IDs.
+func (pc *ProgramCreate) AddProgramRecIDs(ids ...uint64) *ProgramCreate {
+	pc.mutation.AddProgramRecIDs(ids...)
+	return pc
+}
+
+// AddProgramRecs adds the "program_recs" edges to the ProgramRec entity.
+func (pc *ProgramCreate) AddProgramRecs(p ...*ProgramRec) *ProgramCreate {
+	ids := make([]uint64, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pc.AddProgramRecIDs(ids...)
 }
 
 // Mutation returns the ProgramMutation object of the builder.
@@ -321,6 +337,22 @@ func (pc *ProgramCreate) createSpec() (*Program, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dailyroutine.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.ProgramRecsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   program.ProgramRecsTable,
+			Columns: []string{program.ProgramRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(programrec.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

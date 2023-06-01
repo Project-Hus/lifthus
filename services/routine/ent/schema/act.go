@@ -37,5 +37,7 @@ func (Act) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("tags", Tag.Type).Ref("acts"),
 		edge.To("routine_acts", RoutineAct.Type),
+
+		edge.To("routine_act_recs", RoutineActRec.Type),
 	}
 }

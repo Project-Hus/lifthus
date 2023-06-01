@@ -10,6 +10,7 @@ import (
 	"routine/ent/dailyroutine"
 	"routine/ent/predicate"
 	"routine/ent/routineact"
+	"routine/ent/routineactrec"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -151,6 +152,21 @@ func (rau *RoutineActUpdate) SetDailyRoutine(d *DailyRoutine) *RoutineActUpdate 
 	return rau.SetDailyRoutineID(d.ID)
 }
 
+// AddRoutineActRecIDs adds the "routine_act_recs" edge to the RoutineActRec entity by IDs.
+func (rau *RoutineActUpdate) AddRoutineActRecIDs(ids ...uint64) *RoutineActUpdate {
+	rau.mutation.AddRoutineActRecIDs(ids...)
+	return rau
+}
+
+// AddRoutineActRecs adds the "routine_act_recs" edges to the RoutineActRec entity.
+func (rau *RoutineActUpdate) AddRoutineActRecs(r ...*RoutineActRec) *RoutineActUpdate {
+	ids := make([]uint64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return rau.AddRoutineActRecIDs(ids...)
+}
+
 // Mutation returns the RoutineActMutation object of the builder.
 func (rau *RoutineActUpdate) Mutation() *RoutineActMutation {
 	return rau.mutation
@@ -166,6 +182,27 @@ func (rau *RoutineActUpdate) ClearAct() *RoutineActUpdate {
 func (rau *RoutineActUpdate) ClearDailyRoutine() *RoutineActUpdate {
 	rau.mutation.ClearDailyRoutine()
 	return rau
+}
+
+// ClearRoutineActRecs clears all "routine_act_recs" edges to the RoutineActRec entity.
+func (rau *RoutineActUpdate) ClearRoutineActRecs() *RoutineActUpdate {
+	rau.mutation.ClearRoutineActRecs()
+	return rau
+}
+
+// RemoveRoutineActRecIDs removes the "routine_act_recs" edge to RoutineActRec entities by IDs.
+func (rau *RoutineActUpdate) RemoveRoutineActRecIDs(ids ...uint64) *RoutineActUpdate {
+	rau.mutation.RemoveRoutineActRecIDs(ids...)
+	return rau
+}
+
+// RemoveRoutineActRecs removes "routine_act_recs" edges to RoutineActRec entities.
+func (rau *RoutineActUpdate) RemoveRoutineActRecs(r ...*RoutineActRec) *RoutineActUpdate {
+	ids := make([]uint64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return rau.RemoveRoutineActRecIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -339,6 +376,51 @@ func (rau *RoutineActUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if rau.mutation.RoutineActRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   routineact.RoutineActRecsTable,
+			Columns: []string{routineact.RoutineActRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineactrec.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := rau.mutation.RemovedRoutineActRecsIDs(); len(nodes) > 0 && !rau.mutation.RoutineActRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   routineact.RoutineActRecsTable,
+			Columns: []string{routineact.RoutineActRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineactrec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := rau.mutation.RoutineActRecsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   routineact.RoutineActRecsTable,
+			Columns: []string{routineact.RoutineActRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineactrec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, rau.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{routineact.Label}
@@ -480,6 +562,21 @@ func (rauo *RoutineActUpdateOne) SetDailyRoutine(d *DailyRoutine) *RoutineActUpd
 	return rauo.SetDailyRoutineID(d.ID)
 }
 
+// AddRoutineActRecIDs adds the "routine_act_recs" edge to the RoutineActRec entity by IDs.
+func (rauo *RoutineActUpdateOne) AddRoutineActRecIDs(ids ...uint64) *RoutineActUpdateOne {
+	rauo.mutation.AddRoutineActRecIDs(ids...)
+	return rauo
+}
+
+// AddRoutineActRecs adds the "routine_act_recs" edges to the RoutineActRec entity.
+func (rauo *RoutineActUpdateOne) AddRoutineActRecs(r ...*RoutineActRec) *RoutineActUpdateOne {
+	ids := make([]uint64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return rauo.AddRoutineActRecIDs(ids...)
+}
+
 // Mutation returns the RoutineActMutation object of the builder.
 func (rauo *RoutineActUpdateOne) Mutation() *RoutineActMutation {
 	return rauo.mutation
@@ -495,6 +592,27 @@ func (rauo *RoutineActUpdateOne) ClearAct() *RoutineActUpdateOne {
 func (rauo *RoutineActUpdateOne) ClearDailyRoutine() *RoutineActUpdateOne {
 	rauo.mutation.ClearDailyRoutine()
 	return rauo
+}
+
+// ClearRoutineActRecs clears all "routine_act_recs" edges to the RoutineActRec entity.
+func (rauo *RoutineActUpdateOne) ClearRoutineActRecs() *RoutineActUpdateOne {
+	rauo.mutation.ClearRoutineActRecs()
+	return rauo
+}
+
+// RemoveRoutineActRecIDs removes the "routine_act_recs" edge to RoutineActRec entities by IDs.
+func (rauo *RoutineActUpdateOne) RemoveRoutineActRecIDs(ids ...uint64) *RoutineActUpdateOne {
+	rauo.mutation.RemoveRoutineActRecIDs(ids...)
+	return rauo
+}
+
+// RemoveRoutineActRecs removes "routine_act_recs" edges to RoutineActRec entities.
+func (rauo *RoutineActUpdateOne) RemoveRoutineActRecs(r ...*RoutineActRec) *RoutineActUpdateOne {
+	ids := make([]uint64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return rauo.RemoveRoutineActRecIDs(ids...)
 }
 
 // Where appends a list predicates to the RoutineActUpdate builder.
@@ -691,6 +809,51 @@ func (rauo *RoutineActUpdateOne) sqlSave(ctx context.Context) (_node *RoutineAct
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dailyroutine.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if rauo.mutation.RoutineActRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   routineact.RoutineActRecsTable,
+			Columns: []string{routineact.RoutineActRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineactrec.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := rauo.mutation.RemovedRoutineActRecsIDs(); len(nodes) > 0 && !rauo.mutation.RoutineActRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   routineact.RoutineActRecsTable,
+			Columns: []string{routineact.RoutineActRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineactrec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := rauo.mutation.RoutineActRecsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   routineact.RoutineActRecsTable,
+			Columns: []string{routineact.RoutineActRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineactrec.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

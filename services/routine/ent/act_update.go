@@ -9,6 +9,7 @@ import (
 	"routine/ent/act"
 	"routine/ent/predicate"
 	"routine/ent/routineact"
+	"routine/ent/routineactrec"
 	"routine/ent/tag"
 	"time"
 
@@ -145,6 +146,21 @@ func (au *ActUpdate) AddRoutineActs(r ...*RoutineAct) *ActUpdate {
 	return au.AddRoutineActIDs(ids...)
 }
 
+// AddRoutineActRecIDs adds the "routine_act_recs" edge to the RoutineActRec entity by IDs.
+func (au *ActUpdate) AddRoutineActRecIDs(ids ...uint64) *ActUpdate {
+	au.mutation.AddRoutineActRecIDs(ids...)
+	return au
+}
+
+// AddRoutineActRecs adds the "routine_act_recs" edges to the RoutineActRec entity.
+func (au *ActUpdate) AddRoutineActRecs(r ...*RoutineActRec) *ActUpdate {
+	ids := make([]uint64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return au.AddRoutineActRecIDs(ids...)
+}
+
 // Mutation returns the ActMutation object of the builder.
 func (au *ActUpdate) Mutation() *ActMutation {
 	return au.mutation
@@ -190,6 +206,27 @@ func (au *ActUpdate) RemoveRoutineActs(r ...*RoutineAct) *ActUpdate {
 		ids[i] = r[i].ID
 	}
 	return au.RemoveRoutineActIDs(ids...)
+}
+
+// ClearRoutineActRecs clears all "routine_act_recs" edges to the RoutineActRec entity.
+func (au *ActUpdate) ClearRoutineActRecs() *ActUpdate {
+	au.mutation.ClearRoutineActRecs()
+	return au
+}
+
+// RemoveRoutineActRecIDs removes the "routine_act_recs" edge to RoutineActRec entities by IDs.
+func (au *ActUpdate) RemoveRoutineActRecIDs(ids ...uint64) *ActUpdate {
+	au.mutation.RemoveRoutineActRecIDs(ids...)
+	return au
+}
+
+// RemoveRoutineActRecs removes "routine_act_recs" edges to RoutineActRec entities.
+func (au *ActUpdate) RemoveRoutineActRecs(r ...*RoutineActRec) *ActUpdate {
+	ids := make([]uint64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return au.RemoveRoutineActRecIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -375,6 +412,51 @@ func (au *ActUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if au.mutation.RoutineActRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.RoutineActRecsTable,
+			Columns: []string{act.RoutineActRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineactrec.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.RemovedRoutineActRecsIDs(); len(nodes) > 0 && !au.mutation.RoutineActRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.RoutineActRecsTable,
+			Columns: []string{act.RoutineActRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineactrec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.RoutineActRecsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.RoutineActRecsTable,
+			Columns: []string{act.RoutineActRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineactrec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{act.Label}
@@ -510,6 +592,21 @@ func (auo *ActUpdateOne) AddRoutineActs(r ...*RoutineAct) *ActUpdateOne {
 	return auo.AddRoutineActIDs(ids...)
 }
 
+// AddRoutineActRecIDs adds the "routine_act_recs" edge to the RoutineActRec entity by IDs.
+func (auo *ActUpdateOne) AddRoutineActRecIDs(ids ...uint64) *ActUpdateOne {
+	auo.mutation.AddRoutineActRecIDs(ids...)
+	return auo
+}
+
+// AddRoutineActRecs adds the "routine_act_recs" edges to the RoutineActRec entity.
+func (auo *ActUpdateOne) AddRoutineActRecs(r ...*RoutineActRec) *ActUpdateOne {
+	ids := make([]uint64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return auo.AddRoutineActRecIDs(ids...)
+}
+
 // Mutation returns the ActMutation object of the builder.
 func (auo *ActUpdateOne) Mutation() *ActMutation {
 	return auo.mutation
@@ -555,6 +652,27 @@ func (auo *ActUpdateOne) RemoveRoutineActs(r ...*RoutineAct) *ActUpdateOne {
 		ids[i] = r[i].ID
 	}
 	return auo.RemoveRoutineActIDs(ids...)
+}
+
+// ClearRoutineActRecs clears all "routine_act_recs" edges to the RoutineActRec entity.
+func (auo *ActUpdateOne) ClearRoutineActRecs() *ActUpdateOne {
+	auo.mutation.ClearRoutineActRecs()
+	return auo
+}
+
+// RemoveRoutineActRecIDs removes the "routine_act_recs" edge to RoutineActRec entities by IDs.
+func (auo *ActUpdateOne) RemoveRoutineActRecIDs(ids ...uint64) *ActUpdateOne {
+	auo.mutation.RemoveRoutineActRecIDs(ids...)
+	return auo
+}
+
+// RemoveRoutineActRecs removes "routine_act_recs" edges to RoutineActRec entities.
+func (auo *ActUpdateOne) RemoveRoutineActRecs(r ...*RoutineActRec) *ActUpdateOne {
+	ids := make([]uint64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return auo.RemoveRoutineActRecIDs(ids...)
 }
 
 // Where appends a list predicates to the ActUpdate builder.
@@ -763,6 +881,51 @@ func (auo *ActUpdateOne) sqlSave(ctx context.Context) (_node *Act, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if auo.mutation.RoutineActRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.RoutineActRecsTable,
+			Columns: []string{act.RoutineActRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineactrec.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.RemovedRoutineActRecsIDs(); len(nodes) > 0 && !auo.mutation.RoutineActRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.RoutineActRecsTable,
+			Columns: []string{act.RoutineActRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineactrec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.RoutineActRecsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.RoutineActRecsTable,
+			Columns: []string{act.RoutineActRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineactrec.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

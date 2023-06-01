@@ -10,6 +10,7 @@ import (
 	"routine/ent/act"
 	"routine/ent/predicate"
 	"routine/ent/routineact"
+	"routine/ent/routineactrec"
 	"routine/ent/tag"
 
 	"entgo.io/ent/dialect/sql"
@@ -20,12 +21,13 @@ import (
 // ActQuery is the builder for querying Act entities.
 type ActQuery struct {
 	config
-	ctx             *QueryContext
-	order           []act.OrderOption
-	inters          []Interceptor
-	predicates      []predicate.Act
-	withTags        *TagQuery
-	withRoutineActs *RoutineActQuery
+	ctx                *QueryContext
+	order              []act.OrderOption
+	inters             []Interceptor
+	predicates         []predicate.Act
+	withTags           *TagQuery
+	withRoutineActs    *RoutineActQuery
+	withRoutineActRecs *RoutineActRecQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -99,6 +101,28 @@ func (aq *ActQuery) QueryRoutineActs() *RoutineActQuery {
 			sqlgraph.From(act.Table, act.FieldID, selector),
 			sqlgraph.To(routineact.Table, routineact.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, act.RoutineActsTable, act.RoutineActsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRoutineActRecs chains the current query on the "routine_act_recs" edge.
+func (aq *ActQuery) QueryRoutineActRecs() *RoutineActRecQuery {
+	query := (&RoutineActRecClient{config: aq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(act.Table, act.FieldID, selector),
+			sqlgraph.To(routineactrec.Table, routineactrec.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, act.RoutineActRecsTable, act.RoutineActRecsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
 		return fromU, nil
@@ -293,13 +317,14 @@ func (aq *ActQuery) Clone() *ActQuery {
 		return nil
 	}
 	return &ActQuery{
-		config:          aq.config,
-		ctx:             aq.ctx.Clone(),
-		order:           append([]act.OrderOption{}, aq.order...),
-		inters:          append([]Interceptor{}, aq.inters...),
-		predicates:      append([]predicate.Act{}, aq.predicates...),
-		withTags:        aq.withTags.Clone(),
-		withRoutineActs: aq.withRoutineActs.Clone(),
+		config:             aq.config,
+		ctx:                aq.ctx.Clone(),
+		order:              append([]act.OrderOption{}, aq.order...),
+		inters:             append([]Interceptor{}, aq.inters...),
+		predicates:         append([]predicate.Act{}, aq.predicates...),
+		withTags:           aq.withTags.Clone(),
+		withRoutineActs:    aq.withRoutineActs.Clone(),
+		withRoutineActRecs: aq.withRoutineActRecs.Clone(),
 		// clone intermediate query.
 		sql:  aq.sql.Clone(),
 		path: aq.path,
@@ -325,6 +350,17 @@ func (aq *ActQuery) WithRoutineActs(opts ...func(*RoutineActQuery)) *ActQuery {
 		opt(query)
 	}
 	aq.withRoutineActs = query
+	return aq
+}
+
+// WithRoutineActRecs tells the query-builder to eager-load the nodes that are connected to
+// the "routine_act_recs" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *ActQuery) WithRoutineActRecs(opts ...func(*RoutineActRecQuery)) *ActQuery {
+	query := (&RoutineActRecClient{config: aq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withRoutineActRecs = query
 	return aq
 }
 
@@ -406,9 +442,10 @@ func (aq *ActQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Act, err
 	var (
 		nodes       = []*Act{}
 		_spec       = aq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			aq.withTags != nil,
 			aq.withRoutineActs != nil,
+			aq.withRoutineActRecs != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -440,6 +477,13 @@ func (aq *ActQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Act, err
 		if err := aq.loadRoutineActs(ctx, query, nodes,
 			func(n *Act) { n.Edges.RoutineActs = []*RoutineAct{} },
 			func(n *Act, e *RoutineAct) { n.Edges.RoutineActs = append(n.Edges.RoutineActs, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := aq.withRoutineActRecs; query != nil {
+		if err := aq.loadRoutineActRecs(ctx, query, nodes,
+			func(n *Act) { n.Edges.RoutineActRecs = []*RoutineActRec{} },
+			func(n *Act, e *RoutineActRec) { n.Edges.RoutineActRecs = append(n.Edges.RoutineActRecs, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -533,6 +577,37 @@ func (aq *ActQuery) loadRoutineActs(ctx context.Context, query *RoutineActQuery,
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "act_routine_acts" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (aq *ActQuery) loadRoutineActRecs(ctx context.Context, query *RoutineActRecQuery, nodes []*Act, init func(*Act), assign func(*Act, *RoutineActRec)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint64]*Act)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.RoutineActRec(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(act.RoutineActRecsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.act_routine_act_recs
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "act_routine_act_recs" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "act_routine_act_recs" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

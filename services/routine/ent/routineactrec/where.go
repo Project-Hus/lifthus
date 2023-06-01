@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // ID filters vertices based on their ID field.
@@ -722,6 +723,75 @@ func UpdatedAtLT(v time.Time) predicate.RoutineActRec {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.RoutineActRec {
 	return predicate.RoutineActRec(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// HasDailyRoutineRec applies the HasEdge predicate on the "daily_routine_rec" edge.
+func HasDailyRoutineRec() predicate.RoutineActRec {
+	return predicate.RoutineActRec(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, DailyRoutineRecTable, DailyRoutineRecColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDailyRoutineRecWith applies the HasEdge predicate on the "daily_routine_rec" edge with a given conditions (other predicates).
+func HasDailyRoutineRecWith(preds ...predicate.DailyRoutineRec) predicate.RoutineActRec {
+	return predicate.RoutineActRec(func(s *sql.Selector) {
+		step := newDailyRoutineRecStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAct applies the HasEdge predicate on the "act" edge.
+func HasAct() predicate.RoutineActRec {
+	return predicate.RoutineActRec(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ActTable, ActColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasActWith applies the HasEdge predicate on the "act" edge with a given conditions (other predicates).
+func HasActWith(preds ...predicate.Act) predicate.RoutineActRec {
+	return predicate.RoutineActRec(func(s *sql.Selector) {
+		step := newActStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasRoutineAct applies the HasEdge predicate on the "routine_act" edge.
+func HasRoutineAct() predicate.RoutineActRec {
+	return predicate.RoutineActRec(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, RoutineActTable, RoutineActColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRoutineActWith applies the HasEdge predicate on the "routine_act" edge with a given conditions (other predicates).
+func HasRoutineActWith(preds ...predicate.RoutineAct) predicate.RoutineActRec {
+	return predicate.RoutineActRec(func(s *sql.Selector) {
+		step := newRoutineActStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

@@ -43,6 +43,7 @@ var (
 	// DailyRoutineRecsColumns holds the columns for the "daily_routine_recs" table.
 	DailyRoutineRecsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "author", Type: field.TypeUint64},
 		{Name: "program_rec_id", Type: field.TypeUint64, Nullable: true},
 		{Name: "weekly_routine_rec_id", Type: field.TypeUint64, Nullable: true},
 		{Name: "daily_routine_id", Type: field.TypeUint64, Nullable: true},
@@ -51,12 +52,35 @@ var (
 		{Name: "comment", Type: field.TypeString, Nullable: true, Size: 1000},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "daily_routine_daily_routine_recs", Type: field.TypeUint64, Nullable: true},
+		{Name: "program_rec_daily_routine_recs", Type: field.TypeUint64, Nullable: true},
+		{Name: "weekly_routine_rec_daily_routine_recs", Type: field.TypeUint64, Nullable: true},
 	}
 	// DailyRoutineRecsTable holds the schema information for the "daily_routine_recs" table.
 	DailyRoutineRecsTable = &schema.Table{
 		Name:       "daily_routine_recs",
 		Columns:    DailyRoutineRecsColumns,
 		PrimaryKey: []*schema.Column{DailyRoutineRecsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "daily_routine_recs_daily_routines_daily_routine_recs",
+				Columns:    []*schema.Column{DailyRoutineRecsColumns[10]},
+				RefColumns: []*schema.Column{DailyRoutinesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "daily_routine_recs_program_recs_daily_routine_recs",
+				Columns:    []*schema.Column{DailyRoutineRecsColumns[11]},
+				RefColumns: []*schema.Column{ProgramRecsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "daily_routine_recs_weekly_routine_recs_daily_routine_recs",
+				Columns:    []*schema.Column{DailyRoutineRecsColumns[12]},
+				RefColumns: []*schema.Column{WeeklyRoutineRecsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
 	}
 	// ProgramsColumns holds the columns for the "programs" table.
 	ProgramsColumns = []*schema.Column{
@@ -86,12 +110,21 @@ var (
 		{Name: "comment", Type: field.TypeString, Nullable: true, Size: 1000},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "program_program_recs", Type: field.TypeUint64, Nullable: true},
 	}
 	// ProgramRecsTable holds the schema information for the "program_recs" table.
 	ProgramRecsTable = &schema.Table{
 		Name:       "program_recs",
 		Columns:    ProgramRecsColumns,
 		PrimaryKey: []*schema.Column{ProgramRecsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "program_recs_programs_program_recs",
+				Columns:    []*schema.Column{ProgramRecsColumns[9]},
+				RefColumns: []*schema.Column{ProgramsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// RoutineActsColumns holds the columns for the "routine_acts" table.
 	RoutineActsColumns = []*schema.Column{
@@ -142,12 +175,35 @@ var (
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"history", "waiting", "proceeding", "completed", "failed", "canceled"}},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "act_routine_act_recs", Type: field.TypeUint64},
+		{Name: "daily_routine_rec_routine_act_recs", Type: field.TypeUint64},
+		{Name: "routine_act_routine_act_recs", Type: field.TypeUint64, Nullable: true},
 	}
 	// RoutineActRecsTable holds the schema information for the "routine_act_recs" table.
 	RoutineActRecsTable = &schema.Table{
 		Name:       "routine_act_recs",
 		Columns:    RoutineActRecsColumns,
 		PrimaryKey: []*schema.Column{RoutineActRecsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "routine_act_recs_acts_routine_act_recs",
+				Columns:    []*schema.Column{RoutineActRecsColumns[14]},
+				RefColumns: []*schema.Column{ActsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "routine_act_recs_daily_routine_recs_routine_act_recs",
+				Columns:    []*schema.Column{RoutineActRecsColumns[15]},
+				RefColumns: []*schema.Column{DailyRoutineRecsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "routine_act_recs_routine_acts_routine_act_recs",
+				Columns:    []*schema.Column{RoutineActRecsColumns[16]},
+				RefColumns: []*schema.Column{RoutineActsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// TagsColumns holds the columns for the "tags" table.
 	TagsColumns = []*schema.Column{
@@ -182,12 +238,28 @@ var (
 		{Name: "start_date", Type: field.TypeTime},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "program_rec_weekly_routine_recs", Type: field.TypeUint64, Nullable: true},
+		{Name: "weekly_routine_weekly_routine_recs", Type: field.TypeUint64, Nullable: true},
 	}
 	// WeeklyRoutineRecsTable holds the schema information for the "weekly_routine_recs" table.
 	WeeklyRoutineRecsTable = &schema.Table{
 		Name:       "weekly_routine_recs",
 		Columns:    WeeklyRoutineRecsColumns,
 		PrimaryKey: []*schema.Column{WeeklyRoutineRecsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "weekly_routine_recs_program_recs_weekly_routine_recs",
+				Columns:    []*schema.Column{WeeklyRoutineRecsColumns[6]},
+				RefColumns: []*schema.Column{ProgramRecsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "weekly_routine_recs_weekly_routines_weekly_routine_recs",
+				Columns:    []*schema.Column{WeeklyRoutineRecsColumns[7]},
+				RefColumns: []*schema.Column{WeeklyRoutinesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// ProgramWeeklyRoutinesColumns holds the columns for the "program_weekly_routines" table.
 	ProgramWeeklyRoutinesColumns = []*schema.Column{
@@ -335,8 +407,17 @@ var (
 )
 
 func init() {
+	DailyRoutineRecsTable.ForeignKeys[0].RefTable = DailyRoutinesTable
+	DailyRoutineRecsTable.ForeignKeys[1].RefTable = ProgramRecsTable
+	DailyRoutineRecsTable.ForeignKeys[2].RefTable = WeeklyRoutineRecsTable
+	ProgramRecsTable.ForeignKeys[0].RefTable = ProgramsTable
 	RoutineActsTable.ForeignKeys[0].RefTable = ActsTable
 	RoutineActsTable.ForeignKeys[1].RefTable = DailyRoutinesTable
+	RoutineActRecsTable.ForeignKeys[0].RefTable = ActsTable
+	RoutineActRecsTable.ForeignKeys[1].RefTable = DailyRoutineRecsTable
+	RoutineActRecsTable.ForeignKeys[2].RefTable = RoutineActsTable
+	WeeklyRoutineRecsTable.ForeignKeys[0].RefTable = ProgramRecsTable
+	WeeklyRoutineRecsTable.ForeignKeys[1].RefTable = WeeklyRoutinesTable
 	ProgramWeeklyRoutinesTable.ForeignKeys[0].RefTable = ProgramsTable
 	ProgramWeeklyRoutinesTable.ForeignKeys[1].RefTable = WeeklyRoutinesTable
 	ProgramDailyRoutinesTable.ForeignKeys[0].RefTable = ProgramsTable

@@ -9,6 +9,7 @@ import (
 	"routine/ent/dailyroutine"
 	"routine/ent/predicate"
 	"routine/ent/program"
+	"routine/ent/programrec"
 	"routine/ent/tag"
 	"routine/ent/weeklyroutine"
 	"time"
@@ -147,6 +148,21 @@ func (pu *ProgramUpdate) AddDailyRoutines(d ...*DailyRoutine) *ProgramUpdate {
 	return pu.AddDailyRoutineIDs(ids...)
 }
 
+// AddProgramRecIDs adds the "program_recs" edge to the ProgramRec entity by IDs.
+func (pu *ProgramUpdate) AddProgramRecIDs(ids ...uint64) *ProgramUpdate {
+	pu.mutation.AddProgramRecIDs(ids...)
+	return pu
+}
+
+// AddProgramRecs adds the "program_recs" edges to the ProgramRec entity.
+func (pu *ProgramUpdate) AddProgramRecs(p ...*ProgramRec) *ProgramUpdate {
+	ids := make([]uint64, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pu.AddProgramRecIDs(ids...)
+}
+
 // Mutation returns the ProgramMutation object of the builder.
 func (pu *ProgramUpdate) Mutation() *ProgramMutation {
 	return pu.mutation
@@ -213,6 +229,27 @@ func (pu *ProgramUpdate) RemoveDailyRoutines(d ...*DailyRoutine) *ProgramUpdate 
 		ids[i] = d[i].ID
 	}
 	return pu.RemoveDailyRoutineIDs(ids...)
+}
+
+// ClearProgramRecs clears all "program_recs" edges to the ProgramRec entity.
+func (pu *ProgramUpdate) ClearProgramRecs() *ProgramUpdate {
+	pu.mutation.ClearProgramRecs()
+	return pu
+}
+
+// RemoveProgramRecIDs removes the "program_recs" edge to ProgramRec entities by IDs.
+func (pu *ProgramUpdate) RemoveProgramRecIDs(ids ...uint64) *ProgramUpdate {
+	pu.mutation.RemoveProgramRecIDs(ids...)
+	return pu
+}
+
+// RemoveProgramRecs removes "program_recs" edges to ProgramRec entities.
+func (pu *ProgramUpdate) RemoveProgramRecs(p ...*ProgramRec) *ProgramUpdate {
+	ids := make([]uint64, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pu.RemoveProgramRecIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -440,6 +477,51 @@ func (pu *ProgramUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if pu.mutation.ProgramRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   program.ProgramRecsTable,
+			Columns: []string{program.ProgramRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(programrec.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedProgramRecsIDs(); len(nodes) > 0 && !pu.mutation.ProgramRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   program.ProgramRecsTable,
+			Columns: []string{program.ProgramRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(programrec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.ProgramRecsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   program.ProgramRecsTable,
+			Columns: []string{program.ProgramRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(programrec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{program.Label}
@@ -576,6 +658,21 @@ func (puo *ProgramUpdateOne) AddDailyRoutines(d ...*DailyRoutine) *ProgramUpdate
 	return puo.AddDailyRoutineIDs(ids...)
 }
 
+// AddProgramRecIDs adds the "program_recs" edge to the ProgramRec entity by IDs.
+func (puo *ProgramUpdateOne) AddProgramRecIDs(ids ...uint64) *ProgramUpdateOne {
+	puo.mutation.AddProgramRecIDs(ids...)
+	return puo
+}
+
+// AddProgramRecs adds the "program_recs" edges to the ProgramRec entity.
+func (puo *ProgramUpdateOne) AddProgramRecs(p ...*ProgramRec) *ProgramUpdateOne {
+	ids := make([]uint64, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return puo.AddProgramRecIDs(ids...)
+}
+
 // Mutation returns the ProgramMutation object of the builder.
 func (puo *ProgramUpdateOne) Mutation() *ProgramMutation {
 	return puo.mutation
@@ -642,6 +739,27 @@ func (puo *ProgramUpdateOne) RemoveDailyRoutines(d ...*DailyRoutine) *ProgramUpd
 		ids[i] = d[i].ID
 	}
 	return puo.RemoveDailyRoutineIDs(ids...)
+}
+
+// ClearProgramRecs clears all "program_recs" edges to the ProgramRec entity.
+func (puo *ProgramUpdateOne) ClearProgramRecs() *ProgramUpdateOne {
+	puo.mutation.ClearProgramRecs()
+	return puo
+}
+
+// RemoveProgramRecIDs removes the "program_recs" edge to ProgramRec entities by IDs.
+func (puo *ProgramUpdateOne) RemoveProgramRecIDs(ids ...uint64) *ProgramUpdateOne {
+	puo.mutation.RemoveProgramRecIDs(ids...)
+	return puo
+}
+
+// RemoveProgramRecs removes "program_recs" edges to ProgramRec entities.
+func (puo *ProgramUpdateOne) RemoveProgramRecs(p ...*ProgramRec) *ProgramUpdateOne {
+	ids := make([]uint64, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return puo.RemoveProgramRecIDs(ids...)
 }
 
 // Where appends a list predicates to the ProgramUpdate builder.
@@ -892,6 +1010,51 @@ func (puo *ProgramUpdateOne) sqlSave(ctx context.Context) (_node *Program, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dailyroutine.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.ProgramRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   program.ProgramRecsTable,
+			Columns: []string{program.ProgramRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(programrec.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedProgramRecsIDs(); len(nodes) > 0 && !puo.mutation.ProgramRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   program.ProgramRecsTable,
+			Columns: []string{program.ProgramRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(programrec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.ProgramRecsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   program.ProgramRecsTable,
+			Columns: []string{program.ProgramRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(programrec.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

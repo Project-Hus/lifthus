@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 	"routine/ent/dailyroutine"
+	"routine/ent/dailyroutinerec"
 	"routine/ent/predicate"
 	"routine/ent/program"
 	"routine/ent/routineact"
@@ -21,13 +22,14 @@ import (
 // DailyRoutineQuery is the builder for querying DailyRoutine entities.
 type DailyRoutineQuery struct {
 	config
-	ctx               *QueryContext
-	order             []dailyroutine.OrderOption
-	inters            []Interceptor
-	predicates        []predicate.DailyRoutine
-	withProgram       *ProgramQuery
-	withWeeklyRoutine *WeeklyRoutineQuery
-	withRoutineActs   *RoutineActQuery
+	ctx                  *QueryContext
+	order                []dailyroutine.OrderOption
+	inters               []Interceptor
+	predicates           []predicate.DailyRoutine
+	withProgram          *ProgramQuery
+	withWeeklyRoutine    *WeeklyRoutineQuery
+	withRoutineActs      *RoutineActQuery
+	withDailyRoutineRecs *DailyRoutineRecQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -123,6 +125,28 @@ func (drq *DailyRoutineQuery) QueryRoutineActs() *RoutineActQuery {
 			sqlgraph.From(dailyroutine.Table, dailyroutine.FieldID, selector),
 			sqlgraph.To(routineact.Table, routineact.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, dailyroutine.RoutineActsTable, dailyroutine.RoutineActsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(drq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDailyRoutineRecs chains the current query on the "daily_routine_recs" edge.
+func (drq *DailyRoutineQuery) QueryDailyRoutineRecs() *DailyRoutineRecQuery {
+	query := (&DailyRoutineRecClient{config: drq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := drq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := drq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dailyroutine.Table, dailyroutine.FieldID, selector),
+			sqlgraph.To(dailyroutinerec.Table, dailyroutinerec.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, dailyroutine.DailyRoutineRecsTable, dailyroutine.DailyRoutineRecsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(drq.driver.Dialect(), step)
 		return fromU, nil
@@ -317,14 +341,15 @@ func (drq *DailyRoutineQuery) Clone() *DailyRoutineQuery {
 		return nil
 	}
 	return &DailyRoutineQuery{
-		config:            drq.config,
-		ctx:               drq.ctx.Clone(),
-		order:             append([]dailyroutine.OrderOption{}, drq.order...),
-		inters:            append([]Interceptor{}, drq.inters...),
-		predicates:        append([]predicate.DailyRoutine{}, drq.predicates...),
-		withProgram:       drq.withProgram.Clone(),
-		withWeeklyRoutine: drq.withWeeklyRoutine.Clone(),
-		withRoutineActs:   drq.withRoutineActs.Clone(),
+		config:               drq.config,
+		ctx:                  drq.ctx.Clone(),
+		order:                append([]dailyroutine.OrderOption{}, drq.order...),
+		inters:               append([]Interceptor{}, drq.inters...),
+		predicates:           append([]predicate.DailyRoutine{}, drq.predicates...),
+		withProgram:          drq.withProgram.Clone(),
+		withWeeklyRoutine:    drq.withWeeklyRoutine.Clone(),
+		withRoutineActs:      drq.withRoutineActs.Clone(),
+		withDailyRoutineRecs: drq.withDailyRoutineRecs.Clone(),
 		// clone intermediate query.
 		sql:  drq.sql.Clone(),
 		path: drq.path,
@@ -361,6 +386,17 @@ func (drq *DailyRoutineQuery) WithRoutineActs(opts ...func(*RoutineActQuery)) *D
 		opt(query)
 	}
 	drq.withRoutineActs = query
+	return drq
+}
+
+// WithDailyRoutineRecs tells the query-builder to eager-load the nodes that are connected to
+// the "daily_routine_recs" edge. The optional arguments are used to configure the query builder of the edge.
+func (drq *DailyRoutineQuery) WithDailyRoutineRecs(opts ...func(*DailyRoutineRecQuery)) *DailyRoutineQuery {
+	query := (&DailyRoutineRecClient{config: drq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	drq.withDailyRoutineRecs = query
 	return drq
 }
 
@@ -442,10 +478,11 @@ func (drq *DailyRoutineQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	var (
 		nodes       = []*DailyRoutine{}
 		_spec       = drq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			drq.withProgram != nil,
 			drq.withWeeklyRoutine != nil,
 			drq.withRoutineActs != nil,
+			drq.withDailyRoutineRecs != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -484,6 +521,15 @@ func (drq *DailyRoutineQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 		if err := drq.loadRoutineActs(ctx, query, nodes,
 			func(n *DailyRoutine) { n.Edges.RoutineActs = []*RoutineAct{} },
 			func(n *DailyRoutine, e *RoutineAct) { n.Edges.RoutineActs = append(n.Edges.RoutineActs, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := drq.withDailyRoutineRecs; query != nil {
+		if err := drq.loadDailyRoutineRecs(ctx, query, nodes,
+			func(n *DailyRoutine) { n.Edges.DailyRoutineRecs = []*DailyRoutineRec{} },
+			func(n *DailyRoutine, e *DailyRoutineRec) {
+				n.Edges.DailyRoutineRecs = append(n.Edges.DailyRoutineRecs, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -638,6 +684,37 @@ func (drq *DailyRoutineQuery) loadRoutineActs(ctx context.Context, query *Routin
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "daily_routine_routine_acts" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (drq *DailyRoutineQuery) loadDailyRoutineRecs(ctx context.Context, query *DailyRoutineRecQuery, nodes []*DailyRoutine, init func(*DailyRoutine), assign func(*DailyRoutine, *DailyRoutineRec)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint64]*DailyRoutine)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.DailyRoutineRec(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(dailyroutine.DailyRoutineRecsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.daily_routine_daily_routine_recs
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "daily_routine_daily_routine_recs" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "daily_routine_daily_routine_recs" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

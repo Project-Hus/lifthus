@@ -6,8 +6,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"routine/ent/dailyroutinerec"
 	"routine/ent/predicate"
+	"routine/ent/program"
 	"routine/ent/programrec"
+	"routine/ent/weeklyroutinerec"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -98,9 +101,106 @@ func (pru *ProgramRecUpdate) SetUpdatedAt(t time.Time) *ProgramRecUpdate {
 	return pru
 }
 
+// SetProgramID sets the "program" edge to the Program entity by ID.
+func (pru *ProgramRecUpdate) SetProgramID(id uint64) *ProgramRecUpdate {
+	pru.mutation.SetProgramID(id)
+	return pru
+}
+
+// SetNillableProgramID sets the "program" edge to the Program entity by ID if the given value is not nil.
+func (pru *ProgramRecUpdate) SetNillableProgramID(id *uint64) *ProgramRecUpdate {
+	if id != nil {
+		pru = pru.SetProgramID(*id)
+	}
+	return pru
+}
+
+// SetProgram sets the "program" edge to the Program entity.
+func (pru *ProgramRecUpdate) SetProgram(p *Program) *ProgramRecUpdate {
+	return pru.SetProgramID(p.ID)
+}
+
+// AddWeeklyRoutineRecIDs adds the "weekly_routine_recs" edge to the WeeklyRoutineRec entity by IDs.
+func (pru *ProgramRecUpdate) AddWeeklyRoutineRecIDs(ids ...uint64) *ProgramRecUpdate {
+	pru.mutation.AddWeeklyRoutineRecIDs(ids...)
+	return pru
+}
+
+// AddWeeklyRoutineRecs adds the "weekly_routine_recs" edges to the WeeklyRoutineRec entity.
+func (pru *ProgramRecUpdate) AddWeeklyRoutineRecs(w ...*WeeklyRoutineRec) *ProgramRecUpdate {
+	ids := make([]uint64, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return pru.AddWeeklyRoutineRecIDs(ids...)
+}
+
+// AddDailyRoutineRecIDs adds the "daily_routine_recs" edge to the DailyRoutineRec entity by IDs.
+func (pru *ProgramRecUpdate) AddDailyRoutineRecIDs(ids ...uint64) *ProgramRecUpdate {
+	pru.mutation.AddDailyRoutineRecIDs(ids...)
+	return pru
+}
+
+// AddDailyRoutineRecs adds the "daily_routine_recs" edges to the DailyRoutineRec entity.
+func (pru *ProgramRecUpdate) AddDailyRoutineRecs(d ...*DailyRoutineRec) *ProgramRecUpdate {
+	ids := make([]uint64, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return pru.AddDailyRoutineRecIDs(ids...)
+}
+
 // Mutation returns the ProgramRecMutation object of the builder.
 func (pru *ProgramRecUpdate) Mutation() *ProgramRecMutation {
 	return pru.mutation
+}
+
+// ClearProgram clears the "program" edge to the Program entity.
+func (pru *ProgramRecUpdate) ClearProgram() *ProgramRecUpdate {
+	pru.mutation.ClearProgram()
+	return pru
+}
+
+// ClearWeeklyRoutineRecs clears all "weekly_routine_recs" edges to the WeeklyRoutineRec entity.
+func (pru *ProgramRecUpdate) ClearWeeklyRoutineRecs() *ProgramRecUpdate {
+	pru.mutation.ClearWeeklyRoutineRecs()
+	return pru
+}
+
+// RemoveWeeklyRoutineRecIDs removes the "weekly_routine_recs" edge to WeeklyRoutineRec entities by IDs.
+func (pru *ProgramRecUpdate) RemoveWeeklyRoutineRecIDs(ids ...uint64) *ProgramRecUpdate {
+	pru.mutation.RemoveWeeklyRoutineRecIDs(ids...)
+	return pru
+}
+
+// RemoveWeeklyRoutineRecs removes "weekly_routine_recs" edges to WeeklyRoutineRec entities.
+func (pru *ProgramRecUpdate) RemoveWeeklyRoutineRecs(w ...*WeeklyRoutineRec) *ProgramRecUpdate {
+	ids := make([]uint64, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return pru.RemoveWeeklyRoutineRecIDs(ids...)
+}
+
+// ClearDailyRoutineRecs clears all "daily_routine_recs" edges to the DailyRoutineRec entity.
+func (pru *ProgramRecUpdate) ClearDailyRoutineRecs() *ProgramRecUpdate {
+	pru.mutation.ClearDailyRoutineRecs()
+	return pru
+}
+
+// RemoveDailyRoutineRecIDs removes the "daily_routine_recs" edge to DailyRoutineRec entities by IDs.
+func (pru *ProgramRecUpdate) RemoveDailyRoutineRecIDs(ids ...uint64) *ProgramRecUpdate {
+	pru.mutation.RemoveDailyRoutineRecIDs(ids...)
+	return pru
+}
+
+// RemoveDailyRoutineRecs removes "daily_routine_recs" edges to DailyRoutineRec entities.
+func (pru *ProgramRecUpdate) RemoveDailyRoutineRecs(d ...*DailyRoutineRec) *ProgramRecUpdate {
+	ids := make([]uint64, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return pru.RemoveDailyRoutineRecIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -190,6 +290,125 @@ func (pru *ProgramRecUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := pru.mutation.UpdatedAt(); ok {
 		_spec.SetField(programrec.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if pru.mutation.ProgramCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   programrec.ProgramTable,
+			Columns: []string{programrec.ProgramColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pru.mutation.ProgramIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   programrec.ProgramTable,
+			Columns: []string{programrec.ProgramColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pru.mutation.WeeklyRoutineRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.WeeklyRoutineRecsTable,
+			Columns: []string{programrec.WeeklyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(weeklyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pru.mutation.RemovedWeeklyRoutineRecsIDs(); len(nodes) > 0 && !pru.mutation.WeeklyRoutineRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.WeeklyRoutineRecsTable,
+			Columns: []string{programrec.WeeklyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(weeklyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pru.mutation.WeeklyRoutineRecsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.WeeklyRoutineRecsTable,
+			Columns: []string{programrec.WeeklyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(weeklyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pru.mutation.DailyRoutineRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.DailyRoutineRecsTable,
+			Columns: []string{programrec.DailyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pru.mutation.RemovedDailyRoutineRecsIDs(); len(nodes) > 0 && !pru.mutation.DailyRoutineRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.DailyRoutineRecsTable,
+			Columns: []string{programrec.DailyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pru.mutation.DailyRoutineRecsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.DailyRoutineRecsTable,
+			Columns: []string{programrec.DailyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -281,9 +500,106 @@ func (pruo *ProgramRecUpdateOne) SetUpdatedAt(t time.Time) *ProgramRecUpdateOne 
 	return pruo
 }
 
+// SetProgramID sets the "program" edge to the Program entity by ID.
+func (pruo *ProgramRecUpdateOne) SetProgramID(id uint64) *ProgramRecUpdateOne {
+	pruo.mutation.SetProgramID(id)
+	return pruo
+}
+
+// SetNillableProgramID sets the "program" edge to the Program entity by ID if the given value is not nil.
+func (pruo *ProgramRecUpdateOne) SetNillableProgramID(id *uint64) *ProgramRecUpdateOne {
+	if id != nil {
+		pruo = pruo.SetProgramID(*id)
+	}
+	return pruo
+}
+
+// SetProgram sets the "program" edge to the Program entity.
+func (pruo *ProgramRecUpdateOne) SetProgram(p *Program) *ProgramRecUpdateOne {
+	return pruo.SetProgramID(p.ID)
+}
+
+// AddWeeklyRoutineRecIDs adds the "weekly_routine_recs" edge to the WeeklyRoutineRec entity by IDs.
+func (pruo *ProgramRecUpdateOne) AddWeeklyRoutineRecIDs(ids ...uint64) *ProgramRecUpdateOne {
+	pruo.mutation.AddWeeklyRoutineRecIDs(ids...)
+	return pruo
+}
+
+// AddWeeklyRoutineRecs adds the "weekly_routine_recs" edges to the WeeklyRoutineRec entity.
+func (pruo *ProgramRecUpdateOne) AddWeeklyRoutineRecs(w ...*WeeklyRoutineRec) *ProgramRecUpdateOne {
+	ids := make([]uint64, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return pruo.AddWeeklyRoutineRecIDs(ids...)
+}
+
+// AddDailyRoutineRecIDs adds the "daily_routine_recs" edge to the DailyRoutineRec entity by IDs.
+func (pruo *ProgramRecUpdateOne) AddDailyRoutineRecIDs(ids ...uint64) *ProgramRecUpdateOne {
+	pruo.mutation.AddDailyRoutineRecIDs(ids...)
+	return pruo
+}
+
+// AddDailyRoutineRecs adds the "daily_routine_recs" edges to the DailyRoutineRec entity.
+func (pruo *ProgramRecUpdateOne) AddDailyRoutineRecs(d ...*DailyRoutineRec) *ProgramRecUpdateOne {
+	ids := make([]uint64, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return pruo.AddDailyRoutineRecIDs(ids...)
+}
+
 // Mutation returns the ProgramRecMutation object of the builder.
 func (pruo *ProgramRecUpdateOne) Mutation() *ProgramRecMutation {
 	return pruo.mutation
+}
+
+// ClearProgram clears the "program" edge to the Program entity.
+func (pruo *ProgramRecUpdateOne) ClearProgram() *ProgramRecUpdateOne {
+	pruo.mutation.ClearProgram()
+	return pruo
+}
+
+// ClearWeeklyRoutineRecs clears all "weekly_routine_recs" edges to the WeeklyRoutineRec entity.
+func (pruo *ProgramRecUpdateOne) ClearWeeklyRoutineRecs() *ProgramRecUpdateOne {
+	pruo.mutation.ClearWeeklyRoutineRecs()
+	return pruo
+}
+
+// RemoveWeeklyRoutineRecIDs removes the "weekly_routine_recs" edge to WeeklyRoutineRec entities by IDs.
+func (pruo *ProgramRecUpdateOne) RemoveWeeklyRoutineRecIDs(ids ...uint64) *ProgramRecUpdateOne {
+	pruo.mutation.RemoveWeeklyRoutineRecIDs(ids...)
+	return pruo
+}
+
+// RemoveWeeklyRoutineRecs removes "weekly_routine_recs" edges to WeeklyRoutineRec entities.
+func (pruo *ProgramRecUpdateOne) RemoveWeeklyRoutineRecs(w ...*WeeklyRoutineRec) *ProgramRecUpdateOne {
+	ids := make([]uint64, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return pruo.RemoveWeeklyRoutineRecIDs(ids...)
+}
+
+// ClearDailyRoutineRecs clears all "daily_routine_recs" edges to the DailyRoutineRec entity.
+func (pruo *ProgramRecUpdateOne) ClearDailyRoutineRecs() *ProgramRecUpdateOne {
+	pruo.mutation.ClearDailyRoutineRecs()
+	return pruo
+}
+
+// RemoveDailyRoutineRecIDs removes the "daily_routine_recs" edge to DailyRoutineRec entities by IDs.
+func (pruo *ProgramRecUpdateOne) RemoveDailyRoutineRecIDs(ids ...uint64) *ProgramRecUpdateOne {
+	pruo.mutation.RemoveDailyRoutineRecIDs(ids...)
+	return pruo
+}
+
+// RemoveDailyRoutineRecs removes "daily_routine_recs" edges to DailyRoutineRec entities.
+func (pruo *ProgramRecUpdateOne) RemoveDailyRoutineRecs(d ...*DailyRoutineRec) *ProgramRecUpdateOne {
+	ids := make([]uint64, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return pruo.RemoveDailyRoutineRecIDs(ids...)
 }
 
 // Where appends a list predicates to the ProgramRecUpdate builder.
@@ -403,6 +719,125 @@ func (pruo *ProgramRecUpdateOne) sqlSave(ctx context.Context) (_node *ProgramRec
 	}
 	if value, ok := pruo.mutation.UpdatedAt(); ok {
 		_spec.SetField(programrec.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if pruo.mutation.ProgramCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   programrec.ProgramTable,
+			Columns: []string{programrec.ProgramColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pruo.mutation.ProgramIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   programrec.ProgramTable,
+			Columns: []string{programrec.ProgramColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pruo.mutation.WeeklyRoutineRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.WeeklyRoutineRecsTable,
+			Columns: []string{programrec.WeeklyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(weeklyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pruo.mutation.RemovedWeeklyRoutineRecsIDs(); len(nodes) > 0 && !pruo.mutation.WeeklyRoutineRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.WeeklyRoutineRecsTable,
+			Columns: []string{programrec.WeeklyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(weeklyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pruo.mutation.WeeklyRoutineRecsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.WeeklyRoutineRecsTable,
+			Columns: []string{programrec.WeeklyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(weeklyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pruo.mutation.DailyRoutineRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.DailyRoutineRecsTable,
+			Columns: []string{programrec.DailyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pruo.mutation.RemovedDailyRoutineRecsIDs(); len(nodes) > 0 && !pruo.mutation.DailyRoutineRecsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.DailyRoutineRecsTable,
+			Columns: []string{programrec.DailyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pruo.mutation.DailyRoutineRecsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   programrec.DailyRoutineRecsTable,
+			Columns: []string{programrec.DailyRoutineRecsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &ProgramRec{config: pruo.config}
 	_spec.Assign = _node.assignValues

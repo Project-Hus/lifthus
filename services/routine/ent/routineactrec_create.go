@@ -6,6 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"routine/ent/act"
+	"routine/ent/dailyroutinerec"
+	"routine/ent/routineact"
 	"routine/ent/routineactrec"
 	"time"
 
@@ -184,6 +187,47 @@ func (rarc *RoutineActRecCreate) SetID(u uint64) *RoutineActRecCreate {
 	return rarc
 }
 
+// SetDailyRoutineRecID sets the "daily_routine_rec" edge to the DailyRoutineRec entity by ID.
+func (rarc *RoutineActRecCreate) SetDailyRoutineRecID(id uint64) *RoutineActRecCreate {
+	rarc.mutation.SetDailyRoutineRecID(id)
+	return rarc
+}
+
+// SetDailyRoutineRec sets the "daily_routine_rec" edge to the DailyRoutineRec entity.
+func (rarc *RoutineActRecCreate) SetDailyRoutineRec(d *DailyRoutineRec) *RoutineActRecCreate {
+	return rarc.SetDailyRoutineRecID(d.ID)
+}
+
+// SetActID sets the "act" edge to the Act entity by ID.
+func (rarc *RoutineActRecCreate) SetActID(id uint64) *RoutineActRecCreate {
+	rarc.mutation.SetActID(id)
+	return rarc
+}
+
+// SetAct sets the "act" edge to the Act entity.
+func (rarc *RoutineActRecCreate) SetAct(a *Act) *RoutineActRecCreate {
+	return rarc.SetActID(a.ID)
+}
+
+// SetRoutineActID sets the "routine_act" edge to the RoutineAct entity by ID.
+func (rarc *RoutineActRecCreate) SetRoutineActID(id uint64) *RoutineActRecCreate {
+	rarc.mutation.SetRoutineActID(id)
+	return rarc
+}
+
+// SetNillableRoutineActID sets the "routine_act" edge to the RoutineAct entity by ID if the given value is not nil.
+func (rarc *RoutineActRecCreate) SetNillableRoutineActID(id *uint64) *RoutineActRecCreate {
+	if id != nil {
+		rarc = rarc.SetRoutineActID(*id)
+	}
+	return rarc
+}
+
+// SetRoutineAct sets the "routine_act" edge to the RoutineAct entity.
+func (rarc *RoutineActRecCreate) SetRoutineAct(r *RoutineAct) *RoutineActRecCreate {
+	return rarc.SetRoutineActID(r.ID)
+}
+
 // Mutation returns the RoutineActRecMutation object of the builder.
 func (rarc *RoutineActRecCreate) Mutation() *RoutineActRecMutation {
 	return rarc.mutation
@@ -290,6 +334,12 @@ func (rarc *RoutineActRecCreate) check() error {
 	if _, ok := rarc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "RoutineActRec.updated_at"`)}
 	}
+	if _, ok := rarc.mutation.DailyRoutineRecID(); !ok {
+		return &ValidationError{Name: "daily_routine_rec", err: errors.New(`ent: missing required edge "RoutineActRec.daily_routine_rec"`)}
+	}
+	if _, ok := rarc.mutation.ActID(); !ok {
+		return &ValidationError{Name: "act", err: errors.New(`ent: missing required edge "RoutineActRec.act"`)}
+	}
 	return nil
 }
 
@@ -373,6 +423,57 @@ func (rarc *RoutineActRecCreate) createSpec() (*RoutineActRec, *sqlgraph.CreateS
 	if value, ok := rarc.mutation.UpdatedAt(); ok {
 		_spec.SetField(routineactrec.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := rarc.mutation.DailyRoutineRecIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   routineactrec.DailyRoutineRecTable,
+			Columns: []string{routineactrec.DailyRoutineRecColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(dailyroutinerec.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.daily_routine_rec_routine_act_recs = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := rarc.mutation.ActIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   routineactrec.ActTable,
+			Columns: []string{routineactrec.ActColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(act.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.act_routine_act_recs = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := rarc.mutation.RoutineActIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   routineactrec.RoutineActTable,
+			Columns: []string{routineactrec.RoutineActColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.routine_act_routine_act_recs = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

@@ -4,12 +4,14 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 	"routine/ent/act"
 	"routine/ent/dailyroutine"
 	"routine/ent/predicate"
 	"routine/ent/routineact"
+	"routine/ent/routineactrec"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -19,13 +21,14 @@ import (
 // RoutineActQuery is the builder for querying RoutineAct entities.
 type RoutineActQuery struct {
 	config
-	ctx              *QueryContext
-	order            []routineact.OrderOption
-	inters           []Interceptor
-	predicates       []predicate.RoutineAct
-	withAct          *ActQuery
-	withDailyRoutine *DailyRoutineQuery
-	withFKs          bool
+	ctx                *QueryContext
+	order              []routineact.OrderOption
+	inters             []Interceptor
+	predicates         []predicate.RoutineAct
+	withAct            *ActQuery
+	withDailyRoutine   *DailyRoutineQuery
+	withRoutineActRecs *RoutineActRecQuery
+	withFKs            bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -99,6 +102,28 @@ func (raq *RoutineActQuery) QueryDailyRoutine() *DailyRoutineQuery {
 			sqlgraph.From(routineact.Table, routineact.FieldID, selector),
 			sqlgraph.To(dailyroutine.Table, dailyroutine.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, routineact.DailyRoutineTable, routineact.DailyRoutineColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(raq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRoutineActRecs chains the current query on the "routine_act_recs" edge.
+func (raq *RoutineActQuery) QueryRoutineActRecs() *RoutineActRecQuery {
+	query := (&RoutineActRecClient{config: raq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := raq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := raq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(routineact.Table, routineact.FieldID, selector),
+			sqlgraph.To(routineactrec.Table, routineactrec.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, routineact.RoutineActRecsTable, routineact.RoutineActRecsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(raq.driver.Dialect(), step)
 		return fromU, nil
@@ -293,13 +318,14 @@ func (raq *RoutineActQuery) Clone() *RoutineActQuery {
 		return nil
 	}
 	return &RoutineActQuery{
-		config:           raq.config,
-		ctx:              raq.ctx.Clone(),
-		order:            append([]routineact.OrderOption{}, raq.order...),
-		inters:           append([]Interceptor{}, raq.inters...),
-		predicates:       append([]predicate.RoutineAct{}, raq.predicates...),
-		withAct:          raq.withAct.Clone(),
-		withDailyRoutine: raq.withDailyRoutine.Clone(),
+		config:             raq.config,
+		ctx:                raq.ctx.Clone(),
+		order:              append([]routineact.OrderOption{}, raq.order...),
+		inters:             append([]Interceptor{}, raq.inters...),
+		predicates:         append([]predicate.RoutineAct{}, raq.predicates...),
+		withAct:            raq.withAct.Clone(),
+		withDailyRoutine:   raq.withDailyRoutine.Clone(),
+		withRoutineActRecs: raq.withRoutineActRecs.Clone(),
 		// clone intermediate query.
 		sql:  raq.sql.Clone(),
 		path: raq.path,
@@ -325,6 +351,17 @@ func (raq *RoutineActQuery) WithDailyRoutine(opts ...func(*DailyRoutineQuery)) *
 		opt(query)
 	}
 	raq.withDailyRoutine = query
+	return raq
+}
+
+// WithRoutineActRecs tells the query-builder to eager-load the nodes that are connected to
+// the "routine_act_recs" edge. The optional arguments are used to configure the query builder of the edge.
+func (raq *RoutineActQuery) WithRoutineActRecs(opts ...func(*RoutineActRecQuery)) *RoutineActQuery {
+	query := (&RoutineActRecClient{config: raq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	raq.withRoutineActRecs = query
 	return raq
 }
 
@@ -407,9 +444,10 @@ func (raq *RoutineActQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 		nodes       = []*RoutineAct{}
 		withFKs     = raq.withFKs
 		_spec       = raq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			raq.withAct != nil,
 			raq.withDailyRoutine != nil,
+			raq.withRoutineActRecs != nil,
 		}
 	)
 	if raq.withAct != nil || raq.withDailyRoutine != nil {
@@ -445,6 +483,13 @@ func (raq *RoutineActQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	if query := raq.withDailyRoutine; query != nil {
 		if err := raq.loadDailyRoutine(ctx, query, nodes, nil,
 			func(n *RoutineAct, e *DailyRoutine) { n.Edges.DailyRoutine = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := raq.withRoutineActRecs; query != nil {
+		if err := raq.loadRoutineActRecs(ctx, query, nodes,
+			func(n *RoutineAct) { n.Edges.RoutineActRecs = []*RoutineActRec{} },
+			func(n *RoutineAct, e *RoutineActRec) { n.Edges.RoutineActRecs = append(n.Edges.RoutineActRecs, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -512,6 +557,37 @@ func (raq *RoutineActQuery) loadDailyRoutine(ctx context.Context, query *DailyRo
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (raq *RoutineActQuery) loadRoutineActRecs(ctx context.Context, query *RoutineActRecQuery, nodes []*RoutineAct, init func(*RoutineAct), assign func(*RoutineAct, *RoutineActRec)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint64]*RoutineAct)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.RoutineActRec(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(routineact.RoutineActRecsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.routine_act_routine_act_recs
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "routine_act_routine_act_recs" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "routine_act_routine_act_recs" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

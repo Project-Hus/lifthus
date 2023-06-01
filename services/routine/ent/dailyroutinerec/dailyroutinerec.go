@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -14,6 +15,8 @@ const (
 	Label = "daily_routine_rec"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldAuthor holds the string denoting the author field in the database.
+	FieldAuthor = "author"
 	// FieldProgramRecID holds the string denoting the program_rec_id field in the database.
 	FieldProgramRecID = "program_rec_id"
 	// FieldWeeklyRoutineRecID holds the string denoting the weekly_routine_rec_id field in the database.
@@ -30,13 +33,50 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgeDailyRoutine holds the string denoting the daily_routine edge name in mutations.
+	EdgeDailyRoutine = "daily_routine"
+	// EdgeProgramRec holds the string denoting the program_rec edge name in mutations.
+	EdgeProgramRec = "program_rec"
+	// EdgeWeeklyRoutineRec holds the string denoting the weekly_routine_rec edge name in mutations.
+	EdgeWeeklyRoutineRec = "weekly_routine_rec"
+	// EdgeRoutineActRecs holds the string denoting the routine_act_recs edge name in mutations.
+	EdgeRoutineActRecs = "routine_act_recs"
 	// Table holds the table name of the dailyroutinerec in the database.
 	Table = "daily_routine_recs"
+	// DailyRoutineTable is the table that holds the daily_routine relation/edge.
+	DailyRoutineTable = "daily_routine_recs"
+	// DailyRoutineInverseTable is the table name for the DailyRoutine entity.
+	// It exists in this package in order to avoid circular dependency with the "dailyroutine" package.
+	DailyRoutineInverseTable = "daily_routines"
+	// DailyRoutineColumn is the table column denoting the daily_routine relation/edge.
+	DailyRoutineColumn = "daily_routine_daily_routine_recs"
+	// ProgramRecTable is the table that holds the program_rec relation/edge.
+	ProgramRecTable = "daily_routine_recs"
+	// ProgramRecInverseTable is the table name for the ProgramRec entity.
+	// It exists in this package in order to avoid circular dependency with the "programrec" package.
+	ProgramRecInverseTable = "program_recs"
+	// ProgramRecColumn is the table column denoting the program_rec relation/edge.
+	ProgramRecColumn = "program_rec_daily_routine_recs"
+	// WeeklyRoutineRecTable is the table that holds the weekly_routine_rec relation/edge.
+	WeeklyRoutineRecTable = "daily_routine_recs"
+	// WeeklyRoutineRecInverseTable is the table name for the WeeklyRoutineRec entity.
+	// It exists in this package in order to avoid circular dependency with the "weeklyroutinerec" package.
+	WeeklyRoutineRecInverseTable = "weekly_routine_recs"
+	// WeeklyRoutineRecColumn is the table column denoting the weekly_routine_rec relation/edge.
+	WeeklyRoutineRecColumn = "weekly_routine_rec_daily_routine_recs"
+	// RoutineActRecsTable is the table that holds the routine_act_recs relation/edge.
+	RoutineActRecsTable = "routine_act_recs"
+	// RoutineActRecsInverseTable is the table name for the RoutineActRec entity.
+	// It exists in this package in order to avoid circular dependency with the "routineactrec" package.
+	RoutineActRecsInverseTable = "routine_act_recs"
+	// RoutineActRecsColumn is the table column denoting the routine_act_recs relation/edge.
+	RoutineActRecsColumn = "daily_routine_rec_routine_act_recs"
 )
 
 // Columns holds all SQL columns for dailyroutinerec fields.
 var Columns = []string{
 	FieldID,
+	FieldAuthor,
 	FieldProgramRecID,
 	FieldWeeklyRoutineRecID,
 	FieldDailyRoutineID,
@@ -47,10 +87,23 @@ var Columns = []string{
 	FieldUpdatedAt,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the "daily_routine_recs"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"daily_routine_daily_routine_recs",
+	"program_rec_daily_routine_recs",
+	"weekly_routine_rec_daily_routine_recs",
+}
+
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -101,6 +154,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByAuthor orders the results by the author field.
+func ByAuthor(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAuthor, opts...).ToFunc()
+}
+
 // ByProgramRecID orders the results by the program_rec_id field.
 func ByProgramRecID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProgramRecID, opts...).ToFunc()
@@ -139,4 +197,67 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByDailyRoutineField orders the results by daily_routine field.
+func ByDailyRoutineField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDailyRoutineStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByProgramRecField orders the results by program_rec field.
+func ByProgramRecField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newProgramRecStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByWeeklyRoutineRecField orders the results by weekly_routine_rec field.
+func ByWeeklyRoutineRecField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newWeeklyRoutineRecStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByRoutineActRecsCount orders the results by routine_act_recs count.
+func ByRoutineActRecsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newRoutineActRecsStep(), opts...)
+	}
+}
+
+// ByRoutineActRecs orders the results by routine_act_recs terms.
+func ByRoutineActRecs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRoutineActRecsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newDailyRoutineStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DailyRoutineInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, DailyRoutineTable, DailyRoutineColumn),
+	)
+}
+func newProgramRecStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ProgramRecInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, ProgramRecTable, ProgramRecColumn),
+	)
+}
+func newWeeklyRoutineRecStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(WeeklyRoutineRecInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, WeeklyRoutineRecTable, WeeklyRoutineRecColumn),
+	)
+}
+func newRoutineActRecsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RoutineActRecsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, RoutineActRecsTable, RoutineActRecsColumn),
+	)
 }

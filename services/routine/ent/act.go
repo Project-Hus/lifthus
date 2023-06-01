@@ -43,9 +43,11 @@ type ActEdges struct {
 	Tags []*Tag `json:"tags,omitempty"`
 	// RoutineActs holds the value of the routine_acts edge.
 	RoutineActs []*RoutineAct `json:"routine_acts,omitempty"`
+	// RoutineActRecs holds the value of the routine_act_recs edge.
+	RoutineActRecs []*RoutineActRec `json:"routine_act_recs,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // TagsOrErr returns the Tags value or an error if the edge
@@ -64,6 +66,15 @@ func (e ActEdges) RoutineActsOrErr() ([]*RoutineAct, error) {
 		return e.RoutineActs, nil
 	}
 	return nil, &NotLoadedError{edge: "routine_acts"}
+}
+
+// RoutineActRecsOrErr returns the RoutineActRecs value or an error if the edge
+// was not loaded in eager-loading.
+func (e ActEdges) RoutineActRecsOrErr() ([]*RoutineActRec, error) {
+	if e.loadedTypes[2] {
+		return e.RoutineActRecs, nil
+	}
+	return nil, &NotLoadedError{edge: "routine_act_recs"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -164,6 +175,11 @@ func (a *Act) QueryTags() *TagQuery {
 // QueryRoutineActs queries the "routine_acts" edge of the Act entity.
 func (a *Act) QueryRoutineActs() *RoutineActQuery {
 	return NewActClient(a.config).QueryRoutineActs(a)
+}
+
+// QueryRoutineActRecs queries the "routine_act_recs" edge of the Act entity.
+func (a *Act) QueryRoutineActRecs() *RoutineActRecQuery {
+	return NewActClient(a.config).QueryRoutineActRecs(a)
 }
 
 // Update returns a builder for updating this Act.
