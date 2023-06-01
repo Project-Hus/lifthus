@@ -4,53 +4,772 @@ package act
 
 import (
 	"routine/ent/predicate"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.Act {
+func ID(id uint64) predicate.Act {
 	return predicate.Act(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Act {
+func IDEQ(id uint64) predicate.Act {
 	return predicate.Act(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Act {
+func IDNEQ(id uint64) predicate.Act {
 	return predicate.Act(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Act {
+func IDIn(ids ...uint64) predicate.Act {
 	return predicate.Act(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Act {
+func IDNotIn(ids ...uint64) predicate.Act {
 	return predicate.Act(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Act {
+func IDGT(id uint64) predicate.Act {
 	return predicate.Act(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Act {
+func IDGTE(id uint64) predicate.Act {
 	return predicate.Act(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Act {
+func IDLT(id uint64) predicate.Act {
 	return predicate.Act(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Act {
+func IDLTE(id uint64) predicate.Act {
 	return predicate.Act(sql.FieldLTE(FieldID, id))
+}
+
+// Name applies equality check predicate on the "name" field. It's identical to NameEQ.
+func Name(v string) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldName, v))
+}
+
+// Author applies equality check predicate on the "author" field. It's identical to AuthorEQ.
+func Author(v uint64) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldAuthor, v))
+}
+
+// Image applies equality check predicate on the "image" field. It's identical to ImageEQ.
+func Image(v string) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldImage, v))
+}
+
+// Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
+func Description(v string) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldDescription, v))
+}
+
+// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
+func CreatedAt(v time.Time) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
+func UpdatedAt(v time.Time) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// Weight applies equality check predicate on the "weight" field. It's identical to WeightEQ.
+func Weight(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldWeight, v))
+}
+
+// Bodyweight applies equality check predicate on the "bodyweight" field. It's identical to BodyweightEQ.
+func Bodyweight(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldBodyweight, v))
+}
+
+// Cardio applies equality check predicate on the "cardio" field. It's identical to CardioEQ.
+func Cardio(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldCardio, v))
+}
+
+// Upper applies equality check predicate on the "upper" field. It's identical to UpperEQ.
+func Upper(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldUpper, v))
+}
+
+// Lower applies equality check predicate on the "lower" field. It's identical to LowerEQ.
+func Lower(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldLower, v))
+}
+
+// Full applies equality check predicate on the "full" field. It's identical to FullEQ.
+func Full(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldFull, v))
+}
+
+// Arms applies equality check predicate on the "arms" field. It's identical to ArmsEQ.
+func Arms(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldArms, v))
+}
+
+// Shoulders applies equality check predicate on the "shoulders" field. It's identical to ShouldersEQ.
+func Shoulders(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldShoulders, v))
+}
+
+// Chest applies equality check predicate on the "chest" field. It's identical to ChestEQ.
+func Chest(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldChest, v))
+}
+
+// Core applies equality check predicate on the "core" field. It's identical to CoreEQ.
+func Core(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldCore, v))
+}
+
+// UpperBack applies equality check predicate on the "upper_back" field. It's identical to UpperBackEQ.
+func UpperBack(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldUpperBack, v))
+}
+
+// LowerBack applies equality check predicate on the "lower_back" field. It's identical to LowerBackEQ.
+func LowerBack(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldLowerBack, v))
+}
+
+// Legs applies equality check predicate on the "legs" field. It's identical to LegsEQ.
+func Legs(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldLegs, v))
+}
+
+// LegsFront applies equality check predicate on the "legs_front" field. It's identical to LegsFrontEQ.
+func LegsFront(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldLegsFront, v))
+}
+
+// LegsBack applies equality check predicate on the "legs_back" field. It's identical to LegsBackEQ.
+func LegsBack(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldLegsBack, v))
+}
+
+// Etc applies equality check predicate on the "etc" field. It's identical to EtcEQ.
+func Etc(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldEtc, v))
+}
+
+// NameEQ applies the EQ predicate on the "name" field.
+func NameEQ(v string) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldName, v))
+}
+
+// NameNEQ applies the NEQ predicate on the "name" field.
+func NameNEQ(v string) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldName, v))
+}
+
+// NameIn applies the In predicate on the "name" field.
+func NameIn(vs ...string) predicate.Act {
+	return predicate.Act(sql.FieldIn(FieldName, vs...))
+}
+
+// NameNotIn applies the NotIn predicate on the "name" field.
+func NameNotIn(vs ...string) predicate.Act {
+	return predicate.Act(sql.FieldNotIn(FieldName, vs...))
+}
+
+// NameGT applies the GT predicate on the "name" field.
+func NameGT(v string) predicate.Act {
+	return predicate.Act(sql.FieldGT(FieldName, v))
+}
+
+// NameGTE applies the GTE predicate on the "name" field.
+func NameGTE(v string) predicate.Act {
+	return predicate.Act(sql.FieldGTE(FieldName, v))
+}
+
+// NameLT applies the LT predicate on the "name" field.
+func NameLT(v string) predicate.Act {
+	return predicate.Act(sql.FieldLT(FieldName, v))
+}
+
+// NameLTE applies the LTE predicate on the "name" field.
+func NameLTE(v string) predicate.Act {
+	return predicate.Act(sql.FieldLTE(FieldName, v))
+}
+
+// NameContains applies the Contains predicate on the "name" field.
+func NameContains(v string) predicate.Act {
+	return predicate.Act(sql.FieldContains(FieldName, v))
+}
+
+// NameHasPrefix applies the HasPrefix predicate on the "name" field.
+func NameHasPrefix(v string) predicate.Act {
+	return predicate.Act(sql.FieldHasPrefix(FieldName, v))
+}
+
+// NameHasSuffix applies the HasSuffix predicate on the "name" field.
+func NameHasSuffix(v string) predicate.Act {
+	return predicate.Act(sql.FieldHasSuffix(FieldName, v))
+}
+
+// NameEqualFold applies the EqualFold predicate on the "name" field.
+func NameEqualFold(v string) predicate.Act {
+	return predicate.Act(sql.FieldEqualFold(FieldName, v))
+}
+
+// NameContainsFold applies the ContainsFold predicate on the "name" field.
+func NameContainsFold(v string) predicate.Act {
+	return predicate.Act(sql.FieldContainsFold(FieldName, v))
+}
+
+// TypeEQ applies the EQ predicate on the "type" field.
+func TypeEQ(v Type) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldType, v))
+}
+
+// TypeNEQ applies the NEQ predicate on the "type" field.
+func TypeNEQ(v Type) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldType, v))
+}
+
+// TypeIn applies the In predicate on the "type" field.
+func TypeIn(vs ...Type) predicate.Act {
+	return predicate.Act(sql.FieldIn(FieldType, vs...))
+}
+
+// TypeNotIn applies the NotIn predicate on the "type" field.
+func TypeNotIn(vs ...Type) predicate.Act {
+	return predicate.Act(sql.FieldNotIn(FieldType, vs...))
+}
+
+// AuthorEQ applies the EQ predicate on the "author" field.
+func AuthorEQ(v uint64) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldAuthor, v))
+}
+
+// AuthorNEQ applies the NEQ predicate on the "author" field.
+func AuthorNEQ(v uint64) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldAuthor, v))
+}
+
+// AuthorIn applies the In predicate on the "author" field.
+func AuthorIn(vs ...uint64) predicate.Act {
+	return predicate.Act(sql.FieldIn(FieldAuthor, vs...))
+}
+
+// AuthorNotIn applies the NotIn predicate on the "author" field.
+func AuthorNotIn(vs ...uint64) predicate.Act {
+	return predicate.Act(sql.FieldNotIn(FieldAuthor, vs...))
+}
+
+// AuthorGT applies the GT predicate on the "author" field.
+func AuthorGT(v uint64) predicate.Act {
+	return predicate.Act(sql.FieldGT(FieldAuthor, v))
+}
+
+// AuthorGTE applies the GTE predicate on the "author" field.
+func AuthorGTE(v uint64) predicate.Act {
+	return predicate.Act(sql.FieldGTE(FieldAuthor, v))
+}
+
+// AuthorLT applies the LT predicate on the "author" field.
+func AuthorLT(v uint64) predicate.Act {
+	return predicate.Act(sql.FieldLT(FieldAuthor, v))
+}
+
+// AuthorLTE applies the LTE predicate on the "author" field.
+func AuthorLTE(v uint64) predicate.Act {
+	return predicate.Act(sql.FieldLTE(FieldAuthor, v))
+}
+
+// ImageEQ applies the EQ predicate on the "image" field.
+func ImageEQ(v string) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldImage, v))
+}
+
+// ImageNEQ applies the NEQ predicate on the "image" field.
+func ImageNEQ(v string) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldImage, v))
+}
+
+// ImageIn applies the In predicate on the "image" field.
+func ImageIn(vs ...string) predicate.Act {
+	return predicate.Act(sql.FieldIn(FieldImage, vs...))
+}
+
+// ImageNotIn applies the NotIn predicate on the "image" field.
+func ImageNotIn(vs ...string) predicate.Act {
+	return predicate.Act(sql.FieldNotIn(FieldImage, vs...))
+}
+
+// ImageGT applies the GT predicate on the "image" field.
+func ImageGT(v string) predicate.Act {
+	return predicate.Act(sql.FieldGT(FieldImage, v))
+}
+
+// ImageGTE applies the GTE predicate on the "image" field.
+func ImageGTE(v string) predicate.Act {
+	return predicate.Act(sql.FieldGTE(FieldImage, v))
+}
+
+// ImageLT applies the LT predicate on the "image" field.
+func ImageLT(v string) predicate.Act {
+	return predicate.Act(sql.FieldLT(FieldImage, v))
+}
+
+// ImageLTE applies the LTE predicate on the "image" field.
+func ImageLTE(v string) predicate.Act {
+	return predicate.Act(sql.FieldLTE(FieldImage, v))
+}
+
+// ImageContains applies the Contains predicate on the "image" field.
+func ImageContains(v string) predicate.Act {
+	return predicate.Act(sql.FieldContains(FieldImage, v))
+}
+
+// ImageHasPrefix applies the HasPrefix predicate on the "image" field.
+func ImageHasPrefix(v string) predicate.Act {
+	return predicate.Act(sql.FieldHasPrefix(FieldImage, v))
+}
+
+// ImageHasSuffix applies the HasSuffix predicate on the "image" field.
+func ImageHasSuffix(v string) predicate.Act {
+	return predicate.Act(sql.FieldHasSuffix(FieldImage, v))
+}
+
+// ImageIsNil applies the IsNil predicate on the "image" field.
+func ImageIsNil() predicate.Act {
+	return predicate.Act(sql.FieldIsNull(FieldImage))
+}
+
+// ImageNotNil applies the NotNil predicate on the "image" field.
+func ImageNotNil() predicate.Act {
+	return predicate.Act(sql.FieldNotNull(FieldImage))
+}
+
+// ImageEqualFold applies the EqualFold predicate on the "image" field.
+func ImageEqualFold(v string) predicate.Act {
+	return predicate.Act(sql.FieldEqualFold(FieldImage, v))
+}
+
+// ImageContainsFold applies the ContainsFold predicate on the "image" field.
+func ImageContainsFold(v string) predicate.Act {
+	return predicate.Act(sql.FieldContainsFold(FieldImage, v))
+}
+
+// DescriptionEQ applies the EQ predicate on the "description" field.
+func DescriptionEQ(v string) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldDescription, v))
+}
+
+// DescriptionNEQ applies the NEQ predicate on the "description" field.
+func DescriptionNEQ(v string) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldDescription, v))
+}
+
+// DescriptionIn applies the In predicate on the "description" field.
+func DescriptionIn(vs ...string) predicate.Act {
+	return predicate.Act(sql.FieldIn(FieldDescription, vs...))
+}
+
+// DescriptionNotIn applies the NotIn predicate on the "description" field.
+func DescriptionNotIn(vs ...string) predicate.Act {
+	return predicate.Act(sql.FieldNotIn(FieldDescription, vs...))
+}
+
+// DescriptionGT applies the GT predicate on the "description" field.
+func DescriptionGT(v string) predicate.Act {
+	return predicate.Act(sql.FieldGT(FieldDescription, v))
+}
+
+// DescriptionGTE applies the GTE predicate on the "description" field.
+func DescriptionGTE(v string) predicate.Act {
+	return predicate.Act(sql.FieldGTE(FieldDescription, v))
+}
+
+// DescriptionLT applies the LT predicate on the "description" field.
+func DescriptionLT(v string) predicate.Act {
+	return predicate.Act(sql.FieldLT(FieldDescription, v))
+}
+
+// DescriptionLTE applies the LTE predicate on the "description" field.
+func DescriptionLTE(v string) predicate.Act {
+	return predicate.Act(sql.FieldLTE(FieldDescription, v))
+}
+
+// DescriptionContains applies the Contains predicate on the "description" field.
+func DescriptionContains(v string) predicate.Act {
+	return predicate.Act(sql.FieldContains(FieldDescription, v))
+}
+
+// DescriptionHasPrefix applies the HasPrefix predicate on the "description" field.
+func DescriptionHasPrefix(v string) predicate.Act {
+	return predicate.Act(sql.FieldHasPrefix(FieldDescription, v))
+}
+
+// DescriptionHasSuffix applies the HasSuffix predicate on the "description" field.
+func DescriptionHasSuffix(v string) predicate.Act {
+	return predicate.Act(sql.FieldHasSuffix(FieldDescription, v))
+}
+
+// DescriptionIsNil applies the IsNil predicate on the "description" field.
+func DescriptionIsNil() predicate.Act {
+	return predicate.Act(sql.FieldIsNull(FieldDescription))
+}
+
+// DescriptionNotNil applies the NotNil predicate on the "description" field.
+func DescriptionNotNil() predicate.Act {
+	return predicate.Act(sql.FieldNotNull(FieldDescription))
+}
+
+// DescriptionEqualFold applies the EqualFold predicate on the "description" field.
+func DescriptionEqualFold(v string) predicate.Act {
+	return predicate.Act(sql.FieldEqualFold(FieldDescription, v))
+}
+
+// DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
+func DescriptionContainsFold(v string) predicate.Act {
+	return predicate.Act(sql.FieldContainsFold(FieldDescription, v))
+}
+
+// CreatedAtEQ applies the EQ predicate on the "created_at" field.
+func CreatedAtEQ(v time.Time) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
+func CreatedAtNEQ(v time.Time) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtIn applies the In predicate on the "created_at" field.
+func CreatedAtIn(vs ...time.Time) predicate.Act {
+	return predicate.Act(sql.FieldIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
+func CreatedAtNotIn(vs ...time.Time) predicate.Act {
+	return predicate.Act(sql.FieldNotIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtGT applies the GT predicate on the "created_at" field.
+func CreatedAtGT(v time.Time) predicate.Act {
+	return predicate.Act(sql.FieldGT(FieldCreatedAt, v))
+}
+
+// CreatedAtGTE applies the GTE predicate on the "created_at" field.
+func CreatedAtGTE(v time.Time) predicate.Act {
+	return predicate.Act(sql.FieldGTE(FieldCreatedAt, v))
+}
+
+// CreatedAtLT applies the LT predicate on the "created_at" field.
+func CreatedAtLT(v time.Time) predicate.Act {
+	return predicate.Act(sql.FieldLT(FieldCreatedAt, v))
+}
+
+// CreatedAtLTE applies the LTE predicate on the "created_at" field.
+func CreatedAtLTE(v time.Time) predicate.Act {
+	return predicate.Act(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
+func UpdatedAtEQ(v time.Time) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
+func UpdatedAtNEQ(v time.Time) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtIn applies the In predicate on the "updated_at" field.
+func UpdatedAtIn(vs ...time.Time) predicate.Act {
+	return predicate.Act(sql.FieldIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
+func UpdatedAtNotIn(vs ...time.Time) predicate.Act {
+	return predicate.Act(sql.FieldNotIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtGT applies the GT predicate on the "updated_at" field.
+func UpdatedAtGT(v time.Time) predicate.Act {
+	return predicate.Act(sql.FieldGT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
+func UpdatedAtGTE(v time.Time) predicate.Act {
+	return predicate.Act(sql.FieldGTE(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLT applies the LT predicate on the "updated_at" field.
+func UpdatedAtLT(v time.Time) predicate.Act {
+	return predicate.Act(sql.FieldLT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
+func UpdatedAtLTE(v time.Time) predicate.Act {
+	return predicate.Act(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// WeightEQ applies the EQ predicate on the "weight" field.
+func WeightEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldWeight, v))
+}
+
+// WeightNEQ applies the NEQ predicate on the "weight" field.
+func WeightNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldWeight, v))
+}
+
+// BodyweightEQ applies the EQ predicate on the "bodyweight" field.
+func BodyweightEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldBodyweight, v))
+}
+
+// BodyweightNEQ applies the NEQ predicate on the "bodyweight" field.
+func BodyweightNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldBodyweight, v))
+}
+
+// CardioEQ applies the EQ predicate on the "cardio" field.
+func CardioEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldCardio, v))
+}
+
+// CardioNEQ applies the NEQ predicate on the "cardio" field.
+func CardioNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldCardio, v))
+}
+
+// UpperEQ applies the EQ predicate on the "upper" field.
+func UpperEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldUpper, v))
+}
+
+// UpperNEQ applies the NEQ predicate on the "upper" field.
+func UpperNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldUpper, v))
+}
+
+// LowerEQ applies the EQ predicate on the "lower" field.
+func LowerEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldLower, v))
+}
+
+// LowerNEQ applies the NEQ predicate on the "lower" field.
+func LowerNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldLower, v))
+}
+
+// FullEQ applies the EQ predicate on the "full" field.
+func FullEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldFull, v))
+}
+
+// FullNEQ applies the NEQ predicate on the "full" field.
+func FullNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldFull, v))
+}
+
+// ArmsEQ applies the EQ predicate on the "arms" field.
+func ArmsEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldArms, v))
+}
+
+// ArmsNEQ applies the NEQ predicate on the "arms" field.
+func ArmsNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldArms, v))
+}
+
+// ShouldersEQ applies the EQ predicate on the "shoulders" field.
+func ShouldersEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldShoulders, v))
+}
+
+// ShouldersNEQ applies the NEQ predicate on the "shoulders" field.
+func ShouldersNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldShoulders, v))
+}
+
+// ChestEQ applies the EQ predicate on the "chest" field.
+func ChestEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldChest, v))
+}
+
+// ChestNEQ applies the NEQ predicate on the "chest" field.
+func ChestNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldChest, v))
+}
+
+// CoreEQ applies the EQ predicate on the "core" field.
+func CoreEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldCore, v))
+}
+
+// CoreNEQ applies the NEQ predicate on the "core" field.
+func CoreNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldCore, v))
+}
+
+// UpperBackEQ applies the EQ predicate on the "upper_back" field.
+func UpperBackEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldUpperBack, v))
+}
+
+// UpperBackNEQ applies the NEQ predicate on the "upper_back" field.
+func UpperBackNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldUpperBack, v))
+}
+
+// LowerBackEQ applies the EQ predicate on the "lower_back" field.
+func LowerBackEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldLowerBack, v))
+}
+
+// LowerBackNEQ applies the NEQ predicate on the "lower_back" field.
+func LowerBackNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldLowerBack, v))
+}
+
+// LegsEQ applies the EQ predicate on the "legs" field.
+func LegsEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldLegs, v))
+}
+
+// LegsNEQ applies the NEQ predicate on the "legs" field.
+func LegsNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldLegs, v))
+}
+
+// LegsFrontEQ applies the EQ predicate on the "legs_front" field.
+func LegsFrontEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldLegsFront, v))
+}
+
+// LegsFrontNEQ applies the NEQ predicate on the "legs_front" field.
+func LegsFrontNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldLegsFront, v))
+}
+
+// LegsBackEQ applies the EQ predicate on the "legs_back" field.
+func LegsBackEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldLegsBack, v))
+}
+
+// LegsBackNEQ applies the NEQ predicate on the "legs_back" field.
+func LegsBackNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldLegsBack, v))
+}
+
+// EtcEQ applies the EQ predicate on the "etc" field.
+func EtcEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldEtc, v))
+}
+
+// EtcNEQ applies the NEQ predicate on the "etc" field.
+func EtcNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldEtc, v))
+}
+
+// HasTags applies the HasEdge predicate on the "tags" edge.
+func HasTags() predicate.Act {
+	return predicate.Act(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, TagsTable, TagsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTagsWith applies the HasEdge predicate on the "tags" edge with a given conditions (other predicates).
+func HasTagsWith(preds ...predicate.Tag) predicate.Act {
+	return predicate.Act(func(s *sql.Selector) {
+		step := newTagsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasRoutineActs applies the HasEdge predicate on the "routine_acts" edge.
+func HasRoutineActs() predicate.Act {
+	return predicate.Act(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, RoutineActsTable, RoutineActsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRoutineActsWith applies the HasEdge predicate on the "routine_acts" edge with a given conditions (other predicates).
+func HasRoutineActsWith(preds ...predicate.RoutineAct) predicate.Act {
+	return predicate.Act(func(s *sql.Selector) {
+		step := newRoutineActsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasRoutineActRecs applies the HasEdge predicate on the "routine_act_recs" edge.
+func HasRoutineActRecs() predicate.Act {
+	return predicate.Act(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, RoutineActRecsTable, RoutineActRecsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRoutineActRecsWith applies the HasEdge predicate on the "routine_act_recs" edge with a given conditions (other predicates).
+func HasRoutineActRecsWith(preds ...predicate.RoutineActRec) predicate.Act {
+	return predicate.Act(func(s *sql.Selector) {
+		step := newRoutineActRecsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasOneRepMaxes applies the HasEdge predicate on the "one_rep_maxes" edge.
+func HasOneRepMaxes() predicate.Act {
+	return predicate.Act(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, OneRepMaxesTable, OneRepMaxesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOneRepMaxesWith applies the HasEdge predicate on the "one_rep_maxes" edge with a given conditions (other predicates).
+func HasOneRepMaxesWith(preds ...predicate.OneRepMax) predicate.Act {
+	return predicate.Act(func(s *sql.Selector) {
+		step := newOneRepMaxesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

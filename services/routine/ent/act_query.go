@@ -4,10 +4,15 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 	"routine/ent/act"
+	"routine/ent/onerepmax"
 	"routine/ent/predicate"
+	"routine/ent/routineact"
+	"routine/ent/routineactrec"
+	"routine/ent/tag"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -17,10 +22,14 @@ import (
 // ActQuery is the builder for querying Act entities.
 type ActQuery struct {
 	config
-	ctx        *QueryContext
-	order      []act.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Act
+	ctx                *QueryContext
+	order              []act.OrderOption
+	inters             []Interceptor
+	predicates         []predicate.Act
+	withTags           *TagQuery
+	withRoutineActs    *RoutineActQuery
+	withRoutineActRecs *RoutineActRecQuery
+	withOneRepMaxes    *OneRepMaxQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -57,6 +66,94 @@ func (aq *ActQuery) Order(o ...act.OrderOption) *ActQuery {
 	return aq
 }
 
+// QueryTags chains the current query on the "tags" edge.
+func (aq *ActQuery) QueryTags() *TagQuery {
+	query := (&TagClient{config: aq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(act.Table, act.FieldID, selector),
+			sqlgraph.To(tag.Table, tag.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, act.TagsTable, act.TagsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRoutineActs chains the current query on the "routine_acts" edge.
+func (aq *ActQuery) QueryRoutineActs() *RoutineActQuery {
+	query := (&RoutineActClient{config: aq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(act.Table, act.FieldID, selector),
+			sqlgraph.To(routineact.Table, routineact.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, act.RoutineActsTable, act.RoutineActsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRoutineActRecs chains the current query on the "routine_act_recs" edge.
+func (aq *ActQuery) QueryRoutineActRecs() *RoutineActRecQuery {
+	query := (&RoutineActRecClient{config: aq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(act.Table, act.FieldID, selector),
+			sqlgraph.To(routineactrec.Table, routineactrec.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, act.RoutineActRecsTable, act.RoutineActRecsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryOneRepMaxes chains the current query on the "one_rep_maxes" edge.
+func (aq *ActQuery) QueryOneRepMaxes() *OneRepMaxQuery {
+	query := (&OneRepMaxClient{config: aq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(act.Table, act.FieldID, selector),
+			sqlgraph.To(onerepmax.Table, onerepmax.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, act.OneRepMaxesTable, act.OneRepMaxesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Act entity from the query.
 // Returns a *NotFoundError when no Act was found.
 func (aq *ActQuery) First(ctx context.Context) (*Act, error) {
@@ -81,8 +178,8 @@ func (aq *ActQuery) FirstX(ctx context.Context) *Act {
 
 // FirstID returns the first Act ID from the query.
 // Returns a *NotFoundError when no Act ID was found.
-func (aq *ActQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (aq *ActQuery) FirstID(ctx context.Context) (id uint64, err error) {
+	var ids []uint64
 	if ids, err = aq.Limit(1).IDs(setContextOp(ctx, aq.ctx, "FirstID")); err != nil {
 		return
 	}
@@ -94,7 +191,7 @@ func (aq *ActQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (aq *ActQuery) FirstIDX(ctx context.Context) int {
+func (aq *ActQuery) FirstIDX(ctx context.Context) uint64 {
 	id, err := aq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -132,8 +229,8 @@ func (aq *ActQuery) OnlyX(ctx context.Context) *Act {
 // OnlyID is like Only, but returns the only Act ID in the query.
 // Returns a *NotSingularError when more than one Act ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (aq *ActQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (aq *ActQuery) OnlyID(ctx context.Context) (id uint64, err error) {
+	var ids []uint64
 	if ids, err = aq.Limit(2).IDs(setContextOp(ctx, aq.ctx, "OnlyID")); err != nil {
 		return
 	}
@@ -149,7 +246,7 @@ func (aq *ActQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (aq *ActQuery) OnlyIDX(ctx context.Context) int {
+func (aq *ActQuery) OnlyIDX(ctx context.Context) uint64 {
 	id, err := aq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -177,7 +274,7 @@ func (aq *ActQuery) AllX(ctx context.Context) []*Act {
 }
 
 // IDs executes the query and returns a list of Act IDs.
-func (aq *ActQuery) IDs(ctx context.Context) (ids []int, err error) {
+func (aq *ActQuery) IDs(ctx context.Context) (ids []uint64, err error) {
 	if aq.ctx.Unique == nil && aq.path != nil {
 		aq.Unique(true)
 	}
@@ -189,7 +286,7 @@ func (aq *ActQuery) IDs(ctx context.Context) (ids []int, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (aq *ActQuery) IDsX(ctx context.Context) []int {
+func (aq *ActQuery) IDsX(ctx context.Context) []uint64 {
 	ids, err := aq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -244,19 +341,79 @@ func (aq *ActQuery) Clone() *ActQuery {
 		return nil
 	}
 	return &ActQuery{
-		config:     aq.config,
-		ctx:        aq.ctx.Clone(),
-		order:      append([]act.OrderOption{}, aq.order...),
-		inters:     append([]Interceptor{}, aq.inters...),
-		predicates: append([]predicate.Act{}, aq.predicates...),
+		config:             aq.config,
+		ctx:                aq.ctx.Clone(),
+		order:              append([]act.OrderOption{}, aq.order...),
+		inters:             append([]Interceptor{}, aq.inters...),
+		predicates:         append([]predicate.Act{}, aq.predicates...),
+		withTags:           aq.withTags.Clone(),
+		withRoutineActs:    aq.withRoutineActs.Clone(),
+		withRoutineActRecs: aq.withRoutineActRecs.Clone(),
+		withOneRepMaxes:    aq.withOneRepMaxes.Clone(),
 		// clone intermediate query.
 		sql:  aq.sql.Clone(),
 		path: aq.path,
 	}
 }
 
+// WithTags tells the query-builder to eager-load the nodes that are connected to
+// the "tags" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *ActQuery) WithTags(opts ...func(*TagQuery)) *ActQuery {
+	query := (&TagClient{config: aq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withTags = query
+	return aq
+}
+
+// WithRoutineActs tells the query-builder to eager-load the nodes that are connected to
+// the "routine_acts" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *ActQuery) WithRoutineActs(opts ...func(*RoutineActQuery)) *ActQuery {
+	query := (&RoutineActClient{config: aq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withRoutineActs = query
+	return aq
+}
+
+// WithRoutineActRecs tells the query-builder to eager-load the nodes that are connected to
+// the "routine_act_recs" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *ActQuery) WithRoutineActRecs(opts ...func(*RoutineActRecQuery)) *ActQuery {
+	query := (&RoutineActRecClient{config: aq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withRoutineActRecs = query
+	return aq
+}
+
+// WithOneRepMaxes tells the query-builder to eager-load the nodes that are connected to
+// the "one_rep_maxes" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *ActQuery) WithOneRepMaxes(opts ...func(*OneRepMaxQuery)) *ActQuery {
+	query := (&OneRepMaxClient{config: aq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withOneRepMaxes = query
+	return aq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
+//
+// Example:
+//
+//	var v []struct {
+//		Name string `json:"name,omitempty"`
+//		Count int `json:"count,omitempty"`
+//	}
+//
+//	client.Act.Query().
+//		GroupBy(act.FieldName).
+//		Aggregate(ent.Count()).
+//		Scan(ctx, &v)
 func (aq *ActQuery) GroupBy(field string, fields ...string) *ActGroupBy {
 	aq.ctx.Fields = append([]string{field}, fields...)
 	grbuild := &ActGroupBy{build: aq}
@@ -268,6 +425,16 @@ func (aq *ActQuery) GroupBy(field string, fields ...string) *ActGroupBy {
 
 // Select allows the selection one or more fields/columns for the given query,
 // instead of selecting all fields in the entity.
+//
+// Example:
+//
+//	var v []struct {
+//		Name string `json:"name,omitempty"`
+//	}
+//
+//	client.Act.Query().
+//		Select(act.FieldName).
+//		Scan(ctx, &v)
 func (aq *ActQuery) Select(fields ...string) *ActSelect {
 	aq.ctx.Fields = append(aq.ctx.Fields, fields...)
 	sbuild := &ActSelect{ActQuery: aq}
@@ -309,8 +476,14 @@ func (aq *ActQuery) prepareQuery(ctx context.Context) error {
 
 func (aq *ActQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Act, error) {
 	var (
-		nodes = []*Act{}
-		_spec = aq.querySpec()
+		nodes       = []*Act{}
+		_spec       = aq.querySpec()
+		loadedTypes = [4]bool{
+			aq.withTags != nil,
+			aq.withRoutineActs != nil,
+			aq.withRoutineActRecs != nil,
+			aq.withOneRepMaxes != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Act).scanValues(nil, columns)
@@ -318,6 +491,7 @@ func (aq *ActQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Act, err
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Act{config: aq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -329,7 +503,187 @@ func (aq *ActQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Act, err
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := aq.withTags; query != nil {
+		if err := aq.loadTags(ctx, query, nodes,
+			func(n *Act) { n.Edges.Tags = []*Tag{} },
+			func(n *Act, e *Tag) { n.Edges.Tags = append(n.Edges.Tags, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := aq.withRoutineActs; query != nil {
+		if err := aq.loadRoutineActs(ctx, query, nodes,
+			func(n *Act) { n.Edges.RoutineActs = []*RoutineAct{} },
+			func(n *Act, e *RoutineAct) { n.Edges.RoutineActs = append(n.Edges.RoutineActs, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := aq.withRoutineActRecs; query != nil {
+		if err := aq.loadRoutineActRecs(ctx, query, nodes,
+			func(n *Act) { n.Edges.RoutineActRecs = []*RoutineActRec{} },
+			func(n *Act, e *RoutineActRec) { n.Edges.RoutineActRecs = append(n.Edges.RoutineActRecs, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := aq.withOneRepMaxes; query != nil {
+		if err := aq.loadOneRepMaxes(ctx, query, nodes,
+			func(n *Act) { n.Edges.OneRepMaxes = []*OneRepMax{} },
+			func(n *Act, e *OneRepMax) { n.Edges.OneRepMaxes = append(n.Edges.OneRepMaxes, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (aq *ActQuery) loadTags(ctx context.Context, query *TagQuery, nodes []*Act, init func(*Act), assign func(*Act, *Tag)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uint64]*Act)
+	nids := make(map[uint64]map[*Act]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(act.TagsTable)
+		s.Join(joinT).On(s.C(tag.FieldID), joinT.C(act.TagsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(act.TagsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(act.TagsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := uint64(values[0].(*sql.NullInt64).Int64)
+				inValue := uint64(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Act]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Tag](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "tags" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (aq *ActQuery) loadRoutineActs(ctx context.Context, query *RoutineActQuery, nodes []*Act, init func(*Act), assign func(*Act, *RoutineAct)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint64]*Act)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(routineact.FieldActID)
+	}
+	query.Where(predicate.RoutineAct(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(act.RoutineActsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ActID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "act_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (aq *ActQuery) loadRoutineActRecs(ctx context.Context, query *RoutineActRecQuery, nodes []*Act, init func(*Act), assign func(*Act, *RoutineActRec)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint64]*Act)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(routineactrec.FieldActID)
+	}
+	query.Where(predicate.RoutineActRec(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(act.RoutineActRecsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ActID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "act_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (aq *ActQuery) loadOneRepMaxes(ctx context.Context, query *OneRepMaxQuery, nodes []*Act, init func(*Act), assign func(*Act, *OneRepMax)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint64]*Act)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(onerepmax.FieldActID)
+	}
+	query.Where(predicate.OneRepMax(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(act.OneRepMaxesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ActID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "act_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (aq *ActQuery) sqlCount(ctx context.Context) (int, error) {
@@ -342,7 +696,7 @@ func (aq *ActQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (aq *ActQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(act.Table, act.Columns, sqlgraph.NewFieldSpec(act.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(act.Table, act.Columns, sqlgraph.NewFieldSpec(act.FieldID, field.TypeUint64))
 	_spec.From = aq.sql
 	if unique := aq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

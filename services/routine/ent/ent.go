@@ -8,6 +8,17 @@ import (
 	"fmt"
 	"reflect"
 	"routine/ent/act"
+	"routine/ent/bodyinfo"
+	"routine/ent/dailyroutine"
+	"routine/ent/dailyroutinerec"
+	"routine/ent/onerepmax"
+	"routine/ent/program"
+	"routine/ent/programrec"
+	"routine/ent/routineact"
+	"routine/ent/routineactrec"
+	"routine/ent/tag"
+	"routine/ent/weeklyroutine"
+	"routine/ent/weeklyroutinerec"
 	"sync"
 
 	"entgo.io/ent"
@@ -73,7 +84,18 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			act.Table: act.ValidColumn,
+			act.Table:              act.ValidColumn,
+			bodyinfo.Table:         bodyinfo.ValidColumn,
+			dailyroutine.Table:     dailyroutine.ValidColumn,
+			dailyroutinerec.Table:  dailyroutinerec.ValidColumn,
+			onerepmax.Table:        onerepmax.ValidColumn,
+			program.Table:          program.ValidColumn,
+			programrec.Table:       programrec.ValidColumn,
+			routineact.Table:       routineact.ValidColumn,
+			routineactrec.Table:    routineactrec.ValidColumn,
+			tag.Table:              tag.ValidColumn,
+			weeklyroutine.Table:    weeklyroutine.ValidColumn,
+			weeklyroutinerec.Table: weeklyroutinerec.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

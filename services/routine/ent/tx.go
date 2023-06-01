@@ -14,6 +14,28 @@ type Tx struct {
 	config
 	// Act is the client for interacting with the Act builders.
 	Act *ActClient
+	// BodyInfo is the client for interacting with the BodyInfo builders.
+	BodyInfo *BodyInfoClient
+	// DailyRoutine is the client for interacting with the DailyRoutine builders.
+	DailyRoutine *DailyRoutineClient
+	// DailyRoutineRec is the client for interacting with the DailyRoutineRec builders.
+	DailyRoutineRec *DailyRoutineRecClient
+	// OneRepMax is the client for interacting with the OneRepMax builders.
+	OneRepMax *OneRepMaxClient
+	// Program is the client for interacting with the Program builders.
+	Program *ProgramClient
+	// ProgramRec is the client for interacting with the ProgramRec builders.
+	ProgramRec *ProgramRecClient
+	// RoutineAct is the client for interacting with the RoutineAct builders.
+	RoutineAct *RoutineActClient
+	// RoutineActRec is the client for interacting with the RoutineActRec builders.
+	RoutineActRec *RoutineActRecClient
+	// Tag is the client for interacting with the Tag builders.
+	Tag *TagClient
+	// WeeklyRoutine is the client for interacting with the WeeklyRoutine builders.
+	WeeklyRoutine *WeeklyRoutineClient
+	// WeeklyRoutineRec is the client for interacting with the WeeklyRoutineRec builders.
+	WeeklyRoutineRec *WeeklyRoutineRecClient
 
 	// lazily loaded.
 	client     *Client
@@ -146,6 +168,17 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Act = NewActClient(tx.config)
+	tx.BodyInfo = NewBodyInfoClient(tx.config)
+	tx.DailyRoutine = NewDailyRoutineClient(tx.config)
+	tx.DailyRoutineRec = NewDailyRoutineRecClient(tx.config)
+	tx.OneRepMax = NewOneRepMaxClient(tx.config)
+	tx.Program = NewProgramClient(tx.config)
+	tx.ProgramRec = NewProgramRecClient(tx.config)
+	tx.RoutineAct = NewRoutineActClient(tx.config)
+	tx.RoutineActRec = NewRoutineActRecClient(tx.config)
+	tx.Tag = NewTagClient(tx.config)
+	tx.WeeklyRoutine = NewWeeklyRoutineClient(tx.config)
+	tx.WeeklyRoutineRec = NewWeeklyRoutineRecClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.
