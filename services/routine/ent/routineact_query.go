@@ -556,7 +556,9 @@ func (raq *RoutineActQuery) loadRoutineActRecs(ctx context.Context, query *Routi
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(routineactrec.FieldRoutineActID)
+	}
 	query.Where(predicate.RoutineActRec(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(routineact.RoutineActRecsColumn), fks...))
 	}))
@@ -565,13 +567,13 @@ func (raq *RoutineActQuery) loadRoutineActRecs(ctx context.Context, query *Routi
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.routine_act_routine_act_recs
+		fk := n.RoutineActID
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "routine_act_routine_act_recs" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "routine_act_id" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "routine_act_routine_act_recs" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "routine_act_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

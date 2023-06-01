@@ -189,20 +189,6 @@ func (rarc *RoutineActRecCreate) SetAct(a *Act) *RoutineActRecCreate {
 	return rarc.SetActID(a.ID)
 }
 
-// SetRoutineActID sets the "routine_act" edge to the RoutineAct entity by ID.
-func (rarc *RoutineActRecCreate) SetRoutineActID(id uint64) *RoutineActRecCreate {
-	rarc.mutation.SetRoutineActID(id)
-	return rarc
-}
-
-// SetNillableRoutineActID sets the "routine_act" edge to the RoutineAct entity by ID if the given value is not nil.
-func (rarc *RoutineActRecCreate) SetNillableRoutineActID(id *uint64) *RoutineActRecCreate {
-	if id != nil {
-		rarc = rarc.SetRoutineActID(*id)
-	}
-	return rarc
-}
-
 // SetRoutineAct sets the "routine_act" edge to the RoutineAct entity.
 func (rarc *RoutineActRecCreate) SetRoutineAct(r *RoutineAct) *RoutineActRecCreate {
 	return rarc.SetRoutineActID(r.ID)
@@ -355,10 +341,6 @@ func (rarc *RoutineActRecCreate) createSpec() (*RoutineActRec, *sqlgraph.CreateS
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := rarc.mutation.RoutineActID(); ok {
-		_spec.SetField(routineactrec.FieldRoutineActID, field.TypeUint64, value)
-		_node.RoutineActID = &value
-	}
 	if value, ok := rarc.mutation.Order(); ok {
 		_spec.SetField(routineactrec.FieldOrder, field.TypeInt, value)
 		_node.Order = value
@@ -447,7 +429,7 @@ func (rarc *RoutineActRecCreate) createSpec() (*RoutineActRec, *sqlgraph.CreateS
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.routine_act_routine_act_recs = &nodes[0]
+		_node.RoutineActID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

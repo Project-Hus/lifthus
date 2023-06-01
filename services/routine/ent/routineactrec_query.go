@@ -27,7 +27,6 @@ type RoutineActRecQuery struct {
 	withDailyRoutineRec *DailyRoutineRecQuery
 	withAct             *ActQuery
 	withRoutineAct      *RoutineActQuery
-	withFKs             bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -441,7 +440,6 @@ func (rarq *RoutineActRecQuery) prepareQuery(ctx context.Context) error {
 func (rarq *RoutineActRecQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*RoutineActRec, error) {
 	var (
 		nodes       = []*RoutineActRec{}
-		withFKs     = rarq.withFKs
 		_spec       = rarq.querySpec()
 		loadedTypes = [3]bool{
 			rarq.withDailyRoutineRec != nil,
@@ -449,12 +447,6 @@ func (rarq *RoutineActRecQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			rarq.withRoutineAct != nil,
 		}
 	)
-	if rarq.withRoutineAct != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, routineactrec.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*RoutineActRec).scanValues(nil, columns)
 	}
@@ -556,10 +548,10 @@ func (rarq *RoutineActRecQuery) loadRoutineAct(ctx context.Context, query *Routi
 	ids := make([]uint64, 0, len(nodes))
 	nodeids := make(map[uint64][]*RoutineActRec)
 	for i := range nodes {
-		if nodes[i].routine_act_routine_act_recs == nil {
+		if nodes[i].RoutineActID == nil {
 			continue
 		}
-		fk := *nodes[i].routine_act_routine_act_recs
+		fk := *nodes[i].RoutineActID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -576,7 +568,7 @@ func (rarq *RoutineActRecQuery) loadRoutineAct(ctx context.Context, query *Routi
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "routine_act_routine_act_recs" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "routine_act_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -615,6 +607,9 @@ func (rarq *RoutineActRecQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if rarq.withAct != nil {
 			_spec.Node.AddColumnOnce(routineactrec.FieldActID)
+		}
+		if rarq.withRoutineAct != nil {
+			_spec.Node.AddColumnOnce(routineactrec.FieldRoutineActID)
 		}
 	}
 	if ps := rarq.predicates; len(ps) > 0 {

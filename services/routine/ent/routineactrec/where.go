@@ -155,26 +155,6 @@ func RoutineActIDNotIn(vs ...uint64) predicate.RoutineActRec {
 	return predicate.RoutineActRec(sql.FieldNotIn(FieldRoutineActID, vs...))
 }
 
-// RoutineActIDGT applies the GT predicate on the "routine_act_id" field.
-func RoutineActIDGT(v uint64) predicate.RoutineActRec {
-	return predicate.RoutineActRec(sql.FieldGT(FieldRoutineActID, v))
-}
-
-// RoutineActIDGTE applies the GTE predicate on the "routine_act_id" field.
-func RoutineActIDGTE(v uint64) predicate.RoutineActRec {
-	return predicate.RoutineActRec(sql.FieldGTE(FieldRoutineActID, v))
-}
-
-// RoutineActIDLT applies the LT predicate on the "routine_act_id" field.
-func RoutineActIDLT(v uint64) predicate.RoutineActRec {
-	return predicate.RoutineActRec(sql.FieldLT(FieldRoutineActID, v))
-}
-
-// RoutineActIDLTE applies the LTE predicate on the "routine_act_id" field.
-func RoutineActIDLTE(v uint64) predicate.RoutineActRec {
-	return predicate.RoutineActRec(sql.FieldLTE(FieldRoutineActID, v))
-}
-
 // RoutineActIDIsNil applies the IsNil predicate on the "routine_act_id" field.
 func RoutineActIDIsNil() predicate.RoutineActRec {
 	return predicate.RoutineActRec(sql.FieldIsNull(FieldRoutineActID))

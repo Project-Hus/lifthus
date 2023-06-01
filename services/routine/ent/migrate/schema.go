@@ -243,7 +243,6 @@ var (
 	// RoutineActRecsColumns holds the columns for the "routine_act_recs" table.
 	RoutineActRecsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
-		{Name: "routine_act_id", Type: field.TypeUint64, Nullable: true},
 		{Name: "order", Type: field.TypeInt},
 		{Name: "reps", Type: field.TypeInt, Nullable: true},
 		{Name: "lap", Type: field.TypeInt, Nullable: true},
@@ -256,7 +255,7 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "act_id", Type: field.TypeUint64},
 		{Name: "daily_routine_rec_id", Type: field.TypeUint64},
-		{Name: "routine_act_routine_act_recs", Type: field.TypeUint64, Nullable: true},
+		{Name: "routine_act_id", Type: field.TypeUint64, Nullable: true},
 	}
 	// RoutineActRecsTable holds the schema information for the "routine_act_recs" table.
 	RoutineActRecsTable = &schema.Table{
@@ -266,19 +265,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "routine_act_recs_acts_routine_act_recs",
-				Columns:    []*schema.Column{RoutineActRecsColumns[12]},
+				Columns:    []*schema.Column{RoutineActRecsColumns[11]},
 				RefColumns: []*schema.Column{ActsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "routine_act_recs_daily_routine_recs_routine_act_recs",
-				Columns:    []*schema.Column{RoutineActRecsColumns[13]},
+				Columns:    []*schema.Column{RoutineActRecsColumns[12]},
 				RefColumns: []*schema.Column{DailyRoutineRecsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "routine_act_recs_routine_acts_routine_act_recs",
-				Columns:    []*schema.Column{RoutineActRecsColumns[14]},
+				Columns:    []*schema.Column{RoutineActRecsColumns[13]},
 				RefColumns: []*schema.Column{RoutineActsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

@@ -58,7 +58,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "routineactrec" package.
 	RoutineActRecsInverseTable = "routine_act_recs"
 	// RoutineActRecsColumn is the table column denoting the routine_act_recs relation/edge.
-	RoutineActRecsColumn = "routine_act_routine_act_recs"
+	RoutineActRecsColumn = "routine_act_id"
 )
 
 // Columns holds all SQL columns for routineact fields.

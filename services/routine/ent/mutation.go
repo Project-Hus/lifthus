@@ -9104,8 +9104,6 @@ type RoutineActRecMutation struct {
 	op                       Op
 	typ                      string
 	id                       *uint64
-	routine_act_id           *uint64
-	addroutine_act_id        *int64
 	_order                   *int
 	add_order                *int
 	reps                     *int
@@ -9275,13 +9273,12 @@ func (m *RoutineActRecMutation) ResetDailyRoutineRecID() {
 
 // SetRoutineActID sets the "routine_act_id" field.
 func (m *RoutineActRecMutation) SetRoutineActID(u uint64) {
-	m.routine_act_id = &u
-	m.addroutine_act_id = nil
+	m.routine_act = &u
 }
 
 // RoutineActID returns the value of the "routine_act_id" field in the mutation.
 func (m *RoutineActRecMutation) RoutineActID() (r uint64, exists bool) {
-	v := m.routine_act_id
+	v := m.routine_act
 	if v == nil {
 		return
 	}
@@ -9305,28 +9302,9 @@ func (m *RoutineActRecMutation) OldRoutineActID(ctx context.Context) (v *uint64,
 	return oldValue.RoutineActID, nil
 }
 
-// AddRoutineActID adds u to the "routine_act_id" field.
-func (m *RoutineActRecMutation) AddRoutineActID(u int64) {
-	if m.addroutine_act_id != nil {
-		*m.addroutine_act_id += u
-	} else {
-		m.addroutine_act_id = &u
-	}
-}
-
-// AddedRoutineActID returns the value that was added to the "routine_act_id" field in this mutation.
-func (m *RoutineActRecMutation) AddedRoutineActID() (r int64, exists bool) {
-	v := m.addroutine_act_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
 // ClearRoutineActID clears the value of the "routine_act_id" field.
 func (m *RoutineActRecMutation) ClearRoutineActID() {
-	m.routine_act_id = nil
-	m.addroutine_act_id = nil
+	m.routine_act = nil
 	m.clearedFields[routineactrec.FieldRoutineActID] = struct{}{}
 }
 
@@ -9338,8 +9316,7 @@ func (m *RoutineActRecMutation) RoutineActIDCleared() bool {
 
 // ResetRoutineActID resets all changes to the "routine_act_id" field.
 func (m *RoutineActRecMutation) ResetRoutineActID() {
-	m.routine_act_id = nil
-	m.addroutine_act_id = nil
+	m.routine_act = nil
 	delete(m.clearedFields, routineactrec.FieldRoutineActID)
 }
 
@@ -9945,11 +9922,6 @@ func (m *RoutineActRecMutation) ResetAct() {
 	m.clearedact = false
 }
 
-// SetRoutineActID sets the "routine_act" edge to the RoutineAct entity by id.
-func (m *RoutineActRecMutation) SetRoutineActID(id uint64) {
-	m.routine_act = &id
-}
-
 // ClearRoutineAct clears the "routine_act" edge to the RoutineAct entity.
 func (m *RoutineActRecMutation) ClearRoutineAct() {
 	m.clearedroutine_act = true
@@ -9957,15 +9929,7 @@ func (m *RoutineActRecMutation) ClearRoutineAct() {
 
 // RoutineActCleared reports if the "routine_act" edge to the RoutineAct entity was cleared.
 func (m *RoutineActRecMutation) RoutineActCleared() bool {
-	return m.clearedroutine_act
-}
-
-// RoutineActID returns the "routine_act" edge ID in the mutation.
-func (m *RoutineActRecMutation) RoutineActID() (id uint64, exists bool) {
-	if m.routine_act != nil {
-		return *m.routine_act, true
-	}
-	return
+	return m.RoutineActIDCleared() || m.clearedroutine_act
 }
 
 // RoutineActIDs returns the "routine_act" edge IDs in the mutation.
@@ -10022,7 +9986,7 @@ func (m *RoutineActRecMutation) Fields() []string {
 	if m.daily_routine_rec != nil {
 		fields = append(fields, routineactrec.FieldDailyRoutineRecID)
 	}
-	if m.routine_act_id != nil {
+	if m.routine_act != nil {
 		fields = append(fields, routineactrec.FieldRoutineActID)
 	}
 	if m.act != nil {
@@ -10235,9 +10199,6 @@ func (m *RoutineActRecMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *RoutineActRecMutation) AddedFields() []string {
 	var fields []string
-	if m.addroutine_act_id != nil {
-		fields = append(fields, routineactrec.FieldRoutineActID)
-	}
 	if m.add_order != nil {
 		fields = append(fields, routineactrec.FieldOrder)
 	}
@@ -10261,8 +10222,6 @@ func (m *RoutineActRecMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *RoutineActRecMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case routineactrec.FieldRoutineActID:
-		return m.AddedRoutineActID()
 	case routineactrec.FieldOrder:
 		return m.AddedOrder()
 	case routineactrec.FieldReps:
@@ -10282,13 +10241,6 @@ func (m *RoutineActRecMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *RoutineActRecMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case routineactrec.FieldRoutineActID:
-		v, ok := value.(int64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddRoutineActID(v)
-		return nil
 	case routineactrec.FieldOrder:
 		v, ok := value.(int)
 		if !ok {

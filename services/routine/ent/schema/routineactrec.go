@@ -43,6 +43,6 @@ func (RoutineActRec) Edges() []ent.Edge {
 		edge.From("daily_routine_rec", DailyRoutineRec.Type).Field("daily_routine_rec_id").Ref("routine_act_recs").Unique().Required(),
 		edge.From("act", Act.Type).Field("act_id").Ref("routine_act_recs").Unique().Required(),
 
-		edge.From("routine_act", RoutineAct.Type).Ref("routine_act_recs").Unique(),
+		edge.From("routine_act", RoutineAct.Type).Field("routine_act_id").Unique().Ref("routine_act_recs"),
 	}
 }

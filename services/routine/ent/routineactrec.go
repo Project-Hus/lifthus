@@ -48,9 +48,8 @@ type RoutineActRec struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RoutineActRecQuery when eager-loading is set.
-	Edges                        RoutineActRecEdges `json:"edges"`
-	routine_act_routine_act_recs *uint64
-	selectValues                 sql.SelectValues
+	Edges        RoutineActRecEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // RoutineActRecEdges holds the relations/edges for other nodes in the graph.
@@ -116,8 +115,6 @@ func (*RoutineActRec) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case routineactrec.FieldCreatedAt, routineactrec.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case routineactrec.ForeignKeys[0]: // routine_act_routine_act_recs
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -221,13 +218,6 @@ func (rar *RoutineActRec) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				rar.UpdatedAt = value.Time
-			}
-		case routineactrec.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field routine_act_routine_act_recs", value)
-			} else if value.Valid {
-				rar.routine_act_routine_act_recs = new(uint64)
-				*rar.routine_act_routine_act_recs = uint64(value.Int64)
 			}
 		default:
 			rar.selectValues.Set(columns[i], values[i])

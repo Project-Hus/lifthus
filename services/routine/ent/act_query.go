@@ -635,7 +635,6 @@ func (aq *ActQuery) loadRoutineActRecs(ctx context.Context, query *RoutineActRec
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
 	if len(query.ctx.Fields) > 0 {
 		query.ctx.AppendFieldOnce(routineactrec.FieldActID)
 	}
