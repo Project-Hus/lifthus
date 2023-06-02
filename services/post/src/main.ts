@@ -10,6 +10,10 @@ import cookieParser from 'cookie-parser';
 // import SwaggerUi from 'swagger-ui-express';
 // import { OpenapiModule } from './openapi/openapi.module';
 
+BigInt.prototype.toJSON = function () {
+  return Number(this);
+};
+
 /**
  * sets up the nestjs app and returns it.
  *
