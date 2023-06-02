@@ -1,4 +1,4 @@
-package program
+package rec
 
 import (
 	"net/http"
@@ -16,9 +16,11 @@ type ProgramApiControllerParams struct {
 func NewProgramApiController(programApi *echo.Echo, params ProgramApiControllerParams) *echo.Echo {
 	programApiController := newProgramApiController(params)
 
+	// return specific program
 	programApi.GET("/routine/program/:program-slug", func(c echo.Context) error {
 		return nil
 	})
+	// return
 	programApi.GET("/routine/programs/title/:title", func(c echo.Context) error {
 		return nil
 	})
