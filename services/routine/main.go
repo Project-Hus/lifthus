@@ -8,7 +8,7 @@ import (
 
 	"log"
 	"os"
-	"routine/api/routine"
+	"routine/api/program"
 	"routine/common/db"
 	"routine/ent"
 
@@ -104,12 +104,12 @@ func main() {
 		}
 	})
 
-	routineApiControllerParams := routine.RoutineApiControllerParams{
+	programApiControllerParams := program.ProgramApiControllerParams{
 		DbClient:   dbClient,
 		HttpClient: routineHttpClient,
 	}
 
-	e = routine.NewRoutineApiController(e, routineApiControllerParams)
+	e = program.NewProgramApiController(e, programApiControllerParams)
 
 	// swagger
 	e.GET("/routine/openapi/*", echoSwagger.WrapHandler)
