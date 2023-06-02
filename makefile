@@ -28,6 +28,14 @@ build-win:
 	sam build
 .PHONY: build-win
 
+build-win1:
+	tsc -p services/post/tsconfig.build.json
+	
+build-win2:
+	node services/post/esbuild.js
+
+	sam build
+
 # make start DEBUG=--debug
 start:
 	sam local start-api --env-vars env.json -p 9100 $(DEBUG)
