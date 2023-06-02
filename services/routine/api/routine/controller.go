@@ -16,7 +16,7 @@ type RoutineApiControllerParams struct {
 func NewRoutineApiController(routineApi *echo.Echo, params RoutineApiControllerParams) *echo.Echo {
 	routineApiController := newRoutineApiController(params)
 
-	routineApi.POST("/routine", routineApiController.createPost)
+	routineApi.POST("/routine", routineApiController.createProgram)
 
 	return routineApi
 }
@@ -34,5 +34,5 @@ type routineApiController struct {
 
 // authApis interface defines what auth api has to handle
 type routineApis interface {
-	createPost(c echo.Context) error
+	createProgram(c echo.Context) error
 }
