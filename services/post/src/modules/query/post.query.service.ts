@@ -10,10 +10,75 @@ export class PostQueryService {
   }
 
   getAllPosts(skip: number): Promise<Post[]> {
-    return Promise.reject('not implemented');
+    return this.prismaService.post.findMany({
+      include: {
+        images: {
+          select: {
+            id: true,
+            url: true,
+          },
+          orderBy: {
+            order: 'asc',
+          },
+        },
+        comments: {
+          select: {
+            id: true,
+            postId: true,
+            author: true,
+            createdAt: true,
+            updatedAt: true,
+            content: true,
+            likenum: true,
+            mentions: {
+              select: {
+                mentionee: true,
+              },
+            },
+            replies: {
+              select: {
+                id: true,
+                parentId: true,
+                author: true,
+                createdAt: true,
+                updatedAt: true,
+                content: true,
+                likenum: true,
+                mentions: {
+                  select: {
+                    mentionee: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        mentions: {
+          select: {
+            mentionee: true,
+          },
+        },
+      },
+
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 10,
+      skip: skip,
+    });
   }
 
-  async getUserPosts(uid: number, skip: number): Promise<Post[]> {
+  getUsersPosts({
+    users,
+    skip,
+  }: {
+    users: number[];
+    skip: number;
+  }): Promise<Post[]> {
+    return Promise.reject('Not implemented');
+  }
+
+  getUserPosts(uid: number, skip: number): Promise<Post[]> {
     return this.prismaService.post.findMany({
       include: {
         images: {
