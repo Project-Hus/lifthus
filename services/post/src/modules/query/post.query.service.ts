@@ -60,16 +60,25 @@ export class PostQueryService {
         },
       },
 
-        orderBy: {
-          createdAt: 'desc',
-        },
-        take: 10,
-        skip: skip,
-
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 10,
+      skip: skip,
     });
   }
 
-  async getUserPosts(uid: number, skip: number): Promise<Post[]> {
+  getUsersPosts({
+    users,
+    skip,
+  }: {
+    users: number[];
+    skip: number;
+  }): Promise<Post[]> {
+    return Promise.reject('Not implemented');
+  }
+
+  getUserPosts(uid: number, skip: number): Promise<Post[]> {
     return this.prismaService.post.findMany({
       include: {
         images: {

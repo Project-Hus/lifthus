@@ -1,4 +1,14 @@
-import { Controller, Get, Res, Req, Param, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Res,
+  Req,
+  Param,
+  Logger,
+  Body,
+  Query,
+  BadRequestException,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 import { PostQueryService } from './post.query.service';
 import { CommentQueryService } from './comment.query.service';
@@ -16,10 +26,37 @@ export class QueryController {
     return this.postQueryService.getHello();
   }
 
+  /**
+   * gets all posts from the database and returns them.
+   * @param skip
+   * @returns Post[]
+   * @example /post/query/post/all/0
+   */
   @Get('/post/all/:skip')
-  getAllPosts(@Param('skip') skip: any): Promise<Post[]> {
-    skip = skip || 0;
+  getAllPosts(@Param('skip') skipStr: string): Promise<Post[]> {
+    const skip = Number(skipStr) || 0;
     return this.postQueryService.getAllPosts(Number(skip));
+  }
+
+  /**
+   * gets users query param and returns posts from the users.
+   * @param users
+   * @returns Post[]
+   * @example /post/query/post?users=1,2,3
+   */
+  @Get('/post')
+  getUsersPosts(
+    @Query('users') usersStr: string,
+    @Query('skip') skipStr: string,
+  ): Promise<Post[]> {
+    const users: number[] = usersStr
+      .split(',')
+      .map((userStr) => Number(userStr));
+    if (users.some((user) => isNaN(user))) {
+      throw new BadRequestException();
+    }
+    const skip = Number(skipStr) || 0;
+    return this.postQueryService.getUsersPosts({ users, skip });
   }
 
   /**
