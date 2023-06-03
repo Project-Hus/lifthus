@@ -1,19 +1,19 @@
 basePath: /routine
 definitions:
-  dto.CreateDailyRoutineDto:
+  dto.CreateWeeklyDailyRoutineDto:
     properties:
       day:
         type: integer
-      weekly_routine_id:
+      week:
         type: integer
     type: object
-  dto.CreateProgramDto:
+  dto.CreateWeeklyProgramDto:
     properties:
       author:
         type: integer
       daily_routines:
         items:
-          $ref: '#/definitions/dto.CreateDailyRoutineDto'
+          $ref: '#/definitions/dto.CreateWeeklyDailyRoutineDto'
         type: array
       description:
         type: string
@@ -21,7 +21,7 @@ definitions:
         type: string
       routine_acts:
         items:
-          $ref: '#/definitions/dto.CreateRoutineActDto'
+          $ref: '#/definitions/dto.CreateWeeklyRoutineActDto'
         type: array
       tags:
         items:
@@ -29,18 +29,16 @@ definitions:
         type: array
       title:
         type: string
-      type:
-        $ref: '#/definitions/program.Type'
       weekly_routines:
         items:
           $ref: '#/definitions/dto.CreateWeeklyRoutineDto'
         type: array
     type: object
-  dto.CreateRoutineActDto:
+  dto.CreateWeeklyRoutineActDto:
     properties:
       act_id:
         type: integer
-      daily_routine_id:
+      day:
         type: integer
       lap:
         type: integer
@@ -48,24 +46,18 @@ definitions:
         type: integer
       reps:
         type: integer
+      w_ratio:
+        type: number
       warmup:
         type: boolean
-    type: object
-  dto.CreateWeeklyRoutineDto:
-    properties:
-      program_id:
-        type: integer
       week:
         type: integer
     type: object
-  program.Type:
-    enum:
-    - weekly
-    - daily
-    type: string
-    x-enum-varnames:
-    - TypeWeekly
-    - TypeDaily
+  dto.CreateWeeklyRoutineDto:
+    properties:
+      week:
+        type: integer
+    type: object
 host: api.lifthus.com
 info:
   contact:
@@ -80,15 +72,15 @@ info:
   title: Lifthus routine server
   version: 0.0.0
 paths:
-  /routine/program:
+  /routine/program/weekly:
     post:
       parameters:
-      - description: create program dto
+      - description: createWeeklyProgram DTO
         in: body
-        name: createProgramDto
+        name: createWeeklyProgramDtoa
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateProgramDto'
+          $ref: '#/definitions/dto.CreateWeeklyProgramDto'
       responses:
         "201":
           description: returns created program
@@ -100,7 +92,7 @@ paths:
           description: forbidden
         "500":
           description: failed to create program
-      summary: gets CreateProgramDto from body and returns created program
+      summary: gets CreateWeeklyProgramDto from body and returns created program
       tags:
       - program
 swagger: "2.0"

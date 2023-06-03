@@ -25,20 +25,20 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/routine/program": {
+        "/routine/program/weekly": {
             "post": {
                 "tags": [
                     "program"
                 ],
-                "summary": "gets CreateProgramDto from body and returns created program",
+                "summary": "gets CreateWeeklyProgramDto from body and returns created program",
                 "parameters": [
                     {
-                        "description": "create program dto",
-                        "name": "createProgramDto",
+                        "description": "createWeeklyProgram DTO",
+                        "name": "createWeeklyProgramDtoa",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateProgramDto"
+                            "$ref": "#/definitions/dto.CreateWeeklyProgramDto"
                         }
                     }
                 ],
@@ -63,18 +63,18 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dto.CreateDailyRoutineDto": {
+        "dto.CreateWeeklyDailyRoutineDto": {
             "type": "object",
             "properties": {
                 "day": {
                     "type": "integer"
                 },
-                "weekly_routine_id": {
+                "week": {
                     "type": "integer"
                 }
             }
         },
-        "dto.CreateProgramDto": {
+        "dto.CreateWeeklyProgramDto": {
             "type": "object",
             "properties": {
                 "author": {
@@ -83,7 +83,7 @@ const docTemplate = `{
                 "daily_routines": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.CreateDailyRoutineDto"
+                        "$ref": "#/definitions/dto.CreateWeeklyDailyRoutineDto"
                     }
                 },
                 "description": {
@@ -95,7 +95,7 @@ const docTemplate = `{
                 "routine_acts": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.CreateRoutineActDto"
+                        "$ref": "#/definitions/dto.CreateWeeklyRoutineActDto"
                     }
                 },
                 "tags": {
@@ -107,9 +107,6 @@ const docTemplate = `{
                 "title": {
                     "type": "string"
                 },
-                "type": {
-                    "$ref": "#/definitions/program.Type"
-                },
                 "weekly_routines": {
                     "type": "array",
                     "items": {
@@ -118,13 +115,13 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CreateRoutineActDto": {
+        "dto.CreateWeeklyRoutineActDto": {
             "type": "object",
             "properties": {
                 "act_id": {
                     "type": "integer"
                 },
-                "daily_routine_id": {
+                "day": {
                     "type": "integer"
                 },
                 "lap": {
@@ -136,32 +133,24 @@ const docTemplate = `{
                 "reps": {
                     "type": "integer"
                 },
+                "w_ratio": {
+                    "type": "number"
+                },
                 "warmup": {
                     "type": "boolean"
-                }
-            }
-        },
-        "dto.CreateWeeklyRoutineDto": {
-            "type": "object",
-            "properties": {
-                "program_id": {
-                    "type": "integer"
                 },
                 "week": {
                     "type": "integer"
                 }
             }
         },
-        "program.Type": {
-            "type": "string",
-            "enum": [
-                "weekly",
-                "daily"
-            ],
-            "x-enum-varnames": [
-                "TypeWeekly",
-                "TypeDaily"
-            ]
+        "dto.CreateWeeklyRoutineDto": {
+            "type": "object",
+            "properties": {
+                "week": {
+                    "type": "integer"
+                }
+            }
         }
     }
 }`

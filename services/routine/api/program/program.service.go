@@ -13,7 +13,7 @@ import (
 // @Param createWeeklyProgramDto body dto.CreateWeeklyProgramDto true "createWeeklyProgram DTO"
 // @Summary      gets CreateWeeklyProgramDto from body and returns created program
 // @Tags         program
-// @Success      201 "returns created program"
+// @Success      201 "returns created program's ID"
 // @Failure      400 "invalid body"
 // @Failure      401 "unauthorized"
 // @Failure 	 403 "forbidden"
@@ -24,10 +24,14 @@ func (rc programApiController) createWeeklyProgram(c echo.Context) error {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	createdProgram, err := db.CreateWeeklyProgram(rc.dbClient, c.Request().Context(), createProgramDto)
+	pid, err := db.CreateWeeklyProgram(rc.dbClient, c.Request().Context(), createProgramDto)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
-	return c.JSON(http.StatusCreated, createdProgram)
+	resp := struct {
+		Pid uint64 `json:"pid"`
+	}{Pid: pid}
+
+	return c.JSON(http.StatusCreated, resp)
 }
