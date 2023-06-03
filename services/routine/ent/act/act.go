@@ -55,8 +55,8 @@ const (
 	FieldUpperBack = "upper_back"
 	// FieldLowerBack holds the string denoting the lower_back field in the database.
 	FieldLowerBack = "lower_back"
-	// FieldLegs holds the string denoting the legs field in the database.
-	FieldLegs = "legs"
+	// FieldGlute holds the string denoting the glute field in the database.
+	FieldGlute = "glute"
 	// FieldLegsFront holds the string denoting the legs_front field in the database.
 	FieldLegsFront = "legs_front"
 	// FieldLegsBack holds the string denoting the legs_back field in the database.
@@ -124,7 +124,7 @@ var Columns = []string{
 	FieldCore,
 	FieldUpperBack,
 	FieldLowerBack,
-	FieldLegs,
+	FieldGlute,
 	FieldLegsFront,
 	FieldLegsBack,
 	FieldEtc,
@@ -181,8 +181,8 @@ var (
 	DefaultUpperBack bool
 	// DefaultLowerBack holds the default value on creation for the "lower_back" field.
 	DefaultLowerBack bool
-	// DefaultLegs holds the default value on creation for the "legs" field.
-	DefaultLegs bool
+	// DefaultGlute holds the default value on creation for the "glute" field.
+	DefaultGlute bool
 	// DefaultLegsFront holds the default value on creation for the "legs_front" field.
 	DefaultLegsFront bool
 	// DefaultLegsBack holds the default value on creation for the "legs_back" field.
@@ -323,9 +323,9 @@ func ByLowerBack(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLowerBack, opts...).ToFunc()
 }
 
-// ByLegs orders the results by the legs field.
-func ByLegs(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldLegs, opts...).ToFunc()
+// ByGlute orders the results by the glute field.
+func ByGlute(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGlute, opts...).ToFunc()
 }
 
 // ByLegsFront orders the results by the legs_front field.

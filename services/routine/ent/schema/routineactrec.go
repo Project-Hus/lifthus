@@ -30,7 +30,7 @@ func (RoutineActRec) Fields() []ent.Field {
 		field.String("image").Nillable().Optional(),
 		field.String("comment").Nillable().Optional(),
 
-		field.Enum("status").Values(recStatus...),
+		field.Enum("status").Values(RecStatus...),
 
 		field.Time("created_at").Default(time.Now).Immutable(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),

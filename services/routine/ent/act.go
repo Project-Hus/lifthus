@@ -57,8 +57,8 @@ type Act struct {
 	UpperBack bool `json:"upper_back,omitempty"`
 	// LowerBack holds the value of the "lower_back" field.
 	LowerBack bool `json:"lower_back,omitempty"`
-	// Legs holds the value of the "legs" field.
-	Legs bool `json:"legs,omitempty"`
+	// Glute holds the value of the "glute" field.
+	Glute bool `json:"glute,omitempty"`
 	// LegsFront holds the value of the "legs_front" field.
 	LegsFront bool `json:"legs_front,omitempty"`
 	// LegsBack holds the value of the "legs_back" field.
@@ -127,7 +127,7 @@ func (*Act) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case act.FieldWeight, act.FieldBodyweight, act.FieldCardio, act.FieldUpper, act.FieldLower, act.FieldFull, act.FieldArms, act.FieldShoulders, act.FieldChest, act.FieldCore, act.FieldUpperBack, act.FieldLowerBack, act.FieldLegs, act.FieldLegsFront, act.FieldLegsBack, act.FieldEtc:
+		case act.FieldWeight, act.FieldBodyweight, act.FieldCardio, act.FieldUpper, act.FieldLower, act.FieldFull, act.FieldArms, act.FieldShoulders, act.FieldChest, act.FieldCore, act.FieldUpperBack, act.FieldLowerBack, act.FieldGlute, act.FieldLegsFront, act.FieldLegsBack, act.FieldEtc:
 			values[i] = new(sql.NullBool)
 		case act.FieldID, act.FieldAuthor:
 			values[i] = new(sql.NullInt64)
@@ -278,11 +278,11 @@ func (a *Act) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.LowerBack = value.Bool
 			}
-		case act.FieldLegs:
+		case act.FieldGlute:
 			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field legs", values[i])
+				return fmt.Errorf("unexpected type %T for field glute", values[i])
 			} else if value.Valid {
-				a.Legs = value.Bool
+				a.Glute = value.Bool
 			}
 		case act.FieldLegsFront:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -422,8 +422,8 @@ func (a *Act) String() string {
 	builder.WriteString("lower_back=")
 	builder.WriteString(fmt.Sprintf("%v", a.LowerBack))
 	builder.WriteString(", ")
-	builder.WriteString("legs=")
-	builder.WriteString(fmt.Sprintf("%v", a.Legs))
+	builder.WriteString("glute=")
+	builder.WriteString(fmt.Sprintf("%v", a.Glute))
 	builder.WriteString(", ")
 	builder.WriteString("legs_front=")
 	builder.WriteString(fmt.Sprintf("%v", a.LegsFront))

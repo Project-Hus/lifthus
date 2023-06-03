@@ -31,7 +31,7 @@ var (
 		{Name: "core", Type: field.TypeBool, Default: false},
 		{Name: "upper_back", Type: field.TypeBool, Default: false},
 		{Name: "lower_back", Type: field.TypeBool, Default: false},
-		{Name: "legs", Type: field.TypeBool, Default: false},
+		{Name: "glute", Type: field.TypeBool, Default: false},
 		{Name: "legs_front", Type: field.TypeBool, Default: false},
 		{Name: "legs_back", Type: field.TypeBool, Default: false},
 		{Name: "etc", Type: field.TypeBool, Default: false},

@@ -23,7 +23,7 @@ func (DailyRoutineRec) Fields() []ent.Field {
 		field.Uint64("weekly_routine_rec_id").Nillable().Optional(),
 		field.Uint64("daily_routine_id").Nillable().Optional(),
 		field.Time("date"),
-		field.Enum("status").Values(recStatus...),
+		field.Enum("status").Values(RecStatus...),
 
 		field.String("comment").Nillable().Optional().Annotations(entsql.Annotation{Size: 1000}),
 

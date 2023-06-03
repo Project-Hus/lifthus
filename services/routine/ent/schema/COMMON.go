@@ -7,9 +7,9 @@ import (
 )
 
 // enum
-var programType = []string{"weekly", "daily"}
-var actType = []string{"rep", "lap", "simple"}
-var recStatus = []string{"history", "waiting", "proceeding", "completed", "failed", "canceled"}
+var ProgramType = []string{"weekly", "daily"}
+var ActType = []string{"rep", "lap", "simple"}
+var RecStatus = []string{"history", "waiting", "proceeding", "completed", "failed", "canceled"}
 
 // func
 func randomHex() string {

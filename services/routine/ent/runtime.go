@@ -91,10 +91,10 @@ func init() {
 	actDescLowerBack := actFields[20].Descriptor()
 	// act.DefaultLowerBack holds the default value on creation for the lower_back field.
 	act.DefaultLowerBack = actDescLowerBack.Default.(bool)
-	// actDescLegs is the schema descriptor for legs field.
-	actDescLegs := actFields[21].Descriptor()
-	// act.DefaultLegs holds the default value on creation for the legs field.
-	act.DefaultLegs = actDescLegs.Default.(bool)
+	// actDescGlute is the schema descriptor for glute field.
+	actDescGlute := actFields[21].Descriptor()
+	// act.DefaultGlute holds the default value on creation for the glute field.
+	act.DefaultGlute = actDescGlute.Default.(bool)
 	// actDescLegsFront is the schema descriptor for legs_front field.
 	actDescLegsFront := actFields[22].Descriptor()
 	// act.DefaultLegsFront holds the default value on creation for the legs_front field.
