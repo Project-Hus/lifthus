@@ -7,11 +7,18 @@ import (
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 // WeeklyRoutine holds the schema definition for the WeeklyRoutine entity.
 type WeeklyRoutine struct {
 	ent.Schema
+}
+
+func (WeeklyRoutine) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("program_id", "week").Unique(),
+	}
 }
 
 // Fields of the WeeklyRoutine.

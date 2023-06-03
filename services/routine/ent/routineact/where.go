@@ -70,6 +70,11 @@ func Order(v int) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldEQ(FieldOrder, v))
 }
 
+// WRatio applies equality check predicate on the "w_ratio" field. It's identical to WRatioEQ.
+func WRatio(v float64) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldEQ(FieldWRatio, v))
+}
+
 // Reps applies equality check predicate on the "reps" field. It's identical to RepsEQ.
 func Reps(v int) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldEQ(FieldReps, v))
@@ -173,6 +178,56 @@ func OrderLT(v int) predicate.RoutineAct {
 // OrderLTE applies the LTE predicate on the "order" field.
 func OrderLTE(v int) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldLTE(FieldOrder, v))
+}
+
+// WRatioEQ applies the EQ predicate on the "w_ratio" field.
+func WRatioEQ(v float64) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldEQ(FieldWRatio, v))
+}
+
+// WRatioNEQ applies the NEQ predicate on the "w_ratio" field.
+func WRatioNEQ(v float64) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldNEQ(FieldWRatio, v))
+}
+
+// WRatioIn applies the In predicate on the "w_ratio" field.
+func WRatioIn(vs ...float64) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldIn(FieldWRatio, vs...))
+}
+
+// WRatioNotIn applies the NotIn predicate on the "w_ratio" field.
+func WRatioNotIn(vs ...float64) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldNotIn(FieldWRatio, vs...))
+}
+
+// WRatioGT applies the GT predicate on the "w_ratio" field.
+func WRatioGT(v float64) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldGT(FieldWRatio, v))
+}
+
+// WRatioGTE applies the GTE predicate on the "w_ratio" field.
+func WRatioGTE(v float64) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldGTE(FieldWRatio, v))
+}
+
+// WRatioLT applies the LT predicate on the "w_ratio" field.
+func WRatioLT(v float64) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldLT(FieldWRatio, v))
+}
+
+// WRatioLTE applies the LTE predicate on the "w_ratio" field.
+func WRatioLTE(v float64) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldLTE(FieldWRatio, v))
+}
+
+// WRatioIsNil applies the IsNil predicate on the "w_ratio" field.
+func WRatioIsNil() predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldIsNull(FieldWRatio))
+}
+
+// WRatioNotNil applies the NotNil predicate on the "w_ratio" field.
+func WRatioNotNil() predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldNotNull(FieldWRatio))
 }
 
 // RepsEQ applies the EQ predicate on the "reps" field.

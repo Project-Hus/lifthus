@@ -17,7 +17,7 @@ type Tag struct {
 func (Tag) Fields() []ent.Field {
 	return []ent.Field{
 		field.Uint64("id").Unique(),
-		field.String("tag").NotEmpty().Annotations(entsql.Annotation{Size: 20}),
+		field.String("name").NotEmpty().Annotations(entsql.Annotation{Size: 20}).Unique(),
 	}
 }
 

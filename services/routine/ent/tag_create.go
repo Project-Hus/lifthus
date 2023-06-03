@@ -21,9 +21,9 @@ type TagCreate struct {
 	hooks    []Hook
 }
 
-// SetTag sets the "tag" field.
-func (tc *TagCreate) SetTag(s string) *TagCreate {
-	tc.mutation.SetTag(s)
+// SetName sets the "name" field.
+func (tc *TagCreate) SetName(s string) *TagCreate {
+	tc.mutation.SetName(s)
 	return tc
 }
 
@@ -97,12 +97,12 @@ func (tc *TagCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (tc *TagCreate) check() error {
-	if _, ok := tc.mutation.Tag(); !ok {
-		return &ValidationError{Name: "tag", err: errors.New(`ent: missing required field "Tag.tag"`)}
+	if _, ok := tc.mutation.Name(); !ok {
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Tag.name"`)}
 	}
-	if v, ok := tc.mutation.Tag(); ok {
-		if err := tag.TagValidator(v); err != nil {
-			return &ValidationError{Name: "tag", err: fmt.Errorf(`ent: validator failed for field "Tag.tag": %w`, err)}
+	if v, ok := tc.mutation.Name(); ok {
+		if err := tag.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Tag.name": %w`, err)}
 		}
 	}
 	return nil
@@ -137,9 +137,9 @@ func (tc *TagCreate) createSpec() (*Tag, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := tc.mutation.Tag(); ok {
-		_spec.SetField(tag.FieldTag, field.TypeString, value)
-		_node.Tag = value
+	if value, ok := tc.mutation.Name(); ok {
+		_spec.SetField(tag.FieldName, field.TypeString, value)
+		_node.Name = value
 	}
 	if nodes := tc.mutation.ActsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

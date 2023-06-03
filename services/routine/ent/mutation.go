@@ -56,6 +56,7 @@ type ActMutation struct {
 	typ                     string
 	id                      *uint64
 	name                    *string
+	code                    *string
 	_type                   *act.Type
 	author                  *uint64
 	addauthor               *int64
@@ -235,6 +236,42 @@ func (m *ActMutation) OldName(ctx context.Context) (v string, err error) {
 // ResetName resets all changes to the "name" field.
 func (m *ActMutation) ResetName() {
 	m.name = nil
+}
+
+// SetCode sets the "code" field.
+func (m *ActMutation) SetCode(s string) {
+	m.code = &s
+}
+
+// Code returns the value of the "code" field in the mutation.
+func (m *ActMutation) Code() (r string, exists bool) {
+	v := m.code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCode returns the old "code" field's value of the Act entity.
+// If the Act object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActMutation) OldCode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCode: %w", err)
+	}
+	return oldValue.Code, nil
+}
+
+// ResetCode resets all changes to the "code" field.
+func (m *ActMutation) ResetCode() {
+	m.code = nil
 }
 
 // SetType sets the "type" field.
@@ -1325,9 +1362,12 @@ func (m *ActMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ActMutation) Fields() []string {
-	fields := make([]string, 0, 23)
+	fields := make([]string, 0, 24)
 	if m.name != nil {
 		fields = append(fields, act.FieldName)
+	}
+	if m.code != nil {
+		fields = append(fields, act.FieldCode)
 	}
 	if m._type != nil {
 		fields = append(fields, act.FieldType)
@@ -1405,6 +1445,8 @@ func (m *ActMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case act.FieldName:
 		return m.Name()
+	case act.FieldCode:
+		return m.Code()
 	case act.FieldType:
 		return m.GetType()
 	case act.FieldAuthor:
@@ -1460,6 +1502,8 @@ func (m *ActMutation) OldField(ctx context.Context, name string) (ent.Value, err
 	switch name {
 	case act.FieldName:
 		return m.OldName(ctx)
+	case act.FieldCode:
+		return m.OldCode(ctx)
 	case act.FieldType:
 		return m.OldType(ctx)
 	case act.FieldAuthor:
@@ -1519,6 +1563,13 @@ func (m *ActMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
+		return nil
+	case act.FieldCode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCode(v)
 		return nil
 	case act.FieldType:
 		v, ok := value.(act.Type)
@@ -1755,6 +1806,9 @@ func (m *ActMutation) ResetField(name string) error {
 	switch name {
 	case act.FieldName:
 		m.ResetName()
+		return nil
+	case act.FieldCode:
+		m.ResetCode()
 		return nil
 	case act.FieldType:
 		m.ResetType()
@@ -5837,6 +5891,7 @@ type ProgramMutation struct {
 	typ                    string
 	id                     *uint64
 	title                  *string
+	code                   *string
 	_type                  *program.Type
 	author                 *uint64
 	addauthor              *int64
@@ -6000,6 +6055,42 @@ func (m *ProgramMutation) OldTitle(ctx context.Context) (v string, err error) {
 // ResetTitle resets all changes to the "title" field.
 func (m *ProgramMutation) ResetTitle() {
 	m.title = nil
+}
+
+// SetCode sets the "code" field.
+func (m *ProgramMutation) SetCode(s string) {
+	m.code = &s
+}
+
+// Code returns the value of the "code" field in the mutation.
+func (m *ProgramMutation) Code() (r string, exists bool) {
+	v := m.code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCode returns the old "code" field's value of the Program entity.
+// If the Program object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProgramMutation) OldCode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCode: %w", err)
+	}
+	return oldValue.Code, nil
+}
+
+// ResetCode resets all changes to the "code" field.
+func (m *ProgramMutation) ResetCode() {
+	m.code = nil
 }
 
 // SetType sets the "type" field.
@@ -6514,9 +6605,12 @@ func (m *ProgramMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ProgramMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.title != nil {
 		fields = append(fields, program.FieldTitle)
+	}
+	if m.code != nil {
+		fields = append(fields, program.FieldCode)
 	}
 	if m._type != nil {
 		fields = append(fields, program.FieldType)
@@ -6546,6 +6640,8 @@ func (m *ProgramMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case program.FieldTitle:
 		return m.Title()
+	case program.FieldCode:
+		return m.Code()
 	case program.FieldType:
 		return m.GetType()
 	case program.FieldAuthor:
@@ -6569,6 +6665,8 @@ func (m *ProgramMutation) OldField(ctx context.Context, name string) (ent.Value,
 	switch name {
 	case program.FieldTitle:
 		return m.OldTitle(ctx)
+	case program.FieldCode:
+		return m.OldCode(ctx)
 	case program.FieldType:
 		return m.OldType(ctx)
 	case program.FieldAuthor:
@@ -6596,6 +6694,13 @@ func (m *ProgramMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTitle(v)
+		return nil
+	case program.FieldCode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCode(v)
 		return nil
 	case program.FieldType:
 		v, ok := value.(program.Type)
@@ -6720,6 +6825,9 @@ func (m *ProgramMutation) ResetField(name string) error {
 	switch name {
 	case program.FieldTitle:
 		m.ResetTitle()
+		return nil
+	case program.FieldCode:
+		m.ResetCode()
 		return nil
 	case program.FieldType:
 		m.ResetType()
@@ -8068,6 +8176,8 @@ type RoutineActMutation struct {
 	id                      *uint64
 	_order                  *int
 	add_order               *int
+	w_ratio                 *float64
+	addw_ratio              *float64
 	reps                    *int
 	addreps                 *int
 	lap                     *int
@@ -8318,6 +8428,76 @@ func (m *RoutineActMutation) AddedOrder() (r int, exists bool) {
 func (m *RoutineActMutation) ResetOrder() {
 	m._order = nil
 	m.add_order = nil
+}
+
+// SetWRatio sets the "w_ratio" field.
+func (m *RoutineActMutation) SetWRatio(f float64) {
+	m.w_ratio = &f
+	m.addw_ratio = nil
+}
+
+// WRatio returns the value of the "w_ratio" field in the mutation.
+func (m *RoutineActMutation) WRatio() (r float64, exists bool) {
+	v := m.w_ratio
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWRatio returns the old "w_ratio" field's value of the RoutineAct entity.
+// If the RoutineAct object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RoutineActMutation) OldWRatio(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWRatio is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWRatio requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWRatio: %w", err)
+	}
+	return oldValue.WRatio, nil
+}
+
+// AddWRatio adds f to the "w_ratio" field.
+func (m *RoutineActMutation) AddWRatio(f float64) {
+	if m.addw_ratio != nil {
+		*m.addw_ratio += f
+	} else {
+		m.addw_ratio = &f
+	}
+}
+
+// AddedWRatio returns the value that was added to the "w_ratio" field in this mutation.
+func (m *RoutineActMutation) AddedWRatio() (r float64, exists bool) {
+	v := m.addw_ratio
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearWRatio clears the value of the "w_ratio" field.
+func (m *RoutineActMutation) ClearWRatio() {
+	m.w_ratio = nil
+	m.addw_ratio = nil
+	m.clearedFields[routineact.FieldWRatio] = struct{}{}
+}
+
+// WRatioCleared returns if the "w_ratio" field was cleared in this mutation.
+func (m *RoutineActMutation) WRatioCleared() bool {
+	_, ok := m.clearedFields[routineact.FieldWRatio]
+	return ok
+}
+
+// ResetWRatio resets all changes to the "w_ratio" field.
+func (m *RoutineActMutation) ResetWRatio() {
+	m.w_ratio = nil
+	m.addw_ratio = nil
+	delete(m.clearedFields, routineact.FieldWRatio)
 }
 
 // SetReps sets the "reps" field.
@@ -8708,7 +8888,7 @@ func (m *RoutineActMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RoutineActMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 9)
 	if m.act != nil {
 		fields = append(fields, routineact.FieldActID)
 	}
@@ -8717,6 +8897,9 @@ func (m *RoutineActMutation) Fields() []string {
 	}
 	if m._order != nil {
 		fields = append(fields, routineact.FieldOrder)
+	}
+	if m.w_ratio != nil {
+		fields = append(fields, routineact.FieldWRatio)
 	}
 	if m.reps != nil {
 		fields = append(fields, routineact.FieldReps)
@@ -8747,6 +8930,8 @@ func (m *RoutineActMutation) Field(name string) (ent.Value, bool) {
 		return m.DailyRoutineID()
 	case routineact.FieldOrder:
 		return m.Order()
+	case routineact.FieldWRatio:
+		return m.WRatio()
 	case routineact.FieldReps:
 		return m.Reps()
 	case routineact.FieldLap:
@@ -8772,6 +8957,8 @@ func (m *RoutineActMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldDailyRoutineID(ctx)
 	case routineact.FieldOrder:
 		return m.OldOrder(ctx)
+	case routineact.FieldWRatio:
+		return m.OldWRatio(ctx)
 	case routineact.FieldReps:
 		return m.OldReps(ctx)
 	case routineact.FieldLap:
@@ -8811,6 +8998,13 @@ func (m *RoutineActMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetOrder(v)
+		return nil
+	case routineact.FieldWRatio:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWRatio(v)
 		return nil
 	case routineact.FieldReps:
 		v, ok := value.(int)
@@ -8858,6 +9052,9 @@ func (m *RoutineActMutation) AddedFields() []string {
 	if m.add_order != nil {
 		fields = append(fields, routineact.FieldOrder)
 	}
+	if m.addw_ratio != nil {
+		fields = append(fields, routineact.FieldWRatio)
+	}
 	if m.addreps != nil {
 		fields = append(fields, routineact.FieldReps)
 	}
@@ -8874,6 +9071,8 @@ func (m *RoutineActMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case routineact.FieldOrder:
 		return m.AddedOrder()
+	case routineact.FieldWRatio:
+		return m.AddedWRatio()
 	case routineact.FieldReps:
 		return m.AddedReps()
 	case routineact.FieldLap:
@@ -8893,6 +9092,13 @@ func (m *RoutineActMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddOrder(v)
+		return nil
+	case routineact.FieldWRatio:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWRatio(v)
 		return nil
 	case routineact.FieldReps:
 		v, ok := value.(int)
@@ -8916,6 +9122,9 @@ func (m *RoutineActMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *RoutineActMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(routineact.FieldWRatio) {
+		fields = append(fields, routineact.FieldWRatio)
+	}
 	if m.FieldCleared(routineact.FieldReps) {
 		fields = append(fields, routineact.FieldReps)
 	}
@@ -8936,6 +9145,9 @@ func (m *RoutineActMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *RoutineActMutation) ClearField(name string) error {
 	switch name {
+	case routineact.FieldWRatio:
+		m.ClearWRatio()
+		return nil
 	case routineact.FieldReps:
 		m.ClearReps()
 		return nil
@@ -8958,6 +9170,9 @@ func (m *RoutineActMutation) ResetField(name string) error {
 		return nil
 	case routineact.FieldOrder:
 		m.ResetOrder()
+		return nil
+	case routineact.FieldWRatio:
+		m.ResetWRatio()
 		return nil
 	case routineact.FieldReps:
 		m.ResetReps()
@@ -10495,7 +10710,7 @@ type TagMutation struct {
 	op              Op
 	typ             string
 	id              *uint64
-	tag             *string
+	name            *string
 	clearedFields   map[string]struct{}
 	acts            map[uint64]struct{}
 	removedacts     map[uint64]struct{}
@@ -10612,40 +10827,40 @@ func (m *TagMutation) IDs(ctx context.Context) ([]uint64, error) {
 	}
 }
 
-// SetTag sets the "tag" field.
-func (m *TagMutation) SetTag(s string) {
-	m.tag = &s
+// SetName sets the "name" field.
+func (m *TagMutation) SetName(s string) {
+	m.name = &s
 }
 
-// Tag returns the value of the "tag" field in the mutation.
-func (m *TagMutation) Tag() (r string, exists bool) {
-	v := m.tag
+// Name returns the value of the "name" field in the mutation.
+func (m *TagMutation) Name() (r string, exists bool) {
+	v := m.name
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldTag returns the old "tag" field's value of the Tag entity.
+// OldName returns the old "name" field's value of the Tag entity.
 // If the Tag object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TagMutation) OldTag(ctx context.Context) (v string, err error) {
+func (m *TagMutation) OldName(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTag is only allowed on UpdateOne operations")
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTag requires an ID field in the mutation")
+		return v, errors.New("OldName requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTag: %w", err)
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
 	}
-	return oldValue.Tag, nil
+	return oldValue.Name, nil
 }
 
-// ResetTag resets all changes to the "tag" field.
-func (m *TagMutation) ResetTag() {
-	m.tag = nil
+// ResetName resets all changes to the "name" field.
+func (m *TagMutation) ResetName() {
+	m.name = nil
 }
 
 // AddActIDs adds the "acts" edge to the Act entity by ids.
@@ -10791,8 +11006,8 @@ func (m *TagMutation) Type() string {
 // AddedFields().
 func (m *TagMutation) Fields() []string {
 	fields := make([]string, 0, 1)
-	if m.tag != nil {
-		fields = append(fields, tag.FieldTag)
+	if m.name != nil {
+		fields = append(fields, tag.FieldName)
 	}
 	return fields
 }
@@ -10802,8 +11017,8 @@ func (m *TagMutation) Fields() []string {
 // schema.
 func (m *TagMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case tag.FieldTag:
-		return m.Tag()
+	case tag.FieldName:
+		return m.Name()
 	}
 	return nil, false
 }
@@ -10813,8 +11028,8 @@ func (m *TagMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *TagMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case tag.FieldTag:
-		return m.OldTag(ctx)
+	case tag.FieldName:
+		return m.OldName(ctx)
 	}
 	return nil, fmt.Errorf("unknown Tag field %s", name)
 }
@@ -10824,12 +11039,12 @@ func (m *TagMutation) OldField(ctx context.Context, name string) (ent.Value, err
 // type.
 func (m *TagMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case tag.FieldTag:
+	case tag.FieldName:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetTag(v)
+		m.SetName(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Tag field %s", name)
@@ -10880,8 +11095,8 @@ func (m *TagMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *TagMutation) ResetField(name string) error {
 	switch name {
-	case tag.FieldTag:
-		m.ResetTag()
+	case tag.FieldName:
+		m.ResetName()
 		return nil
 	}
 	return fmt.Errorf("unknown Tag field %s", name)

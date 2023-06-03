@@ -56,6 +56,33 @@ func (rau *RoutineActUpdate) AddOrder(i int) *RoutineActUpdate {
 	return rau
 }
 
+// SetWRatio sets the "w_ratio" field.
+func (rau *RoutineActUpdate) SetWRatio(f float64) *RoutineActUpdate {
+	rau.mutation.ResetWRatio()
+	rau.mutation.SetWRatio(f)
+	return rau
+}
+
+// SetNillableWRatio sets the "w_ratio" field if the given value is not nil.
+func (rau *RoutineActUpdate) SetNillableWRatio(f *float64) *RoutineActUpdate {
+	if f != nil {
+		rau.SetWRatio(*f)
+	}
+	return rau
+}
+
+// AddWRatio adds f to the "w_ratio" field.
+func (rau *RoutineActUpdate) AddWRatio(f float64) *RoutineActUpdate {
+	rau.mutation.AddWRatio(f)
+	return rau
+}
+
+// ClearWRatio clears the value of the "w_ratio" field.
+func (rau *RoutineActUpdate) ClearWRatio() *RoutineActUpdate {
+	rau.mutation.ClearWRatio()
+	return rau
+}
+
 // SetReps sets the "reps" field.
 func (rau *RoutineActUpdate) SetReps(i int) *RoutineActUpdate {
 	rau.mutation.ResetReps()
@@ -236,6 +263,11 @@ func (rau *RoutineActUpdate) check() error {
 			return &ValidationError{Name: "order", err: fmt.Errorf(`ent: validator failed for field "RoutineAct.order": %w`, err)}
 		}
 	}
+	if v, ok := rau.mutation.WRatio(); ok {
+		if err := routineact.WRatioValidator(v); err != nil {
+			return &ValidationError{Name: "w_ratio", err: fmt.Errorf(`ent: validator failed for field "RoutineAct.w_ratio": %w`, err)}
+		}
+	}
 	if v, ok := rau.mutation.Reps(); ok {
 		if err := routineact.RepsValidator(v); err != nil {
 			return &ValidationError{Name: "reps", err: fmt.Errorf(`ent: validator failed for field "RoutineAct.reps": %w`, err)}
@@ -272,6 +304,15 @@ func (rau *RoutineActUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := rau.mutation.AddedOrder(); ok {
 		_spec.AddField(routineact.FieldOrder, field.TypeInt, value)
+	}
+	if value, ok := rau.mutation.WRatio(); ok {
+		_spec.SetField(routineact.FieldWRatio, field.TypeFloat64, value)
+	}
+	if value, ok := rau.mutation.AddedWRatio(); ok {
+		_spec.AddField(routineact.FieldWRatio, field.TypeFloat64, value)
+	}
+	if rau.mutation.WRatioCleared() {
+		_spec.ClearField(routineact.FieldWRatio, field.TypeFloat64)
 	}
 	if value, ok := rau.mutation.Reps(); ok {
 		_spec.SetField(routineact.FieldReps, field.TypeInt, value)
@@ -442,6 +483,33 @@ func (rauo *RoutineActUpdateOne) SetOrder(i int) *RoutineActUpdateOne {
 // AddOrder adds i to the "order" field.
 func (rauo *RoutineActUpdateOne) AddOrder(i int) *RoutineActUpdateOne {
 	rauo.mutation.AddOrder(i)
+	return rauo
+}
+
+// SetWRatio sets the "w_ratio" field.
+func (rauo *RoutineActUpdateOne) SetWRatio(f float64) *RoutineActUpdateOne {
+	rauo.mutation.ResetWRatio()
+	rauo.mutation.SetWRatio(f)
+	return rauo
+}
+
+// SetNillableWRatio sets the "w_ratio" field if the given value is not nil.
+func (rauo *RoutineActUpdateOne) SetNillableWRatio(f *float64) *RoutineActUpdateOne {
+	if f != nil {
+		rauo.SetWRatio(*f)
+	}
+	return rauo
+}
+
+// AddWRatio adds f to the "w_ratio" field.
+func (rauo *RoutineActUpdateOne) AddWRatio(f float64) *RoutineActUpdateOne {
+	rauo.mutation.AddWRatio(f)
+	return rauo
+}
+
+// ClearWRatio clears the value of the "w_ratio" field.
+func (rauo *RoutineActUpdateOne) ClearWRatio() *RoutineActUpdateOne {
+	rauo.mutation.ClearWRatio()
 	return rauo
 }
 
@@ -638,6 +706,11 @@ func (rauo *RoutineActUpdateOne) check() error {
 			return &ValidationError{Name: "order", err: fmt.Errorf(`ent: validator failed for field "RoutineAct.order": %w`, err)}
 		}
 	}
+	if v, ok := rauo.mutation.WRatio(); ok {
+		if err := routineact.WRatioValidator(v); err != nil {
+			return &ValidationError{Name: "w_ratio", err: fmt.Errorf(`ent: validator failed for field "RoutineAct.w_ratio": %w`, err)}
+		}
+	}
 	if v, ok := rauo.mutation.Reps(); ok {
 		if err := routineact.RepsValidator(v); err != nil {
 			return &ValidationError{Name: "reps", err: fmt.Errorf(`ent: validator failed for field "RoutineAct.reps": %w`, err)}
@@ -691,6 +764,15 @@ func (rauo *RoutineActUpdateOne) sqlSave(ctx context.Context) (_node *RoutineAct
 	}
 	if value, ok := rauo.mutation.AddedOrder(); ok {
 		_spec.AddField(routineact.FieldOrder, field.TypeInt, value)
+	}
+	if value, ok := rauo.mutation.WRatio(); ok {
+		_spec.SetField(routineact.FieldWRatio, field.TypeFloat64, value)
+	}
+	if value, ok := rauo.mutation.AddedWRatio(); ok {
+		_spec.AddField(routineact.FieldWRatio, field.TypeFloat64, value)
+	}
+	if rauo.mutation.WRatioCleared() {
+		_spec.ClearField(routineact.FieldWRatio, field.TypeFloat64)
 	}
 	if value, ok := rauo.mutation.Reps(); ok {
 		_spec.SetField(routineact.FieldReps, field.TypeInt, value)

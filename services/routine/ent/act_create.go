@@ -30,6 +30,20 @@ func (ac *ActCreate) SetName(s string) *ActCreate {
 	return ac
 }
 
+// SetCode sets the "code" field.
+func (ac *ActCreate) SetCode(s string) *ActCreate {
+	ac.mutation.SetCode(s)
+	return ac
+}
+
+// SetNillableCode sets the "code" field if the given value is not nil.
+func (ac *ActCreate) SetNillableCode(s *string) *ActCreate {
+	if s != nil {
+		ac.SetCode(*s)
+	}
+	return ac
+}
+
 // SetType sets the "type" field.
 func (ac *ActCreate) SetType(a act.Type) *ActCreate {
 	ac.mutation.SetType(a)
@@ -423,6 +437,10 @@ func (ac *ActCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (ac *ActCreate) defaults() {
+	if _, ok := ac.mutation.Code(); !ok {
+		v := act.DefaultCode()
+		ac.mutation.SetCode(v)
+	}
 	if _, ok := ac.mutation.CreatedAt(); !ok {
 		v := act.DefaultCreatedAt()
 		ac.mutation.SetCreatedAt(v)
@@ -506,6 +524,9 @@ func (ac *ActCreate) check() error {
 		if err := act.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Act.name": %w`, err)}
 		}
+	}
+	if _, ok := ac.mutation.Code(); !ok {
+		return &ValidationError{Name: "code", err: errors.New(`ent: missing required field "Act.code"`)}
 	}
 	if _, ok := ac.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Act.type"`)}
@@ -607,6 +628,10 @@ func (ac *ActCreate) createSpec() (*Act, *sqlgraph.CreateSpec) {
 	if value, ok := ac.mutation.Name(); ok {
 		_spec.SetField(act.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if value, ok := ac.mutation.Code(); ok {
+		_spec.SetField(act.FieldCode, field.TypeString, value)
+		_node.Code = value
 	}
 	if value, ok := ac.mutation.GetType(); ok {
 		_spec.SetField(act.FieldType, field.TypeEnum, value)

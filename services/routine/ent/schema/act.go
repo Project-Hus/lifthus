@@ -21,7 +21,8 @@ func (Act) Fields() []ent.Field {
 		field.Uint64("id").Unique(), // user id from Hus
 
 		field.String("name").NotEmpty().Annotations(entsql.Annotation{Size: 50}),
-		field.Enum("type").Values("rep", "lap", "simple"),
+		field.String("code").DefaultFunc(randomHex).Unique(),
+		field.Enum("type").Values(actType...),
 
 		field.Uint64("author"),
 		field.String("image").Nillable().Optional(),

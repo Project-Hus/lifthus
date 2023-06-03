@@ -8,7 +8,7 @@ import (
 
 	"log"
 	"os"
-	"routine/api/routine"
+	"routine/api/program"
 	"routine/common/db"
 	"routine/ent"
 
@@ -39,7 +39,7 @@ var dbClient *ent.Client
 // @contact.email lifthus531@gmail.com
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
-// @host auth.lifthus.com
+// @host api.lifthus.com
 // @BasePath /routine
 func main() {
 	// HUS_ENV
@@ -104,12 +104,12 @@ func main() {
 		}
 	})
 
-	routineApiControllerParams := routine.RoutineApiControllerParams{
+	programApiControllerParams := program.ProgramApiControllerParams{
 		DbClient:   dbClient,
 		HttpClient: routineHttpClient,
 	}
 
-	e = routine.NewRoutineApiController(e, routineApiControllerParams)
+	e = program.NewProgramApiController(e, programApiControllerParams)
 
 	// swagger
 	e.GET("/routine/openapi/*", echoSwagger.WrapHandler)

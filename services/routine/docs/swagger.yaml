@@ -1,5 +1,64 @@
 basePath: /routine
-host: auth.lifthus.com
+definitions:
+  dto.CreateWeeklyDailyRoutineDto:
+    properties:
+      day:
+        type: integer
+      week:
+        type: integer
+    type: object
+  dto.CreateWeeklyProgramDto:
+    properties:
+      author:
+        type: integer
+      daily_routines:
+        items:
+          $ref: '#/definitions/dto.CreateWeeklyDailyRoutineDto'
+        type: array
+      description:
+        type: string
+      image:
+        type: string
+      routine_acts:
+        items:
+          $ref: '#/definitions/dto.CreateWeeklyRoutineActDto'
+        type: array
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      weekly_routines:
+        items:
+          $ref: '#/definitions/dto.CreateWeeklyRoutineDto'
+        type: array
+    type: object
+  dto.CreateWeeklyRoutineActDto:
+    properties:
+      act_id:
+        type: integer
+      day:
+        type: integer
+      lap:
+        type: integer
+      order:
+        type: integer
+      reps:
+        type: integer
+      w_ratio:
+        type: number
+      warmup:
+        type: boolean
+      week:
+        type: integer
+    type: object
+  dto.CreateWeeklyRoutineDto:
+    properties:
+      week:
+        type: integer
+    type: object
+host: api.lifthus.com
 info:
   contact:
     email: lifthus531@gmail.com
@@ -12,5 +71,28 @@ info:
   termsOfService: http://swagger.io/terms/
   title: Lifthus routine server
   version: 0.0.0
-paths: {}
+paths:
+  /program/weekly:
+    post:
+      parameters:
+      - description: createWeeklyProgram DTO
+        in: body
+        name: createWeeklyProgramDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateWeeklyProgramDto'
+      responses:
+        "201":
+          description: returns created program's ID
+        "400":
+          description: invalid body
+        "401":
+          description: unauthorized
+        "403":
+          description: forbidden
+        "500":
+          description: failed to create program
+      summary: gets CreateWeeklyProgramDto from body and returns created program
+      tags:
+      - program
 swagger: "2.0"

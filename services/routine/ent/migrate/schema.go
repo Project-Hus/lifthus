@@ -12,6 +12,7 @@ var (
 	ActsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
 		{Name: "name", Type: field.TypeString, Size: 50},
+		{Name: "code", Type: field.TypeString, Unique: true},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"rep", "lap", "simple"}},
 		{Name: "author", Type: field.TypeUint64},
 		{Name: "image", Type: field.TypeString, Nullable: true},
@@ -94,6 +95,13 @@ var (
 				OnDelete:   schema.Cascade,
 			},
 		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "dailyroutine_program_id_weekly_routine_id_day",
+				Unique:  true,
+				Columns: []*schema.Column{DailyRoutinesColumns[4], DailyRoutinesColumns[5], DailyRoutinesColumns[1]},
+			},
+		},
 	}
 	// DailyRoutineRecsColumns holds the columns for the "daily_routine_recs" table.
 	DailyRoutineRecsColumns = []*schema.Column{
@@ -169,6 +177,7 @@ var (
 	ProgramsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
 		{Name: "title", Type: field.TypeString, Size: 50},
+		{Name: "code", Type: field.TypeString, Unique: true},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"weekly", "daily"}},
 		{Name: "author", Type: field.TypeUint64},
 		{Name: "image", Type: field.TypeString, Nullable: true},
@@ -212,6 +221,7 @@ var (
 	RoutineActsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
 		{Name: "order", Type: field.TypeInt},
+		{Name: "w_ratio", Type: field.TypeFloat64, Nullable: true},
 		{Name: "reps", Type: field.TypeInt, Nullable: true},
 		{Name: "lap", Type: field.TypeInt, Nullable: true},
 		{Name: "warmup", Type: field.TypeBool, Default: false},
@@ -228,13 +238,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "routine_acts_acts_routine_acts",
-				Columns:    []*schema.Column{RoutineActsColumns[7]},
+				Columns:    []*schema.Column{RoutineActsColumns[8]},
 				RefColumns: []*schema.Column{ActsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "routine_acts_daily_routines_routine_acts",
-				Columns:    []*schema.Column{RoutineActsColumns[8]},
+				Columns:    []*schema.Column{RoutineActsColumns[9]},
 				RefColumns: []*schema.Column{DailyRoutinesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -286,7 +296,7 @@ var (
 	// TagsColumns holds the columns for the "tags" table.
 	TagsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
-		{Name: "tag", Type: field.TypeString, Size: 20},
+		{Name: "name", Type: field.TypeString, Unique: true, Size: 20},
 	}
 	// TagsTable holds the schema information for the "tags" table.
 	TagsTable = &schema.Table{
@@ -313,6 +323,13 @@ var (
 				Columns:    []*schema.Column{WeeklyRoutinesColumns[4]},
 				RefColumns: []*schema.Column{ProgramsColumns[0]},
 				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "weeklyroutine_program_id_week",
+				Unique:  true,
+				Columns: []*schema.Column{WeeklyRoutinesColumns[4], WeeklyRoutinesColumns[1]},
 			},
 		},
 	}
