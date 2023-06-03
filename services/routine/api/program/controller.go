@@ -17,8 +17,13 @@ type ProgramApiControllerParams struct {
 func NewProgramApiController(programApi *echo.Echo, params ProgramApiControllerParams) *echo.Echo {
 	programApiController := newProgramApiController(params)
 
+	/* PROGRAM */
 	// create program
 	programApi.POST("/routine/program/weekly", programApiController.createWeeklyProgram, guard.UserGuard)
+
+	/* ACT */
+	// create act
+	programApi.POST("/routine/act", programApiController.createAct, guard.UserGuard)
 
 	return programApi
 }
@@ -37,4 +42,6 @@ type programApiController struct {
 // authApis interface defines what auth api has to handle
 type programApis interface {
 	createWeeklyProgram(c echo.Context) error
+
+	createAct(c echo.Context) error
 }

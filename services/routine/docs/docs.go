@@ -25,12 +25,48 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/act": {
+            "post": {
+                "tags": [
+                    "act"
+                ],
+                "summary": "gets CreateActDto from body and returns created act's ID",
+                "parameters": [
+                    {
+                        "description": "createAct DTO",
+                        "name": "createActDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateActDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "returns created act's ID"
+                    },
+                    "400": {
+                        "description": "invalid body"
+                    },
+                    "401": {
+                        "description": "unauthorized"
+                    },
+                    "403": {
+                        "description": "forbidden"
+                    },
+                    "500": {
+                        "description": "failed to create program"
+                    }
+                }
+            }
+        },
         "/program/weekly": {
             "post": {
                 "tags": [
                     "program"
                 ],
-                "summary": "gets CreateWeeklyProgramDto from body and returns created program",
+                "summary": "gets CreateWeeklyProgramDto from body and returns created program's ID",
                 "parameters": [
                     {
                         "description": "createWeeklyProgram DTO",
@@ -63,6 +99,9 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.CreateActDto": {
+            "type": "object"
+        },
         "dto.CreateWeeklyDailyRoutineDto": {
             "type": "object",
             "properties": {

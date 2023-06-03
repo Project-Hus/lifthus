@@ -1,5 +1,7 @@
 basePath: /routine
 definitions:
+  dto.CreateActDto:
+    type: object
   dto.CreateWeeklyDailyRoutineDto:
     properties:
       day:
@@ -72,6 +74,29 @@ info:
   title: Lifthus routine server
   version: 0.0.0
 paths:
+  /act:
+    post:
+      parameters:
+      - description: createAct DTO
+        in: body
+        name: createActDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateActDto'
+      responses:
+        "201":
+          description: returns created act's ID
+        "400":
+          description: invalid body
+        "401":
+          description: unauthorized
+        "403":
+          description: forbidden
+        "500":
+          description: failed to create program
+      summary: gets CreateActDto from body and returns created act's ID
+      tags:
+      - act
   /program/weekly:
     post:
       parameters:
@@ -92,7 +117,8 @@ paths:
           description: forbidden
         "500":
           description: failed to create program
-      summary: gets CreateWeeklyProgramDto from body and returns created program
+      summary: gets CreateWeeklyProgramDto from body and returns created program's
+        ID
       tags:
       - program
 swagger: "2.0"
