@@ -150,9 +150,9 @@ func LowerBack(v bool) predicate.Act {
 	return predicate.Act(sql.FieldEQ(FieldLowerBack, v))
 }
 
-// Legs applies equality check predicate on the "legs" field. It's identical to LegsEQ.
-func Legs(v bool) predicate.Act {
-	return predicate.Act(sql.FieldEQ(FieldLegs, v))
+// Glute applies equality check predicate on the "glute" field. It's identical to GluteEQ.
+func Glute(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldGlute, v))
 }
 
 // LegsFront applies equality check predicate on the "legs_front" field. It's identical to LegsFrontEQ.
@@ -710,14 +710,14 @@ func LowerBackNEQ(v bool) predicate.Act {
 	return predicate.Act(sql.FieldNEQ(FieldLowerBack, v))
 }
 
-// LegsEQ applies the EQ predicate on the "legs" field.
-func LegsEQ(v bool) predicate.Act {
-	return predicate.Act(sql.FieldEQ(FieldLegs, v))
+// GluteEQ applies the EQ predicate on the "glute" field.
+func GluteEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldGlute, v))
 }
 
-// LegsNEQ applies the NEQ predicate on the "legs" field.
-func LegsNEQ(v bool) predicate.Act {
-	return predicate.Act(sql.FieldNEQ(FieldLegs, v))
+// GluteNEQ applies the NEQ predicate on the "glute" field.
+func GluteNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldGlute, v))
 }
 
 // LegsFrontEQ applies the EQ predicate on the "legs_front" field.

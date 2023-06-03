@@ -76,7 +76,7 @@ type ActMutation struct {
 	core                    *bool
 	upper_back              *bool
 	lower_back              *bool
-	legs                    *bool
+	glute                   *bool
 	legs_front              *bool
 	legs_back               *bool
 	etc                     *bool
@@ -968,40 +968,40 @@ func (m *ActMutation) ResetLowerBack() {
 	m.lower_back = nil
 }
 
-// SetLegs sets the "legs" field.
-func (m *ActMutation) SetLegs(b bool) {
-	m.legs = &b
+// SetGlute sets the "glute" field.
+func (m *ActMutation) SetGlute(b bool) {
+	m.glute = &b
 }
 
-// Legs returns the value of the "legs" field in the mutation.
-func (m *ActMutation) Legs() (r bool, exists bool) {
-	v := m.legs
+// Glute returns the value of the "glute" field in the mutation.
+func (m *ActMutation) Glute() (r bool, exists bool) {
+	v := m.glute
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldLegs returns the old "legs" field's value of the Act entity.
+// OldGlute returns the old "glute" field's value of the Act entity.
 // If the Act object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ActMutation) OldLegs(ctx context.Context) (v bool, err error) {
+func (m *ActMutation) OldGlute(ctx context.Context) (v bool, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldLegs is only allowed on UpdateOne operations")
+		return v, errors.New("OldGlute is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldLegs requires an ID field in the mutation")
+		return v, errors.New("OldGlute requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldLegs: %w", err)
+		return v, fmt.Errorf("querying old value for OldGlute: %w", err)
 	}
-	return oldValue.Legs, nil
+	return oldValue.Glute, nil
 }
 
-// ResetLegs resets all changes to the "legs" field.
-func (m *ActMutation) ResetLegs() {
-	m.legs = nil
+// ResetGlute resets all changes to the "glute" field.
+func (m *ActMutation) ResetGlute() {
+	m.glute = nil
 }
 
 // SetLegsFront sets the "legs_front" field.
@@ -1423,8 +1423,8 @@ func (m *ActMutation) Fields() []string {
 	if m.lower_back != nil {
 		fields = append(fields, act.FieldLowerBack)
 	}
-	if m.legs != nil {
-		fields = append(fields, act.FieldLegs)
+	if m.glute != nil {
+		fields = append(fields, act.FieldGlute)
 	}
 	if m.legs_front != nil {
 		fields = append(fields, act.FieldLegsFront)
@@ -1483,8 +1483,8 @@ func (m *ActMutation) Field(name string) (ent.Value, bool) {
 		return m.UpperBack()
 	case act.FieldLowerBack:
 		return m.LowerBack()
-	case act.FieldLegs:
-		return m.Legs()
+	case act.FieldGlute:
+		return m.Glute()
 	case act.FieldLegsFront:
 		return m.LegsFront()
 	case act.FieldLegsBack:
@@ -1540,8 +1540,8 @@ func (m *ActMutation) OldField(ctx context.Context, name string) (ent.Value, err
 		return m.OldUpperBack(ctx)
 	case act.FieldLowerBack:
 		return m.OldLowerBack(ctx)
-	case act.FieldLegs:
-		return m.OldLegs(ctx)
+	case act.FieldGlute:
+		return m.OldGlute(ctx)
 	case act.FieldLegsFront:
 		return m.OldLegsFront(ctx)
 	case act.FieldLegsBack:
@@ -1697,12 +1697,12 @@ func (m *ActMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetLowerBack(v)
 		return nil
-	case act.FieldLegs:
+	case act.FieldGlute:
 		v, ok := value.(bool)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetLegs(v)
+		m.SetGlute(v)
 		return nil
 	case act.FieldLegsFront:
 		v, ok := value.(bool)
@@ -1864,8 +1864,8 @@ func (m *ActMutation) ResetField(name string) error {
 	case act.FieldLowerBack:
 		m.ResetLowerBack()
 		return nil
-	case act.FieldLegs:
-		m.ResetLegs()
+	case act.FieldGlute:
+		m.ResetGlute()
 		return nil
 	case act.FieldLegsFront:
 		m.ResetLegsFront()

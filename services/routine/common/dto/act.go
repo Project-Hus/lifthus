@@ -25,7 +25,7 @@ type CreateActDto struct {
 	Core      bool `json:"core,omitempty"`
 	UpperBack bool `json:"upper_back,omitempty"`
 	LowerBack bool `json:"lower_back,omitempty"`
-	Legs      bool `json:"legs,omitempty"`
+	Glute     bool `json:"glute,omitempty"`
 	LegsFront bool `json:"legs_front,omitempty"`
 	LegsBack  bool `json:"legs_back,omitempty"`
 	Etc       bool `json:"etc,omitempty"`

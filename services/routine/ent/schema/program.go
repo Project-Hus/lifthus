@@ -21,7 +21,7 @@ func (Program) Fields() []ent.Field {
 
 		field.String("title").NotEmpty().Annotations(entsql.Annotation{Size: 50}),
 		field.String("code").DefaultFunc(randomHex).Unique(),
-		field.Enum("type").Values(programType...),
+		field.Enum("type").Values(ProgramType...),
 
 		field.Uint64("author"),
 

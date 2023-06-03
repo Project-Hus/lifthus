@@ -22,7 +22,7 @@ func (Act) Fields() []ent.Field {
 
 		field.String("name").NotEmpty().Annotations(entsql.Annotation{Size: 50}),
 		field.String("code").DefaultFunc(randomHex).Unique(),
-		field.Enum("type").Values(actType...),
+		field.Enum("type").Values(ActType...),
 
 		field.Uint64("author"),
 		field.String("image").Nillable().Optional(),
@@ -48,7 +48,7 @@ func (Act) Fields() []ent.Field {
 		field.Bool("core").Default(false),
 		field.Bool("upper_back").Default(false),
 		field.Bool("lower_back").Default(false),
-		field.Bool("legs").Default(false),
+		field.Bool("glute").Default(false),
 		field.Bool("legs_front").Default(false),
 		field.Bool("legs_back").Default(false),
 		field.Bool("etc").Default(false),
