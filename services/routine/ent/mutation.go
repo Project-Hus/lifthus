@@ -10710,7 +10710,7 @@ type TagMutation struct {
 	op              Op
 	typ             string
 	id              *uint64
-	tag             *string
+	name            *string
 	clearedFields   map[string]struct{}
 	acts            map[uint64]struct{}
 	removedacts     map[uint64]struct{}
@@ -10827,40 +10827,40 @@ func (m *TagMutation) IDs(ctx context.Context) ([]uint64, error) {
 	}
 }
 
-// SetTag sets the "tag" field.
-func (m *TagMutation) SetTag(s string) {
-	m.tag = &s
+// SetName sets the "name" field.
+func (m *TagMutation) SetName(s string) {
+	m.name = &s
 }
 
-// Tag returns the value of the "tag" field in the mutation.
-func (m *TagMutation) Tag() (r string, exists bool) {
-	v := m.tag
+// Name returns the value of the "name" field in the mutation.
+func (m *TagMutation) Name() (r string, exists bool) {
+	v := m.name
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldTag returns the old "tag" field's value of the Tag entity.
+// OldName returns the old "name" field's value of the Tag entity.
 // If the Tag object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TagMutation) OldTag(ctx context.Context) (v string, err error) {
+func (m *TagMutation) OldName(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTag is only allowed on UpdateOne operations")
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTag requires an ID field in the mutation")
+		return v, errors.New("OldName requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTag: %w", err)
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
 	}
-	return oldValue.Tag, nil
+	return oldValue.Name, nil
 }
 
-// ResetTag resets all changes to the "tag" field.
-func (m *TagMutation) ResetTag() {
-	m.tag = nil
+// ResetName resets all changes to the "name" field.
+func (m *TagMutation) ResetName() {
+	m.name = nil
 }
 
 // AddActIDs adds the "acts" edge to the Act entity by ids.
@@ -11006,8 +11006,8 @@ func (m *TagMutation) Type() string {
 // AddedFields().
 func (m *TagMutation) Fields() []string {
 	fields := make([]string, 0, 1)
-	if m.tag != nil {
-		fields = append(fields, tag.FieldTag)
+	if m.name != nil {
+		fields = append(fields, tag.FieldName)
 	}
 	return fields
 }
@@ -11017,8 +11017,8 @@ func (m *TagMutation) Fields() []string {
 // schema.
 func (m *TagMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case tag.FieldTag:
-		return m.Tag()
+	case tag.FieldName:
+		return m.Name()
 	}
 	return nil, false
 }
@@ -11028,8 +11028,8 @@ func (m *TagMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *TagMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case tag.FieldTag:
-		return m.OldTag(ctx)
+	case tag.FieldName:
+		return m.OldName(ctx)
 	}
 	return nil, fmt.Errorf("unknown Tag field %s", name)
 }
@@ -11039,12 +11039,12 @@ func (m *TagMutation) OldField(ctx context.Context, name string) (ent.Value, err
 // type.
 func (m *TagMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case tag.FieldTag:
+	case tag.FieldName:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetTag(v)
+		m.SetName(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Tag field %s", name)
@@ -11095,8 +11095,8 @@ func (m *TagMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *TagMutation) ResetField(name string) error {
 	switch name {
-	case tag.FieldTag:
-		m.ResetTag()
+	case tag.FieldName:
+		m.ResetName()
 		return nil
 	}
 	return fmt.Errorf("unknown Tag field %s", name)

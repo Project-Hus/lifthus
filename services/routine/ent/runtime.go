@@ -267,10 +267,10 @@ func init() {
 	routineactrec.UpdateDefaultUpdatedAt = routineactrecDescUpdatedAt.UpdateDefault.(func() time.Time)
 	tagFields := schema.Tag{}.Fields()
 	_ = tagFields
-	// tagDescTag is the schema descriptor for tag field.
-	tagDescTag := tagFields[1].Descriptor()
-	// tag.TagValidator is a validator for the "tag" field. It is called by the builders before save.
-	tag.TagValidator = tagDescTag.Validators[0].(func(string) error)
+	// tagDescName is the schema descriptor for name field.
+	tagDescName := tagFields[1].Descriptor()
+	// tag.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	tag.NameValidator = tagDescName.Validators[0].(func(string) error)
 	weeklyroutineFields := schema.WeeklyRoutine{}.Fields()
 	_ = weeklyroutineFields
 	// weeklyroutineDescWeek is the schema descriptor for week field.

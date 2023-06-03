@@ -289,7 +289,7 @@ var (
 	// TagsColumns holds the columns for the "tags" table.
 	TagsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
-		{Name: "tag", Type: field.TypeString, Unique: true, Size: 20},
+		{Name: "name", Type: field.TypeString, Unique: true, Size: 20},
 	}
 	// TagsTable holds the schema information for the "tags" table.
 	TagsTable = &schema.Table{

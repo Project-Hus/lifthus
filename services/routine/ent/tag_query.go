@@ -334,12 +334,12 @@ func (tq *TagQuery) WithPrograms(opts ...func(*ProgramQuery)) *TagQuery {
 // Example:
 //
 //	var v []struct {
-//		Tag string `json:"tag,omitempty"`
+//		Name string `json:"name,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Tag.Query().
-//		GroupBy(tag.FieldTag).
+//		GroupBy(tag.FieldName).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (tq *TagQuery) GroupBy(field string, fields ...string) *TagGroupBy {
@@ -357,11 +357,11 @@ func (tq *TagQuery) GroupBy(field string, fields ...string) *TagGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Tag string `json:"tag,omitempty"`
+//		Name string `json:"name,omitempty"`
 //	}
 //
 //	client.Tag.Query().
-//		Select(tag.FieldTag).
+//		Select(tag.FieldName).
 //		Scan(ctx, &v)
 func (tq *TagQuery) Select(fields ...string) *TagSelect {
 	tq.ctx.Fields = append(tq.ctx.Fields, fields...)

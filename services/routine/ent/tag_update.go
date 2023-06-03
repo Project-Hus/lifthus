@@ -29,9 +29,9 @@ func (tu *TagUpdate) Where(ps ...predicate.Tag) *TagUpdate {
 	return tu
 }
 
-// SetTag sets the "tag" field.
-func (tu *TagUpdate) SetTag(s string) *TagUpdate {
-	tu.mutation.SetTag(s)
+// SetName sets the "name" field.
+func (tu *TagUpdate) SetName(s string) *TagUpdate {
+	tu.mutation.SetName(s)
 	return tu
 }
 
@@ -141,9 +141,9 @@ func (tu *TagUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (tu *TagUpdate) check() error {
-	if v, ok := tu.mutation.Tag(); ok {
-		if err := tag.TagValidator(v); err != nil {
-			return &ValidationError{Name: "tag", err: fmt.Errorf(`ent: validator failed for field "Tag.tag": %w`, err)}
+	if v, ok := tu.mutation.Name(); ok {
+		if err := tag.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Tag.name": %w`, err)}
 		}
 	}
 	return nil
@@ -161,8 +161,8 @@ func (tu *TagUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := tu.mutation.Tag(); ok {
-		_spec.SetField(tag.FieldTag, field.TypeString, value)
+	if value, ok := tu.mutation.Name(); ok {
+		_spec.SetField(tag.FieldName, field.TypeString, value)
 	}
 	if tu.mutation.ActsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -274,9 +274,9 @@ type TagUpdateOne struct {
 	mutation *TagMutation
 }
 
-// SetTag sets the "tag" field.
-func (tuo *TagUpdateOne) SetTag(s string) *TagUpdateOne {
-	tuo.mutation.SetTag(s)
+// SetName sets the "name" field.
+func (tuo *TagUpdateOne) SetName(s string) *TagUpdateOne {
+	tuo.mutation.SetName(s)
 	return tuo
 }
 
@@ -399,9 +399,9 @@ func (tuo *TagUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (tuo *TagUpdateOne) check() error {
-	if v, ok := tuo.mutation.Tag(); ok {
-		if err := tag.TagValidator(v); err != nil {
-			return &ValidationError{Name: "tag", err: fmt.Errorf(`ent: validator failed for field "Tag.tag": %w`, err)}
+	if v, ok := tuo.mutation.Name(); ok {
+		if err := tag.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Tag.name": %w`, err)}
 		}
 	}
 	return nil
@@ -436,8 +436,8 @@ func (tuo *TagUpdateOne) sqlSave(ctx context.Context) (_node *Tag, err error) {
 			}
 		}
 	}
-	if value, ok := tuo.mutation.Tag(); ok {
-		_spec.SetField(tag.FieldTag, field.TypeString, value)
+	if value, ok := tuo.mutation.Name(); ok {
+		_spec.SetField(tag.FieldName, field.TypeString, value)
 	}
 	if tuo.mutation.ActsCleared() {
 		edge := &sqlgraph.EdgeSpec{

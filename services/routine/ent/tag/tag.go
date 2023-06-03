@@ -12,8 +12,8 @@ const (
 	Label = "tag"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldTag holds the string denoting the tag field in the database.
-	FieldTag = "tag"
+	// FieldName holds the string denoting the name field in the database.
+	FieldName = "name"
 	// EdgeActs holds the string denoting the acts edge name in mutations.
 	EdgeActs = "acts"
 	// EdgePrograms holds the string denoting the programs edge name in mutations.
@@ -35,7 +35,7 @@ const (
 // Columns holds all SQL columns for tag fields.
 var Columns = []string{
 	FieldID,
-	FieldTag,
+	FieldName,
 }
 
 var (
@@ -58,8 +58,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// TagValidator is a validator for the "tag" field. It is called by the builders before save.
-	TagValidator func(string) error
+	// NameValidator is a validator for the "name" field. It is called by the builders before save.
+	NameValidator func(string) error
 )
 
 // OrderOption defines the ordering options for the Tag queries.
@@ -70,9 +70,9 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByTag orders the results by the tag field.
-func ByTag(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTag, opts...).ToFunc()
+// ByName orders the results by the name field.
+func ByName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
 // ByActsCount orders the results by acts count.
