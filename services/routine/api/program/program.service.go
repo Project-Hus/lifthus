@@ -24,14 +24,15 @@ func (pc programApiController) createWeeklyProgram(c echo.Context) error {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
+	aid := createProgramDto.Author
+	uid := c.Get("uid").(uint64)
+	if aid != uid {
+		return c.String(http.StatusForbidden, "you are not allowed to create program for others")
+	}
+
 	pid, err := db.CreateWeeklyProgram(pc.dbClient, c.Request().Context(), createProgramDto)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
-
-	resp := struct {
-		Pid uint64 `json:"pid"`
-	}{Pid: pid}
-
-	return c.JSON(http.StatusCreated, resp)
+	return c.JSON(http.StatusCreated, pid)
 }

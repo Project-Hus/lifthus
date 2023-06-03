@@ -1,6 +1,12 @@
 package program
 
-import "github.com/labstack/echo/v4"
+import (
+	"net/http"
+	"routine/common/db"
+	"routine/common/dto"
+
+	"github.com/labstack/echo/v4"
+)
 
 // createAct godoc
 // @Router       /act [post]
@@ -13,5 +19,21 @@ import "github.com/labstack/echo/v4"
 // @Failure 	 403 "forbidden"
 // @Failure      500 "failed to create program"
 func (pc programApiController) createAct(c echo.Context) error {
-	return nil
+	createActDto := new(dto.CreateActDto)
+	if err := c.Bind(createActDto); err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	aid := createActDto.Author
+	uid := c.Get("uid").(uint64)
+	if aid != uid {
+		return c.String(http.StatusForbidden, "you are not allowed to create program for others")
+	}
+
+	aid, err := db.CreateAct(pc.dbClient, c.Request().Context(), createActDto)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusCreated, aid)
 }

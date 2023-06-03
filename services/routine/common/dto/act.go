@@ -8,6 +8,8 @@ type CreateActDto struct {
 	Image       *string `json:"image,omitempty"`
 	Description *string `json:"description,omitempty"`
 
+	Tags []string `json:"tags,omitempty"`
+
 	// weight/cardio
 	Weight     bool `json:"weight,omitempty"`
 	Bodyweight bool `json:"bodyweight,omitempty"`

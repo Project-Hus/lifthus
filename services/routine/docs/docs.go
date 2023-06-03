@@ -100,7 +100,75 @@ const docTemplate = `{
     },
     "definitions": {
         "dto.CreateActDto": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "arms": {
+                    "description": "prime movers",
+                    "type": "boolean"
+                },
+                "author": {
+                    "type": "integer"
+                },
+                "bodyweight": {
+                    "type": "boolean"
+                },
+                "cardio": {
+                    "type": "boolean"
+                },
+                "chest": {
+                    "type": "boolean"
+                },
+                "core": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "etc": {
+                    "type": "boolean"
+                },
+                "full": {
+                    "type": "boolean"
+                },
+                "glute": {
+                    "type": "boolean"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "legs_back": {
+                    "type": "boolean"
+                },
+                "legs_front": {
+                    "type": "boolean"
+                },
+                "lower": {
+                    "type": "boolean"
+                },
+                "lower_back": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "shoulders": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "upper": {
+                    "description": "upper/lower/full body",
+                    "type": "boolean"
+                },
+                "upper_back": {
+                    "type": "boolean"
+                },
+                "weight": {
+                    "description": "weight/cardio",
+                    "type": "boolean"
+                }
+            }
         },
         "dto.CreateWeeklyDailyRoutineDto": {
             "type": "object",

@@ -7,7 +7,14 @@ import (
 	"routine/ent/act"
 )
 
-func CreateAct(dbClient *ent.Client, c context.Context, newActDto *dto.CreateActDto) (aid uint, err error) {
+func CreateAct(dbClient *ent.Client, c context.Context, newActDto *dto.CreateActDto) (aid uint64, err error) {
+
+	// first query tags and create tags if not exists
+	tags, err := QueryAndCreateTags(dbClient, c, newActDto.Tags)
+	if err != nil {
+		return 0, err
+	}
+
 	newAct, err := dbClient.Act.Create().
 		SetName(newActDto.Name).
 		SetType(act.Type(newActDto.Type)).
@@ -29,10 +36,11 @@ func CreateAct(dbClient *ent.Client, c context.Context, newActDto *dto.CreateAct
 		SetLegsFront(newActDto.LegsFront).
 		SetLegsBack(newActDto.LegsBack).
 		SetEtc(newActDto.Etc).
+		AddTagIDs(tags...).
 		Save(c)
 	if err != nil {
 		return 0, err
 	}
 
-	return uint(newAct.ID), nil
+	return newAct.ID, nil
 }
