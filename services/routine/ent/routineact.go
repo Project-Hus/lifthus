@@ -25,6 +25,8 @@ type RoutineAct struct {
 	DailyRoutineID uint64 `json:"daily_routine_id,omitempty"`
 	// Order holds the value of the "order" field.
 	Order int `json:"order,omitempty"`
+	// WRatio holds the value of the "w_ratio" field.
+	WRatio *float64 `json:"w_ratio,omitempty"`
 	// Reps holds the value of the "reps" field.
 	Reps *int `json:"reps,omitempty"`
 	// Lap holds the value of the "lap" field.
@@ -96,6 +98,8 @@ func (*RoutineAct) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case routineact.FieldWarmup:
 			values[i] = new(sql.NullBool)
+		case routineact.FieldWRatio:
+			values[i] = new(sql.NullFloat64)
 		case routineact.FieldID, routineact.FieldActID, routineact.FieldDailyRoutineID, routineact.FieldOrder, routineact.FieldReps, routineact.FieldLap:
 			values[i] = new(sql.NullInt64)
 		case routineact.FieldCreatedAt, routineact.FieldUpdatedAt:
@@ -138,6 +142,13 @@ func (ra *RoutineAct) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field order", values[i])
 			} else if value.Valid {
 				ra.Order = int(value.Int64)
+			}
+		case routineact.FieldWRatio:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field w_ratio", values[i])
+			} else if value.Valid {
+				ra.WRatio = new(float64)
+				*ra.WRatio = value.Float64
 			}
 		case routineact.FieldReps:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -230,6 +241,11 @@ func (ra *RoutineAct) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("order=")
 	builder.WriteString(fmt.Sprintf("%v", ra.Order))
+	builder.WriteString(", ")
+	if v := ra.WRatio; v != nil {
+		builder.WriteString("w_ratio=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	if v := ra.Reps; v != nil {
 		builder.WriteString("reps=")

@@ -38,6 +38,20 @@ func (pu *ProgramUpdate) SetTitle(s string) *ProgramUpdate {
 	return pu
 }
 
+// SetCode sets the "code" field.
+func (pu *ProgramUpdate) SetCode(s string) *ProgramUpdate {
+	pu.mutation.SetCode(s)
+	return pu
+}
+
+// SetNillableCode sets the "code" field if the given value is not nil.
+func (pu *ProgramUpdate) SetNillableCode(s *string) *ProgramUpdate {
+	if s != nil {
+		pu.SetCode(*s)
+	}
+	return pu
+}
+
 // SetType sets the "type" field.
 func (pu *ProgramUpdate) SetType(pr program.Type) *ProgramUpdate {
 	pu.mutation.SetType(pr)
@@ -318,6 +332,9 @@ func (pu *ProgramUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := pu.mutation.Title(); ok {
 		_spec.SetField(program.FieldTitle, field.TypeString, value)
 	}
+	if value, ok := pu.mutation.Code(); ok {
+		_spec.SetField(program.FieldCode, field.TypeString, value)
+	}
 	if value, ok := pu.mutation.GetType(); ok {
 		_spec.SetField(program.FieldType, field.TypeEnum, value)
 	}
@@ -545,6 +562,20 @@ type ProgramUpdateOne struct {
 // SetTitle sets the "title" field.
 func (puo *ProgramUpdateOne) SetTitle(s string) *ProgramUpdateOne {
 	puo.mutation.SetTitle(s)
+	return puo
+}
+
+// SetCode sets the "code" field.
+func (puo *ProgramUpdateOne) SetCode(s string) *ProgramUpdateOne {
+	puo.mutation.SetCode(s)
+	return puo
+}
+
+// SetNillableCode sets the "code" field if the given value is not nil.
+func (puo *ProgramUpdateOne) SetNillableCode(s *string) *ProgramUpdateOne {
+	if s != nil {
+		puo.SetCode(*s)
+	}
 	return puo
 }
 
@@ -857,6 +888,9 @@ func (puo *ProgramUpdateOne) sqlSave(ctx context.Context) (_node *Program, err e
 	}
 	if value, ok := puo.mutation.Title(); ok {
 		_spec.SetField(program.FieldTitle, field.TypeString, value)
+	}
+	if value, ok := puo.mutation.Code(); ok {
+		_spec.SetField(program.FieldCode, field.TypeString, value)
 	}
 	if value, ok := puo.mutation.GetType(); ok {
 		_spec.SetField(program.FieldType, field.TypeEnum, value)

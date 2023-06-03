@@ -1,6 +1,7 @@
 package program
 
 import (
+	"lifthus-auth/common/guard"
 	"net/http"
 	"routine/ent"
 
@@ -16,13 +17,8 @@ type ProgramApiControllerParams struct {
 func NewProgramApiController(programApi *echo.Echo, params ProgramApiControllerParams) *echo.Echo {
 	programApiController := newProgramApiController(params)
 
-	programApi.GET("/routine/program/:program-slug", func(c echo.Context) error {
-		return nil
-	})
-	programApi.GET("/routine/programs/title/:title", func(c echo.Context) error {
-		return nil
-	})
-	programApi.POST("/routine/program", programApiController.createProgram)
+	// create program
+	programApi.POST("/routine/program/weekly", programApiController.createWeeklyProgram, guard.UserGuard)
 
 	return programApi
 }
@@ -40,5 +36,5 @@ type programApiController struct {
 
 // authApis interface defines what auth api has to handle
 type programApis interface {
-	createProgram(c echo.Context) error
+	createWeeklyProgram(c echo.Context) error
 }

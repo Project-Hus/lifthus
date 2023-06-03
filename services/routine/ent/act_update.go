@@ -38,6 +38,20 @@ func (au *ActUpdate) SetName(s string) *ActUpdate {
 	return au
 }
 
+// SetCode sets the "code" field.
+func (au *ActUpdate) SetCode(s string) *ActUpdate {
+	au.mutation.SetCode(s)
+	return au
+}
+
+// SetNillableCode sets the "code" field if the given value is not nil.
+func (au *ActUpdate) SetNillableCode(s *string) *ActUpdate {
+	if s != nil {
+		au.SetCode(*s)
+	}
+	return au
+}
+
 // SetType sets the "type" field.
 func (au *ActUpdate) SetType(a act.Type) *ActUpdate {
 	au.mutation.SetType(a)
@@ -542,6 +556,9 @@ func (au *ActUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := au.mutation.Name(); ok {
 		_spec.SetField(act.FieldName, field.TypeString, value)
 	}
+	if value, ok := au.mutation.Code(); ok {
+		_spec.SetField(act.FieldCode, field.TypeString, value)
+	}
 	if value, ok := au.mutation.GetType(); ok {
 		_spec.SetField(act.FieldType, field.TypeEnum, value)
 	}
@@ -817,6 +834,20 @@ type ActUpdateOne struct {
 // SetName sets the "name" field.
 func (auo *ActUpdateOne) SetName(s string) *ActUpdateOne {
 	auo.mutation.SetName(s)
+	return auo
+}
+
+// SetCode sets the "code" field.
+func (auo *ActUpdateOne) SetCode(s string) *ActUpdateOne {
+	auo.mutation.SetCode(s)
+	return auo
+}
+
+// SetNillableCode sets the "code" field if the given value is not nil.
+func (auo *ActUpdateOne) SetNillableCode(s *string) *ActUpdateOne {
+	if s != nil {
+		auo.SetCode(*s)
+	}
 	return auo
 }
 
@@ -1353,6 +1384,9 @@ func (auo *ActUpdateOne) sqlSave(ctx context.Context) (_node *Act, err error) {
 	}
 	if value, ok := auo.mutation.Name(); ok {
 		_spec.SetField(act.FieldName, field.TypeString, value)
+	}
+	if value, ok := auo.mutation.Code(); ok {
+		_spec.SetField(act.FieldCode, field.TypeString, value)
 	}
 	if value, ok := auo.mutation.GetType(); ok {
 		_spec.SetField(act.FieldType, field.TypeEnum, value)

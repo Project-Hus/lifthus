@@ -22,6 +22,7 @@ func (RoutineAct) Fields() []ent.Field {
 		field.Uint64("daily_routine_id"),
 
 		field.Int("order").Min(1),
+		field.Float("w_ratio").Min(0).Max(1).Nillable().Optional(),
 		field.Int("reps").Min(1).Nillable().Optional(),
 		field.Int("lap").Min(1).Nillable().Optional(),
 		field.Bool("warmup").Default(false),

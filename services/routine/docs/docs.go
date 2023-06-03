@@ -24,13 +24,152 @@ const docTemplate = `{
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
-    "paths": {}
+    "paths": {
+        "/routine/program": {
+            "post": {
+                "tags": [
+                    "program"
+                ],
+                "summary": "gets CreateProgramDto from body and returns created program",
+                "parameters": [
+                    {
+                        "description": "create program dto",
+                        "name": "createProgramDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateProgramDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "returns created program"
+                    },
+                    "400": {
+                        "description": "invalid body"
+                    },
+                    "401": {
+                        "description": "unauthorized"
+                    },
+                    "403": {
+                        "description": "forbidden"
+                    },
+                    "500": {
+                        "description": "failed to create program"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "dto.CreateDailyRoutineDto": {
+            "type": "object",
+            "properties": {
+                "day": {
+                    "type": "integer"
+                },
+                "weekly_routine_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.CreateProgramDto": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "type": "integer"
+                },
+                "daily_routines": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CreateDailyRoutineDto"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "routine_acts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CreateRoutineActDto"
+                    }
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/program.Type"
+                },
+                "weekly_routines": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CreateWeeklyRoutineDto"
+                    }
+                }
+            }
+        },
+        "dto.CreateRoutineActDto": {
+            "type": "object",
+            "properties": {
+                "act_id": {
+                    "type": "integer"
+                },
+                "daily_routine_id": {
+                    "type": "integer"
+                },
+                "lap": {
+                    "type": "integer"
+                },
+                "order": {
+                    "type": "integer"
+                },
+                "reps": {
+                    "type": "integer"
+                },
+                "warmup": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "dto.CreateWeeklyRoutineDto": {
+            "type": "object",
+            "properties": {
+                "program_id": {
+                    "type": "integer"
+                },
+                "week": {
+                    "type": "integer"
+                }
+            }
+        },
+        "program.Type": {
+            "type": "string",
+            "enum": [
+                "weekly",
+                "daily"
+            ],
+            "x-enum-varnames": [
+                "TypeWeekly",
+                "TypeDaily"
+            ]
+        }
+    }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "0.0.0",
-	Host:             "auth.lifthus.com",
+	Host:             "api.lifthus.com",
 	BasePath:         "/routine",
 	Schemes:          []string{},
 	Title:            "Lifthus routine server",

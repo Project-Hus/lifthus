@@ -41,6 +41,20 @@ func (rac *RoutineActCreate) SetOrder(i int) *RoutineActCreate {
 	return rac
 }
 
+// SetWRatio sets the "w_ratio" field.
+func (rac *RoutineActCreate) SetWRatio(f float64) *RoutineActCreate {
+	rac.mutation.SetWRatio(f)
+	return rac
+}
+
+// SetNillableWRatio sets the "w_ratio" field if the given value is not nil.
+func (rac *RoutineActCreate) SetNillableWRatio(f *float64) *RoutineActCreate {
+	if f != nil {
+		rac.SetWRatio(*f)
+	}
+	return rac
+}
+
 // SetReps sets the "reps" field.
 func (rac *RoutineActCreate) SetReps(i int) *RoutineActCreate {
 	rac.mutation.SetReps(i)
@@ -207,6 +221,11 @@ func (rac *RoutineActCreate) check() error {
 			return &ValidationError{Name: "order", err: fmt.Errorf(`ent: validator failed for field "RoutineAct.order": %w`, err)}
 		}
 	}
+	if v, ok := rac.mutation.WRatio(); ok {
+		if err := routineact.WRatioValidator(v); err != nil {
+			return &ValidationError{Name: "w_ratio", err: fmt.Errorf(`ent: validator failed for field "RoutineAct.w_ratio": %w`, err)}
+		}
+	}
 	if v, ok := rac.mutation.Reps(); ok {
 		if err := routineact.RepsValidator(v); err != nil {
 			return &ValidationError{Name: "reps", err: fmt.Errorf(`ent: validator failed for field "RoutineAct.reps": %w`, err)}
@@ -267,6 +286,10 @@ func (rac *RoutineActCreate) createSpec() (*RoutineAct, *sqlgraph.CreateSpec) {
 	if value, ok := rac.mutation.Order(); ok {
 		_spec.SetField(routineact.FieldOrder, field.TypeInt, value)
 		_node.Order = value
+	}
+	if value, ok := rac.mutation.WRatio(); ok {
+		_spec.SetField(routineact.FieldWRatio, field.TypeFloat64, value)
+		_node.WRatio = &value
 	}
 	if value, ok := rac.mutation.Reps(); ok {
 		_spec.SetField(routineact.FieldReps, field.TypeInt, value)

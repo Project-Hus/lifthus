@@ -30,6 +30,20 @@ func (pc *ProgramCreate) SetTitle(s string) *ProgramCreate {
 	return pc
 }
 
+// SetCode sets the "code" field.
+func (pc *ProgramCreate) SetCode(s string) *ProgramCreate {
+	pc.mutation.SetCode(s)
+	return pc
+}
+
+// SetNillableCode sets the "code" field if the given value is not nil.
+func (pc *ProgramCreate) SetNillableCode(s *string) *ProgramCreate {
+	if s != nil {
+		pc.SetCode(*s)
+	}
+	return pc
+}
+
 // SetType sets the "type" field.
 func (pc *ProgramCreate) SetType(pr program.Type) *ProgramCreate {
 	pc.mutation.SetType(pr)
@@ -199,6 +213,10 @@ func (pc *ProgramCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (pc *ProgramCreate) defaults() {
+	if _, ok := pc.mutation.Code(); !ok {
+		v := program.DefaultCode()
+		pc.mutation.SetCode(v)
+	}
 	if _, ok := pc.mutation.CreatedAt(); !ok {
 		v := program.DefaultCreatedAt()
 		pc.mutation.SetCreatedAt(v)
@@ -218,6 +236,9 @@ func (pc *ProgramCreate) check() error {
 		if err := program.TitleValidator(v); err != nil {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Program.title": %w`, err)}
 		}
+	}
+	if _, ok := pc.mutation.Code(); !ok {
+		return &ValidationError{Name: "code", err: errors.New(`ent: missing required field "Program.code"`)}
 	}
 	if _, ok := pc.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Program.type"`)}
@@ -271,6 +292,10 @@ func (pc *ProgramCreate) createSpec() (*Program, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.Title(); ok {
 		_spec.SetField(program.FieldTitle, field.TypeString, value)
 		_node.Title = value
+	}
+	if value, ok := pc.mutation.Code(); ok {
+		_spec.SetField(program.FieldCode, field.TypeString, value)
+		_node.Code = value
 	}
 	if value, ok := pc.mutation.GetType(); ok {
 		_spec.SetField(program.FieldType, field.TypeEnum, value)
