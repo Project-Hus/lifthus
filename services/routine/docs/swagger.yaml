@@ -37,6 +37,10 @@ definitions:
         type: string
       shoulders:
         type: boolean
+      tags:
+        items:
+          type: string
+        type: array
       type:
         type: string
       upper:
