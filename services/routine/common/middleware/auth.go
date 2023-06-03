@@ -38,7 +38,7 @@ func UidSetter() echo.MiddlewareFunc {
 				return c.String(http.StatusInternalServerError, err.Error())
 			}
 			if uid != nil {
-				c.Set("uid", uid)
+				c.Set("uid", *uid)
 			}
 			return next(c)
 		}

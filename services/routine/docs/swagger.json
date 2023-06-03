@@ -18,7 +18,7 @@
     "host": "api.lifthus.com",
     "basePath": "/routine",
     "paths": {
-        "/routine/program/weekly": {
+        "/program/weekly": {
             "post": {
                 "tags": [
                     "program"
@@ -27,7 +27,7 @@
                 "parameters": [
                     {
                         "description": "createWeeklyProgram DTO",
-                        "name": "createWeeklyProgramDtoa",
+                        "name": "createWeeklyProgramDto",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -37,7 +37,7 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "returns created program"
+                        "description": "returns created program's ID"
                     },
                     "400": {
                         "description": "invalid body"

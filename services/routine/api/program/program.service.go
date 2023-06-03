@@ -9,7 +9,7 @@ import (
 )
 
 // createWeeklyProgram godoc
-// @Router       /routine/program/weekly [post]
+// @Router       /program/weekly [post]
 // @Param createWeeklyProgramDto body dto.CreateWeeklyProgramDto true "createWeeklyProgram DTO"
 // @Summary      gets CreateWeeklyProgramDto from body and returns created program
 // @Tags         program

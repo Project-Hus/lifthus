@@ -14,16 +14,17 @@ func CreateDailyProgram(dbClient *ent.Client, c context.Context, p interface{}) 
 
 // CreateWeeklyProgram creates weekly program and returns created program's ID.
 func CreateWeeklyProgram(dbClient *ent.Client, c context.Context, p *dto.CreateWeeklyProgramDto) (pid uint64, err error) {
-	// first query tags and create tags if not exists
-	tags, err := QueryAndCreateTags(dbClient, c, p.Tags)
-	if err != nil {
-		return 0, err
-	}
 
 	// to conduct atomic operation, use transaction
 	tx, err := dbClient.Tx(c)
 	if err != nil {
 		return 0, fmt.Errorf("failed to create transaction: %w", err)
+	}
+
+	// first query tags and create tags if not exists
+	tags, err := QueryAndCreateTags(tx.Client(), c, p.Tags)
+	if err != nil {
+		return 0, rollback(tx, fmt.Errorf("failed to query and create tags: %w", err))
 	}
 
 	// not to query db again, get each index first
@@ -94,6 +95,8 @@ func CreateWeeklyProgram(dbClient *ent.Client, c context.Context, p *dto.CreateW
 	if err != nil {
 		return 0, rollback(tx, fmt.Errorf("failed to create routine acts: %w", err))
 	}
+
+	tx.Commit()
 
 	return newProgram.ID, nil
 }

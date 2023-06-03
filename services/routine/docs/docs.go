@@ -25,7 +25,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/routine/program/weekly": {
+        "/program/weekly": {
             "post": {
                 "tags": [
                     "program"
@@ -34,7 +34,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "createWeeklyProgram DTO",
-                        "name": "createWeeklyProgramDtoa",
+                        "name": "createWeeklyProgramDto",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -44,7 +44,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "returns created program"
+                        "description": "returns created program's ID"
                     },
                     "400": {
                         "description": "invalid body"

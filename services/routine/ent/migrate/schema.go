@@ -95,6 +95,13 @@ var (
 				OnDelete:   schema.Cascade,
 			},
 		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "dailyroutine_program_id_weekly_routine_id_day",
+				Unique:  true,
+				Columns: []*schema.Column{DailyRoutinesColumns[4], DailyRoutinesColumns[5], DailyRoutinesColumns[1]},
+			},
+		},
 	}
 	// DailyRoutineRecsColumns holds the columns for the "daily_routine_recs" table.
 	DailyRoutineRecsColumns = []*schema.Column{
@@ -316,6 +323,13 @@ var (
 				Columns:    []*schema.Column{WeeklyRoutinesColumns[4]},
 				RefColumns: []*schema.Column{ProgramsColumns[0]},
 				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "weeklyroutine_program_id_week",
+				Unique:  true,
+				Columns: []*schema.Column{WeeklyRoutinesColumns[4], WeeklyRoutinesColumns[1]},
 			},
 		},
 	}

@@ -72,18 +72,18 @@ info:
   title: Lifthus routine server
   version: 0.0.0
 paths:
-  /routine/program/weekly:
+  /program/weekly:
     post:
       parameters:
       - description: createWeeklyProgram DTO
         in: body
-        name: createWeeklyProgramDtoa
+        name: createWeeklyProgramDto
         required: true
         schema:
           $ref: '#/definitions/dto.CreateWeeklyProgramDto'
       responses:
         "201":
-          description: returns created program
+          description: returns created program's ID
         "400":
           description: invalid body
         "401":
