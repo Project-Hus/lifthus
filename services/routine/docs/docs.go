@@ -193,6 +193,42 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/rec/program/weekly": {
+            "post": {
+                "tags": [
+                    "rec"
+                ],
+                "summary": "gets CreateWeeklyProgramRecDto from body and returns created rec's ID",
+                "parameters": [
+                    {
+                        "description": "createWeeklyProgramRec DTO",
+                        "name": "createWeeklyProgramRecDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateWeeklyProgramRecDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "returns created rec's ID"
+                    },
+                    "400": {
+                        "description": "invalid body"
+                    },
+                    "401": {
+                        "description": "unauthorized"
+                    },
+                    "403": {
+                        "description": "forbidden"
+                    },
+                    "500": {
+                        "description": "failed to create rec"
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -284,6 +320,23 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateWeeklyDailyRoutineRecDto": {
+            "type": "object",
+            "properties": {
+                "daily_routine_id": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "routine_act_recs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CreateWeeklyRoutineActRecDto"
+                    }
+                }
+            }
+        },
         "dto.CreateWeeklyProgramDto": {
             "type": "object",
             "properties": {
@@ -325,6 +378,32 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateWeeklyProgramRecDto": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "type": "integer"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "end_date": {
+                    "type": "string"
+                },
+                "program_id": {
+                    "type": "integer"
+                },
+                "start_date": {
+                    "type": "string"
+                },
+                "weekly_routine_recs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CreateWeeklyRoutineRecDto"
+                    }
+                }
+            }
+        },
         "dto.CreateWeeklyRoutineActDto": {
             "type": "object",
             "properties": {
@@ -354,10 +433,53 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateWeeklyRoutineActRecDto": {
+            "type": "object",
+            "properties": {
+                "act_id": {
+                    "type": "integer"
+                },
+                "daily_routine_rec_id": {
+                    "type": "integer"
+                },
+                "lap": {
+                    "type": "integer"
+                },
+                "order": {
+                    "type": "integer"
+                },
+                "reps": {
+                    "type": "integer"
+                },
+                "routine_act_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.CreateWeeklyRoutineDto": {
             "type": "object",
             "properties": {
                 "week": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.CreateWeeklyRoutineRecDto": {
+            "type": "object",
+            "properties": {
+                "daily_routine_recs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CreateWeeklyDailyRoutineRecDto"
+                    }
+                },
+                "start_date": {
+                    "type": "string"
+                },
+                "week": {
+                    "type": "integer"
+                },
+                "weekly_routine_id": {
                     "type": "integer"
                 }
             }

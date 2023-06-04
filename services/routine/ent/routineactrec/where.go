@@ -95,6 +95,11 @@ func CurrentLap(v int) predicate.RoutineActRec {
 	return predicate.RoutineActRec(sql.FieldEQ(FieldCurrentLap, v))
 }
 
+// StartedAt applies equality check predicate on the "started_at" field. It's identical to StartedAtEQ.
+func StartedAt(v time.Time) predicate.RoutineActRec {
+	return predicate.RoutineActRec(sql.FieldEQ(FieldStartedAt, v))
+}
+
 // Image applies equality check predicate on the "image" field. It's identical to ImageEQ.
 func Image(v string) predicate.RoutineActRec {
 	return predicate.RoutineActRec(sql.FieldEQ(FieldImage, v))
@@ -403,6 +408,56 @@ func CurrentLapLT(v int) predicate.RoutineActRec {
 // CurrentLapLTE applies the LTE predicate on the "current_lap" field.
 func CurrentLapLTE(v int) predicate.RoutineActRec {
 	return predicate.RoutineActRec(sql.FieldLTE(FieldCurrentLap, v))
+}
+
+// StartedAtEQ applies the EQ predicate on the "started_at" field.
+func StartedAtEQ(v time.Time) predicate.RoutineActRec {
+	return predicate.RoutineActRec(sql.FieldEQ(FieldStartedAt, v))
+}
+
+// StartedAtNEQ applies the NEQ predicate on the "started_at" field.
+func StartedAtNEQ(v time.Time) predicate.RoutineActRec {
+	return predicate.RoutineActRec(sql.FieldNEQ(FieldStartedAt, v))
+}
+
+// StartedAtIn applies the In predicate on the "started_at" field.
+func StartedAtIn(vs ...time.Time) predicate.RoutineActRec {
+	return predicate.RoutineActRec(sql.FieldIn(FieldStartedAt, vs...))
+}
+
+// StartedAtNotIn applies the NotIn predicate on the "started_at" field.
+func StartedAtNotIn(vs ...time.Time) predicate.RoutineActRec {
+	return predicate.RoutineActRec(sql.FieldNotIn(FieldStartedAt, vs...))
+}
+
+// StartedAtGT applies the GT predicate on the "started_at" field.
+func StartedAtGT(v time.Time) predicate.RoutineActRec {
+	return predicate.RoutineActRec(sql.FieldGT(FieldStartedAt, v))
+}
+
+// StartedAtGTE applies the GTE predicate on the "started_at" field.
+func StartedAtGTE(v time.Time) predicate.RoutineActRec {
+	return predicate.RoutineActRec(sql.FieldGTE(FieldStartedAt, v))
+}
+
+// StartedAtLT applies the LT predicate on the "started_at" field.
+func StartedAtLT(v time.Time) predicate.RoutineActRec {
+	return predicate.RoutineActRec(sql.FieldLT(FieldStartedAt, v))
+}
+
+// StartedAtLTE applies the LTE predicate on the "started_at" field.
+func StartedAtLTE(v time.Time) predicate.RoutineActRec {
+	return predicate.RoutineActRec(sql.FieldLTE(FieldStartedAt, v))
+}
+
+// StartedAtIsNil applies the IsNil predicate on the "started_at" field.
+func StartedAtIsNil() predicate.RoutineActRec {
+	return predicate.RoutineActRec(sql.FieldIsNull(FieldStartedAt))
+}
+
+// StartedAtNotNil applies the NotNil predicate on the "started_at" field.
+func StartedAtNotNil() predicate.RoutineActRec {
+	return predicate.RoutineActRec(sql.FieldNotNull(FieldStartedAt))
 }
 
 // ImageEQ applies the EQ predicate on the "image" field.

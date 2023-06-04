@@ -27,6 +27,8 @@ func (RoutineActRec) Fields() []ent.Field {
 		field.Int("lap").Min(1).Nillable().Optional(),
 		field.Int("current_reps").Min(0).Default(0),
 		field.Int("current_lap").Min(0).Default(0),
+		field.Time("started_at").Nillable().Optional(),
+
 		field.String("image").Nillable().Optional(),
 		field.String("comment").Nillable().Optional(),
 

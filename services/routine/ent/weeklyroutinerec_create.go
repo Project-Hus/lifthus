@@ -35,6 +35,12 @@ func (wrrc *WeeklyRoutineRecCreate) SetWeeklyRoutineID(u uint64) *WeeklyRoutineR
 	return wrrc
 }
 
+// SetWeek sets the "week" field.
+func (wrrc *WeeklyRoutineRecCreate) SetWeek(i int) *WeeklyRoutineRecCreate {
+	wrrc.mutation.SetWeek(i)
+	return wrrc
+}
+
 // SetStartDate sets the "start_date" field.
 func (wrrc *WeeklyRoutineRecCreate) SetStartDate(t time.Time) *WeeklyRoutineRecCreate {
 	wrrc.mutation.SetStartDate(t)
@@ -153,6 +159,9 @@ func (wrrc *WeeklyRoutineRecCreate) check() error {
 	if _, ok := wrrc.mutation.WeeklyRoutineID(); !ok {
 		return &ValidationError{Name: "weekly_routine_id", err: errors.New(`ent: missing required field "WeeklyRoutineRec.weekly_routine_id"`)}
 	}
+	if _, ok := wrrc.mutation.Week(); !ok {
+		return &ValidationError{Name: "week", err: errors.New(`ent: missing required field "WeeklyRoutineRec.week"`)}
+	}
 	if _, ok := wrrc.mutation.StartDate(); !ok {
 		return &ValidationError{Name: "start_date", err: errors.New(`ent: missing required field "WeeklyRoutineRec.start_date"`)}
 	}
@@ -199,6 +208,10 @@ func (wrrc *WeeklyRoutineRecCreate) createSpec() (*WeeklyRoutineRec, *sqlgraph.C
 	if id, ok := wrrc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
+	}
+	if value, ok := wrrc.mutation.Week(); ok {
+		_spec.SetField(weeklyroutinerec.FieldWeek, field.TypeInt, value)
+		_node.Week = value
 	}
 	if value, ok := wrrc.mutation.StartDate(); ok {
 		_spec.SetField(weeklyroutinerec.FieldStartDate, field.TypeTime, value)
