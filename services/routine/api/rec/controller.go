@@ -1,46 +1,41 @@
 package rec
 
 import (
+	"lifthus-auth/common/guard"
 	"net/http"
 	"routine/ent"
 
 	"github.com/labstack/echo/v4"
 )
 
-type ProgramApiControllerParams struct {
+type RecApiControllerParams struct {
 	DbClient   *ent.Client
 	HttpClient *http.Client
 }
 
-// NewProgramApiController returns Echo instance comprising of program api routes to main.
-func NewProgramApiController(programApi *echo.Echo, params ProgramApiControllerParams) *echo.Echo {
-	programApiController := newProgramApiController(params)
+// NewRecApiController returns Echo instance comprising of rec api routes to main.
+func NewRecApiController(recApi *echo.Echo, params RecApiControllerParams) *echo.Echo {
+	recApiController := newRecApiController(params)
 
-	// return specific program
-	programApi.GET("/routine/program/:program-slug", func(c echo.Context) error {
-		return nil
-	})
-	// return
-	programApi.GET("/routine/programs/title/:title", func(c echo.Context) error {
-		return nil
-	})
-	programApi.POST("/routine/program", programApiController.createProgram)
+	/* REC */
+	// create program rec
+	recApi.POST("/routine/rec/program", recApiController.createProgramRec, guard.UserGuard)
 
-	return programApi
+	return recApi
 }
 
 // newAuthApiController returns a new authApiController that implements every auth api features.
-func newProgramApiController(params ProgramApiControllerParams) programApis {
-	return &programApiController{dbClient: params.DbClient, httpClient: params.HttpClient}
+func newRecApiController(params RecApiControllerParams) recApis {
+	return &recApiController{dbClient: params.DbClient, httpClient: params.HttpClient}
 }
 
 // authApiController defines what auth api has to have and implements authApis interface at service file.
-type programApiController struct {
+type recApiController struct {
 	dbClient   *ent.Client
 	httpClient *http.Client
 }
 
 // authApis interface defines what auth api has to handle
-type programApis interface {
-	createProgram(c echo.Context) error
+type recApis interface {
+	createProgramRec(c echo.Context) error
 }
