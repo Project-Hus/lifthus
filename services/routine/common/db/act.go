@@ -7,6 +7,22 @@ import (
 	"routine/ent/act"
 )
 
+// QueryActsByName queries acts by name and returns 5 acts skipping given number of acts
+func QueryActsByName(dbClient *ent.Client, c context.Context, name string, skip int) (acts []*ent.Act, err error) {
+	acts, err = dbClient.Act.Query().
+		Where(act.NameContains(name)).
+		Offset(skip).
+		Limit(5).
+		All(c)
+	if ent.IsNotFound(err) {
+		acts = []*ent.Act{}
+	} else if err != nil {
+		return nil, err
+	}
+	return acts, nil
+}
+
+// CreateAct creates act and returns created act's ID
 func CreateAct(dbClient *ent.Client, c context.Context, newActDto *dto.CreateActDto) (aid uint64, err error) {
 
 	// first query tags and create tags if not exists

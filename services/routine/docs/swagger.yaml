@@ -125,6 +125,27 @@ info:
   version: 0.0.0
 paths:
   /act:
+    get:
+      parameters:
+      - description: act name
+        in: query
+        name: name
+        required: true
+        type: string
+      - description: skip
+        in: query
+        name: skip
+        type: integer
+      responses:
+        "200":
+          description: returns acts
+        "400":
+          description: invalid request
+        "500":
+          description: failed to query acts
+      summary: gets Act name from query-string and returns corresponding Acts
+      tags:
+      - act
     post:
       parameters:
       - description: createAct DTO

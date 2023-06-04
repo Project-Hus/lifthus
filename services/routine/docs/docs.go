@@ -26,6 +26,38 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/act": {
+            "get": {
+                "tags": [
+                    "act"
+                ],
+                "summary": "gets Act name from query-string and returns corresponding Acts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "act name",
+                        "name": "name",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "skip",
+                        "name": "skip",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns acts"
+                    },
+                    "400": {
+                        "description": "invalid request"
+                    },
+                    "500": {
+                        "description": "failed to query acts"
+                    }
+                }
+            },
             "post": {
                 "tags": [
                     "act"

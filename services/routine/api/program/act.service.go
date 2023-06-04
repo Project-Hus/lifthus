@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"routine/common/db"
 	"routine/common/dto"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -11,13 +12,26 @@ import (
 // queryActsByName godoc
 // @Router       /act [get]
 // @Param name query string true "act name"
+// @Param skip query int false "skip"
 // @Summary      gets Act name from query-string and returns corresponding Acts
 // @Tags         act
 // @Success      200 "returns acts"
 // @Failure      400 "invalid request"
 // @Failure      500 "failed to query acts"
 func (pc programApiController) queryActsByName(c echo.Context) error {
-	return nil
+	// from query-string get name and skip
+	actName := c.QueryParam("name")
+	skipStr := c.QueryParam("skip")
+	// convert skip to int
+	skip, err := strconv.Atoi(skipStr)
+	if err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+	acts, err := db.QueryActsByName(pc.dbClient, c.Request().Context(), actName, skip)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	return c.JSON(http.StatusOK, acts)
 }
 
 // createAct godoc
