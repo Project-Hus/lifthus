@@ -31,6 +31,8 @@ const (
 	FieldCurrentReps = "current_reps"
 	// FieldCurrentLap holds the string denoting the current_lap field in the database.
 	FieldCurrentLap = "current_lap"
+	// FieldStartedAt holds the string denoting the started_at field in the database.
+	FieldStartedAt = "started_at"
 	// FieldImage holds the string denoting the image field in the database.
 	FieldImage = "image"
 	// FieldComment holds the string denoting the comment field in the database.
@@ -83,6 +85,7 @@ var Columns = []string{
 	FieldLap,
 	FieldCurrentReps,
 	FieldCurrentLap,
+	FieldStartedAt,
 	FieldImage,
 	FieldComment,
 	FieldStatus,
@@ -196,6 +199,11 @@ func ByCurrentReps(opts ...sql.OrderTermOption) OrderOption {
 // ByCurrentLap orders the results by the current_lap field.
 func ByCurrentLap(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCurrentLap, opts...).ToFunc()
+}
+
+// ByStartedAt orders the results by the started_at field.
+func ByStartedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStartedAt, opts...).ToFunc()
 }
 
 // ByImage orders the results by the image field.

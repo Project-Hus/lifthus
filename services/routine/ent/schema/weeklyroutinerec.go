@@ -7,11 +7,18 @@ import (
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 // WeeklyRoutineRec holds the schema definition for the WeeklyRoutineRec entity.
 type WeeklyRoutineRec struct {
 	ent.Schema
+}
+
+func (WeeklyRoutineRec) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("program_rec_id", "week").Unique(),
+	}
 }
 
 // Fields of the WeeklyRoutineRec.
@@ -21,6 +28,8 @@ func (WeeklyRoutineRec) Fields() []ent.Field {
 
 		field.Uint64("program_rec_id"),
 		field.Uint64("weekly_routine_id"),
+
+		field.Int("week"),
 
 		field.Time("start_date"),
 

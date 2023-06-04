@@ -248,11 +248,11 @@ func init() {
 	// routineactrec.CurrentLapValidator is a validator for the "current_lap" field. It is called by the builders before save.
 	routineactrec.CurrentLapValidator = routineactrecDescCurrentLap.Validators[0].(func(int) error)
 	// routineactrecDescCreatedAt is the schema descriptor for created_at field.
-	routineactrecDescCreatedAt := routineactrecFields[12].Descriptor()
+	routineactrecDescCreatedAt := routineactrecFields[13].Descriptor()
 	// routineactrec.DefaultCreatedAt holds the default value on creation for the created_at field.
 	routineactrec.DefaultCreatedAt = routineactrecDescCreatedAt.Default.(func() time.Time)
 	// routineactrecDescUpdatedAt is the schema descriptor for updated_at field.
-	routineactrecDescUpdatedAt := routineactrecFields[13].Descriptor()
+	routineactrecDescUpdatedAt := routineactrecFields[14].Descriptor()
 	// routineactrec.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	routineactrec.DefaultUpdatedAt = routineactrecDescUpdatedAt.Default.(func() time.Time)
 	// routineactrec.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -282,11 +282,11 @@ func init() {
 	weeklyroutinerecFields := schema.WeeklyRoutineRec{}.Fields()
 	_ = weeklyroutinerecFields
 	// weeklyroutinerecDescCreatedAt is the schema descriptor for created_at field.
-	weeklyroutinerecDescCreatedAt := weeklyroutinerecFields[4].Descriptor()
+	weeklyroutinerecDescCreatedAt := weeklyroutinerecFields[5].Descriptor()
 	// weeklyroutinerec.DefaultCreatedAt holds the default value on creation for the created_at field.
 	weeklyroutinerec.DefaultCreatedAt = weeklyroutinerecDescCreatedAt.Default.(func() time.Time)
 	// weeklyroutinerecDescUpdatedAt is the schema descriptor for updated_at field.
-	weeklyroutinerecDescUpdatedAt := weeklyroutinerecFields[5].Descriptor()
+	weeklyroutinerecDescUpdatedAt := weeklyroutinerecFields[6].Descriptor()
 	// weeklyroutinerec.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	weeklyroutinerec.DefaultUpdatedAt = weeklyroutinerecDescUpdatedAt.Default.(func() time.Time)
 	// weeklyroutinerec.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

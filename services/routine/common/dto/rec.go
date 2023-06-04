@@ -1,37 +1,41 @@
 package dto
 
+import (
+	"time"
+)
+
 /* QUERYING */
 
 /* CREATING */
 // to create weekly program rec
 type CreateWeeklyProgramRecDto struct {
-	Title       string  `json:"title,omitempty"`
-	Author      uint64  `json:"author,omitempty"`
-	Image       *string `json:"image,omitempty"`
-	Description *string `json:"description,omitempty"`
+	Author    uint64    `json:"author,omitempty"`
+	ProgramID uint64    `json:"program_id,omitempty"`
+	StartDate time.Time `json:"start_date,omitempty"`
+	EndDate   time.Time `json:"end_date,omitempty"`
 
-	Tags []string `json:"tags,omitempty"`
+	Comment string `json:"comment,omitempty"`
 
-	WeeklyRoutines []CreateWeeklyRoutineDto      `json:"weekly_routines,omitempty"`
-	DailyRoutines  []CreateWeeklyDailyRoutineDto `json:"daily_routines,omitempty"`
-	RoutineActs    []CreateWeeklyRoutineActDto   `json:"routine_acts,omitempty"`
+	WeeklyRoutineRecs []CreateWeeklyRoutineRecDto `json:"weekly_routine_recs,omitempty"`
 }
 type CreateWeeklyRoutineRecDto struct {
-	Week int `json:"week,omitempty"`
+	WeeklyRoutineID uint64                           `json:"weekly_routine_id,omitempty"`
+	Week            int                              `json:"week,omitempty"`
+	StartDate       time.Time                        `json:"start_date,omitempty"`
+	DayRoutineRecs  []CreateWeeklyDailyRoutineRecDto `json:"daily_routine_recs,omitempty"`
 }
 type CreateWeeklyDailyRoutineRecDto struct {
-	Week int `json:"week,omitempty"`
-	Day  int `json:"day,omitempty"`
+	DailyRoutineID uint64    `json:"daily_routine_id,omitempty"`
+	Date           time.Time `json:"date,omitempty"`
+
+	RoutineActRecs []CreateWeeklyRoutineActRecDto `json:"routine_act_recs,omitempty"`
 }
 type CreateWeeklyRoutineActRecDto struct {
-	Week int `json:"week,omitempty"`
-	Day  int `json:"day,omitempty"`
+	DailyRoutineRecID uint64 `json:"daily_routine_rec_id,omitempty"`
+	RoutineActID      uint64 `json:"routine_act_id,omitempty"`
 
 	ActID uint64 `json:"act_id,omitempty"`
 	Order int    `json:"order,omitempty"`
-
-	WRatio *float64 `json:"w_ratio,omitempty"`
-	Reps   *int     `json:"reps,omitempty"`
-	Lap    *int     `json:"lap,omitempty"`
-	Warmup bool     `json:"warmup,omitempty"`
+	Reps  *int   `json:"reps,omitempty"`
+	Lap   *int   `json:"lap,omitempty"`
 }

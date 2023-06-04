@@ -172,6 +172,26 @@ func (raru *RoutineActRecUpdate) AddCurrentLap(i int) *RoutineActRecUpdate {
 	return raru
 }
 
+// SetStartedAt sets the "started_at" field.
+func (raru *RoutineActRecUpdate) SetStartedAt(t time.Time) *RoutineActRecUpdate {
+	raru.mutation.SetStartedAt(t)
+	return raru
+}
+
+// SetNillableStartedAt sets the "started_at" field if the given value is not nil.
+func (raru *RoutineActRecUpdate) SetNillableStartedAt(t *time.Time) *RoutineActRecUpdate {
+	if t != nil {
+		raru.SetStartedAt(*t)
+	}
+	return raru
+}
+
+// ClearStartedAt clears the value of the "started_at" field.
+func (raru *RoutineActRecUpdate) ClearStartedAt() *RoutineActRecUpdate {
+	raru.mutation.ClearStartedAt()
+	return raru
+}
+
 // SetImage sets the "image" field.
 func (raru *RoutineActRecUpdate) SetImage(s string) *RoutineActRecUpdate {
 	raru.mutation.SetImage(s)
@@ -386,6 +406,12 @@ func (raru *RoutineActRecUpdate) sqlSave(ctx context.Context) (n int, err error)
 	}
 	if value, ok := raru.mutation.AddedCurrentLap(); ok {
 		_spec.AddField(routineactrec.FieldCurrentLap, field.TypeInt, value)
+	}
+	if value, ok := raru.mutation.StartedAt(); ok {
+		_spec.SetField(routineactrec.FieldStartedAt, field.TypeTime, value)
+	}
+	if raru.mutation.StartedAtCleared() {
+		_spec.ClearField(routineactrec.FieldStartedAt, field.TypeTime)
 	}
 	if value, ok := raru.mutation.Image(); ok {
 		_spec.SetField(routineactrec.FieldImage, field.TypeString, value)
@@ -653,6 +679,26 @@ func (raruo *RoutineActRecUpdateOne) AddCurrentLap(i int) *RoutineActRecUpdateOn
 	return raruo
 }
 
+// SetStartedAt sets the "started_at" field.
+func (raruo *RoutineActRecUpdateOne) SetStartedAt(t time.Time) *RoutineActRecUpdateOne {
+	raruo.mutation.SetStartedAt(t)
+	return raruo
+}
+
+// SetNillableStartedAt sets the "started_at" field if the given value is not nil.
+func (raruo *RoutineActRecUpdateOne) SetNillableStartedAt(t *time.Time) *RoutineActRecUpdateOne {
+	if t != nil {
+		raruo.SetStartedAt(*t)
+	}
+	return raruo
+}
+
+// ClearStartedAt clears the value of the "started_at" field.
+func (raruo *RoutineActRecUpdateOne) ClearStartedAt() *RoutineActRecUpdateOne {
+	raruo.mutation.ClearStartedAt()
+	return raruo
+}
+
 // SetImage sets the "image" field.
 func (raruo *RoutineActRecUpdateOne) SetImage(s string) *RoutineActRecUpdateOne {
 	raruo.mutation.SetImage(s)
@@ -897,6 +943,12 @@ func (raruo *RoutineActRecUpdateOne) sqlSave(ctx context.Context) (_node *Routin
 	}
 	if value, ok := raruo.mutation.AddedCurrentLap(); ok {
 		_spec.AddField(routineactrec.FieldCurrentLap, field.TypeInt, value)
+	}
+	if value, ok := raruo.mutation.StartedAt(); ok {
+		_spec.SetField(routineactrec.FieldStartedAt, field.TypeTime, value)
+	}
+	if raruo.mutation.StartedAtCleared() {
+		_spec.ClearField(routineactrec.FieldStartedAt, field.TypeTime)
 	}
 	if value, ok := raruo.mutation.Image(); ok {
 		_spec.SetField(routineactrec.FieldImage, field.TypeString, value)

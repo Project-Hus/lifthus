@@ -36,6 +36,8 @@ type RoutineActRec struct {
 	CurrentReps int `json:"current_reps,omitempty"`
 	// CurrentLap holds the value of the "current_lap" field.
 	CurrentLap int `json:"current_lap,omitempty"`
+	// StartedAt holds the value of the "started_at" field.
+	StartedAt *time.Time `json:"started_at,omitempty"`
 	// Image holds the value of the "image" field.
 	Image *string `json:"image,omitempty"`
 	// Comment holds the value of the "comment" field.
@@ -113,7 +115,7 @@ func (*RoutineActRec) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case routineactrec.FieldImage, routineactrec.FieldComment, routineactrec.FieldStatus:
 			values[i] = new(sql.NullString)
-		case routineactrec.FieldCreatedAt, routineactrec.FieldUpdatedAt:
+		case routineactrec.FieldStartedAt, routineactrec.FieldCreatedAt, routineactrec.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -186,6 +188,13 @@ func (rar *RoutineActRec) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field current_lap", values[i])
 			} else if value.Valid {
 				rar.CurrentLap = int(value.Int64)
+			}
+		case routineactrec.FieldStartedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field started_at", values[i])
+			} else if value.Valid {
+				rar.StartedAt = new(time.Time)
+				*rar.StartedAt = value.Time
 			}
 		case routineactrec.FieldImage:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -299,6 +308,11 @@ func (rar *RoutineActRec) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("current_lap=")
 	builder.WriteString(fmt.Sprintf("%v", rar.CurrentLap))
+	builder.WriteString(", ")
+	if v := rar.StartedAt; v != nil {
+		builder.WriteString("started_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	if v := rar.Image; v != nil {
 		builder.WriteString("image=")

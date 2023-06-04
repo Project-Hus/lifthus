@@ -30,9 +30,10 @@ func (rc recApiController) createWeeklyProgramRec(c echo.Context) error {
 		return c.String(http.StatusForbidden, "you are not allowed to create rec for others")
 	}
 
-	pid, err := db.CreateWeeklyProgramRec(rc.dbClient, c.Request().Context(), *createProgramRecDto)
+	rid, err := db.CreateWeeklyProgramRec(rc.dbClient, c.Request().Context(), *createProgramRecDto)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
-	return c.JSON(http.StatusCreated, pid)
+
+	return c.JSON(http.StatusCreated, rid)
 }

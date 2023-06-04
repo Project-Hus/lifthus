@@ -9329,6 +9329,7 @@ type RoutineActRecMutation struct {
 	addcurrent_reps          *int
 	current_lap              *int
 	addcurrent_lap           *int
+	started_at               *time.Time
 	image                    *string
 	comment                  *string
 	status                   *routineactrec.Status
@@ -9879,6 +9880,55 @@ func (m *RoutineActRecMutation) ResetCurrentLap() {
 	m.addcurrent_lap = nil
 }
 
+// SetStartedAt sets the "started_at" field.
+func (m *RoutineActRecMutation) SetStartedAt(t time.Time) {
+	m.started_at = &t
+}
+
+// StartedAt returns the value of the "started_at" field in the mutation.
+func (m *RoutineActRecMutation) StartedAt() (r time.Time, exists bool) {
+	v := m.started_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStartedAt returns the old "started_at" field's value of the RoutineActRec entity.
+// If the RoutineActRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RoutineActRecMutation) OldStartedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStartedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStartedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStartedAt: %w", err)
+	}
+	return oldValue.StartedAt, nil
+}
+
+// ClearStartedAt clears the value of the "started_at" field.
+func (m *RoutineActRecMutation) ClearStartedAt() {
+	m.started_at = nil
+	m.clearedFields[routineactrec.FieldStartedAt] = struct{}{}
+}
+
+// StartedAtCleared returns if the "started_at" field was cleared in this mutation.
+func (m *RoutineActRecMutation) StartedAtCleared() bool {
+	_, ok := m.clearedFields[routineactrec.FieldStartedAt]
+	return ok
+}
+
+// ResetStartedAt resets all changes to the "started_at" field.
+func (m *RoutineActRecMutation) ResetStartedAt() {
+	m.started_at = nil
+	delete(m.clearedFields, routineactrec.FieldStartedAt)
+}
+
 // SetImage sets the "image" field.
 func (m *RoutineActRecMutation) SetImage(s string) {
 	m.image = &s
@@ -10197,7 +10247,7 @@ func (m *RoutineActRecMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RoutineActRecMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 14)
 	if m.daily_routine_rec != nil {
 		fields = append(fields, routineactrec.FieldDailyRoutineRecID)
 	}
@@ -10221,6 +10271,9 @@ func (m *RoutineActRecMutation) Fields() []string {
 	}
 	if m.current_lap != nil {
 		fields = append(fields, routineactrec.FieldCurrentLap)
+	}
+	if m.started_at != nil {
+		fields = append(fields, routineactrec.FieldStartedAt)
 	}
 	if m.image != nil {
 		fields = append(fields, routineactrec.FieldImage)
@@ -10261,6 +10314,8 @@ func (m *RoutineActRecMutation) Field(name string) (ent.Value, bool) {
 		return m.CurrentReps()
 	case routineactrec.FieldCurrentLap:
 		return m.CurrentLap()
+	case routineactrec.FieldStartedAt:
+		return m.StartedAt()
 	case routineactrec.FieldImage:
 		return m.Image()
 	case routineactrec.FieldComment:
@@ -10296,6 +10351,8 @@ func (m *RoutineActRecMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldCurrentReps(ctx)
 	case routineactrec.FieldCurrentLap:
 		return m.OldCurrentLap(ctx)
+	case routineactrec.FieldStartedAt:
+		return m.OldStartedAt(ctx)
 	case routineactrec.FieldImage:
 		return m.OldImage(ctx)
 	case routineactrec.FieldComment:
@@ -10370,6 +10427,13 @@ func (m *RoutineActRecMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCurrentLap(v)
+		return nil
+	case routineactrec.FieldStartedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStartedAt(v)
 		return nil
 	case routineactrec.FieldImage:
 		v, ok := value.(string)
@@ -10508,6 +10572,9 @@ func (m *RoutineActRecMutation) ClearedFields() []string {
 	if m.FieldCleared(routineactrec.FieldLap) {
 		fields = append(fields, routineactrec.FieldLap)
 	}
+	if m.FieldCleared(routineactrec.FieldStartedAt) {
+		fields = append(fields, routineactrec.FieldStartedAt)
+	}
 	if m.FieldCleared(routineactrec.FieldImage) {
 		fields = append(fields, routineactrec.FieldImage)
 	}
@@ -10536,6 +10603,9 @@ func (m *RoutineActRecMutation) ClearField(name string) error {
 		return nil
 	case routineactrec.FieldLap:
 		m.ClearLap()
+		return nil
+	case routineactrec.FieldStartedAt:
+		m.ClearStartedAt()
 		return nil
 	case routineactrec.FieldImage:
 		m.ClearImage()
@@ -10574,6 +10644,9 @@ func (m *RoutineActRecMutation) ResetField(name string) error {
 		return nil
 	case routineactrec.FieldCurrentLap:
 		m.ResetCurrentLap()
+		return nil
+	case routineactrec.FieldStartedAt:
+		m.ResetStartedAt()
 		return nil
 	case routineactrec.FieldImage:
 		m.ResetImage()
@@ -11969,6 +12042,8 @@ type WeeklyRoutineRecMutation struct {
 	op                        Op
 	typ                       string
 	id                        *uint64
+	week                      *int
+	addweek                   *int
 	start_date                *time.Time
 	created_at                *time.Time
 	updated_at                *time.Time
@@ -12159,6 +12234,62 @@ func (m *WeeklyRoutineRecMutation) OldWeeklyRoutineID(ctx context.Context) (v ui
 // ResetWeeklyRoutineID resets all changes to the "weekly_routine_id" field.
 func (m *WeeklyRoutineRecMutation) ResetWeeklyRoutineID() {
 	m.weekly_routine = nil
+}
+
+// SetWeek sets the "week" field.
+func (m *WeeklyRoutineRecMutation) SetWeek(i int) {
+	m.week = &i
+	m.addweek = nil
+}
+
+// Week returns the value of the "week" field in the mutation.
+func (m *WeeklyRoutineRecMutation) Week() (r int, exists bool) {
+	v := m.week
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWeek returns the old "week" field's value of the WeeklyRoutineRec entity.
+// If the WeeklyRoutineRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *WeeklyRoutineRecMutation) OldWeek(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWeek is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWeek requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWeek: %w", err)
+	}
+	return oldValue.Week, nil
+}
+
+// AddWeek adds i to the "week" field.
+func (m *WeeklyRoutineRecMutation) AddWeek(i int) {
+	if m.addweek != nil {
+		*m.addweek += i
+	} else {
+		m.addweek = &i
+	}
+}
+
+// AddedWeek returns the value that was added to the "week" field in this mutation.
+func (m *WeeklyRoutineRecMutation) AddedWeek() (r int, exists bool) {
+	v := m.addweek
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWeek resets all changes to the "week" field.
+func (m *WeeklyRoutineRecMutation) ResetWeek() {
+	m.week = nil
+	m.addweek = nil
 }
 
 // SetStartDate sets the "start_date" field.
@@ -12409,12 +12540,15 @@ func (m *WeeklyRoutineRecMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *WeeklyRoutineRecMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.program_rec != nil {
 		fields = append(fields, weeklyroutinerec.FieldProgramRecID)
 	}
 	if m.weekly_routine != nil {
 		fields = append(fields, weeklyroutinerec.FieldWeeklyRoutineID)
+	}
+	if m.week != nil {
+		fields = append(fields, weeklyroutinerec.FieldWeek)
 	}
 	if m.start_date != nil {
 		fields = append(fields, weeklyroutinerec.FieldStartDate)
@@ -12437,6 +12571,8 @@ func (m *WeeklyRoutineRecMutation) Field(name string) (ent.Value, bool) {
 		return m.ProgramRecID()
 	case weeklyroutinerec.FieldWeeklyRoutineID:
 		return m.WeeklyRoutineID()
+	case weeklyroutinerec.FieldWeek:
+		return m.Week()
 	case weeklyroutinerec.FieldStartDate:
 		return m.StartDate()
 	case weeklyroutinerec.FieldCreatedAt:
@@ -12456,6 +12592,8 @@ func (m *WeeklyRoutineRecMutation) OldField(ctx context.Context, name string) (e
 		return m.OldProgramRecID(ctx)
 	case weeklyroutinerec.FieldWeeklyRoutineID:
 		return m.OldWeeklyRoutineID(ctx)
+	case weeklyroutinerec.FieldWeek:
+		return m.OldWeek(ctx)
 	case weeklyroutinerec.FieldStartDate:
 		return m.OldStartDate(ctx)
 	case weeklyroutinerec.FieldCreatedAt:
@@ -12484,6 +12622,13 @@ func (m *WeeklyRoutineRecMutation) SetField(name string, value ent.Value) error 
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetWeeklyRoutineID(v)
+		return nil
+	case weeklyroutinerec.FieldWeek:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWeek(v)
 		return nil
 	case weeklyroutinerec.FieldStartDate:
 		v, ok := value.(time.Time)
@@ -12514,6 +12659,9 @@ func (m *WeeklyRoutineRecMutation) SetField(name string, value ent.Value) error 
 // this mutation.
 func (m *WeeklyRoutineRecMutation) AddedFields() []string {
 	var fields []string
+	if m.addweek != nil {
+		fields = append(fields, weeklyroutinerec.FieldWeek)
+	}
 	return fields
 }
 
@@ -12522,6 +12670,8 @@ func (m *WeeklyRoutineRecMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *WeeklyRoutineRecMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case weeklyroutinerec.FieldWeek:
+		return m.AddedWeek()
 	}
 	return nil, false
 }
@@ -12531,6 +12681,13 @@ func (m *WeeklyRoutineRecMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *WeeklyRoutineRecMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case weeklyroutinerec.FieldWeek:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWeek(v)
+		return nil
 	}
 	return fmt.Errorf("unknown WeeklyRoutineRec numeric field %s", name)
 }
@@ -12563,6 +12720,9 @@ func (m *WeeklyRoutineRecMutation) ResetField(name string) error {
 		return nil
 	case weeklyroutinerec.FieldWeeklyRoutineID:
 		m.ResetWeeklyRoutineID()
+		return nil
+	case weeklyroutinerec.FieldWeek:
+		m.ResetWeek()
 		return nil
 	case weeklyroutinerec.FieldStartDate:
 		m.ResetStartDate()

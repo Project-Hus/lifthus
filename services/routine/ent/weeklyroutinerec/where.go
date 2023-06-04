@@ -65,6 +65,11 @@ func WeeklyRoutineID(v uint64) predicate.WeeklyRoutineRec {
 	return predicate.WeeklyRoutineRec(sql.FieldEQ(FieldWeeklyRoutineID, v))
 }
 
+// Week applies equality check predicate on the "week" field. It's identical to WeekEQ.
+func Week(v int) predicate.WeeklyRoutineRec {
+	return predicate.WeeklyRoutineRec(sql.FieldEQ(FieldWeek, v))
+}
+
 // StartDate applies equality check predicate on the "start_date" field. It's identical to StartDateEQ.
 func StartDate(v time.Time) predicate.WeeklyRoutineRec {
 	return predicate.WeeklyRoutineRec(sql.FieldEQ(FieldStartDate, v))
@@ -118,6 +123,46 @@ func WeeklyRoutineIDIn(vs ...uint64) predicate.WeeklyRoutineRec {
 // WeeklyRoutineIDNotIn applies the NotIn predicate on the "weekly_routine_id" field.
 func WeeklyRoutineIDNotIn(vs ...uint64) predicate.WeeklyRoutineRec {
 	return predicate.WeeklyRoutineRec(sql.FieldNotIn(FieldWeeklyRoutineID, vs...))
+}
+
+// WeekEQ applies the EQ predicate on the "week" field.
+func WeekEQ(v int) predicate.WeeklyRoutineRec {
+	return predicate.WeeklyRoutineRec(sql.FieldEQ(FieldWeek, v))
+}
+
+// WeekNEQ applies the NEQ predicate on the "week" field.
+func WeekNEQ(v int) predicate.WeeklyRoutineRec {
+	return predicate.WeeklyRoutineRec(sql.FieldNEQ(FieldWeek, v))
+}
+
+// WeekIn applies the In predicate on the "week" field.
+func WeekIn(vs ...int) predicate.WeeklyRoutineRec {
+	return predicate.WeeklyRoutineRec(sql.FieldIn(FieldWeek, vs...))
+}
+
+// WeekNotIn applies the NotIn predicate on the "week" field.
+func WeekNotIn(vs ...int) predicate.WeeklyRoutineRec {
+	return predicate.WeeklyRoutineRec(sql.FieldNotIn(FieldWeek, vs...))
+}
+
+// WeekGT applies the GT predicate on the "week" field.
+func WeekGT(v int) predicate.WeeklyRoutineRec {
+	return predicate.WeeklyRoutineRec(sql.FieldGT(FieldWeek, v))
+}
+
+// WeekGTE applies the GTE predicate on the "week" field.
+func WeekGTE(v int) predicate.WeeklyRoutineRec {
+	return predicate.WeeklyRoutineRec(sql.FieldGTE(FieldWeek, v))
+}
+
+// WeekLT applies the LT predicate on the "week" field.
+func WeekLT(v int) predicate.WeeklyRoutineRec {
+	return predicate.WeeklyRoutineRec(sql.FieldLT(FieldWeek, v))
+}
+
+// WeekLTE applies the LTE predicate on the "week" field.
+func WeekLTE(v int) predicate.WeeklyRoutineRec {
+	return predicate.WeeklyRoutineRec(sql.FieldLTE(FieldWeek, v))
 }
 
 // StartDateEQ applies the EQ predicate on the "start_date" field.

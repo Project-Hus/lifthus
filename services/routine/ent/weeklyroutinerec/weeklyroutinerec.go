@@ -18,6 +18,8 @@ const (
 	FieldProgramRecID = "program_rec_id"
 	// FieldWeeklyRoutineID holds the string denoting the weekly_routine_id field in the database.
 	FieldWeeklyRoutineID = "weekly_routine_id"
+	// FieldWeek holds the string denoting the week field in the database.
+	FieldWeek = "week"
 	// FieldStartDate holds the string denoting the start_date field in the database.
 	FieldStartDate = "start_date"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -60,6 +62,7 @@ var Columns = []string{
 	FieldID,
 	FieldProgramRecID,
 	FieldWeeklyRoutineID,
+	FieldWeek,
 	FieldStartDate,
 	FieldCreatedAt,
 	FieldUpdatedAt,
@@ -100,6 +103,11 @@ func ByProgramRecID(opts ...sql.OrderTermOption) OrderOption {
 // ByWeeklyRoutineID orders the results by the weekly_routine_id field.
 func ByWeeklyRoutineID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldWeeklyRoutineID, opts...).ToFunc()
+}
+
+// ByWeek orders the results by the week field.
+func ByWeek(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWeek, opts...).ToFunc()
 }
 
 // ByStartDate orders the results by the start_date field.
