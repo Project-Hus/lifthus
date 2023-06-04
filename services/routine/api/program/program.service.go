@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"routine/common/db"
 	"routine/common/dto"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -18,7 +19,22 @@ import (
 // @Failure      400 "invalid request"
 // @Failure      500 "failed to query programs"
 func (pc programApiController) queryProgramsByName(c echo.Context) error {
-	return nil
+	programName := c.QueryParam("name")
+	skipStr := c.QueryParam("skip")
+	// convert skip to int if it exists
+	skip, err := strconv.Atoi(skipStr)
+	if skipStr == "" {
+		skip = 0
+	} else {
+		if err != nil {
+			return c.String(http.StatusBadRequest, err.Error())
+		}
+	}
+	programs, err := db.QueryProgramsByName(pc.dbClient, c.Request().Context(), programName, skip)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	return c.JSON(http.StatusOK, programs)
 }
 
 // createWeeklyProgram godoc
