@@ -9,6 +9,18 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// queryProgramBySlug godoc
+// @Router       /program/{slug} [get]
+// @Param slug path string true "program slug"
+// @Summary      gets Program slug from path and returns corresponding Program
+// @Tags         program
+// @Success      200 "returns program"
+// @Failure      400 "invalid request"
+// @Failure      500 "failed to query program"
+func (pc programApiController) queryProgramBySlug(c echo.Context) error {
+	return nil
+}
+
 // queryProgramsByName godoc
 // @Router       /program [get]
 // @Param title query string true "program title"
