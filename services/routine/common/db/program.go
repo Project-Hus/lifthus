@@ -91,6 +91,7 @@ func CreateWeeklyProgram(dbClient *ent.Client, c context.Context, p *dto.CreateW
 		bulkA[i] = tx.RoutineAct.Create().
 			SetDailyRoutineID(dayId).SetActID(ra.ActID).
 			SetNillableReps(ra.Reps).SetNillableLap(ra.Lap).
+			SetOrder(ra.Order).
 			SetNillableWRatio(ra.WRatio).SetWarmup(ra.Warmup)
 	}
 	_, err = tx.RoutineAct.CreateBulk(bulkA...).Save(c)

@@ -249,6 +249,13 @@ var (
 				OnDelete:   schema.Cascade,
 			},
 		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "routineact_daily_routine_id_order",
+				Unique:  true,
+				Columns: []*schema.Column{RoutineActsColumns[9], RoutineActsColumns[1]},
+			},
+		},
 	}
 	// RoutineActRecsColumns holds the columns for the "routine_act_recs" table.
 	RoutineActRecsColumns = []*schema.Column{

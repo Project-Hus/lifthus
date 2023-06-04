@@ -6,11 +6,18 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 // RoutineAct holds the schema definition for the RoutineAct entity.
 type RoutineAct struct {
 	ent.Schema
+}
+
+func (RoutineAct) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("daily_routine_id", "order").Unique(),
+	}
 }
 
 // Fields of the RoutineAct.
