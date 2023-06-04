@@ -22,10 +22,14 @@ func (pc programApiController) queryActsByName(c echo.Context) error {
 	// from query-string get name and skip
 	actName := c.QueryParam("name")
 	skipStr := c.QueryParam("skip")
-	// convert skip to int
+	// convert skip to int if it exists
 	skip, err := strconv.Atoi(skipStr)
-	if err != nil {
-		return c.String(http.StatusBadRequest, err.Error())
+	if skipStr == "" {
+		skip = 0
+	} else {
+		if err != nil {
+			return c.String(http.StatusBadRequest, err.Error())
+		}
 	}
 	acts, err := db.QueryActsByName(pc.dbClient, c.Request().Context(), actName, skip)
 	if err != nil {
