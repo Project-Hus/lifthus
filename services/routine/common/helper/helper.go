@@ -25,7 +25,7 @@ func Slugify(str string) string {
 	return slug
 }
 
-// RandomHex returns random hex string which length is l
+// RandomHex returns random hex string which length is l bytes
 func RandomHex(l int) string {
 	bytes := make([]byte, l)
 	if _, err := rand.Read(bytes); err != nil {

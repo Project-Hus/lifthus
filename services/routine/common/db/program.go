@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"routine/common/dto"
+	"routine/common/helper"
 	"routine/ent"
 	"sync"
 )
@@ -49,6 +50,7 @@ func CreateWeeklyProgram(dbClient *ent.Client, c context.Context, p *dto.CreateW
 	// first create program while getting indices.
 	newProgram, err := tx.Program.Create().
 		SetTitle(p.Title).
+		SetSlug(helper.Slugify(p.Title) + "-" + helper.RandomHex(4)).
 		SetType("weekly").
 		SetAuthor(p.Author).
 		SetNillableDescription(p.Description).

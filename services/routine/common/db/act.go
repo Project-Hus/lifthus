@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"routine/common/dto"
+	"routine/common/helper"
 	"routine/ent"
 	"routine/ent/act"
 )
@@ -34,6 +35,7 @@ func CreateAct(dbClient *ent.Client, c context.Context, newActDto *dto.CreateAct
 
 	newAct, err := dbClient.Act.Create().
 		SetName(newActDto.Name).
+		SetSlug(helper.Slugify(newActDto.Name) + "-" + helper.RandomHex(4)).
 		SetType(act.Type(newActDto.Type)).
 		SetAuthor(newActDto.Author).
 		SetNillableImage(newActDto.Image).
