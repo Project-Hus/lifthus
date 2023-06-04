@@ -10,7 +10,7 @@ import (
 
 // Slugify returns slugified string
 func Slugify(str string) string {
-	specialChars := []string{"@", "#", "$", "%", "&", "*", "?"}
+	specialChars := []string{"@", "#", "$", "&", "*", "?"}
 
 	// replace all spaces of str with '-'
 	slug := strings.ReplaceAll(str, " ", "-")

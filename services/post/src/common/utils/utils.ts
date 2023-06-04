@@ -14,7 +14,7 @@ export const getCookie = (data: string, ctx: ExecutionContext): string => {
  * getSlug('hello world'); // 'hello-world'
  */
 export const slugify = (data: string): string => {
-  const specialChars = '@#$%&*?,'; //일부 특수문자 utf-8 인코딩
+  const specialChars = '@#$&*?,'; //일부 특수문자 utf-8 인코딩
   let slug = data.replace(/[\s]+/g, '-'); // 공백을 '-'로 치환
 
   for (let i = 0; i < specialChars.length; i++) {
