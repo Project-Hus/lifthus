@@ -190,6 +190,26 @@ paths:
       summary: gets Program name from query-string and returns corresponding Programs
       tags:
       - program
+  /program/{slug}:
+    get:
+      parameters:
+      - description: program slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      responses:
+        "200":
+          description: returns program
+        "400":
+          description: invalid request
+        "404":
+          description: program not found
+        "500":
+          description: failed to query program
+      summary: gets Program slug from path and returns corresponding Program
+      tags:
+      - program
   /program/weekly:
     post:
       parameters:

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"routine/common/db"
 	"routine/common/dto"
+	"routine/ent"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
@@ -16,9 +17,17 @@ import (
 // @Tags         program
 // @Success      200 "returns program"
 // @Failure      400 "invalid request"
+// @Failure      404 "program not found"
 // @Failure      500 "failed to query program"
 func (pc programApiController) queryProgramBySlug(c echo.Context) error {
-	return nil
+	slug := c.Param("slug")
+	program, err := db.QueryProgramBySlug(pc.dbClient, c.Request().Context(), slug)
+	if ent.IsNotFound(err) {
+		return c.String(http.StatusNotFound, err.Error())
+	} else if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	return c.JSON(http.StatusOK, program)
 }
 
 // queryProgramsByName godoc
