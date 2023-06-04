@@ -12,7 +12,7 @@ var (
 	ActsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
 		{Name: "name", Type: field.TypeString, Size: 50},
-		{Name: "code", Type: field.TypeString, Unique: true},
+		{Name: "slug", Type: field.TypeString, Unique: true},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"rep", "lap", "simple"}},
 		{Name: "author", Type: field.TypeUint64},
 		{Name: "image", Type: field.TypeString, Nullable: true},
@@ -177,7 +177,7 @@ var (
 	ProgramsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
 		{Name: "title", Type: field.TypeString, Size: 50},
-		{Name: "code", Type: field.TypeString, Unique: true},
+		{Name: "slug", Type: field.TypeString, Unique: true},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"weekly", "daily"}},
 		{Name: "author", Type: field.TypeUint64},
 		{Name: "image", Type: field.TypeString, Nullable: true},

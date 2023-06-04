@@ -60,9 +60,9 @@ func Name(v string) predicate.Act {
 	return predicate.Act(sql.FieldEQ(FieldName, v))
 }
 
-// Code applies equality check predicate on the "code" field. It's identical to CodeEQ.
-func Code(v string) predicate.Act {
-	return predicate.Act(sql.FieldEQ(FieldCode, v))
+// Slug applies equality check predicate on the "slug" field. It's identical to SlugEQ.
+func Slug(v string) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldSlug, v))
 }
 
 // Author applies equality check predicate on the "author" field. It's identical to AuthorEQ.
@@ -235,69 +235,69 @@ func NameContainsFold(v string) predicate.Act {
 	return predicate.Act(sql.FieldContainsFold(FieldName, v))
 }
 
-// CodeEQ applies the EQ predicate on the "code" field.
-func CodeEQ(v string) predicate.Act {
-	return predicate.Act(sql.FieldEQ(FieldCode, v))
+// SlugEQ applies the EQ predicate on the "slug" field.
+func SlugEQ(v string) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldSlug, v))
 }
 
-// CodeNEQ applies the NEQ predicate on the "code" field.
-func CodeNEQ(v string) predicate.Act {
-	return predicate.Act(sql.FieldNEQ(FieldCode, v))
+// SlugNEQ applies the NEQ predicate on the "slug" field.
+func SlugNEQ(v string) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldSlug, v))
 }
 
-// CodeIn applies the In predicate on the "code" field.
-func CodeIn(vs ...string) predicate.Act {
-	return predicate.Act(sql.FieldIn(FieldCode, vs...))
+// SlugIn applies the In predicate on the "slug" field.
+func SlugIn(vs ...string) predicate.Act {
+	return predicate.Act(sql.FieldIn(FieldSlug, vs...))
 }
 
-// CodeNotIn applies the NotIn predicate on the "code" field.
-func CodeNotIn(vs ...string) predicate.Act {
-	return predicate.Act(sql.FieldNotIn(FieldCode, vs...))
+// SlugNotIn applies the NotIn predicate on the "slug" field.
+func SlugNotIn(vs ...string) predicate.Act {
+	return predicate.Act(sql.FieldNotIn(FieldSlug, vs...))
 }
 
-// CodeGT applies the GT predicate on the "code" field.
-func CodeGT(v string) predicate.Act {
-	return predicate.Act(sql.FieldGT(FieldCode, v))
+// SlugGT applies the GT predicate on the "slug" field.
+func SlugGT(v string) predicate.Act {
+	return predicate.Act(sql.FieldGT(FieldSlug, v))
 }
 
-// CodeGTE applies the GTE predicate on the "code" field.
-func CodeGTE(v string) predicate.Act {
-	return predicate.Act(sql.FieldGTE(FieldCode, v))
+// SlugGTE applies the GTE predicate on the "slug" field.
+func SlugGTE(v string) predicate.Act {
+	return predicate.Act(sql.FieldGTE(FieldSlug, v))
 }
 
-// CodeLT applies the LT predicate on the "code" field.
-func CodeLT(v string) predicate.Act {
-	return predicate.Act(sql.FieldLT(FieldCode, v))
+// SlugLT applies the LT predicate on the "slug" field.
+func SlugLT(v string) predicate.Act {
+	return predicate.Act(sql.FieldLT(FieldSlug, v))
 }
 
-// CodeLTE applies the LTE predicate on the "code" field.
-func CodeLTE(v string) predicate.Act {
-	return predicate.Act(sql.FieldLTE(FieldCode, v))
+// SlugLTE applies the LTE predicate on the "slug" field.
+func SlugLTE(v string) predicate.Act {
+	return predicate.Act(sql.FieldLTE(FieldSlug, v))
 }
 
-// CodeContains applies the Contains predicate on the "code" field.
-func CodeContains(v string) predicate.Act {
-	return predicate.Act(sql.FieldContains(FieldCode, v))
+// SlugContains applies the Contains predicate on the "slug" field.
+func SlugContains(v string) predicate.Act {
+	return predicate.Act(sql.FieldContains(FieldSlug, v))
 }
 
-// CodeHasPrefix applies the HasPrefix predicate on the "code" field.
-func CodeHasPrefix(v string) predicate.Act {
-	return predicate.Act(sql.FieldHasPrefix(FieldCode, v))
+// SlugHasPrefix applies the HasPrefix predicate on the "slug" field.
+func SlugHasPrefix(v string) predicate.Act {
+	return predicate.Act(sql.FieldHasPrefix(FieldSlug, v))
 }
 
-// CodeHasSuffix applies the HasSuffix predicate on the "code" field.
-func CodeHasSuffix(v string) predicate.Act {
-	return predicate.Act(sql.FieldHasSuffix(FieldCode, v))
+// SlugHasSuffix applies the HasSuffix predicate on the "slug" field.
+func SlugHasSuffix(v string) predicate.Act {
+	return predicate.Act(sql.FieldHasSuffix(FieldSlug, v))
 }
 
-// CodeEqualFold applies the EqualFold predicate on the "code" field.
-func CodeEqualFold(v string) predicate.Act {
-	return predicate.Act(sql.FieldEqualFold(FieldCode, v))
+// SlugEqualFold applies the EqualFold predicate on the "slug" field.
+func SlugEqualFold(v string) predicate.Act {
+	return predicate.Act(sql.FieldEqualFold(FieldSlug, v))
 }
 
-// CodeContainsFold applies the ContainsFold predicate on the "code" field.
-func CodeContainsFold(v string) predicate.Act {
-	return predicate.Act(sql.FieldContainsFold(FieldCode, v))
+// SlugContainsFold applies the ContainsFold predicate on the "slug" field.
+func SlugContainsFold(v string) predicate.Act {
+	return predicate.Act(sql.FieldContainsFold(FieldSlug, v))
 }
 
 // TypeEQ applies the EQ predicate on the "type" field.

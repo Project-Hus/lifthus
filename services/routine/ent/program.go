@@ -19,8 +19,8 @@ type Program struct {
 	ID uint64 `json:"id,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
-	// Code holds the value of the "code" field.
-	Code string `json:"code,omitempty"`
+	// Slug holds the value of the "slug" field.
+	Slug string `json:"slug,omitempty"`
 	// Type holds the value of the "type" field.
 	Type program.Type `json:"type,omitempty"`
 	// Author holds the value of the "author" field.
@@ -97,7 +97,7 @@ func (*Program) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case program.FieldID, program.FieldAuthor:
 			values[i] = new(sql.NullInt64)
-		case program.FieldTitle, program.FieldCode, program.FieldType, program.FieldImage, program.FieldDescription:
+		case program.FieldTitle, program.FieldSlug, program.FieldType, program.FieldImage, program.FieldDescription:
 			values[i] = new(sql.NullString)
 		case program.FieldCreatedAt, program.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -128,11 +128,11 @@ func (pr *Program) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pr.Title = value.String
 			}
-		case program.FieldCode:
+		case program.FieldSlug:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field code", values[i])
+				return fmt.Errorf("unexpected type %T for field slug", values[i])
 			} else if value.Valid {
-				pr.Code = value.String
+				pr.Slug = value.String
 			}
 		case program.FieldType:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -231,8 +231,8 @@ func (pr *Program) String() string {
 	builder.WriteString("title=")
 	builder.WriteString(pr.Title)
 	builder.WriteString(", ")
-	builder.WriteString("code=")
-	builder.WriteString(pr.Code)
+	builder.WriteString("slug=")
+	builder.WriteString(pr.Slug)
 	builder.WriteString(", ")
 	builder.WriteString("type=")
 	builder.WriteString(fmt.Sprintf("%v", pr.Type))

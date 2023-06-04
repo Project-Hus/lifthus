@@ -19,8 +19,8 @@ type Act struct {
 	ID uint64 `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
-	// Code holds the value of the "code" field.
-	Code string `json:"code,omitempty"`
+	// Slug holds the value of the "slug" field.
+	Slug string `json:"slug,omitempty"`
 	// Type holds the value of the "type" field.
 	Type act.Type `json:"type,omitempty"`
 	// Author holds the value of the "author" field.
@@ -131,7 +131,7 @@ func (*Act) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case act.FieldID, act.FieldAuthor:
 			values[i] = new(sql.NullInt64)
-		case act.FieldName, act.FieldCode, act.FieldType, act.FieldImage, act.FieldDescription:
+		case act.FieldName, act.FieldSlug, act.FieldType, act.FieldImage, act.FieldDescription:
 			values[i] = new(sql.NullString)
 		case act.FieldCreatedAt, act.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -162,11 +162,11 @@ func (a *Act) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.Name = value.String
 			}
-		case act.FieldCode:
+		case act.FieldSlug:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field code", values[i])
+				return fmt.Errorf("unexpected type %T for field slug", values[i])
 			} else if value.Valid {
-				a.Code = value.String
+				a.Slug = value.String
 			}
 		case act.FieldType:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -361,8 +361,8 @@ func (a *Act) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(a.Name)
 	builder.WriteString(", ")
-	builder.WriteString("code=")
-	builder.WriteString(a.Code)
+	builder.WriteString("slug=")
+	builder.WriteString(a.Slug)
 	builder.WriteString(", ")
 	builder.WriteString("type=")
 	builder.WriteString(fmt.Sprintf("%v", a.Type))

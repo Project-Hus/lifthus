@@ -1,6 +1,9 @@
 package helper
 
 import (
+	"crypto/rand"
+	"encoding/hex"
+	"fmt"
 	"net/url"
 	"strings"
 )
@@ -20,4 +23,14 @@ func Slugify(str string) string {
 	}
 
 	return slug
+}
+
+// RandomHex returns random hex string which length is l
+func RandomHex(l int) string {
+	bytes := make([]byte, l)
+	if _, err := rand.Read(bytes); err != nil {
+		fmt.Println(err)
+		return ""
+	}
+	return hex.EncodeToString(bytes)
 }

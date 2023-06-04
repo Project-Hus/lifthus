@@ -29,10 +29,6 @@ func init() {
 	actDescName := actFields[1].Descriptor()
 	// act.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	act.NameValidator = actDescName.Validators[0].(func(string) error)
-	// actDescCode is the schema descriptor for code field.
-	actDescCode := actFields[2].Descriptor()
-	// act.DefaultCode holds the default value on creation for the code field.
-	act.DefaultCode = actDescCode.Default.(func() string)
 	// actDescCreatedAt is the schema descriptor for created_at field.
 	actDescCreatedAt := actFields[7].Descriptor()
 	// act.DefaultCreatedAt holds the default value on creation for the created_at field.
@@ -157,10 +153,6 @@ func init() {
 	programDescTitle := programFields[1].Descriptor()
 	// program.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	program.TitleValidator = programDescTitle.Validators[0].(func(string) error)
-	// programDescCode is the schema descriptor for code field.
-	programDescCode := programFields[2].Descriptor()
-	// program.DefaultCode holds the default value on creation for the code field.
-	program.DefaultCode = programDescCode.Default.(func() string)
 	// programDescCreatedAt is the schema descriptor for created_at field.
 	programDescCreatedAt := programFields[7].Descriptor()
 	// program.DefaultCreatedAt holds the default value on creation for the created_at field.

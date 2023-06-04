@@ -38,17 +38,9 @@ func (pu *ProgramUpdate) SetTitle(s string) *ProgramUpdate {
 	return pu
 }
 
-// SetCode sets the "code" field.
-func (pu *ProgramUpdate) SetCode(s string) *ProgramUpdate {
-	pu.mutation.SetCode(s)
-	return pu
-}
-
-// SetNillableCode sets the "code" field if the given value is not nil.
-func (pu *ProgramUpdate) SetNillableCode(s *string) *ProgramUpdate {
-	if s != nil {
-		pu.SetCode(*s)
-	}
+// SetSlug sets the "slug" field.
+func (pu *ProgramUpdate) SetSlug(s string) *ProgramUpdate {
+	pu.mutation.SetSlug(s)
 	return pu
 }
 
@@ -332,8 +324,8 @@ func (pu *ProgramUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := pu.mutation.Title(); ok {
 		_spec.SetField(program.FieldTitle, field.TypeString, value)
 	}
-	if value, ok := pu.mutation.Code(); ok {
-		_spec.SetField(program.FieldCode, field.TypeString, value)
+	if value, ok := pu.mutation.Slug(); ok {
+		_spec.SetField(program.FieldSlug, field.TypeString, value)
 	}
 	if value, ok := pu.mutation.GetType(); ok {
 		_spec.SetField(program.FieldType, field.TypeEnum, value)
@@ -565,17 +557,9 @@ func (puo *ProgramUpdateOne) SetTitle(s string) *ProgramUpdateOne {
 	return puo
 }
 
-// SetCode sets the "code" field.
-func (puo *ProgramUpdateOne) SetCode(s string) *ProgramUpdateOne {
-	puo.mutation.SetCode(s)
-	return puo
-}
-
-// SetNillableCode sets the "code" field if the given value is not nil.
-func (puo *ProgramUpdateOne) SetNillableCode(s *string) *ProgramUpdateOne {
-	if s != nil {
-		puo.SetCode(*s)
-	}
+// SetSlug sets the "slug" field.
+func (puo *ProgramUpdateOne) SetSlug(s string) *ProgramUpdateOne {
+	puo.mutation.SetSlug(s)
 	return puo
 }
 
@@ -889,8 +873,8 @@ func (puo *ProgramUpdateOne) sqlSave(ctx context.Context) (_node *Program, err e
 	if value, ok := puo.mutation.Title(); ok {
 		_spec.SetField(program.FieldTitle, field.TypeString, value)
 	}
-	if value, ok := puo.mutation.Code(); ok {
-		_spec.SetField(program.FieldCode, field.TypeString, value)
+	if value, ok := puo.mutation.Slug(); ok {
+		_spec.SetField(program.FieldSlug, field.TypeString, value)
 	}
 	if value, ok := puo.mutation.GetType(); ok {
 		_spec.SetField(program.FieldType, field.TypeEnum, value)

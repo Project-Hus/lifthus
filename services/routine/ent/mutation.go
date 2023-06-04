@@ -56,7 +56,7 @@ type ActMutation struct {
 	typ                     string
 	id                      *uint64
 	name                    *string
-	code                    *string
+	slug                    *string
 	_type                   *act.Type
 	author                  *uint64
 	addauthor               *int64
@@ -238,40 +238,40 @@ func (m *ActMutation) ResetName() {
 	m.name = nil
 }
 
-// SetCode sets the "code" field.
-func (m *ActMutation) SetCode(s string) {
-	m.code = &s
+// SetSlug sets the "slug" field.
+func (m *ActMutation) SetSlug(s string) {
+	m.slug = &s
 }
 
-// Code returns the value of the "code" field in the mutation.
-func (m *ActMutation) Code() (r string, exists bool) {
-	v := m.code
+// Slug returns the value of the "slug" field in the mutation.
+func (m *ActMutation) Slug() (r string, exists bool) {
+	v := m.slug
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldCode returns the old "code" field's value of the Act entity.
+// OldSlug returns the old "slug" field's value of the Act entity.
 // If the Act object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ActMutation) OldCode(ctx context.Context) (v string, err error) {
+func (m *ActMutation) OldSlug(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCode is only allowed on UpdateOne operations")
+		return v, errors.New("OldSlug is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCode requires an ID field in the mutation")
+		return v, errors.New("OldSlug requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCode: %w", err)
+		return v, fmt.Errorf("querying old value for OldSlug: %w", err)
 	}
-	return oldValue.Code, nil
+	return oldValue.Slug, nil
 }
 
-// ResetCode resets all changes to the "code" field.
-func (m *ActMutation) ResetCode() {
-	m.code = nil
+// ResetSlug resets all changes to the "slug" field.
+func (m *ActMutation) ResetSlug() {
+	m.slug = nil
 }
 
 // SetType sets the "type" field.
@@ -1366,8 +1366,8 @@ func (m *ActMutation) Fields() []string {
 	if m.name != nil {
 		fields = append(fields, act.FieldName)
 	}
-	if m.code != nil {
-		fields = append(fields, act.FieldCode)
+	if m.slug != nil {
+		fields = append(fields, act.FieldSlug)
 	}
 	if m._type != nil {
 		fields = append(fields, act.FieldType)
@@ -1445,8 +1445,8 @@ func (m *ActMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case act.FieldName:
 		return m.Name()
-	case act.FieldCode:
-		return m.Code()
+	case act.FieldSlug:
+		return m.Slug()
 	case act.FieldType:
 		return m.GetType()
 	case act.FieldAuthor:
@@ -1502,8 +1502,8 @@ func (m *ActMutation) OldField(ctx context.Context, name string) (ent.Value, err
 	switch name {
 	case act.FieldName:
 		return m.OldName(ctx)
-	case act.FieldCode:
-		return m.OldCode(ctx)
+	case act.FieldSlug:
+		return m.OldSlug(ctx)
 	case act.FieldType:
 		return m.OldType(ctx)
 	case act.FieldAuthor:
@@ -1564,12 +1564,12 @@ func (m *ActMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetName(v)
 		return nil
-	case act.FieldCode:
+	case act.FieldSlug:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetCode(v)
+		m.SetSlug(v)
 		return nil
 	case act.FieldType:
 		v, ok := value.(act.Type)
@@ -1807,8 +1807,8 @@ func (m *ActMutation) ResetField(name string) error {
 	case act.FieldName:
 		m.ResetName()
 		return nil
-	case act.FieldCode:
-		m.ResetCode()
+	case act.FieldSlug:
+		m.ResetSlug()
 		return nil
 	case act.FieldType:
 		m.ResetType()
@@ -5891,7 +5891,7 @@ type ProgramMutation struct {
 	typ                    string
 	id                     *uint64
 	title                  *string
-	code                   *string
+	slug                   *string
 	_type                  *program.Type
 	author                 *uint64
 	addauthor              *int64
@@ -6057,40 +6057,40 @@ func (m *ProgramMutation) ResetTitle() {
 	m.title = nil
 }
 
-// SetCode sets the "code" field.
-func (m *ProgramMutation) SetCode(s string) {
-	m.code = &s
+// SetSlug sets the "slug" field.
+func (m *ProgramMutation) SetSlug(s string) {
+	m.slug = &s
 }
 
-// Code returns the value of the "code" field in the mutation.
-func (m *ProgramMutation) Code() (r string, exists bool) {
-	v := m.code
+// Slug returns the value of the "slug" field in the mutation.
+func (m *ProgramMutation) Slug() (r string, exists bool) {
+	v := m.slug
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldCode returns the old "code" field's value of the Program entity.
+// OldSlug returns the old "slug" field's value of the Program entity.
 // If the Program object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProgramMutation) OldCode(ctx context.Context) (v string, err error) {
+func (m *ProgramMutation) OldSlug(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCode is only allowed on UpdateOne operations")
+		return v, errors.New("OldSlug is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCode requires an ID field in the mutation")
+		return v, errors.New("OldSlug requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCode: %w", err)
+		return v, fmt.Errorf("querying old value for OldSlug: %w", err)
 	}
-	return oldValue.Code, nil
+	return oldValue.Slug, nil
 }
 
-// ResetCode resets all changes to the "code" field.
-func (m *ProgramMutation) ResetCode() {
-	m.code = nil
+// ResetSlug resets all changes to the "slug" field.
+func (m *ProgramMutation) ResetSlug() {
+	m.slug = nil
 }
 
 // SetType sets the "type" field.
@@ -6609,8 +6609,8 @@ func (m *ProgramMutation) Fields() []string {
 	if m.title != nil {
 		fields = append(fields, program.FieldTitle)
 	}
-	if m.code != nil {
-		fields = append(fields, program.FieldCode)
+	if m.slug != nil {
+		fields = append(fields, program.FieldSlug)
 	}
 	if m._type != nil {
 		fields = append(fields, program.FieldType)
@@ -6640,8 +6640,8 @@ func (m *ProgramMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case program.FieldTitle:
 		return m.Title()
-	case program.FieldCode:
-		return m.Code()
+	case program.FieldSlug:
+		return m.Slug()
 	case program.FieldType:
 		return m.GetType()
 	case program.FieldAuthor:
@@ -6665,8 +6665,8 @@ func (m *ProgramMutation) OldField(ctx context.Context, name string) (ent.Value,
 	switch name {
 	case program.FieldTitle:
 		return m.OldTitle(ctx)
-	case program.FieldCode:
-		return m.OldCode(ctx)
+	case program.FieldSlug:
+		return m.OldSlug(ctx)
 	case program.FieldType:
 		return m.OldType(ctx)
 	case program.FieldAuthor:
@@ -6695,12 +6695,12 @@ func (m *ProgramMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTitle(v)
 		return nil
-	case program.FieldCode:
+	case program.FieldSlug:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetCode(v)
+		m.SetSlug(v)
 		return nil
 	case program.FieldType:
 		v, ok := value.(program.Type)
@@ -6826,8 +6826,8 @@ func (m *ProgramMutation) ResetField(name string) error {
 	case program.FieldTitle:
 		m.ResetTitle()
 		return nil
-	case program.FieldCode:
-		m.ResetCode()
+	case program.FieldSlug:
+		m.ResetSlug()
 		return nil
 	case program.FieldType:
 		m.ResetType()
