@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"routine/api/program"
+	"routine/api/rec"
 	"routine/common/db"
 	"routine/ent"
 
@@ -109,7 +110,10 @@ func main() {
 		HttpClient: routineHttpClient,
 	}
 
+	recApiControllerParams := rec.RecApiControllerParams(programApiControllerParams)
+
 	e = program.NewProgramApiController(e, programApiControllerParams)
+	e = rec.NewRecApiController(e, recApiControllerParams)
 
 	// swagger
 	e.GET("/routine/openapi/*", echoSwagger.WrapHandler)
