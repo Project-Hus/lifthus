@@ -22,6 +22,8 @@ func NewProgramApiController(programApi *echo.Echo, params ProgramApiControllerP
 	programApi.POST("/routine/program/weekly", programApiController.createWeeklyProgram, guard.UserGuard)
 	// query program by program name
 	programApi.GET("/routine/program", programApiController.queryProgramsByName)
+	// query specific program by slug
+	programApi.GET("/routine/program/:slug", programApiController.queryProgramBySlug)
 
 	/* ACT */
 	// create act
@@ -47,6 +49,7 @@ type programApiController struct {
 type programApis interface {
 	createWeeklyProgram(c echo.Context) error
 	queryProgramsByName(c echo.Context) error
+	queryProgramBySlug(c echo.Context) error
 
 	createAct(c echo.Context) error
 	queryActsByName(c echo.Context) error

@@ -162,6 +162,37 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/program/{slug}": {
+            "get": {
+                "tags": [
+                    "program"
+                ],
+                "summary": "gets Program slug from path and returns corresponding Program",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "program slug",
+                        "name": "slug",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns program"
+                    },
+                    "400": {
+                        "description": "invalid request"
+                    },
+                    "404": {
+                        "description": "program not found"
+                    },
+                    "500": {
+                        "description": "failed to query program"
+                    }
+                }
+            }
         }
     },
     "definitions": {

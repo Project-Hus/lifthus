@@ -10,6 +10,22 @@ import (
 	"sync"
 )
 
+// QueryProgramBySlug queries program by slug and returns corresponding program
+func QueryProgramBySlug(dbClient *ent.Client, c context.Context, slug string) (pg *ent.Program, err error) {
+	pg, err = dbClient.Program.Query().
+		Where(program.SlugEQ(slug)).
+		WithTags().
+		WithWeeklyRoutines().
+		WithDailyRoutines(func(q *ent.DailyRoutineQuery) {
+			q.WithRoutineActs()
+		}).
+		First(c)
+	if err != nil {
+		return nil, err
+	}
+	return pg, nil
+}
+
 // QueryProgramsByName queries programs by name and returns 5 programs skipping given number of programs
 func QueryProgramsByName(dbClient *ent.Client, c context.Context, name string, skip int) (programs []*ent.Program, err error) {
 	programs, err = dbClient.Program.Query().
