@@ -8,6 +8,18 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// queryActsByName godoc
+// @Router       /act [get]
+// @Param name query string true "act name"
+// @Summary      gets Act name from query-string and returns corresponding Acts
+// @Tags         act
+// @Success      200 "returns acts"
+// @Failure      400 "invalid request"
+// @Failure      500 "failed to query acts"
+func (pc programApiController) queryActsByName(c echo.Context) error {
+	return nil
+}
+
 // createAct godoc
 // @Router       /act [post]
 // @Param createActDto body dto.CreateActDto true "createAct DTO"
