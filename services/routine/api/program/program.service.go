@@ -8,6 +8,19 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// queryProgramsByName godoc
+// @Router       /program [get]
+// @Param name query string true "program name"
+// @Param skip query int false "skip"
+// @Summary      gets Program name from query-string and returns corresponding Programs
+// @Tags         program
+// @Success      200 "returns programs"
+// @Failure      400 "invalid request"
+// @Failure      500 "failed to query programs"
+func (pc programApiController) queryProgramsByName(c echo.Context) error {
+	return nil
+}
+
 // createWeeklyProgram godoc
 // @Router       /program/weekly [post]
 // @Param createWeeklyProgramDto body dto.CreateWeeklyProgramDto true "createWeeklyProgram DTO"
