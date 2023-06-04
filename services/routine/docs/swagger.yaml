@@ -168,6 +168,28 @@ paths:
       summary: gets CreateActDto from body and returns created act's ID
       tags:
       - act
+  /program:
+    get:
+      parameters:
+      - description: program name
+        in: query
+        name: name
+        required: true
+        type: string
+      - description: skip
+        in: query
+        name: skip
+        type: integer
+      responses:
+        "200":
+          description: returns programs
+        "400":
+          description: invalid request
+        "500":
+          description: failed to query programs
+      summary: gets Program name from query-string and returns corresponding Programs
+      tags:
+      - program
   /program/weekly:
     post:
       parameters:

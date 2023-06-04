@@ -93,6 +93,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/program": {
+            "get": {
+                "tags": [
+                    "program"
+                ],
+                "summary": "gets Program name from query-string and returns corresponding Programs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "program name",
+                        "name": "name",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "skip",
+                        "name": "skip",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns programs"
+                    },
+                    "400": {
+                        "description": "invalid request"
+                    },
+                    "500": {
+                        "description": "failed to query programs"
+                    }
+                }
+            }
+        },
         "/program/weekly": {
             "post": {
                 "tags": [
