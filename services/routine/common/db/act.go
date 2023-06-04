@@ -13,6 +13,7 @@ func QueryActsByName(dbClient *ent.Client, c context.Context, name string, skip 
 		Where(act.NameContains(name)).
 		Offset(skip).
 		Limit(5).
+		WithTags().
 		All(c)
 	if ent.IsNotFound(err) {
 		acts = []*ent.Act{}
