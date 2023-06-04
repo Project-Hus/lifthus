@@ -20,6 +20,8 @@ func NewProgramApiController(programApi *echo.Echo, params ProgramApiControllerP
 	/* PROGRAM */
 	// create program
 	programApi.POST("/routine/program/weekly", programApiController.createWeeklyProgram, guard.UserGuard)
+	// query program by program name
+	programApi.GET("/routine/program", programApiController.queryProgramsByName)
 
 	/* ACT */
 	// create act
@@ -44,6 +46,7 @@ type programApiController struct {
 // authApis interface defines what auth api has to handle
 type programApis interface {
 	createWeeklyProgram(c echo.Context) error
+	queryProgramsByName(c echo.Context) error
 
 	createAct(c echo.Context) error
 	queryActsByName(c echo.Context) error

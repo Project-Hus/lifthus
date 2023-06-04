@@ -6,8 +6,25 @@ import (
 	"routine/common/dto"
 	"routine/common/helper"
 	"routine/ent"
+	"routine/ent/program"
 	"sync"
 )
+
+// QueryProgramsByName queries programs by name and returns 5 programs skipping given number of programs
+func QueryProgramsByName(dbClient *ent.Client, c context.Context, name string, skip int) (programs []*ent.Program, err error) {
+	programs, err = dbClient.Program.Query().
+		Where(program.TitleContains(name)).
+		Offset(skip).
+		Limit(5).
+		WithTags().
+		All(c)
+	if ent.IsNotFound(err) {
+		programs = []*ent.Program{}
+	} else if err != nil {
+		return nil, err
+	}
+	return programs, nil
+}
 
 func CreateDailyProgram(dbClient *ent.Client, c context.Context, p interface{}) (newProgram *ent.Program, err error) {
 	return nil, nil

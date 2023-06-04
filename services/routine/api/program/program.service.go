@@ -4,9 +4,38 @@ import (
 	"net/http"
 	"routine/common/db"
 	"routine/common/dto"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
+
+// queryProgramsByName godoc
+// @Router       /program [get]
+// @Param title query string true "program title"
+// @Param skip query int false "skip"
+// @Summary      gets Program name from query-string and returns corresponding Programs
+// @Tags         program
+// @Success      200 "returns programs"
+// @Failure      400 "invalid request"
+// @Failure      500 "failed to query programs"
+func (pc programApiController) queryProgramsByName(c echo.Context) error {
+	programTitle := c.QueryParam("title")
+	skipStr := c.QueryParam("skip")
+	// convert skip to int if it exists
+	skip, err := strconv.Atoi(skipStr)
+	if skipStr == "" {
+		skip = 0
+	} else {
+		if err != nil {
+			return c.String(http.StatusBadRequest, err.Error())
+		}
+	}
+	programs, err := db.QueryProgramsByName(pc.dbClient, c.Request().Context(), programTitle, skip)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	return c.JSON(http.StatusOK, programs)
+}
 
 // createWeeklyProgram godoc
 // @Router       /program/weekly [post]
