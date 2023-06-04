@@ -35,6 +35,7 @@ func CreateWeeklyProgramRec(
 	for i, wrr := range newPRec.WeeklyRoutineRecs {
 		weeklyRoutineRecBulk[i] = tx.WeeklyRoutineRec.Create().
 			SetProgramRecID(prid).
+			SetWeeklyRoutineID(wrr.WeeklyRoutineID).
 			SetWeek(wrr.Week).
 			SetStartDate(wrr.StartDate)
 		for _, drr := range wrr.DayRoutineRecs {
@@ -55,13 +56,15 @@ func CreateWeeklyProgramRec(
 		for _, drr := range dailyRoutineRecDtos[i] {
 			dailyRoutineRecBulk[toDRR] =
 				tx.DailyRoutineRec.Create().
+					SetAuthor(newPRec.Author).
 					SetWeeklyRoutineRec(wrr).
+					SetStatus("waiting").
 					SetDate(drr.Date)
-			toDRR++
 			for _, rar := range drr.RoutineActRecs {
 				routineActRecDtos[toDRR] = append(routineActRecDtos[toDRR], rar)
 				cntRAR++
 			}
+			toDRR++
 		}
 	}
 	dailyRoutineRecs, err := tx.DailyRoutineRec.CreateBulk(dailyRoutineRecBulk...).Save(c)
@@ -80,7 +83,8 @@ func CreateWeeklyProgramRec(
 					SetActID(rar.ActID).
 					SetOrder(rar.Order).
 					SetNillableReps(rar.Reps).
-					SetNillableLap(rar.Lap)
+					SetNillableLap(rar.Lap).
+					SetStatus("waiting")
 			toRAR++
 		}
 	}

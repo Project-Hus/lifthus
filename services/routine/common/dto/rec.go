@@ -31,8 +31,7 @@ type CreateWeeklyDailyRoutineRecDto struct {
 	RoutineActRecs []CreateWeeklyRoutineActRecDto `json:"routine_act_recs,omitempty"`
 }
 type CreateWeeklyRoutineActRecDto struct {
-	DailyRoutineRecID uint64 `json:"daily_routine_rec_id,omitempty"`
-	RoutineActID      uint64 `json:"routine_act_id,omitempty"`
+	RoutineActID uint64 `json:"routine_act_id,omitempty"`
 
 	ActID uint64 `json:"act_id,omitempty"`
 	Order int    `json:"order,omitempty"`
