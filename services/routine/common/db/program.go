@@ -15,9 +15,10 @@ func QueryProgramBySlug(dbClient *ent.Client, c context.Context, slug string) (p
 	pg, err = dbClient.Program.Query().
 		Where(program.SlugEQ(slug)).
 		WithTags().
-		WithWeeklyRoutines().
-		WithDailyRoutines(func(q *ent.DailyRoutineQuery) {
-			q.WithRoutineActs()
+		WithWeeklyRoutines(func(q *ent.WeeklyRoutineQuery) {
+			q.WithDailyRoutines(func(q *ent.DailyRoutineQuery) {
+				q.WithRoutineActs()
+			})
 		}).
 		First(c)
 	if err != nil {
