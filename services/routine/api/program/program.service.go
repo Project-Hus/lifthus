@@ -11,7 +11,7 @@ import (
 
 // queryProgramsByName godoc
 // @Router       /program [get]
-// @Param name query string true "program name"
+// @Param title query string true "program title"
 // @Param skip query int false "skip"
 // @Summary      gets Program name from query-string and returns corresponding Programs
 // @Tags         program
@@ -19,7 +19,7 @@ import (
 // @Failure      400 "invalid request"
 // @Failure      500 "failed to query programs"
 func (pc programApiController) queryProgramsByName(c echo.Context) error {
-	programName := c.QueryParam("name")
+	programTitle := c.QueryParam("title")
 	skipStr := c.QueryParam("skip")
 	// convert skip to int if it exists
 	skip, err := strconv.Atoi(skipStr)
@@ -30,7 +30,7 @@ func (pc programApiController) queryProgramsByName(c echo.Context) error {
 			return c.String(http.StatusBadRequest, err.Error())
 		}
 	}
-	programs, err := db.QueryProgramsByName(pc.dbClient, c.Request().Context(), programName, skip)
+	programs, err := db.QueryProgramsByName(pc.dbClient, c.Request().Context(), programTitle, skip)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}

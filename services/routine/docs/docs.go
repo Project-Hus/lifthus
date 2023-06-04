@@ -102,8 +102,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "program name",
-                        "name": "name",
+                        "description": "program title",
+                        "name": "title",
                         "in": "query",
                         "required": true
                     },

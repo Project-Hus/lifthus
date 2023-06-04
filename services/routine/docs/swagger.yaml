@@ -171,9 +171,9 @@ paths:
   /program:
     get:
       parameters:
-      - description: program name
+      - description: program title
         in: query
-        name: name
+        name: title
         required: true
         type: string
       - description: skip
