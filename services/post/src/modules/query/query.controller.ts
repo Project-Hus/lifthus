@@ -59,6 +59,8 @@ export class QueryController {
     return this.postQueryService.getUsersPosts({ users, skip });
   }
 
+ 
+
   /**
    * gets user ID and skip number from url params and returns 10 posts from the skip number.
    * @param req
