@@ -13,7 +13,7 @@ import (
 
 // updateRoutineActRec godoc
 // @Router       /rec/routineact [put]
-// @param updateRoutineActRecDto body dto.UpdateRoutineActRec true "update routineact rec dto"
+// @param updateRoutineActRecDto body dto.UpdateRoutineActRecDto true "update routineact rec dto"
 // @Summary      updates routineact rec
 // @Tags         rec
 // @Success      200 "returns updated routineact rec"
@@ -22,7 +22,25 @@ import (
 // @Failure      403 "forbidden"
 // @Failure      500 "failed to update routineact rec"
 func (rc recApiController) updateRoutineActRec(c echo.Context) error {
-	return nil
+	// UserGuarded
+	uid := c.Get("uid").(uint64)
+
+	// get UpdateRoutineActRecDto from request body
+	newRARDto := new(dto.UpdateRoutineActRecDto)
+	if err := c.Bind(newRARDto); err != nil {
+		return c.JSON(http.StatusBadRequest, err)
+	}
+
+	if uid != *newRARDto.Author {
+		return c.JSON(http.StatusForbidden, "forbidden")
+	}
+
+	updatedRAR, err := db.UpdateRoutineActRec(rc.dbClient, c.Request().Context(), newRARDto)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, updatedRAR)
 }
 
 // queryRoutineActRecs godoc
