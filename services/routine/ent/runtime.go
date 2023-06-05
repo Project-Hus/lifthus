@@ -224,35 +224,35 @@ func init() {
 	routineactrecFields := schema.RoutineActRec{}.Fields()
 	_ = routineactrecFields
 	// routineactrecDescOrder is the schema descriptor for order field.
-	routineactrecDescOrder := routineactrecFields[4].Descriptor()
+	routineactrecDescOrder := routineactrecFields[5].Descriptor()
 	// routineactrec.OrderValidator is a validator for the "order" field. It is called by the builders before save.
 	routineactrec.OrderValidator = routineactrecDescOrder.Validators[0].(func(int) error)
 	// routineactrecDescReps is the schema descriptor for reps field.
-	routineactrecDescReps := routineactrecFields[5].Descriptor()
+	routineactrecDescReps := routineactrecFields[6].Descriptor()
 	// routineactrec.RepsValidator is a validator for the "reps" field. It is called by the builders before save.
 	routineactrec.RepsValidator = routineactrecDescReps.Validators[0].(func(int) error)
 	// routineactrecDescLap is the schema descriptor for lap field.
-	routineactrecDescLap := routineactrecFields[6].Descriptor()
+	routineactrecDescLap := routineactrecFields[7].Descriptor()
 	// routineactrec.LapValidator is a validator for the "lap" field. It is called by the builders before save.
 	routineactrec.LapValidator = routineactrecDescLap.Validators[0].(func(int) error)
 	// routineactrecDescCurrentReps is the schema descriptor for current_reps field.
-	routineactrecDescCurrentReps := routineactrecFields[7].Descriptor()
+	routineactrecDescCurrentReps := routineactrecFields[8].Descriptor()
 	// routineactrec.DefaultCurrentReps holds the default value on creation for the current_reps field.
 	routineactrec.DefaultCurrentReps = routineactrecDescCurrentReps.Default.(int)
 	// routineactrec.CurrentRepsValidator is a validator for the "current_reps" field. It is called by the builders before save.
 	routineactrec.CurrentRepsValidator = routineactrecDescCurrentReps.Validators[0].(func(int) error)
 	// routineactrecDescCurrentLap is the schema descriptor for current_lap field.
-	routineactrecDescCurrentLap := routineactrecFields[8].Descriptor()
+	routineactrecDescCurrentLap := routineactrecFields[9].Descriptor()
 	// routineactrec.DefaultCurrentLap holds the default value on creation for the current_lap field.
 	routineactrec.DefaultCurrentLap = routineactrecDescCurrentLap.Default.(int)
 	// routineactrec.CurrentLapValidator is a validator for the "current_lap" field. It is called by the builders before save.
 	routineactrec.CurrentLapValidator = routineactrecDescCurrentLap.Validators[0].(func(int) error)
 	// routineactrecDescCreatedAt is the schema descriptor for created_at field.
-	routineactrecDescCreatedAt := routineactrecFields[13].Descriptor()
+	routineactrecDescCreatedAt := routineactrecFields[14].Descriptor()
 	// routineactrec.DefaultCreatedAt holds the default value on creation for the created_at field.
 	routineactrec.DefaultCreatedAt = routineactrecDescCreatedAt.Default.(func() time.Time)
 	// routineactrecDescUpdatedAt is the schema descriptor for updated_at field.
-	routineactrecDescUpdatedAt := routineactrecFields[14].Descriptor()
+	routineactrecDescUpdatedAt := routineactrecFields[15].Descriptor()
 	// routineactrec.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	routineactrec.DefaultUpdatedAt = routineactrecDescUpdatedAt.Default.(func() time.Time)
 	// routineactrec.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

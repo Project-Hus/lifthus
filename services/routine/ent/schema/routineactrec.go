@@ -17,6 +17,7 @@ type RoutineActRec struct {
 func (RoutineActRec) Fields() []ent.Field {
 	return []ent.Field{
 		field.Uint64("id").Unique(),
+		field.Uint64("author"),
 		field.Uint64("daily_routine_rec_id"),
 
 		field.Uint64("routine_act_id").Nillable().Optional(),

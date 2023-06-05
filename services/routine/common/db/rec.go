@@ -4,7 +4,31 @@ import (
 	"context"
 	"routine/common/dto"
 	"routine/ent"
+	"routine/ent/routineactrec"
 )
+
+func UpdateRoutineActRec(
+	dbClient *ent.Client,
+	c context.Context,
+	newRARDto *dto.UpdateRoutineActRecDto,
+) (*ent.RoutineActRec, error) {
+	updatingRAR := dbClient.RoutineActRec.UpdateOneID(newRARDto.ID).
+		Where(routineactrec.AuthorEQ(*newRARDto.Author)).
+		SetNillableCurrentReps(newRARDto.CurrentReps).
+		SetNillableCurrentLap(newRARDto.CurrentLap).
+		SetNillableStartedAt(newRARDto.StartedAt).
+		SetNillableImage(newRARDto.Image).
+		SetNillableComment(newRARDto.Comment)
+
+	if newRARDto.Status != nil {
+		updatingRAR = updatingRAR.SetStatus(routineactrec.Status(*newRARDto.Status))
+	}
+	updatedRAR, err := updatingRAR.Save(c)
+	if err != nil {
+		return nil, err
+	}
+	return updatedRAR, nil
+}
 
 func CreateWeeklyProgramRec(
 	dbClient *ent.Client,
@@ -78,6 +102,7 @@ func CreateWeeklyProgramRec(
 		for _, rar := range routineActRecDtos[i] {
 			routineActRecBulk[toRAR] =
 				tx.RoutineActRec.Create().
+					SetAuthor(newPRec.Author).
 					SetDailyRoutineRec(drr).
 					SetRoutineActID(rar.RoutineActID).
 					SetActID(rar.ActID).
