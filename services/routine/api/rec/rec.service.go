@@ -4,9 +4,68 @@ import (
 	"net/http"
 	"routine/common/db"
 	"routine/common/dto"
+	"routine/ent"
+	"routine/ent/dailyroutinerec"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
+
+// queryRoutineActRecs godoc
+// @Router       /rec/routineact [get]
+// @Param date query string false "date like 2006-01-02"
+// @Param startDate query string false "start date like 2006-01-02"
+// @Param endDate query string false "end date like 2006-01-02s"
+// @Summary      gets specific date or range of date and returns routineact recs
+// @Tags         rec
+// @Success      200 "returns routineact recs"
+// @Failure      400 "invalid request"
+// @Failure      401 "unauthorized"
+// @Failure 	 403 "forbidden"
+// @Failure      500 "failed to query routineact recs"
+func (rc recApiController) queryRoutineActRecs(c echo.Context) error {
+	dateQ := c.QueryParam("date")
+	// if date is given, handle specific date query
+	if dateQ != "" {
+		date, err := time.Parse("2006-01-02", dateQ)
+		if err != nil {
+			return c.String(http.StatusBadRequest, err.Error())
+		}
+		rars, err := rc.dbClient.DailyRoutineRec.Query().
+			Where(dailyroutinerec.DateEQ(date)).
+			WithRoutineActRecs().
+			All(c.Request().Context())
+		if ent.IsNotFound(err) {
+			rars = []*ent.DailyRoutineRec{}
+			return c.JSON(http.StatusOK, rars)
+		} else if err != nil {
+			return c.String(http.StatusInternalServerError, err.Error())
+		}
+		return c.JSON(http.StatusOK, rars)
+	}
+	// date is not given, handle range of date query
+	startDateQ := c.QueryParam("startDate")
+	endDateQ := c.QueryParam("endDate")
+	if startDateQ == "" || endDateQ == "" {
+		return c.String(http.StatusBadRequest, "invalid request")
+	}
+	startDate, errS := time.Parse("2006-01-02", startDateQ)
+	endDate, errE := time.Parse("2006-01-02", endDateQ)
+	if errS != nil || errE != nil {
+		return c.String(http.StatusBadRequest, "invalid request")
+	}
+	rars, err := rc.dbClient.DailyRoutineRec.Query().
+		Where(dailyroutinerec.DateGTE(startDate), dailyroutinerec.DateLTE(endDate)).
+		WithRoutineActRecs().
+		All(c.Request().Context())
+	if ent.IsNotFound(err) {
+		rars = []*ent.DailyRoutineRec{}
+		return c.JSON(http.StatusOK, rars)
+	} else if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	return c.JSON(http.StatusOK, rars)
+}
 
 // createWeeklyProgramRec godoc
 // @Router       /rec/program/weekly [post]

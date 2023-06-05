@@ -22,9 +22,8 @@ func NewRecApiController(recApi *echo.Echo, params RecApiControllerParams) *echo
 	recApi.POST("/routine/rec/program/weekly", recApiController.createWeeklyProgramRec, guard.UserGuard)
 	// query program rec
 
-	// query month recs
-
-	// query daily recs
+	// query routineact recs by given range of date or specific date
+	recApi.GET("/routine/rec/routineact", recApiController.queryRoutineActRecs, guard.UserGuard)
 
 	// update routineact rec
 
@@ -45,4 +44,6 @@ type recApiController struct {
 // authApis interface defines what auth api has to handle
 type recApis interface {
 	createWeeklyProgramRec(c echo.Context) error
+
+	queryRoutineActRecs(c echo.Context) error
 }
