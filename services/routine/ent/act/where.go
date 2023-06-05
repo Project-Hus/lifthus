@@ -60,6 +60,11 @@ func Name(v string) predicate.Act {
 	return predicate.Act(sql.FieldEQ(FieldName, v))
 }
 
+// Slug applies equality check predicate on the "slug" field. It's identical to SlugEQ.
+func Slug(v string) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldSlug, v))
+}
+
 // Author applies equality check predicate on the "author" field. It's identical to AuthorEQ.
 func Author(v uint64) predicate.Act {
 	return predicate.Act(sql.FieldEQ(FieldAuthor, v))
@@ -145,9 +150,9 @@ func LowerBack(v bool) predicate.Act {
 	return predicate.Act(sql.FieldEQ(FieldLowerBack, v))
 }
 
-// Legs applies equality check predicate on the "legs" field. It's identical to LegsEQ.
-func Legs(v bool) predicate.Act {
-	return predicate.Act(sql.FieldEQ(FieldLegs, v))
+// Glute applies equality check predicate on the "glute" field. It's identical to GluteEQ.
+func Glute(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldGlute, v))
 }
 
 // LegsFront applies equality check predicate on the "legs_front" field. It's identical to LegsFrontEQ.
@@ -228,6 +233,71 @@ func NameEqualFold(v string) predicate.Act {
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.Act {
 	return predicate.Act(sql.FieldContainsFold(FieldName, v))
+}
+
+// SlugEQ applies the EQ predicate on the "slug" field.
+func SlugEQ(v string) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldSlug, v))
+}
+
+// SlugNEQ applies the NEQ predicate on the "slug" field.
+func SlugNEQ(v string) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldSlug, v))
+}
+
+// SlugIn applies the In predicate on the "slug" field.
+func SlugIn(vs ...string) predicate.Act {
+	return predicate.Act(sql.FieldIn(FieldSlug, vs...))
+}
+
+// SlugNotIn applies the NotIn predicate on the "slug" field.
+func SlugNotIn(vs ...string) predicate.Act {
+	return predicate.Act(sql.FieldNotIn(FieldSlug, vs...))
+}
+
+// SlugGT applies the GT predicate on the "slug" field.
+func SlugGT(v string) predicate.Act {
+	return predicate.Act(sql.FieldGT(FieldSlug, v))
+}
+
+// SlugGTE applies the GTE predicate on the "slug" field.
+func SlugGTE(v string) predicate.Act {
+	return predicate.Act(sql.FieldGTE(FieldSlug, v))
+}
+
+// SlugLT applies the LT predicate on the "slug" field.
+func SlugLT(v string) predicate.Act {
+	return predicate.Act(sql.FieldLT(FieldSlug, v))
+}
+
+// SlugLTE applies the LTE predicate on the "slug" field.
+func SlugLTE(v string) predicate.Act {
+	return predicate.Act(sql.FieldLTE(FieldSlug, v))
+}
+
+// SlugContains applies the Contains predicate on the "slug" field.
+func SlugContains(v string) predicate.Act {
+	return predicate.Act(sql.FieldContains(FieldSlug, v))
+}
+
+// SlugHasPrefix applies the HasPrefix predicate on the "slug" field.
+func SlugHasPrefix(v string) predicate.Act {
+	return predicate.Act(sql.FieldHasPrefix(FieldSlug, v))
+}
+
+// SlugHasSuffix applies the HasSuffix predicate on the "slug" field.
+func SlugHasSuffix(v string) predicate.Act {
+	return predicate.Act(sql.FieldHasSuffix(FieldSlug, v))
+}
+
+// SlugEqualFold applies the EqualFold predicate on the "slug" field.
+func SlugEqualFold(v string) predicate.Act {
+	return predicate.Act(sql.FieldEqualFold(FieldSlug, v))
+}
+
+// SlugContainsFold applies the ContainsFold predicate on the "slug" field.
+func SlugContainsFold(v string) predicate.Act {
+	return predicate.Act(sql.FieldContainsFold(FieldSlug, v))
 }
 
 // TypeEQ applies the EQ predicate on the "type" field.
@@ -640,14 +710,14 @@ func LowerBackNEQ(v bool) predicate.Act {
 	return predicate.Act(sql.FieldNEQ(FieldLowerBack, v))
 }
 
-// LegsEQ applies the EQ predicate on the "legs" field.
-func LegsEQ(v bool) predicate.Act {
-	return predicate.Act(sql.FieldEQ(FieldLegs, v))
+// GluteEQ applies the EQ predicate on the "glute" field.
+func GluteEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldGlute, v))
 }
 
-// LegsNEQ applies the NEQ predicate on the "legs" field.
-func LegsNEQ(v bool) predicate.Act {
-	return predicate.Act(sql.FieldNEQ(FieldLegs, v))
+// GluteNEQ applies the NEQ predicate on the "glute" field.
+func GluteNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldGlute, v))
 }
 
 // LegsFrontEQ applies the EQ predicate on the "legs_front" field.

@@ -38,6 +38,12 @@ func (pu *ProgramUpdate) SetTitle(s string) *ProgramUpdate {
 	return pu
 }
 
+// SetSlug sets the "slug" field.
+func (pu *ProgramUpdate) SetSlug(s string) *ProgramUpdate {
+	pu.mutation.SetSlug(s)
+	return pu
+}
+
 // SetType sets the "type" field.
 func (pu *ProgramUpdate) SetType(pr program.Type) *ProgramUpdate {
 	pu.mutation.SetType(pr)
@@ -318,6 +324,9 @@ func (pu *ProgramUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := pu.mutation.Title(); ok {
 		_spec.SetField(program.FieldTitle, field.TypeString, value)
 	}
+	if value, ok := pu.mutation.Slug(); ok {
+		_spec.SetField(program.FieldSlug, field.TypeString, value)
+	}
 	if value, ok := pu.mutation.GetType(); ok {
 		_spec.SetField(program.FieldType, field.TypeEnum, value)
 	}
@@ -545,6 +554,12 @@ type ProgramUpdateOne struct {
 // SetTitle sets the "title" field.
 func (puo *ProgramUpdateOne) SetTitle(s string) *ProgramUpdateOne {
 	puo.mutation.SetTitle(s)
+	return puo
+}
+
+// SetSlug sets the "slug" field.
+func (puo *ProgramUpdateOne) SetSlug(s string) *ProgramUpdateOne {
+	puo.mutation.SetSlug(s)
 	return puo
 }
 
@@ -857,6 +872,9 @@ func (puo *ProgramUpdateOne) sqlSave(ctx context.Context) (_node *Program, err e
 	}
 	if value, ok := puo.mutation.Title(); ok {
 		_spec.SetField(program.FieldTitle, field.TypeString, value)
+	}
+	if value, ok := puo.mutation.Slug(); ok {
+		_spec.SetField(program.FieldSlug, field.TypeString, value)
 	}
 	if value, ok := puo.mutation.GetType(); ok {
 		_spec.SetField(program.FieldType, field.TypeEnum, value)

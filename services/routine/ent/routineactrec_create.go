@@ -111,6 +111,20 @@ func (rarc *RoutineActRecCreate) SetNillableCurrentLap(i *int) *RoutineActRecCre
 	return rarc
 }
 
+// SetStartedAt sets the "started_at" field.
+func (rarc *RoutineActRecCreate) SetStartedAt(t time.Time) *RoutineActRecCreate {
+	rarc.mutation.SetStartedAt(t)
+	return rarc
+}
+
+// SetNillableStartedAt sets the "started_at" field if the given value is not nil.
+func (rarc *RoutineActRecCreate) SetNillableStartedAt(t *time.Time) *RoutineActRecCreate {
+	if t != nil {
+		rarc.SetStartedAt(*t)
+	}
+	return rarc
+}
+
 // SetImage sets the "image" field.
 func (rarc *RoutineActRecCreate) SetImage(s string) *RoutineActRecCreate {
 	rarc.mutation.SetImage(s)
@@ -360,6 +374,10 @@ func (rarc *RoutineActRecCreate) createSpec() (*RoutineActRec, *sqlgraph.CreateS
 	if value, ok := rarc.mutation.CurrentLap(); ok {
 		_spec.SetField(routineactrec.FieldCurrentLap, field.TypeInt, value)
 		_node.CurrentLap = value
+	}
+	if value, ok := rarc.mutation.StartedAt(); ok {
+		_spec.SetField(routineactrec.FieldStartedAt, field.TypeTime, value)
+		_node.StartedAt = &value
 	}
 	if value, ok := rarc.mutation.Image(); ok {
 		_spec.SetField(routineactrec.FieldImage, field.TypeString, value)

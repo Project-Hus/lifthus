@@ -1,5 +1,172 @@
 basePath: /routine
-host: auth.lifthus.com
+definitions:
+  dto.CreateActDto:
+    properties:
+      arms:
+        description: prime movers
+        type: boolean
+      author:
+        type: integer
+      bodyweight:
+        type: boolean
+      cardio:
+        type: boolean
+      chest:
+        type: boolean
+      core:
+        type: boolean
+      description:
+        type: string
+      etc:
+        type: boolean
+      full:
+        type: boolean
+      glute:
+        type: boolean
+      image:
+        type: string
+      legs_back:
+        type: boolean
+      legs_front:
+        type: boolean
+      lower:
+        type: boolean
+      lower_back:
+        type: boolean
+      name:
+        type: string
+      shoulders:
+        type: boolean
+      tags:
+        items:
+          type: string
+        type: array
+      type:
+        type: string
+      upper:
+        description: upper/lower/full body
+        type: boolean
+      upper_back:
+        type: boolean
+      weight:
+        description: weight/cardio
+        type: boolean
+    type: object
+  dto.CreateWeeklyDailyRoutineDto:
+    properties:
+      day:
+        type: integer
+      week:
+        type: integer
+    type: object
+  dto.CreateWeeklyDailyRoutineRecDto:
+    properties:
+      daily_routine_id:
+        type: integer
+      date:
+        type: string
+      routine_act_recs:
+        items:
+          $ref: '#/definitions/dto.CreateWeeklyRoutineActRecDto'
+        type: array
+    type: object
+  dto.CreateWeeklyProgramDto:
+    properties:
+      author:
+        type: integer
+      daily_routines:
+        items:
+          $ref: '#/definitions/dto.CreateWeeklyDailyRoutineDto'
+        type: array
+      description:
+        type: string
+      image:
+        type: string
+      routine_acts:
+        items:
+          $ref: '#/definitions/dto.CreateWeeklyRoutineActDto'
+        type: array
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      weekly_routines:
+        items:
+          $ref: '#/definitions/dto.CreateWeeklyRoutineDto'
+        type: array
+    type: object
+  dto.CreateWeeklyProgramRecDto:
+    properties:
+      author:
+        type: integer
+      comment:
+        type: string
+      end_date:
+        type: string
+      program_id:
+        type: integer
+      start_date:
+        type: string
+      weekly_routine_recs:
+        items:
+          $ref: '#/definitions/dto.CreateWeeklyRoutineRecDto'
+        type: array
+    type: object
+  dto.CreateWeeklyRoutineActDto:
+    properties:
+      act_id:
+        type: integer
+      day:
+        type: integer
+      lap:
+        type: integer
+      order:
+        type: integer
+      reps:
+        type: integer
+      w_ratio:
+        type: number
+      warmup:
+        type: boolean
+      week:
+        type: integer
+    type: object
+  dto.CreateWeeklyRoutineActRecDto:
+    properties:
+      act_id:
+        type: integer
+      daily_routine_rec_id:
+        type: integer
+      lap:
+        type: integer
+      order:
+        type: integer
+      reps:
+        type: integer
+      routine_act_id:
+        type: integer
+    type: object
+  dto.CreateWeeklyRoutineDto:
+    properties:
+      week:
+        type: integer
+    type: object
+  dto.CreateWeeklyRoutineRecDto:
+    properties:
+      daily_routine_recs:
+        items:
+          $ref: '#/definitions/dto.CreateWeeklyDailyRoutineRecDto'
+        type: array
+      start_date:
+        type: string
+      week:
+        type: integer
+      weekly_routine_id:
+        type: integer
+    type: object
+host: api.lifthus.com
 info:
   contact:
     email: lifthus531@gmail.com
@@ -12,5 +179,139 @@ info:
   termsOfService: http://swagger.io/terms/
   title: Lifthus routine server
   version: 0.0.0
-paths: {}
+paths:
+  /act:
+    get:
+      parameters:
+      - description: act name
+        in: query
+        name: name
+        required: true
+        type: string
+      - description: skip
+        in: query
+        name: skip
+        type: integer
+      responses:
+        "200":
+          description: returns acts
+        "400":
+          description: invalid request
+        "500":
+          description: failed to query acts
+      summary: gets Act name from query-string and returns corresponding Acts
+      tags:
+      - act
+    post:
+      parameters:
+      - description: createAct DTO
+        in: body
+        name: createActDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateActDto'
+      responses:
+        "201":
+          description: returns created act's ID
+        "400":
+          description: invalid body
+        "401":
+          description: unauthorized
+        "403":
+          description: forbidden
+        "500":
+          description: failed to create program
+      summary: gets CreateActDto from body and returns created act's ID
+      tags:
+      - act
+  /program:
+    get:
+      parameters:
+      - description: program title
+        in: query
+        name: title
+        required: true
+        type: string
+      - description: skip
+        in: query
+        name: skip
+        type: integer
+      responses:
+        "200":
+          description: returns programs
+        "400":
+          description: invalid request
+        "500":
+          description: failed to query programs
+      summary: gets Program name from query-string and returns corresponding Programs
+      tags:
+      - program
+  /program/{slug}:
+    get:
+      parameters:
+      - description: program slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      responses:
+        "200":
+          description: returns program
+        "400":
+          description: invalid request
+        "404":
+          description: program not found
+        "500":
+          description: failed to query program
+      summary: gets Program slug from path and returns corresponding Program
+      tags:
+      - program
+  /program/weekly:
+    post:
+      parameters:
+      - description: createWeeklyProgram DTO
+        in: body
+        name: createWeeklyProgramDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateWeeklyProgramDto'
+      responses:
+        "201":
+          description: returns created program's ID
+        "400":
+          description: invalid body
+        "401":
+          description: unauthorized
+        "403":
+          description: forbidden
+        "500":
+          description: failed to create program
+      summary: gets CreateWeeklyProgramDto from body and returns created program's
+        ID
+      tags:
+      - program
+  /rec/program/weekly:
+    post:
+      parameters:
+      - description: createWeeklyProgramRec DTO
+        in: body
+        name: createWeeklyProgramRecDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateWeeklyProgramRecDto'
+      responses:
+        "201":
+          description: returns created rec's ID
+        "400":
+          description: invalid body
+        "401":
+          description: unauthorized
+        "403":
+          description: forbidden
+        "500":
+          description: failed to create rec
+      summary: gets CreateWeeklyProgramRecDto from body and returns created rec's
+        ID
+      tags:
+      - rec
 swagger: "2.0"

@@ -30,77 +30,77 @@ func init() {
 	// act.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	act.NameValidator = actDescName.Validators[0].(func(string) error)
 	// actDescCreatedAt is the schema descriptor for created_at field.
-	actDescCreatedAt := actFields[6].Descriptor()
+	actDescCreatedAt := actFields[7].Descriptor()
 	// act.DefaultCreatedAt holds the default value on creation for the created_at field.
 	act.DefaultCreatedAt = actDescCreatedAt.Default.(func() time.Time)
 	// actDescUpdatedAt is the schema descriptor for updated_at field.
-	actDescUpdatedAt := actFields[7].Descriptor()
+	actDescUpdatedAt := actFields[8].Descriptor()
 	// act.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	act.DefaultUpdatedAt = actDescUpdatedAt.Default.(func() time.Time)
 	// act.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	act.UpdateDefaultUpdatedAt = actDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// actDescWeight is the schema descriptor for weight field.
-	actDescWeight := actFields[8].Descriptor()
+	actDescWeight := actFields[9].Descriptor()
 	// act.DefaultWeight holds the default value on creation for the weight field.
 	act.DefaultWeight = actDescWeight.Default.(bool)
 	// actDescBodyweight is the schema descriptor for bodyweight field.
-	actDescBodyweight := actFields[9].Descriptor()
+	actDescBodyweight := actFields[10].Descriptor()
 	// act.DefaultBodyweight holds the default value on creation for the bodyweight field.
 	act.DefaultBodyweight = actDescBodyweight.Default.(bool)
 	// actDescCardio is the schema descriptor for cardio field.
-	actDescCardio := actFields[10].Descriptor()
+	actDescCardio := actFields[11].Descriptor()
 	// act.DefaultCardio holds the default value on creation for the cardio field.
 	act.DefaultCardio = actDescCardio.Default.(bool)
 	// actDescUpper is the schema descriptor for upper field.
-	actDescUpper := actFields[11].Descriptor()
+	actDescUpper := actFields[12].Descriptor()
 	// act.DefaultUpper holds the default value on creation for the upper field.
 	act.DefaultUpper = actDescUpper.Default.(bool)
 	// actDescLower is the schema descriptor for lower field.
-	actDescLower := actFields[12].Descriptor()
+	actDescLower := actFields[13].Descriptor()
 	// act.DefaultLower holds the default value on creation for the lower field.
 	act.DefaultLower = actDescLower.Default.(bool)
 	// actDescFull is the schema descriptor for full field.
-	actDescFull := actFields[13].Descriptor()
+	actDescFull := actFields[14].Descriptor()
 	// act.DefaultFull holds the default value on creation for the full field.
 	act.DefaultFull = actDescFull.Default.(bool)
 	// actDescArms is the schema descriptor for arms field.
-	actDescArms := actFields[14].Descriptor()
+	actDescArms := actFields[15].Descriptor()
 	// act.DefaultArms holds the default value on creation for the arms field.
 	act.DefaultArms = actDescArms.Default.(bool)
 	// actDescShoulders is the schema descriptor for shoulders field.
-	actDescShoulders := actFields[15].Descriptor()
+	actDescShoulders := actFields[16].Descriptor()
 	// act.DefaultShoulders holds the default value on creation for the shoulders field.
 	act.DefaultShoulders = actDescShoulders.Default.(bool)
 	// actDescChest is the schema descriptor for chest field.
-	actDescChest := actFields[16].Descriptor()
+	actDescChest := actFields[17].Descriptor()
 	// act.DefaultChest holds the default value on creation for the chest field.
 	act.DefaultChest = actDescChest.Default.(bool)
 	// actDescCore is the schema descriptor for core field.
-	actDescCore := actFields[17].Descriptor()
+	actDescCore := actFields[18].Descriptor()
 	// act.DefaultCore holds the default value on creation for the core field.
 	act.DefaultCore = actDescCore.Default.(bool)
 	// actDescUpperBack is the schema descriptor for upper_back field.
-	actDescUpperBack := actFields[18].Descriptor()
+	actDescUpperBack := actFields[19].Descriptor()
 	// act.DefaultUpperBack holds the default value on creation for the upper_back field.
 	act.DefaultUpperBack = actDescUpperBack.Default.(bool)
 	// actDescLowerBack is the schema descriptor for lower_back field.
-	actDescLowerBack := actFields[19].Descriptor()
+	actDescLowerBack := actFields[20].Descriptor()
 	// act.DefaultLowerBack holds the default value on creation for the lower_back field.
 	act.DefaultLowerBack = actDescLowerBack.Default.(bool)
-	// actDescLegs is the schema descriptor for legs field.
-	actDescLegs := actFields[20].Descriptor()
-	// act.DefaultLegs holds the default value on creation for the legs field.
-	act.DefaultLegs = actDescLegs.Default.(bool)
+	// actDescGlute is the schema descriptor for glute field.
+	actDescGlute := actFields[21].Descriptor()
+	// act.DefaultGlute holds the default value on creation for the glute field.
+	act.DefaultGlute = actDescGlute.Default.(bool)
 	// actDescLegsFront is the schema descriptor for legs_front field.
-	actDescLegsFront := actFields[21].Descriptor()
+	actDescLegsFront := actFields[22].Descriptor()
 	// act.DefaultLegsFront holds the default value on creation for the legs_front field.
 	act.DefaultLegsFront = actDescLegsFront.Default.(bool)
 	// actDescLegsBack is the schema descriptor for legs_back field.
-	actDescLegsBack := actFields[22].Descriptor()
+	actDescLegsBack := actFields[23].Descriptor()
 	// act.DefaultLegsBack holds the default value on creation for the legs_back field.
 	act.DefaultLegsBack = actDescLegsBack.Default.(bool)
 	// actDescEtc is the schema descriptor for etc field.
-	actDescEtc := actFields[23].Descriptor()
+	actDescEtc := actFields[24].Descriptor()
 	// act.DefaultEtc holds the default value on creation for the etc field.
 	act.DefaultEtc = actDescEtc.Default.(bool)
 	bodyinfoFields := schema.BodyInfo{}.Fields()
@@ -154,11 +154,11 @@ func init() {
 	// program.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	program.TitleValidator = programDescTitle.Validators[0].(func(string) error)
 	// programDescCreatedAt is the schema descriptor for created_at field.
-	programDescCreatedAt := programFields[6].Descriptor()
+	programDescCreatedAt := programFields[7].Descriptor()
 	// program.DefaultCreatedAt holds the default value on creation for the created_at field.
 	program.DefaultCreatedAt = programDescCreatedAt.Default.(func() time.Time)
 	// programDescUpdatedAt is the schema descriptor for updated_at field.
-	programDescUpdatedAt := programFields[7].Descriptor()
+	programDescUpdatedAt := programFields[8].Descriptor()
 	// program.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	program.DefaultUpdatedAt = programDescUpdatedAt.Default.(func() time.Time)
 	// program.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -181,24 +181,42 @@ func init() {
 	routineactDescOrder := routineactFields[3].Descriptor()
 	// routineact.OrderValidator is a validator for the "order" field. It is called by the builders before save.
 	routineact.OrderValidator = routineactDescOrder.Validators[0].(func(int) error)
+	// routineactDescWRatio is the schema descriptor for w_ratio field.
+	routineactDescWRatio := routineactFields[4].Descriptor()
+	// routineact.WRatioValidator is a validator for the "w_ratio" field. It is called by the builders before save.
+	routineact.WRatioValidator = func() func(float64) error {
+		validators := routineactDescWRatio.Validators
+		fns := [...]func(float64) error{
+			validators[0].(func(float64) error),
+			validators[1].(func(float64) error),
+		}
+		return func(w_ratio float64) error {
+			for _, fn := range fns {
+				if err := fn(w_ratio); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	// routineactDescReps is the schema descriptor for reps field.
-	routineactDescReps := routineactFields[4].Descriptor()
+	routineactDescReps := routineactFields[5].Descriptor()
 	// routineact.RepsValidator is a validator for the "reps" field. It is called by the builders before save.
 	routineact.RepsValidator = routineactDescReps.Validators[0].(func(int) error)
 	// routineactDescLap is the schema descriptor for lap field.
-	routineactDescLap := routineactFields[5].Descriptor()
+	routineactDescLap := routineactFields[6].Descriptor()
 	// routineact.LapValidator is a validator for the "lap" field. It is called by the builders before save.
 	routineact.LapValidator = routineactDescLap.Validators[0].(func(int) error)
 	// routineactDescWarmup is the schema descriptor for warmup field.
-	routineactDescWarmup := routineactFields[6].Descriptor()
+	routineactDescWarmup := routineactFields[7].Descriptor()
 	// routineact.DefaultWarmup holds the default value on creation for the warmup field.
 	routineact.DefaultWarmup = routineactDescWarmup.Default.(bool)
 	// routineactDescCreatedAt is the schema descriptor for created_at field.
-	routineactDescCreatedAt := routineactFields[7].Descriptor()
+	routineactDescCreatedAt := routineactFields[8].Descriptor()
 	// routineact.DefaultCreatedAt holds the default value on creation for the created_at field.
 	routineact.DefaultCreatedAt = routineactDescCreatedAt.Default.(func() time.Time)
 	// routineactDescUpdatedAt is the schema descriptor for updated_at field.
-	routineactDescUpdatedAt := routineactFields[8].Descriptor()
+	routineactDescUpdatedAt := routineactFields[9].Descriptor()
 	// routineact.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	routineact.DefaultUpdatedAt = routineactDescUpdatedAt.Default.(func() time.Time)
 	// routineact.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -230,21 +248,21 @@ func init() {
 	// routineactrec.CurrentLapValidator is a validator for the "current_lap" field. It is called by the builders before save.
 	routineactrec.CurrentLapValidator = routineactrecDescCurrentLap.Validators[0].(func(int) error)
 	// routineactrecDescCreatedAt is the schema descriptor for created_at field.
-	routineactrecDescCreatedAt := routineactrecFields[12].Descriptor()
+	routineactrecDescCreatedAt := routineactrecFields[13].Descriptor()
 	// routineactrec.DefaultCreatedAt holds the default value on creation for the created_at field.
 	routineactrec.DefaultCreatedAt = routineactrecDescCreatedAt.Default.(func() time.Time)
 	// routineactrecDescUpdatedAt is the schema descriptor for updated_at field.
-	routineactrecDescUpdatedAt := routineactrecFields[13].Descriptor()
+	routineactrecDescUpdatedAt := routineactrecFields[14].Descriptor()
 	// routineactrec.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	routineactrec.DefaultUpdatedAt = routineactrecDescUpdatedAt.Default.(func() time.Time)
 	// routineactrec.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	routineactrec.UpdateDefaultUpdatedAt = routineactrecDescUpdatedAt.UpdateDefault.(func() time.Time)
 	tagFields := schema.Tag{}.Fields()
 	_ = tagFields
-	// tagDescTag is the schema descriptor for tag field.
-	tagDescTag := tagFields[1].Descriptor()
-	// tag.TagValidator is a validator for the "tag" field. It is called by the builders before save.
-	tag.TagValidator = tagDescTag.Validators[0].(func(string) error)
+	// tagDescName is the schema descriptor for name field.
+	tagDescName := tagFields[1].Descriptor()
+	// tag.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	tag.NameValidator = tagDescName.Validators[0].(func(string) error)
 	weeklyroutineFields := schema.WeeklyRoutine{}.Fields()
 	_ = weeklyroutineFields
 	// weeklyroutineDescWeek is the schema descriptor for week field.
@@ -264,11 +282,11 @@ func init() {
 	weeklyroutinerecFields := schema.WeeklyRoutineRec{}.Fields()
 	_ = weeklyroutinerecFields
 	// weeklyroutinerecDescCreatedAt is the schema descriptor for created_at field.
-	weeklyroutinerecDescCreatedAt := weeklyroutinerecFields[4].Descriptor()
+	weeklyroutinerecDescCreatedAt := weeklyroutinerecFields[5].Descriptor()
 	// weeklyroutinerec.DefaultCreatedAt holds the default value on creation for the created_at field.
 	weeklyroutinerec.DefaultCreatedAt = weeklyroutinerecDescCreatedAt.Default.(func() time.Time)
 	// weeklyroutinerecDescUpdatedAt is the schema descriptor for updated_at field.
-	weeklyroutinerecDescUpdatedAt := weeklyroutinerecFields[5].Descriptor()
+	weeklyroutinerecDescUpdatedAt := weeklyroutinerecFields[6].Descriptor()
 	// weeklyroutinerec.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	weeklyroutinerec.DefaultUpdatedAt = weeklyroutinerecDescUpdatedAt.Default.(func() time.Time)
 	// weeklyroutinerec.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

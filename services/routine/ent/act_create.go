@@ -30,6 +30,12 @@ func (ac *ActCreate) SetName(s string) *ActCreate {
 	return ac
 }
 
+// SetSlug sets the "slug" field.
+func (ac *ActCreate) SetSlug(s string) *ActCreate {
+	ac.mutation.SetSlug(s)
+	return ac
+}
+
 // SetType sets the "type" field.
 func (ac *ActCreate) SetType(a act.Type) *ActCreate {
 	ac.mutation.SetType(a)
@@ -266,16 +272,16 @@ func (ac *ActCreate) SetNillableLowerBack(b *bool) *ActCreate {
 	return ac
 }
 
-// SetLegs sets the "legs" field.
-func (ac *ActCreate) SetLegs(b bool) *ActCreate {
-	ac.mutation.SetLegs(b)
+// SetGlute sets the "glute" field.
+func (ac *ActCreate) SetGlute(b bool) *ActCreate {
+	ac.mutation.SetGlute(b)
 	return ac
 }
 
-// SetNillableLegs sets the "legs" field if the given value is not nil.
-func (ac *ActCreate) SetNillableLegs(b *bool) *ActCreate {
+// SetNillableGlute sets the "glute" field if the given value is not nil.
+func (ac *ActCreate) SetNillableGlute(b *bool) *ActCreate {
 	if b != nil {
-		ac.SetLegs(*b)
+		ac.SetGlute(*b)
 	}
 	return ac
 }
@@ -479,9 +485,9 @@ func (ac *ActCreate) defaults() {
 		v := act.DefaultLowerBack
 		ac.mutation.SetLowerBack(v)
 	}
-	if _, ok := ac.mutation.Legs(); !ok {
-		v := act.DefaultLegs
-		ac.mutation.SetLegs(v)
+	if _, ok := ac.mutation.Glute(); !ok {
+		v := act.DefaultGlute
+		ac.mutation.SetGlute(v)
 	}
 	if _, ok := ac.mutation.LegsFront(); !ok {
 		v := act.DefaultLegsFront
@@ -506,6 +512,9 @@ func (ac *ActCreate) check() error {
 		if err := act.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Act.name": %w`, err)}
 		}
+	}
+	if _, ok := ac.mutation.Slug(); !ok {
+		return &ValidationError{Name: "slug", err: errors.New(`ent: missing required field "Act.slug"`)}
 	}
 	if _, ok := ac.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Act.type"`)}
@@ -560,8 +569,8 @@ func (ac *ActCreate) check() error {
 	if _, ok := ac.mutation.LowerBack(); !ok {
 		return &ValidationError{Name: "lower_back", err: errors.New(`ent: missing required field "Act.lower_back"`)}
 	}
-	if _, ok := ac.mutation.Legs(); !ok {
-		return &ValidationError{Name: "legs", err: errors.New(`ent: missing required field "Act.legs"`)}
+	if _, ok := ac.mutation.Glute(); !ok {
+		return &ValidationError{Name: "glute", err: errors.New(`ent: missing required field "Act.glute"`)}
 	}
 	if _, ok := ac.mutation.LegsFront(); !ok {
 		return &ValidationError{Name: "legs_front", err: errors.New(`ent: missing required field "Act.legs_front"`)}
@@ -607,6 +616,10 @@ func (ac *ActCreate) createSpec() (*Act, *sqlgraph.CreateSpec) {
 	if value, ok := ac.mutation.Name(); ok {
 		_spec.SetField(act.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if value, ok := ac.mutation.Slug(); ok {
+		_spec.SetField(act.FieldSlug, field.TypeString, value)
+		_node.Slug = value
 	}
 	if value, ok := ac.mutation.GetType(); ok {
 		_spec.SetField(act.FieldType, field.TypeEnum, value)
@@ -680,9 +693,9 @@ func (ac *ActCreate) createSpec() (*Act, *sqlgraph.CreateSpec) {
 		_spec.SetField(act.FieldLowerBack, field.TypeBool, value)
 		_node.LowerBack = value
 	}
-	if value, ok := ac.mutation.Legs(); ok {
-		_spec.SetField(act.FieldLegs, field.TypeBool, value)
-		_node.Legs = value
+	if value, ok := ac.mutation.Glute(); ok {
+		_spec.SetField(act.FieldGlute, field.TypeBool, value)
+		_node.Glute = value
 	}
 	if value, ok := ac.mutation.LegsFront(); ok {
 		_spec.SetField(act.FieldLegsFront, field.TypeBool, value)

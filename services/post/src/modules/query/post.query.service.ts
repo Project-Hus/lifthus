@@ -9,6 +9,14 @@ export class PostQueryService {
     return 'Hello World!';
   }
 
+  getPostBySlug(slug: string): Promise<Post> {
+    return Promise.reject('Not implemented');
+  }
+
+  getPostById(id: number): Promise<Post> {
+    return Promise.reject('Not implemented');
+  }
+
   getAllPosts(skip: number): Promise<Post[]> {
     return this.prismaService.post.findMany({
       include: {
@@ -59,7 +67,6 @@ export class PostQueryService {
           },
         },
       },
-
       orderBy: {
         createdAt: 'desc',
       },
@@ -68,14 +75,80 @@ export class PostQueryService {
     });
   }
 
-  getUsersPosts({
+  // getUsersPosts 메소드 수정
+  async getUsersPosts({
     users,
     skip,
   }: {
     users: number[];
     skip: number;
   }): Promise<Post[]> {
-    return Promise.reject('Not implemented');
+    try {
+      const userPosts = await this.prismaService.post.findMany({
+        where: {
+          author: {
+            in: users,
+          },
+        },
+        include: {
+          images: {
+            select: {
+              id: true,
+              url: true,
+            },
+            orderBy: {
+              order: 'asc',
+            },
+          },
+          comments: {
+            select: {
+              id: true,
+              postId: true,
+              author: true,
+              createdAt: true,
+              updatedAt: true,
+              content: true,
+              likenum: true,
+              mentions: {
+                select: {
+                  mentionee: true,
+                },
+              },
+              replies: {
+                select: {
+                  id: true,
+                  parentId: true,
+                  author: true,
+                  createdAt: true,
+                  updatedAt: true,
+                  content: true,
+                  likenum: true,
+                  mentions: {
+                    select: {
+                      mentionee: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          mentions: {
+            select: {
+              mentionee: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        take: 10,
+        skip: skip,
+      });
+
+      return userPosts;
+    } catch (error) {
+      throw new Error('Failed to get user posts');
+    }
   }
 
   getUserPosts(uid: number, skip: number): Promise<Post[]> {

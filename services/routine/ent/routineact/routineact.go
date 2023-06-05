@@ -20,6 +20,8 @@ const (
 	FieldDailyRoutineID = "daily_routine_id"
 	// FieldOrder holds the string denoting the order field in the database.
 	FieldOrder = "order"
+	// FieldWRatio holds the string denoting the w_ratio field in the database.
+	FieldWRatio = "w_ratio"
 	// FieldReps holds the string denoting the reps field in the database.
 	FieldReps = "reps"
 	// FieldLap holds the string denoting the lap field in the database.
@@ -67,6 +69,7 @@ var Columns = []string{
 	FieldActID,
 	FieldDailyRoutineID,
 	FieldOrder,
+	FieldWRatio,
 	FieldReps,
 	FieldLap,
 	FieldWarmup,
@@ -87,6 +90,8 @@ func ValidColumn(column string) bool {
 var (
 	// OrderValidator is a validator for the "order" field. It is called by the builders before save.
 	OrderValidator func(int) error
+	// WRatioValidator is a validator for the "w_ratio" field. It is called by the builders before save.
+	WRatioValidator func(float64) error
 	// RepsValidator is a validator for the "reps" field. It is called by the builders before save.
 	RepsValidator func(int) error
 	// LapValidator is a validator for the "lap" field. It is called by the builders before save.
@@ -122,6 +127,11 @@ func ByDailyRoutineID(opts ...sql.OrderTermOption) OrderOption {
 // ByOrder orders the results by the order field.
 func ByOrder(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldOrder, opts...).ToFunc()
+}
+
+// ByWRatio orders the results by the w_ratio field.
+func ByWRatio(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWRatio, opts...).ToFunc()
 }
 
 // ByReps orders the results by the reps field.

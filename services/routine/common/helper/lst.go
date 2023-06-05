@@ -22,7 +22,8 @@ func ValidateLST(lst string) (uid *uint64, err error) {
 	if !ok {
 		return nil, nil
 	}
-	*uid, err = strconv.ParseUint(uidString, 10, 64)
+	uidInt, err := strconv.ParseUint(uidString, 10, 64)
+	uid = &uidInt
 	return uid, err
 }
 

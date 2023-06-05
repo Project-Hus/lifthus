@@ -25,7 +25,7 @@ func (ProgramRec) Fields() []ent.Field {
 
 		field.Time("start_date"),
 		field.Time("end_date"),
-		field.Enum("status").Values(recStatus...),
+		field.Enum("status").Values(RecStatus...),
 
 		field.String("comment").Nillable().Optional().Annotations(entsql.Annotation{Size: 1000}),
 

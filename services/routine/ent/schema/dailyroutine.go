@@ -7,11 +7,18 @@ import (
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 // DailyRoutine holds the schema definition for the DailyRoutine entity.
 type DailyRoutine struct {
 	ent.Schema
+}
+
+func (DailyRoutine) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("program_id", "weekly_routine_id", "day").Unique(),
+	}
 }
 
 // Fields of the DailyRoutine.

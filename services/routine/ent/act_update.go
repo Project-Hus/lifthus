@@ -38,6 +38,12 @@ func (au *ActUpdate) SetName(s string) *ActUpdate {
 	return au
 }
 
+// SetSlug sets the "slug" field.
+func (au *ActUpdate) SetSlug(s string) *ActUpdate {
+	au.mutation.SetSlug(s)
+	return au
+}
+
 // SetType sets the "type" field.
 func (au *ActUpdate) SetType(a act.Type) *ActUpdate {
 	au.mutation.SetType(a)
@@ -271,16 +277,16 @@ func (au *ActUpdate) SetNillableLowerBack(b *bool) *ActUpdate {
 	return au
 }
 
-// SetLegs sets the "legs" field.
-func (au *ActUpdate) SetLegs(b bool) *ActUpdate {
-	au.mutation.SetLegs(b)
+// SetGlute sets the "glute" field.
+func (au *ActUpdate) SetGlute(b bool) *ActUpdate {
+	au.mutation.SetGlute(b)
 	return au
 }
 
-// SetNillableLegs sets the "legs" field if the given value is not nil.
-func (au *ActUpdate) SetNillableLegs(b *bool) *ActUpdate {
+// SetNillableGlute sets the "glute" field if the given value is not nil.
+func (au *ActUpdate) SetNillableGlute(b *bool) *ActUpdate {
 	if b != nil {
-		au.SetLegs(*b)
+		au.SetGlute(*b)
 	}
 	return au
 }
@@ -542,6 +548,9 @@ func (au *ActUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := au.mutation.Name(); ok {
 		_spec.SetField(act.FieldName, field.TypeString, value)
 	}
+	if value, ok := au.mutation.Slug(); ok {
+		_spec.SetField(act.FieldSlug, field.TypeString, value)
+	}
 	if value, ok := au.mutation.GetType(); ok {
 		_spec.SetField(act.FieldType, field.TypeEnum, value)
 	}
@@ -602,8 +611,8 @@ func (au *ActUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := au.mutation.LowerBack(); ok {
 		_spec.SetField(act.FieldLowerBack, field.TypeBool, value)
 	}
-	if value, ok := au.mutation.Legs(); ok {
-		_spec.SetField(act.FieldLegs, field.TypeBool, value)
+	if value, ok := au.mutation.Glute(); ok {
+		_spec.SetField(act.FieldGlute, field.TypeBool, value)
 	}
 	if value, ok := au.mutation.LegsFront(); ok {
 		_spec.SetField(act.FieldLegsFront, field.TypeBool, value)
@@ -817,6 +826,12 @@ type ActUpdateOne struct {
 // SetName sets the "name" field.
 func (auo *ActUpdateOne) SetName(s string) *ActUpdateOne {
 	auo.mutation.SetName(s)
+	return auo
+}
+
+// SetSlug sets the "slug" field.
+func (auo *ActUpdateOne) SetSlug(s string) *ActUpdateOne {
+	auo.mutation.SetSlug(s)
 	return auo
 }
 
@@ -1053,16 +1068,16 @@ func (auo *ActUpdateOne) SetNillableLowerBack(b *bool) *ActUpdateOne {
 	return auo
 }
 
-// SetLegs sets the "legs" field.
-func (auo *ActUpdateOne) SetLegs(b bool) *ActUpdateOne {
-	auo.mutation.SetLegs(b)
+// SetGlute sets the "glute" field.
+func (auo *ActUpdateOne) SetGlute(b bool) *ActUpdateOne {
+	auo.mutation.SetGlute(b)
 	return auo
 }
 
-// SetNillableLegs sets the "legs" field if the given value is not nil.
-func (auo *ActUpdateOne) SetNillableLegs(b *bool) *ActUpdateOne {
+// SetNillableGlute sets the "glute" field if the given value is not nil.
+func (auo *ActUpdateOne) SetNillableGlute(b *bool) *ActUpdateOne {
 	if b != nil {
-		auo.SetLegs(*b)
+		auo.SetGlute(*b)
 	}
 	return auo
 }
@@ -1354,6 +1369,9 @@ func (auo *ActUpdateOne) sqlSave(ctx context.Context) (_node *Act, err error) {
 	if value, ok := auo.mutation.Name(); ok {
 		_spec.SetField(act.FieldName, field.TypeString, value)
 	}
+	if value, ok := auo.mutation.Slug(); ok {
+		_spec.SetField(act.FieldSlug, field.TypeString, value)
+	}
 	if value, ok := auo.mutation.GetType(); ok {
 		_spec.SetField(act.FieldType, field.TypeEnum, value)
 	}
@@ -1414,8 +1432,8 @@ func (auo *ActUpdateOne) sqlSave(ctx context.Context) (_node *Act, err error) {
 	if value, ok := auo.mutation.LowerBack(); ok {
 		_spec.SetField(act.FieldLowerBack, field.TypeBool, value)
 	}
-	if value, ok := auo.mutation.Legs(); ok {
-		_spec.SetField(act.FieldLegs, field.TypeBool, value)
+	if value, ok := auo.mutation.Glute(); ok {
+		_spec.SetField(act.FieldGlute, field.TypeBool, value)
 	}
 	if value, ok := auo.mutation.LegsFront(); ok {
 		_spec.SetField(act.FieldLegsFront, field.TypeBool, value)

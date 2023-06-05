@@ -23,6 +23,8 @@ type WeeklyRoutineRec struct {
 	ProgramRecID uint64 `json:"program_rec_id,omitempty"`
 	// WeeklyRoutineID holds the value of the "weekly_routine_id" field.
 	WeeklyRoutineID uint64 `json:"weekly_routine_id,omitempty"`
+	// Week holds the value of the "week" field.
+	Week int `json:"week,omitempty"`
 	// StartDate holds the value of the "start_date" field.
 	StartDate time.Time `json:"start_date,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -88,7 +90,7 @@ func (*WeeklyRoutineRec) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case weeklyroutinerec.FieldID, weeklyroutinerec.FieldProgramRecID, weeklyroutinerec.FieldWeeklyRoutineID:
+		case weeklyroutinerec.FieldID, weeklyroutinerec.FieldProgramRecID, weeklyroutinerec.FieldWeeklyRoutineID, weeklyroutinerec.FieldWeek:
 			values[i] = new(sql.NullInt64)
 		case weeklyroutinerec.FieldStartDate, weeklyroutinerec.FieldCreatedAt, weeklyroutinerec.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -124,6 +126,12 @@ func (wrr *WeeklyRoutineRec) assignValues(columns []string, values []any) error 
 				return fmt.Errorf("unexpected type %T for field weekly_routine_id", values[i])
 			} else if value.Valid {
 				wrr.WeeklyRoutineID = uint64(value.Int64)
+			}
+		case weeklyroutinerec.FieldWeek:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field week", values[i])
+			} else if value.Valid {
+				wrr.Week = int(value.Int64)
 			}
 		case weeklyroutinerec.FieldStartDate:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -199,6 +207,9 @@ func (wrr *WeeklyRoutineRec) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("weekly_routine_id=")
 	builder.WriteString(fmt.Sprintf("%v", wrr.WeeklyRoutineID))
+	builder.WriteString(", ")
+	builder.WriteString("week=")
+	builder.WriteString(fmt.Sprintf("%v", wrr.Week))
 	builder.WriteString(", ")
 	builder.WriteString("start_date=")
 	builder.WriteString(wrr.StartDate.Format(time.ANSIC))

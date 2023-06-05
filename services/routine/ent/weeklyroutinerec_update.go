@@ -43,6 +43,19 @@ func (wrru *WeeklyRoutineRecUpdate) SetWeeklyRoutineID(u uint64) *WeeklyRoutineR
 	return wrru
 }
 
+// SetWeek sets the "week" field.
+func (wrru *WeeklyRoutineRecUpdate) SetWeek(i int) *WeeklyRoutineRecUpdate {
+	wrru.mutation.ResetWeek()
+	wrru.mutation.SetWeek(i)
+	return wrru
+}
+
+// AddWeek adds i to the "week" field.
+func (wrru *WeeklyRoutineRecUpdate) AddWeek(i int) *WeeklyRoutineRecUpdate {
+	wrru.mutation.AddWeek(i)
+	return wrru
+}
+
 // SetStartDate sets the "start_date" field.
 func (wrru *WeeklyRoutineRecUpdate) SetStartDate(t time.Time) *WeeklyRoutineRecUpdate {
 	wrru.mutation.SetStartDate(t)
@@ -176,6 +189,12 @@ func (wrru *WeeklyRoutineRecUpdate) sqlSave(ctx context.Context) (n int, err err
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := wrru.mutation.Week(); ok {
+		_spec.SetField(weeklyroutinerec.FieldWeek, field.TypeInt, value)
+	}
+	if value, ok := wrru.mutation.AddedWeek(); ok {
+		_spec.AddField(weeklyroutinerec.FieldWeek, field.TypeInt, value)
 	}
 	if value, ok := wrru.mutation.StartDate(); ok {
 		_spec.SetField(weeklyroutinerec.FieldStartDate, field.TypeTime, value)
@@ -315,6 +334,19 @@ func (wrruo *WeeklyRoutineRecUpdateOne) SetProgramRecID(u uint64) *WeeklyRoutine
 // SetWeeklyRoutineID sets the "weekly_routine_id" field.
 func (wrruo *WeeklyRoutineRecUpdateOne) SetWeeklyRoutineID(u uint64) *WeeklyRoutineRecUpdateOne {
 	wrruo.mutation.SetWeeklyRoutineID(u)
+	return wrruo
+}
+
+// SetWeek sets the "week" field.
+func (wrruo *WeeklyRoutineRecUpdateOne) SetWeek(i int) *WeeklyRoutineRecUpdateOne {
+	wrruo.mutation.ResetWeek()
+	wrruo.mutation.SetWeek(i)
+	return wrruo
+}
+
+// AddWeek adds i to the "week" field.
+func (wrruo *WeeklyRoutineRecUpdateOne) AddWeek(i int) *WeeklyRoutineRecUpdateOne {
+	wrruo.mutation.AddWeek(i)
 	return wrruo
 }
 
@@ -481,6 +513,12 @@ func (wrruo *WeeklyRoutineRecUpdateOne) sqlSave(ctx context.Context) (_node *Wee
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := wrruo.mutation.Week(); ok {
+		_spec.SetField(weeklyroutinerec.FieldWeek, field.TypeInt, value)
+	}
+	if value, ok := wrruo.mutation.AddedWeek(); ok {
+		_spec.AddField(weeklyroutinerec.FieldWeek, field.TypeInt, value)
 	}
 	if value, ok := wrruo.mutation.StartDate(); ok {
 		_spec.SetField(weeklyroutinerec.FieldStartDate, field.TypeTime, value)

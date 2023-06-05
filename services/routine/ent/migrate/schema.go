@@ -12,6 +12,7 @@ var (
 	ActsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
 		{Name: "name", Type: field.TypeString, Size: 50},
+		{Name: "slug", Type: field.TypeString, Unique: true},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"rep", "lap", "simple"}},
 		{Name: "author", Type: field.TypeUint64},
 		{Name: "image", Type: field.TypeString, Nullable: true},
@@ -30,7 +31,7 @@ var (
 		{Name: "core", Type: field.TypeBool, Default: false},
 		{Name: "upper_back", Type: field.TypeBool, Default: false},
 		{Name: "lower_back", Type: field.TypeBool, Default: false},
-		{Name: "legs", Type: field.TypeBool, Default: false},
+		{Name: "glute", Type: field.TypeBool, Default: false},
 		{Name: "legs_front", Type: field.TypeBool, Default: false},
 		{Name: "legs_back", Type: field.TypeBool, Default: false},
 		{Name: "etc", Type: field.TypeBool, Default: false},
@@ -92,6 +93,13 @@ var (
 				Columns:    []*schema.Column{DailyRoutinesColumns[5]},
 				RefColumns: []*schema.Column{WeeklyRoutinesColumns[0]},
 				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "dailyroutine_program_id_weekly_routine_id_day",
+				Unique:  true,
+				Columns: []*schema.Column{DailyRoutinesColumns[4], DailyRoutinesColumns[5], DailyRoutinesColumns[1]},
 			},
 		},
 	}
@@ -169,6 +177,7 @@ var (
 	ProgramsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
 		{Name: "title", Type: field.TypeString, Size: 50},
+		{Name: "slug", Type: field.TypeString, Unique: true},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"weekly", "daily"}},
 		{Name: "author", Type: field.TypeUint64},
 		{Name: "image", Type: field.TypeString, Nullable: true},
@@ -212,6 +221,7 @@ var (
 	RoutineActsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
 		{Name: "order", Type: field.TypeInt},
+		{Name: "w_ratio", Type: field.TypeFloat64, Nullable: true},
 		{Name: "reps", Type: field.TypeInt, Nullable: true},
 		{Name: "lap", Type: field.TypeInt, Nullable: true},
 		{Name: "warmup", Type: field.TypeBool, Default: false},
@@ -228,15 +238,22 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "routine_acts_acts_routine_acts",
-				Columns:    []*schema.Column{RoutineActsColumns[7]},
+				Columns:    []*schema.Column{RoutineActsColumns[8]},
 				RefColumns: []*schema.Column{ActsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "routine_acts_daily_routines_routine_acts",
-				Columns:    []*schema.Column{RoutineActsColumns[8]},
+				Columns:    []*schema.Column{RoutineActsColumns[9]},
 				RefColumns: []*schema.Column{DailyRoutinesColumns[0]},
 				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "routineact_daily_routine_id_order",
+				Unique:  true,
+				Columns: []*schema.Column{RoutineActsColumns[9], RoutineActsColumns[1]},
 			},
 		},
 	}
@@ -248,6 +265,7 @@ var (
 		{Name: "lap", Type: field.TypeInt, Nullable: true},
 		{Name: "current_reps", Type: field.TypeInt, Default: 0},
 		{Name: "current_lap", Type: field.TypeInt, Default: 0},
+		{Name: "started_at", Type: field.TypeTime, Nullable: true},
 		{Name: "image", Type: field.TypeString, Nullable: true},
 		{Name: "comment", Type: field.TypeString, Nullable: true},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"history", "waiting", "proceeding", "completed", "failed", "canceled"}},
@@ -265,19 +283,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "routine_act_recs_acts_routine_act_recs",
-				Columns:    []*schema.Column{RoutineActRecsColumns[11]},
+				Columns:    []*schema.Column{RoutineActRecsColumns[12]},
 				RefColumns: []*schema.Column{ActsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "routine_act_recs_daily_routine_recs_routine_act_recs",
-				Columns:    []*schema.Column{RoutineActRecsColumns[12]},
+				Columns:    []*schema.Column{RoutineActRecsColumns[13]},
 				RefColumns: []*schema.Column{DailyRoutineRecsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "routine_act_recs_routine_acts_routine_act_recs",
-				Columns:    []*schema.Column{RoutineActRecsColumns[13]},
+				Columns:    []*schema.Column{RoutineActRecsColumns[14]},
 				RefColumns: []*schema.Column{RoutineActsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -286,7 +304,7 @@ var (
 	// TagsColumns holds the columns for the "tags" table.
 	TagsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
-		{Name: "tag", Type: field.TypeString, Size: 20},
+		{Name: "name", Type: field.TypeString, Unique: true, Size: 20},
 	}
 	// TagsTable holds the schema information for the "tags" table.
 	TagsTable = &schema.Table{
@@ -315,10 +333,18 @@ var (
 				OnDelete:   schema.Cascade,
 			},
 		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "weeklyroutine_program_id_week",
+				Unique:  true,
+				Columns: []*schema.Column{WeeklyRoutinesColumns[4], WeeklyRoutinesColumns[1]},
+			},
+		},
 	}
 	// WeeklyRoutineRecsColumns holds the columns for the "weekly_routine_recs" table.
 	WeeklyRoutineRecsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "week", Type: field.TypeInt},
 		{Name: "start_date", Type: field.TypeTime},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
@@ -333,15 +359,22 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "weekly_routine_recs_program_recs_weekly_routine_recs",
-				Columns:    []*schema.Column{WeeklyRoutineRecsColumns[4]},
+				Columns:    []*schema.Column{WeeklyRoutineRecsColumns[5]},
 				RefColumns: []*schema.Column{ProgramRecsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "weekly_routine_recs_weekly_routines_weekly_routine_recs",
-				Columns:    []*schema.Column{WeeklyRoutineRecsColumns[5]},
+				Columns:    []*schema.Column{WeeklyRoutineRecsColumns[6]},
 				RefColumns: []*schema.Column{WeeklyRoutinesColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "weeklyroutinerec_program_rec_id_week",
+				Unique:  true,
+				Columns: []*schema.Column{WeeklyRoutineRecsColumns[5], WeeklyRoutineRecsColumns[1]},
 			},
 		},
 	}

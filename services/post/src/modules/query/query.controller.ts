@@ -26,6 +26,20 @@ export class QueryController {
     return this.postQueryService.getHello();
   }
 
+  @Get('/post/slug/:slug')
+  getPostBySlug(@Param('slug') slug: string): Promise<Post> {
+    return this.postQueryService.getPostBySlug(slug);
+  }
+
+  @Get('/post/id/:id')
+  getPostById(@Param('id') idStr: string): Promise<Post> {
+    const id = Number(idStr);
+    if (isNaN(id)) {
+      throw new BadRequestException();
+    }
+    return this.postQueryService.getPostById(id);
+  }
+
   /**
    * gets all posts from the database and returns them.
    * @param skip

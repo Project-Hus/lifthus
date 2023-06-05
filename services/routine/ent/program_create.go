@@ -30,6 +30,12 @@ func (pc *ProgramCreate) SetTitle(s string) *ProgramCreate {
 	return pc
 }
 
+// SetSlug sets the "slug" field.
+func (pc *ProgramCreate) SetSlug(s string) *ProgramCreate {
+	pc.mutation.SetSlug(s)
+	return pc
+}
+
 // SetType sets the "type" field.
 func (pc *ProgramCreate) SetType(pr program.Type) *ProgramCreate {
 	pc.mutation.SetType(pr)
@@ -219,6 +225,9 @@ func (pc *ProgramCreate) check() error {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Program.title": %w`, err)}
 		}
 	}
+	if _, ok := pc.mutation.Slug(); !ok {
+		return &ValidationError{Name: "slug", err: errors.New(`ent: missing required field "Program.slug"`)}
+	}
 	if _, ok := pc.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Program.type"`)}
 	}
@@ -271,6 +280,10 @@ func (pc *ProgramCreate) createSpec() (*Program, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.Title(); ok {
 		_spec.SetField(program.FieldTitle, field.TypeString, value)
 		_node.Title = value
+	}
+	if value, ok := pc.mutation.Slug(); ok {
+		_spec.SetField(program.FieldSlug, field.TypeString, value)
+		_node.Slug = value
 	}
 	if value, ok := pc.mutation.GetType(); ok {
 		_spec.SetField(program.FieldType, field.TypeEnum, value)
