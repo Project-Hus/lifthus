@@ -9,14 +9,45 @@ export class PostQueryService {
     return 'Hello World!';
   }
 
+  /**
+   * Get users' posts without comments.
+   * @param users
+   * @param skip
+   * @returns
+   */
+  getUsersPostsNoComments({
+    users,
+    skip,
+  }: {
+    users: number[];
+    skip: number;
+  }): Promise<Post[]> {
+    return Promise.reject('Not implemented');
+  }
+
+  /**
+   * Gets post by slug.
+   * @param slug
+   * @returns
+   */
   getPostBySlug(slug: string): Promise<Post> {
     return Promise.reject('Not implemented');
   }
 
+  /**
+   * Gets post by id.
+   * @param id
+   * @returns
+   */
   getPostById(id: number): Promise<Post> {
     return Promise.reject('Not implemented');
   }
 
+  /**
+   * Gets all posts.
+   * @param skip
+   * @returns
+   */
   getAllPosts(skip: number): Promise<Post[]> {
     return this.prismaService.post.findMany({
       include: {
@@ -75,7 +106,11 @@ export class PostQueryService {
     });
   }
 
-  // getUsersPosts 메소드 수정
+  /**
+   * Gets users' ids and returns posts from the users
+   * @param param0
+   * @returns
+   */
   async getUsersPosts({
     users,
     skip,
@@ -151,6 +186,12 @@ export class PostQueryService {
     }
   }
 
+  /**
+   * Get posts by user id
+   * @param uid
+   * @param skip
+   * @returns
+   */
   getUserPosts(uid: number, skip: number): Promise<Post[]> {
     return this.prismaService.post.findMany({
       include: {

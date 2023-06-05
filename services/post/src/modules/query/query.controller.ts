@@ -1,18 +1,13 @@
 import {
   Controller,
   Get,
-  Res,
-  Req,
   Param,
-  Logger,
-  Body,
   Query,
   BadRequestException,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
 import { PostQueryService } from './post.query.service';
 import { CommentQueryService } from './comment.query.service';
-import { Post } from '@prisma/client';
+import { Post, Comment } from '@prisma/client';
 
 @Controller('/post/query')
 export class QueryController {
@@ -24,6 +19,19 @@ export class QueryController {
   @Get()
   getHello(): string {
     return this.postQueryService.getHello();
+  }
+
+  @Get('/comment')
+  getComments(
+    @Query('pid') pidStr: string,
+    @Query('skip') skipStr: string,
+  ): Promise<Comment[]> {
+    const pid = Number(pidStr);
+    if (isNaN(pid)) {
+      throw new BadRequestException();
+    }
+    const skip = Number(skipStr) || 0;
+    return this.commentQueryService.getComments({ pid, skip });
   }
 
   @Get('/post/slug/:slug')
@@ -71,6 +79,21 @@ export class QueryController {
     }
     const skip = Number(skipStr) || 0;
     return this.postQueryService.getUsersPosts({ users, skip });
+  }
+
+  @Get('/postnc')
+  getUsersPostsNoComments(
+    @Query('users') usersStr: string,
+    @Query('skip') skipStr: string,
+  ): Promise<Post[]> {
+    const users: number[] = usersStr
+      .split(',')
+      .map((userStr) => Number(userStr));
+    if (users.some((user) => isNaN(user))) {
+      throw new BadRequestException();
+    }
+    const skip = Number(skipStr) || 0;
+    return this.postQueryService.getUsersPostsNoComments({ users, skip });
   }
 
   /**
