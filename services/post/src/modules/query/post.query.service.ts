@@ -15,15 +15,49 @@ export class PostQueryService {
    * @param skip
    * @returns
    */
-  getUsersPostsNoComments({
+  async getUsersPostsNoComments({
     users,
     skip,
   }: {
     users: number[];
     skip: number;
   }): Promise<Post[]> {
-    return Promise.reject('Not implemented');
+    try {
+      const userPosts = await this.prismaService.post.findMany({
+        where: {
+          author: {
+            in: users,
+          },
+        },
+        include: {
+          images: {
+            select: {
+              id: true,
+              url: true,
+            },
+            orderBy: {
+              order: 'asc',
+            },
+          },
+          mentions: {
+            select: {
+              mentionee: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        take: 10,
+        skip: skip,
+      });
+  
+      return userPosts;
+    } catch (error) {
+      throw new Error('Failed to get user posts');
+    }
   }
+  
 
   /**
    * Gets post by slug.
@@ -31,7 +65,27 @@ export class PostQueryService {
    * @returns
    */
   getPostBySlug(slug: string): Promise<Post> {
-    return Promise.reject('Not implemented');
+    return this.prismaService.post.findUnique({
+      where: {
+        slug: slug,
+      },
+      include: {
+        images: {
+          select: {
+            id: true,
+            url: true,
+          },
+          orderBy: {
+            order: 'asc',
+          },
+        },
+          mentions: {
+            select: {
+              mentionee: true,
+            },
+          },
+      },
+    });
   }
 
   /**
@@ -40,7 +94,27 @@ export class PostQueryService {
    * @returns
    */
   getPostById(id: number): Promise<Post> {
-    return Promise.reject('Not implemented');
+    return this.prismaService.post.findUnique({
+      where: {
+        id: id,
+      },
+      include: {
+        images: {
+          select: {
+            id: true,
+            url: true,
+          },
+          orderBy: {
+            order: 'asc',
+          },
+        },
+        mentions: {
+          select: {
+            mentionee: true,
+          },
+        },
+      },
+    });
   }
 
   /**
