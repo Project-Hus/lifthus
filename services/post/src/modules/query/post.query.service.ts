@@ -9,9 +9,28 @@ export class PostQueryService {
     return 'Hello World!';
   }
 
+
+  /**슬러그로 포스트검색 */
   getPostBySlug(slug: string): Promise<Post> {
-    return Promise.reject('Not implemented');
+    return this.prismaService.post.findUnique({
+      where: {
+        slug: slug,
+      },
+      include: {
+        images: {
+          select: {
+            id: true,
+            url: true,
+          },
+          orderBy: {
+            order: 'asc',
+          },
+        },
+      },
+    });
   }
+
+  /**아이디로 포스트 */
 
   getPostById(id: number): Promise<Post> {
     return Promise.reject('Not implemented');
