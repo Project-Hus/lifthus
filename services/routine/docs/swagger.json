@@ -29,13 +29,18 @@
                         "type": "string",
                         "description": "act name",
                         "name": "name",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "integer",
                         "description": "skip",
                         "name": "skip",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "act id",
+                        "name": "id",
                         "in": "query"
                     }
                 ],

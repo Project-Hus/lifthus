@@ -203,11 +203,14 @@ paths:
       - description: act name
         in: query
         name: name
-        required: true
         type: string
       - description: skip
         in: query
         name: skip
+        type: integer
+      - description: act id
+        in: query
+        name: id
         type: integer
       responses:
         "200":
