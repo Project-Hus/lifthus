@@ -11,7 +11,7 @@ export class CommentQueryService {
    * @param param0
    * @returns
    */
-getComments({
+  getComments({
     pid,
     skip,
   }: {
@@ -25,7 +25,6 @@ getComments({
         },
         skip: skip,
         include: {
-          parent: true,
           replies: true,
           mentions: {
             select: {
