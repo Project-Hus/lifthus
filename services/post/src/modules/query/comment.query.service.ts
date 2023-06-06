@@ -11,7 +11,7 @@ export class CommentQueryService {
    * @param param0
    * @returns
    */
-  async getComments({
+getComments({
     pid,
     skip,
   }: {
@@ -19,13 +19,12 @@ export class CommentQueryService {
     skip: number;
   }): Promise<Comment[]> {
     try {
-      const comments = await this.prismaService.comment.findMany({
+      const comments = this.prismaService.comment.findMany({
         where: {
           postId: pid,
         },
         skip: skip,
         include: {
-        
           parent: true,
           replies: true,
           mentions: {
