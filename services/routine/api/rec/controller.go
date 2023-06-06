@@ -26,6 +26,7 @@ func NewRecApiController(recApi *echo.Echo, params RecApiControllerParams) *echo
 	recApi.GET("/routine/rec/routineact", recApiController.queryRoutineActRecs, guard.UserGuard)
 
 	// update routineact rec
+	recApi.PUT("/routine/rec/routineact", recApiController.updateRoutineActRec, guard.UserGuard)
 
 	return recApi
 }
@@ -46,4 +47,6 @@ type recApis interface {
 	createWeeklyProgramRec(c echo.Context) error
 
 	queryRoutineActRecs(c echo.Context) error
+
+	updateRoutineActRec(c echo.Context) error
 }

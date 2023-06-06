@@ -4,8 +4,6 @@ import (
 	"time"
 )
 
-/* QUERYING */
-
 /* CREATING */
 // to create weekly program rec
 type CreateWeeklyProgramRecDto struct {
@@ -37,4 +35,18 @@ type CreateWeeklyRoutineActRecDto struct {
 	Order int    `json:"order,omitempty"`
 	Reps  *int   `json:"reps,omitempty"`
 	Lap   *int   `json:"lap,omitempty"`
+}
+
+/* UPDATING */
+// to update routine act rec
+type UpdateRoutineActRecDto struct {
+	ID     uint64  `json:"id,omitempty"`
+	Author *uint64 `json:"author,omitempty"`
+
+	CurrentReps *int       `json:"current_reps,omitempty"`
+	CurrentLap  *int       `json:"current_lap,omitempty"`
+	StartedAt   *time.Time `json:"started_at,omitempty"`
+	Image       *string    `json:"image,omitempty"`
+	Comment     *string    `json:"comment,omitempty"`
+	Status      *string    `json:"status,omitempty"`
 }

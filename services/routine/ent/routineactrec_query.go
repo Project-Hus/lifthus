@@ -369,12 +369,12 @@ func (rarq *RoutineActRecQuery) WithRoutineAct(opts ...func(*RoutineActQuery)) *
 // Example:
 //
 //	var v []struct {
-//		DailyRoutineRecID uint64 `json:"daily_routine_rec_id,omitempty"`
+//		Author uint64 `json:"author,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.RoutineActRec.Query().
-//		GroupBy(routineactrec.FieldDailyRoutineRecID).
+//		GroupBy(routineactrec.FieldAuthor).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (rarq *RoutineActRecQuery) GroupBy(field string, fields ...string) *RoutineActRecGroupBy {
@@ -392,11 +392,11 @@ func (rarq *RoutineActRecQuery) GroupBy(field string, fields ...string) *Routine
 // Example:
 //
 //	var v []struct {
-//		DailyRoutineRecID uint64 `json:"daily_routine_rec_id,omitempty"`
+//		Author uint64 `json:"author,omitempty"`
 //	}
 //
 //	client.RoutineActRec.Query().
-//		Select(routineactrec.FieldDailyRoutineRecID).
+//		Select(routineactrec.FieldAuthor).
 //		Scan(ctx, &v)
 func (rarq *RoutineActRecQuery) Select(fields ...string) *RoutineActRecSelect {
 	rarq.ctx.Fields = append(rarq.ctx.Fields, fields...)

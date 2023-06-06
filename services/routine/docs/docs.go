@@ -229,6 +229,85 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/rec/routineact": {
+            "get": {
+                "tags": [
+                    "rec"
+                ],
+                "summary": "gets specific date or range of date and returns routineact recs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "date like 2006-01-02",
+                        "name": "date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "start date like 2006-01-02",
+                        "name": "startDate",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "end date like 2006-01-02s",
+                        "name": "endDate",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns routineact recs"
+                    },
+                    "400": {
+                        "description": "invalid request"
+                    },
+                    "401": {
+                        "description": "unauthorized"
+                    },
+                    "403": {
+                        "description": "forbidden"
+                    },
+                    "500": {
+                        "description": "failed to query routineact recs"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "rec"
+                ],
+                "summary": "updates routineact rec",
+                "parameters": [
+                    {
+                        "description": "update routineact rec dto",
+                        "name": "updateRoutineActRecDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateRoutineActRecDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns updated routineact rec"
+                    },
+                    "400": {
+                        "description": "invalid request"
+                    },
+                    "401": {
+                        "description": "unauthorized"
+                    },
+                    "403": {
+                        "description": "forbidden"
+                    },
+                    "500": {
+                        "description": "failed to update routineact rec"
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -439,9 +518,6 @@ const docTemplate = `{
                 "act_id": {
                     "type": "integer"
                 },
-                "daily_routine_rec_id": {
-                    "type": "integer"
-                },
                 "lap": {
                     "type": "integer"
                 },
@@ -481,6 +557,35 @@ const docTemplate = `{
                 },
                 "weekly_routine_id": {
                     "type": "integer"
+                }
+            }
+        },
+        "dto.UpdateRoutineActRecDto": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "type": "integer"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "current_lap": {
+                    "type": "integer"
+                },
+                "current_reps": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "started_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
                 }
             }
         }

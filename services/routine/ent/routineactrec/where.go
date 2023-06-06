@@ -55,6 +55,11 @@ func IDLTE(id uint64) predicate.RoutineActRec {
 	return predicate.RoutineActRec(sql.FieldLTE(FieldID, id))
 }
 
+// Author applies equality check predicate on the "author" field. It's identical to AuthorEQ.
+func Author(v uint64) predicate.RoutineActRec {
+	return predicate.RoutineActRec(sql.FieldEQ(FieldAuthor, v))
+}
+
 // DailyRoutineRecID applies equality check predicate on the "daily_routine_rec_id" field. It's identical to DailyRoutineRecIDEQ.
 func DailyRoutineRecID(v uint64) predicate.RoutineActRec {
 	return predicate.RoutineActRec(sql.FieldEQ(FieldDailyRoutineRecID, v))
@@ -118,6 +123,46 @@ func CreatedAt(v time.Time) predicate.RoutineActRec {
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.RoutineActRec {
 	return predicate.RoutineActRec(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// AuthorEQ applies the EQ predicate on the "author" field.
+func AuthorEQ(v uint64) predicate.RoutineActRec {
+	return predicate.RoutineActRec(sql.FieldEQ(FieldAuthor, v))
+}
+
+// AuthorNEQ applies the NEQ predicate on the "author" field.
+func AuthorNEQ(v uint64) predicate.RoutineActRec {
+	return predicate.RoutineActRec(sql.FieldNEQ(FieldAuthor, v))
+}
+
+// AuthorIn applies the In predicate on the "author" field.
+func AuthorIn(vs ...uint64) predicate.RoutineActRec {
+	return predicate.RoutineActRec(sql.FieldIn(FieldAuthor, vs...))
+}
+
+// AuthorNotIn applies the NotIn predicate on the "author" field.
+func AuthorNotIn(vs ...uint64) predicate.RoutineActRec {
+	return predicate.RoutineActRec(sql.FieldNotIn(FieldAuthor, vs...))
+}
+
+// AuthorGT applies the GT predicate on the "author" field.
+func AuthorGT(v uint64) predicate.RoutineActRec {
+	return predicate.RoutineActRec(sql.FieldGT(FieldAuthor, v))
+}
+
+// AuthorGTE applies the GTE predicate on the "author" field.
+func AuthorGTE(v uint64) predicate.RoutineActRec {
+	return predicate.RoutineActRec(sql.FieldGTE(FieldAuthor, v))
+}
+
+// AuthorLT applies the LT predicate on the "author" field.
+func AuthorLT(v uint64) predicate.RoutineActRec {
+	return predicate.RoutineActRec(sql.FieldLT(FieldAuthor, v))
+}
+
+// AuthorLTE applies the LTE predicate on the "author" field.
+func AuthorLTE(v uint64) predicate.RoutineActRec {
+	return predicate.RoutineActRec(sql.FieldLTE(FieldAuthor, v))
 }
 
 // DailyRoutineRecIDEQ applies the EQ predicate on the "daily_routine_rec_id" field.

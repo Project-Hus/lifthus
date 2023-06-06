@@ -15,6 +15,8 @@ const (
 	Label = "routine_act_rec"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldAuthor holds the string denoting the author field in the database.
+	FieldAuthor = "author"
 	// FieldDailyRoutineRecID holds the string denoting the daily_routine_rec_id field in the database.
 	FieldDailyRoutineRecID = "daily_routine_rec_id"
 	// FieldRoutineActID holds the string denoting the routine_act_id field in the database.
@@ -77,6 +79,7 @@ const (
 // Columns holds all SQL columns for routineactrec fields.
 var Columns = []string{
 	FieldID,
+	FieldAuthor,
 	FieldDailyRoutineRecID,
 	FieldRoutineActID,
 	FieldActID,
@@ -159,6 +162,11 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByAuthor orders the results by the author field.
+func ByAuthor(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAuthor, opts...).ToFunc()
 }
 
 // ByDailyRoutineRecID orders the results by the daily_routine_rec_id field.

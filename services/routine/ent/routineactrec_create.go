@@ -23,6 +23,12 @@ type RoutineActRecCreate struct {
 	hooks    []Hook
 }
 
+// SetAuthor sets the "author" field.
+func (rarc *RoutineActRecCreate) SetAuthor(u uint64) *RoutineActRecCreate {
+	rarc.mutation.SetAuthor(u)
+	return rarc
+}
+
 // SetDailyRoutineRecID sets the "daily_routine_rec_id" field.
 func (rarc *RoutineActRecCreate) SetDailyRoutineRecID(u uint64) *RoutineActRecCreate {
 	rarc.mutation.SetDailyRoutineRecID(u)
@@ -263,6 +269,9 @@ func (rarc *RoutineActRecCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (rarc *RoutineActRecCreate) check() error {
+	if _, ok := rarc.mutation.Author(); !ok {
+		return &ValidationError{Name: "author", err: errors.New(`ent: missing required field "RoutineActRec.author"`)}
+	}
 	if _, ok := rarc.mutation.DailyRoutineRecID(); !ok {
 		return &ValidationError{Name: "daily_routine_rec_id", err: errors.New(`ent: missing required field "RoutineActRec.daily_routine_rec_id"`)}
 	}
@@ -354,6 +363,10 @@ func (rarc *RoutineActRecCreate) createSpec() (*RoutineActRec, *sqlgraph.CreateS
 	if id, ok := rarc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
+	}
+	if value, ok := rarc.mutation.Author(); ok {
+		_spec.SetField(routineactrec.FieldAuthor, field.TypeUint64, value)
+		_node.Author = value
 	}
 	if value, ok := rarc.mutation.Order(); ok {
 		_spec.SetField(routineactrec.FieldOrder, field.TypeInt, value)
