@@ -4,21 +4,36 @@ import (
 	"net/http"
 	"routine/common/db"
 	"routine/common/dto"
+	"routine/ent/act"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
 
-// queryActsByName godoc
+// queryAct godoc
 // @Router       /act [get]
-// @Param name query string true "act name"
+// @Param name query string false "act name"
 // @Param skip query int false "skip"
+// @Param id query int false "act id"
 // @Summary      gets Act name from query-string and returns corresponding Acts
 // @Tags         act
 // @Success      200 "returns acts"
 // @Failure      400 "invalid request"
 // @Failure      500 "failed to query acts"
-func (pc programApiController) queryActsByName(c echo.Context) error {
+func (pc programApiController) queryAct(c echo.Context) error {
+	// if ID is given, it has priority over name
+	actId := c.QueryParam("id")
+	if actId != "" {
+		id, err := strconv.ParseUint(actId, 10, 64)
+		if err != nil {
+			return c.String(http.StatusBadRequest, err.Error())
+		}
+		act, err := pc.dbClient.Act.Query().Where(act.IDEQ(id)).Only(c.Request().Context())
+		if err != nil {
+			return c.String(http.StatusInternalServerError, err.Error())
+		}
+		return c.JSON(http.StatusOK, act)
+	}
 	// from query-string get name and skip
 	actName := c.QueryParam("name")
 	skipStr := c.QueryParam("skip")

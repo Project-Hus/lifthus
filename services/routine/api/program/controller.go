@@ -28,8 +28,8 @@ func NewProgramApiController(programApi *echo.Echo, params ProgramApiControllerP
 	/* ACT */
 	// create act
 	programApi.POST("/routine/act", programApiController.createAct, guard.UserGuard)
-	// query act by act name
-	programApi.GET("/routine/act", programApiController.queryActsByName)
+	// query acts by act name
+	programApi.GET("/routine/act", programApiController.queryAct)
 
 	return programApi
 }
@@ -52,5 +52,5 @@ type programApis interface {
 	queryProgramBySlug(c echo.Context) error
 
 	createAct(c echo.Context) error
-	queryActsByName(c echo.Context) error
+	queryAct(c echo.Context) error
 }
