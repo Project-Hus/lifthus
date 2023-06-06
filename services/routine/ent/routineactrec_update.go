@@ -31,6 +31,19 @@ func (raru *RoutineActRecUpdate) Where(ps ...predicate.RoutineActRec) *RoutineAc
 	return raru
 }
 
+// SetAuthor sets the "author" field.
+func (raru *RoutineActRecUpdate) SetAuthor(u uint64) *RoutineActRecUpdate {
+	raru.mutation.ResetAuthor()
+	raru.mutation.SetAuthor(u)
+	return raru
+}
+
+// AddAuthor adds u to the "author" field.
+func (raru *RoutineActRecUpdate) AddAuthor(u int64) *RoutineActRecUpdate {
+	raru.mutation.AddAuthor(u)
+	return raru
+}
+
 // SetDailyRoutineRecID sets the "daily_routine_rec_id" field.
 func (raru *RoutineActRecUpdate) SetDailyRoutineRecID(u uint64) *RoutineActRecUpdate {
 	raru.mutation.SetDailyRoutineRecID(u)
@@ -371,6 +384,12 @@ func (raru *RoutineActRecUpdate) sqlSave(ctx context.Context) (n int, err error)
 			}
 		}
 	}
+	if value, ok := raru.mutation.Author(); ok {
+		_spec.SetField(routineactrec.FieldAuthor, field.TypeUint64, value)
+	}
+	if value, ok := raru.mutation.AddedAuthor(); ok {
+		_spec.AddField(routineactrec.FieldAuthor, field.TypeUint64, value)
+	}
 	if value, ok := raru.mutation.Order(); ok {
 		_spec.SetField(routineactrec.FieldOrder, field.TypeInt, value)
 	}
@@ -536,6 +555,19 @@ type RoutineActRecUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *RoutineActRecMutation
+}
+
+// SetAuthor sets the "author" field.
+func (raruo *RoutineActRecUpdateOne) SetAuthor(u uint64) *RoutineActRecUpdateOne {
+	raruo.mutation.ResetAuthor()
+	raruo.mutation.SetAuthor(u)
+	return raruo
+}
+
+// AddAuthor adds u to the "author" field.
+func (raruo *RoutineActRecUpdateOne) AddAuthor(u int64) *RoutineActRecUpdateOne {
+	raruo.mutation.AddAuthor(u)
+	return raruo
 }
 
 // SetDailyRoutineRecID sets the "daily_routine_rec_id" field.
@@ -907,6 +939,12 @@ func (raruo *RoutineActRecUpdateOne) sqlSave(ctx context.Context) (_node *Routin
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := raruo.mutation.Author(); ok {
+		_spec.SetField(routineactrec.FieldAuthor, field.TypeUint64, value)
+	}
+	if value, ok := raruo.mutation.AddedAuthor(); ok {
+		_spec.AddField(routineactrec.FieldAuthor, field.TypeUint64, value)
 	}
 	if value, ok := raruo.mutation.Order(); ok {
 		_spec.SetField(routineactrec.FieldOrder, field.TypeInt, value)

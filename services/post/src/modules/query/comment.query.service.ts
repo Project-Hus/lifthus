@@ -1,9 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { Response } from 'express';
+import { Comment } from '@prisma/client';
 
 @Injectable()
 export class CommentQueryService {
-  getHello(): string {
-    return 'Hello World!';
+  /**
+   * Get comments of specified post.
+   * @param param0
+   * @returns
+   */
+  getComments({
+    pid,
+    skip,
+  }: {
+    pid: number;
+    skip: number;
+  }): Promise<Comment[]> {
+    return Promise.reject('Not implemented');
   }
 }

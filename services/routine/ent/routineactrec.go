@@ -20,6 +20,8 @@ type RoutineActRec struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uint64 `json:"id,omitempty"`
+	// Author holds the value of the "author" field.
+	Author uint64 `json:"author,omitempty"`
 	// DailyRoutineRecID holds the value of the "daily_routine_rec_id" field.
 	DailyRoutineRecID uint64 `json:"daily_routine_rec_id,omitempty"`
 	// RoutineActID holds the value of the "routine_act_id" field.
@@ -111,7 +113,7 @@ func (*RoutineActRec) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case routineactrec.FieldID, routineactrec.FieldDailyRoutineRecID, routineactrec.FieldRoutineActID, routineactrec.FieldActID, routineactrec.FieldOrder, routineactrec.FieldReps, routineactrec.FieldLap, routineactrec.FieldCurrentReps, routineactrec.FieldCurrentLap:
+		case routineactrec.FieldID, routineactrec.FieldAuthor, routineactrec.FieldDailyRoutineRecID, routineactrec.FieldRoutineActID, routineactrec.FieldActID, routineactrec.FieldOrder, routineactrec.FieldReps, routineactrec.FieldLap, routineactrec.FieldCurrentReps, routineactrec.FieldCurrentLap:
 			values[i] = new(sql.NullInt64)
 		case routineactrec.FieldImage, routineactrec.FieldComment, routineactrec.FieldStatus:
 			values[i] = new(sql.NullString)
@@ -138,6 +140,12 @@ func (rar *RoutineActRec) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			rar.ID = uint64(value.Int64)
+		case routineactrec.FieldAuthor:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field author", values[i])
+			} else if value.Valid {
+				rar.Author = uint64(value.Int64)
+			}
 		case routineactrec.FieldDailyRoutineRecID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field daily_routine_rec_id", values[i])
@@ -279,6 +287,9 @@ func (rar *RoutineActRec) String() string {
 	var builder strings.Builder
 	builder.WriteString("RoutineActRec(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", rar.ID))
+	builder.WriteString("author=")
+	builder.WriteString(fmt.Sprintf("%v", rar.Author))
+	builder.WriteString(", ")
 	builder.WriteString("daily_routine_rec_id=")
 	builder.WriteString(fmt.Sprintf("%v", rar.DailyRoutineRecID))
 	builder.WriteString(", ")

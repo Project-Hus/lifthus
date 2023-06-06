@@ -11,6 +11,38 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// updateRoutineActRec godoc
+// @Router       /rec/routineact [put]
+// @param updateRoutineActRecDto body dto.UpdateRoutineActRecDto true "update routineact rec dto"
+// @Summary      updates routineact rec
+// @Tags         rec
+// @Success      200 "returns updated routineact rec"
+// @Failure      400 "invalid request"
+// @Failure      401 "unauthorized"
+// @Failure      403 "forbidden"
+// @Failure      500 "failed to update routineact rec"
+func (rc recApiController) updateRoutineActRec(c echo.Context) error {
+	// UserGuarded
+	uid := c.Get("uid").(uint64)
+
+	// get UpdateRoutineActRecDto from request body
+	newRARDto := new(dto.UpdateRoutineActRecDto)
+	if err := c.Bind(newRARDto); err != nil {
+		return c.JSON(http.StatusBadRequest, err)
+	}
+
+	if uid != *newRARDto.Author {
+		return c.JSON(http.StatusForbidden, "forbidden")
+	}
+
+	updatedRAR, err := db.UpdateRoutineActRec(rc.dbClient, c.Request().Context(), newRARDto)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, updatedRAR)
+}
+
 // queryRoutineActRecs godoc
 // @Router       /rec/routineact [get]
 // @Param date query string false "date like 2006-01-02"
@@ -24,6 +56,8 @@ import (
 // @Failure 	 403 "forbidden"
 // @Failure      500 "failed to query routineact recs"
 func (rc recApiController) queryRoutineActRecs(c echo.Context) error {
+	uid := c.Get("uid").(uint64)
+
 	dateQ := c.QueryParam("date")
 	// if date is given, handle specific date query
 	if dateQ != "" {
@@ -32,7 +66,7 @@ func (rc recApiController) queryRoutineActRecs(c echo.Context) error {
 			return c.String(http.StatusBadRequest, err.Error())
 		}
 		rars, err := rc.dbClient.DailyRoutineRec.Query().
-			Where(dailyroutinerec.DateEQ(date)).
+			Where(dailyroutinerec.DateEQ(date), dailyroutinerec.AuthorEQ(uid)).
 			WithRoutineActRecs().
 			All(c.Request().Context())
 		if ent.IsNotFound(err) {
@@ -55,7 +89,7 @@ func (rc recApiController) queryRoutineActRecs(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "invalid request")
 	}
 	rars, err := rc.dbClient.DailyRoutineRec.Query().
-		Where(dailyroutinerec.DateGTE(startDate), dailyroutinerec.DateLTE(endDate)).
+		Where(dailyroutinerec.DateGTE(startDate), dailyroutinerec.DateLTE(endDate), dailyroutinerec.AuthorEQ(uid)).
 		WithRoutineActRecs().
 		All(c.Request().Context())
 	if ent.IsNotFound(err) {

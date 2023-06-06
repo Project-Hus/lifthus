@@ -9319,6 +9319,8 @@ type RoutineActRecMutation struct {
 	op                       Op
 	typ                      string
 	id                       *uint64
+	author                   *uint64
+	addauthor                *int64
 	_order                   *int
 	add_order                *int
 	reps                     *int
@@ -9449,6 +9451,62 @@ func (m *RoutineActRecMutation) IDs(ctx context.Context) ([]uint64, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetAuthor sets the "author" field.
+func (m *RoutineActRecMutation) SetAuthor(u uint64) {
+	m.author = &u
+	m.addauthor = nil
+}
+
+// Author returns the value of the "author" field in the mutation.
+func (m *RoutineActRecMutation) Author() (r uint64, exists bool) {
+	v := m.author
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAuthor returns the old "author" field's value of the RoutineActRec entity.
+// If the RoutineActRec object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RoutineActRecMutation) OldAuthor(ctx context.Context) (v uint64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAuthor is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAuthor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAuthor: %w", err)
+	}
+	return oldValue.Author, nil
+}
+
+// AddAuthor adds u to the "author" field.
+func (m *RoutineActRecMutation) AddAuthor(u int64) {
+	if m.addauthor != nil {
+		*m.addauthor += u
+	} else {
+		m.addauthor = &u
+	}
+}
+
+// AddedAuthor returns the value that was added to the "author" field in this mutation.
+func (m *RoutineActRecMutation) AddedAuthor() (r int64, exists bool) {
+	v := m.addauthor
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetAuthor resets all changes to the "author" field.
+func (m *RoutineActRecMutation) ResetAuthor() {
+	m.author = nil
+	m.addauthor = nil
 }
 
 // SetDailyRoutineRecID sets the "daily_routine_rec_id" field.
@@ -10247,7 +10305,10 @@ func (m *RoutineActRecMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RoutineActRecMutation) Fields() []string {
-	fields := make([]string, 0, 14)
+	fields := make([]string, 0, 15)
+	if m.author != nil {
+		fields = append(fields, routineactrec.FieldAuthor)
+	}
 	if m.daily_routine_rec != nil {
 		fields = append(fields, routineactrec.FieldDailyRoutineRecID)
 	}
@@ -10298,6 +10359,8 @@ func (m *RoutineActRecMutation) Fields() []string {
 // schema.
 func (m *RoutineActRecMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case routineactrec.FieldAuthor:
+		return m.Author()
 	case routineactrec.FieldDailyRoutineRecID:
 		return m.DailyRoutineRecID()
 	case routineactrec.FieldRoutineActID:
@@ -10335,6 +10398,8 @@ func (m *RoutineActRecMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *RoutineActRecMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case routineactrec.FieldAuthor:
+		return m.OldAuthor(ctx)
 	case routineactrec.FieldDailyRoutineRecID:
 		return m.OldDailyRoutineRecID(ctx)
 	case routineactrec.FieldRoutineActID:
@@ -10372,6 +10437,13 @@ func (m *RoutineActRecMutation) OldField(ctx context.Context, name string) (ent.
 // type.
 func (m *RoutineActRecMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case routineactrec.FieldAuthor:
+		v, ok := value.(uint64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAuthor(v)
+		return nil
 	case routineactrec.FieldDailyRoutineRecID:
 		v, ok := value.(uint64)
 		if !ok {
@@ -10478,6 +10550,9 @@ func (m *RoutineActRecMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *RoutineActRecMutation) AddedFields() []string {
 	var fields []string
+	if m.addauthor != nil {
+		fields = append(fields, routineactrec.FieldAuthor)
+	}
 	if m.add_order != nil {
 		fields = append(fields, routineactrec.FieldOrder)
 	}
@@ -10501,6 +10576,8 @@ func (m *RoutineActRecMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *RoutineActRecMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case routineactrec.FieldAuthor:
+		return m.AddedAuthor()
 	case routineactrec.FieldOrder:
 		return m.AddedOrder()
 	case routineactrec.FieldReps:
@@ -10520,6 +10597,13 @@ func (m *RoutineActRecMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *RoutineActRecMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case routineactrec.FieldAuthor:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAuthor(v)
+		return nil
 	case routineactrec.FieldOrder:
 		v, ok := value.(int)
 		if !ok {
@@ -10621,6 +10705,9 @@ func (m *RoutineActRecMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *RoutineActRecMutation) ResetField(name string) error {
 	switch name {
+	case routineactrec.FieldAuthor:
+		m.ResetAuthor()
+		return nil
 	case routineactrec.FieldDailyRoutineRecID:
 		m.ResetDailyRoutineRecID()
 		return nil
