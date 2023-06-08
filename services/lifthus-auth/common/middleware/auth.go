@@ -37,6 +37,9 @@ func UidSetter(dbClient *ent.Client) echo.MiddlewareFunc {
 				}
 				lifthus_st = authCookie.Value
 			}
+			if lifthus_st == "" {
+				return next(c)
+			}
 			_, uid, exp, err := session.ValidateSession(c.Request().Context(), dbClient, lifthus_st)
 			if err != nil {
 				return c.String(http.StatusInternalServerError, err.Error())

@@ -330,3 +330,50 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 
 	return c.JSONBlob(http.StatusOK, signRespJSON)
 }
+
+// SessionRevokeHandler godoc
+// @Router       /session/revoke [delete]
+// @Summary      revokes lifthus session
+// @Tags         auth
+// @Success      200 "if valid session exists, return uid"
+// @Failure      404 "token not found"
+// @Failure      500 "failed to create new session"
+func (ac authApiController) SessionRevokeHandler(c echo.Context) error {
+	lifthus_st, err := c.Cookie("lifthus_st")
+	if err != nil {
+		return c.String(http.StatusNotFound, err.Error())
+	}
+	// validate lifthus_st
+	sid, _, _, err := session.ValidateSession(c.Request().Context(), ac.dbClient, lifthus_st.Value)
+	if err != nil {
+		return c.String(http.StatusNotFound, err.Error())
+	}
+	sidUUID, err := uuid.Parse(sid)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	_ = ac.dbClient.Session.DeleteOneID(sidUUID).Exec(c.Request().Context())
+
+	revokedCookie := &http.Cookie{
+		Name:     "lifthus_st",
+		Value:    "",
+		Path:     "/",
+		Secure:   false,
+		HttpOnly: true,
+		Domain:   lifthus.CookieDomain,
+		SameSite: http.SameSiteLaxMode,
+	}
+	revokedCookie2 := &http.Cookie{
+		Name:     "lifthus_pst",
+		Value:    "",
+		Path:     "/",
+		Secure:   false,
+		HttpOnly: true,
+		Domain:   lifthus.CookieDomain,
+		SameSite: http.SameSiteLaxMode,
+	}
+	c.SetCookie(revokedCookie)
+	c.SetCookie(revokedCookie2)
+
+	return c.String(http.StatusOK, "session revoked")
+}

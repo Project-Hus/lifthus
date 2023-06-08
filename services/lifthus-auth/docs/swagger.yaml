@@ -161,6 +161,18 @@ paths:
         depending on the token's status.
       tags:
       - auth
+  /session/revoke:
+    delete:
+      responses:
+        "200":
+          description: if valid session exists, return uid
+        "404":
+          description: token not found
+        "500":
+          description: failed to create new session
+      summary: revokes lifthus session
+      tags:
+      - auth
   /session/sign:
     get:
       description: |-

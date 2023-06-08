@@ -186,6 +186,25 @@ const docTemplate = `{
                 }
             }
         },
+        "/session/revoke": {
+            "delete": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "revokes lifthus session",
+                "responses": {
+                    "200": {
+                        "description": "if valid session exists, return uid"
+                    },
+                    "404": {
+                        "description": "token not found"
+                    },
+                    "500": {
+                        "description": "failed to create new session"
+                    }
+                }
+            }
+        },
         "/session/sign": {
             "get": {
                 "description": "Hus told lifthus that the client with specific SID is signed in.\nso now we can sign the token which is owned by the client who has verified sid.",
