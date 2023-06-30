@@ -3,7 +3,9 @@ package lifthus
 import (
 	"lifthus-auth/ent"
 	"log"
+	"net/http"
 	"os"
+	"time"
 )
 
 var GoogleClientID = ""
@@ -16,9 +18,15 @@ var CookieDomain = ""
 var AuthURL = ""
 var ApiURL = ""
 
+var Http *http.Client
+
 var LifthusURL = "http://localhost:3000"
 
 func InitLifthusVars(husenv string, _ *ent.Client) {
+	Http = &http.Client{
+		Timeout: time.Second * 5,
+	}
+
 	ok1, ok2 := false, false
 	GoogleClientID, ok1 = os.LookupEnv("GOOGLE_CLIENT_ID")
 	HusSecretKey, ok2 = os.LookupEnv("HUS_SECRET_KEY")

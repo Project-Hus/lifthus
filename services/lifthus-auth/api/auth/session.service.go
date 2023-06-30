@@ -21,6 +21,14 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// SessionHandler godoc
+// @Router       /session [get]
+// @Summary
+// @Tags         auth
+func (ac authApiController) SessionHandler(c echo.Context) error {
+	return nil
+}
+
 // NewSessionHandler godoc
 // @Router       /session/new [get]
 // @Summary      accepts tokens in cookie, parse and validate them, and returns tokens depending on the token's status.
