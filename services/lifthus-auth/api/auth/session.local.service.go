@@ -3,9 +3,9 @@ package auth
 import (
 	"encoding/json"
 	"fmt"
+	"lifthus-auth/common/db"
 	"lifthus-auth/common/helper"
 	"lifthus-auth/common/lifthus"
-	"lifthus-auth/db"
 	"strconv"
 	"strings"
 
