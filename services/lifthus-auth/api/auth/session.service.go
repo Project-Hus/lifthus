@@ -23,9 +23,20 @@ import (
 
 // SessionHandler godoc
 // @Router       /session [get]
-// @Summary
+// @Summary		 validates session. publishes new one if it isn't.
 // @Tags         auth
 func (ac authApiController) SessionHandler(c echo.Context) error {
+	createFlag := false
+	lst, err := c.Cookie("lifthus_st")
+	if err == http.ErrNoCookie || lst.Value == "" {
+		createFlag = true
+	} else if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to get cookie")
+	} else {
+		// validate
+		sid, uid, exp, err := session.ValidateSession(c.Request().Context(), ac.dbClient, lst.Value)
+	}
+
 	return nil
 }
 
