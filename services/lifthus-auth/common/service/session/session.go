@@ -50,6 +50,12 @@ func ValidateSessionV2(ctx context.Context, lst string) (ls *ent.Session, lu *en
 	return ls, u, nil
 }
 
+// RefreshSession gets old Lifthus session and refreshes it.
+// queries the DB to verify whether the user is still signed and etc.
+func RefreshSession(ctx context.Context, ols *ent.Session) (ls *ent.Session, lu *ent.User, err error) {
+	return nil, nil, nil
+}
+
 // ========================================================================================
 
 // CreateLifthusSession creates new session for user and returns the session ID.

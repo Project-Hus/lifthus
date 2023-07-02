@@ -26,16 +26,19 @@ import (
 // @Summary		 validates session. publishes new one if it isn't.
 // @Tags         auth
 func (ac authApiController) SessionHandler(c echo.Context) error {
-	createFlag := false
 	lst, err := c.Cookie("lifthus_st")
-	if err == http.ErrNoCookie || lst.Value == "" {
-		createFlag = true
-	} else if err != nil {
+	if err != nil && err != http.ErrNoCookie {
 		return c.String(http.StatusInternalServerError, "failed to get cookie")
-	} else {
-		// validate
-		sid, uid, exp, err := session.ValidateSession(c.Request().Context(), ac.dbClient, lst.Value)
 	}
+	ls, _, err := session.ValidateSessionV2(c.Request().Context(), lst.Value)
+	if session.IsExpired(err) {
+		ls, _, err = session.RefreshSession(c.Request().Context(), ls)
+	}
+	if err != nil {
+		// create new session
+	}
+
+	// by ls establish session
 
 	return nil
 }
