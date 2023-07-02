@@ -185,7 +185,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	}
 	hscb := string(body)
 
-	hscbParsed, exp, err := helper.ParseJWTwithHMAC(hscb)
+	hscbParsed, exp, err := helper.ParseJWTWithHMAC(hscb)
 	if err != nil {
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
@@ -259,7 +259,7 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 	}
 
 	// parse lifthus_st if it exists.
-	lst, exp, err := helper.ParseJWTwithHMAC(lifthus_st.Value)
+	lst, exp, err := helper.ParseJWTWithHMAC(lifthus_st.Value)
 	if err != nil {
 		log.Println(err)
 		return c.String(http.StatusUnauthorized, err.Error())

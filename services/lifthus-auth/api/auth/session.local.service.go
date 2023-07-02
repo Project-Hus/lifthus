@@ -137,7 +137,7 @@ func (ac authApiController) sessionSignHandler(c echo.Context) error {
 	lifthus_st := authorizationHeader[7:]
 
 	// parse lifthus_st if it exists.
-	lst, exp, err := helper.ParseJWTwithHMAC(lifthus_st)
+	lst, exp, err := helper.ParseJWTWithHMAC(lifthus_st)
 	if err != nil {
 		log.Println(err)
 		return c.String(http.StatusUnauthorized, err.Error())

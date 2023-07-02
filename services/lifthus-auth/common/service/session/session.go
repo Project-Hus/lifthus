@@ -3,14 +3,54 @@ package session
 import (
 	"context"
 	"fmt"
+	"lifthus-auth/common/db"
 	"lifthus-auth/common/helper"
 	"lifthus-auth/common/lifthus"
 	"lifthus-auth/ent"
+	"lifthus-auth/ent/session"
 	"time"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 )
+
+func IsExpired(err error) bool {
+	return err != nil && err.Error() == "expired session"
+}
+
+// ValidateSession gets Lifthus session token in string and validates it.
+// if token is invalid, it returns "invalid session" error.
+// if token is expired, it returns "expired session" error.
+// and if it is valid, it returns Lifthus session and User entities.
+func ValidateSessionV2(ctx context.Context, lst string) (ls *ent.Session, lu *ent.User, err error) {
+	// parse the Lifthus session token.
+	claims, exp, err := helper.ParseJWTWithHMAC(lst)
+	if err != nil || claims["pps"].(string) != "lifthus_session" {
+		return nil, nil, fmt.Errorf("invalid session")
+	}
+	// get and parse the Hus session ID and TID.
+	sidStr := claims["sid"].(string)
+	sid, err := uuid.Parse(sidStr)
+	if err != nil {
+		return nil, nil, fmt.Errorf("invalid session")
+	}
+	if exp {
+		return nil, nil, fmt.Errorf("expired sesison")
+	}
+
+	// check if the session is valid by querying the database.
+	// and get the user entity too.
+	ls, err = db.Client.Session.Query().Where(session.ID(sid)).WithUser().Only(ctx)
+	if err != nil {
+		return nil, nil, fmt.Errorf("invalid session")
+	}
+
+	u := ls.Edges.User
+
+	return ls, u, nil
+}
+
+// ========================================================================================
 
 // CreateLifthusSession creates new session for user and returns the session ID.
 func CreateSession(ctx context.Context, client *ent.Client) (sid string, stSigned string, err error) {
@@ -91,7 +131,7 @@ func ValidateSession(ctx context.Context, client *ent.Client, st string) (
 	err error,
 ) {
 	// parse session token
-	stParsed, exp, err := helper.ParseJWTwithHMAC(st)
+	stParsed, exp, err := helper.ParseJWTWithHMAC(st)
 	if err != nil {
 		return "", "", false, fmt.Errorf("parsing jwt token failed:%w", err)
 	}
@@ -141,7 +181,7 @@ func RefreshSessionToken(ctx context.Context, client *ent.Client, sid string) (s
 
 // RevokeHusToken takes session token and revokes them.
 func RevokeSessionToken(ctx context.Context, client *ent.Client, st string) error {
-	stClaims, _, err := helper.ParseJWTwithHMAC(st)
+	stClaims, _, err := helper.ParseJWTWithHMAC(st)
 	if err != nil {
 		return err
 	}

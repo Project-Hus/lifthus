@@ -19,8 +19,8 @@ import (
 
 	"lifthus-auth/ent"
 
+	"lifthus-auth/common/db"
 	"lifthus-auth/common/lifthus"
-	"lifthus-auth/db"
 
 	"lifthus-auth/api/auth"
 	"lifthus-auth/api/relation"
