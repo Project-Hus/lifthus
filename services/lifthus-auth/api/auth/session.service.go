@@ -26,11 +26,14 @@ import (
 // @Summary		 validates session. publishes new one if it isn't.
 // @Tags         auth
 func (ac authApiController) SessionHandler(c echo.Context) error {
+	// first get the Lifthus session token from cookie
 	lst, err := c.Cookie("lifthus_st")
 	if err != nil && err != http.ErrNoCookie {
 		return c.String(http.StatusInternalServerError, "failed to get cookie")
 	}
+	// validate the session
 	ls, _, err := session.ValidateSessionV2(c.Request().Context(), lst.Value)
+	// try refresh if expired
 	if session.IsExpired(err) {
 		ls, _, err = session.RefreshSession(c.Request().Context(), ls)
 	}

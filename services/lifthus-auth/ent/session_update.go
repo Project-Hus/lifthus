@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // SessionUpdate is the builder for updating Session entities.
@@ -26,6 +27,54 @@ type SessionUpdate struct {
 // Where appends a list predicates to the SessionUpdate builder.
 func (su *SessionUpdate) Where(ps ...predicate.Session) *SessionUpdate {
 	su.mutation.Where(ps...)
+	return su
+}
+
+// SetTid sets the "tid" field.
+func (su *SessionUpdate) SetTid(u uuid.UUID) *SessionUpdate {
+	su.mutation.SetTid(u)
+	return su
+}
+
+// SetNillableTid sets the "tid" field if the given value is not nil.
+func (su *SessionUpdate) SetNillableTid(u *uuid.UUID) *SessionUpdate {
+	if u != nil {
+		su.SetTid(*u)
+	}
+	return su
+}
+
+// SetHsid sets the "hsid" field.
+func (su *SessionUpdate) SetHsid(u uuid.UUID) *SessionUpdate {
+	su.mutation.SetHsid(u)
+	return su
+}
+
+// SetNillableHsid sets the "hsid" field if the given value is not nil.
+func (su *SessionUpdate) SetNillableHsid(u *uuid.UUID) *SessionUpdate {
+	if u != nil {
+		su.SetHsid(*u)
+	}
+	return su
+}
+
+// ClearHsid clears the value of the "hsid" field.
+func (su *SessionUpdate) ClearHsid() *SessionUpdate {
+	su.mutation.ClearHsid()
+	return su
+}
+
+// SetConnectedAt sets the "connected_at" field.
+func (su *SessionUpdate) SetConnectedAt(t time.Time) *SessionUpdate {
+	su.mutation.SetConnectedAt(t)
+	return su
+}
+
+// SetNillableConnectedAt sets the "connected_at" field if the given value is not nil.
+func (su *SessionUpdate) SetNillableConnectedAt(t *time.Time) *SessionUpdate {
+	if t != nil {
+		su.SetConnectedAt(*t)
+	}
 	return su
 }
 
@@ -49,43 +98,23 @@ func (su *SessionUpdate) ClearUID() *SessionUpdate {
 	return su
 }
 
-// SetConnectedAt sets the "connected_at" field.
-func (su *SessionUpdate) SetConnectedAt(t time.Time) *SessionUpdate {
-	su.mutation.SetConnectedAt(t)
-	return su
-}
-
-// SetNillableConnectedAt sets the "connected_at" field if the given value is not nil.
-func (su *SessionUpdate) SetNillableConnectedAt(t *time.Time) *SessionUpdate {
-	if t != nil {
-		su.SetConnectedAt(*t)
-	}
-	return su
-}
-
 // SetSignedAt sets the "signed_at" field.
 func (su *SessionUpdate) SetSignedAt(t time.Time) *SessionUpdate {
 	su.mutation.SetSignedAt(t)
 	return su
 }
 
+// SetNillableSignedAt sets the "signed_at" field if the given value is not nil.
+func (su *SessionUpdate) SetNillableSignedAt(t *time.Time) *SessionUpdate {
+	if t != nil {
+		su.SetSignedAt(*t)
+	}
+	return su
+}
+
 // ClearSignedAt clears the value of the "signed_at" field.
 func (su *SessionUpdate) ClearSignedAt() *SessionUpdate {
 	su.mutation.ClearSignedAt()
-	return su
-}
-
-// SetUsed sets the "used" field.
-func (su *SessionUpdate) SetUsed(b bool) *SessionUpdate {
-	su.mutation.SetUsed(b)
-	return su
-}
-
-// SetNillableUsed sets the "used" field if the given value is not nil.
-func (su *SessionUpdate) SetNillableUsed(b *bool) *SessionUpdate {
-	if b != nil {
-		su.SetUsed(*b)
-	}
 	return su
 }
 
@@ -121,7 +150,6 @@ func (su *SessionUpdate) ClearUser() *SessionUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (su *SessionUpdate) Save(ctx context.Context) (int, error) {
-	su.defaults()
 	return withHooks(ctx, su.sqlSave, su.mutation, su.hooks)
 }
 
@@ -147,14 +175,6 @@ func (su *SessionUpdate) ExecX(ctx context.Context) {
 	}
 }
 
-// defaults sets the default values of the builder before save.
-func (su *SessionUpdate) defaults() {
-	if _, ok := su.mutation.SignedAt(); !ok && !su.mutation.SignedAtCleared() {
-		v := session.UpdateDefaultSignedAt()
-		su.mutation.SetSignedAt(v)
-	}
-}
-
 func (su *SessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := sqlgraph.NewUpdateSpec(session.Table, session.Columns, sqlgraph.NewFieldSpec(session.FieldID, field.TypeUUID))
 	if ps := su.mutation.predicates; len(ps) > 0 {
@@ -164,6 +184,15 @@ func (su *SessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := su.mutation.Tid(); ok {
+		_spec.SetField(session.FieldTid, field.TypeUUID, value)
+	}
+	if value, ok := su.mutation.Hsid(); ok {
+		_spec.SetField(session.FieldHsid, field.TypeUUID, value)
+	}
+	if su.mutation.HsidCleared() {
+		_spec.ClearField(session.FieldHsid, field.TypeUUID)
+	}
 	if value, ok := su.mutation.ConnectedAt(); ok {
 		_spec.SetField(session.FieldConnectedAt, field.TypeTime, value)
 	}
@@ -172,9 +201,6 @@ func (su *SessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if su.mutation.SignedAtCleared() {
 		_spec.ClearField(session.FieldSignedAt, field.TypeTime)
-	}
-	if value, ok := su.mutation.Used(); ok {
-		_spec.SetField(session.FieldUsed, field.TypeBool, value)
 	}
 	if su.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -225,6 +251,54 @@ type SessionUpdateOne struct {
 	mutation *SessionMutation
 }
 
+// SetTid sets the "tid" field.
+func (suo *SessionUpdateOne) SetTid(u uuid.UUID) *SessionUpdateOne {
+	suo.mutation.SetTid(u)
+	return suo
+}
+
+// SetNillableTid sets the "tid" field if the given value is not nil.
+func (suo *SessionUpdateOne) SetNillableTid(u *uuid.UUID) *SessionUpdateOne {
+	if u != nil {
+		suo.SetTid(*u)
+	}
+	return suo
+}
+
+// SetHsid sets the "hsid" field.
+func (suo *SessionUpdateOne) SetHsid(u uuid.UUID) *SessionUpdateOne {
+	suo.mutation.SetHsid(u)
+	return suo
+}
+
+// SetNillableHsid sets the "hsid" field if the given value is not nil.
+func (suo *SessionUpdateOne) SetNillableHsid(u *uuid.UUID) *SessionUpdateOne {
+	if u != nil {
+		suo.SetHsid(*u)
+	}
+	return suo
+}
+
+// ClearHsid clears the value of the "hsid" field.
+func (suo *SessionUpdateOne) ClearHsid() *SessionUpdateOne {
+	suo.mutation.ClearHsid()
+	return suo
+}
+
+// SetConnectedAt sets the "connected_at" field.
+func (suo *SessionUpdateOne) SetConnectedAt(t time.Time) *SessionUpdateOne {
+	suo.mutation.SetConnectedAt(t)
+	return suo
+}
+
+// SetNillableConnectedAt sets the "connected_at" field if the given value is not nil.
+func (suo *SessionUpdateOne) SetNillableConnectedAt(t *time.Time) *SessionUpdateOne {
+	if t != nil {
+		suo.SetConnectedAt(*t)
+	}
+	return suo
+}
+
 // SetUID sets the "uid" field.
 func (suo *SessionUpdateOne) SetUID(u uint64) *SessionUpdateOne {
 	suo.mutation.SetUID(u)
@@ -245,43 +319,23 @@ func (suo *SessionUpdateOne) ClearUID() *SessionUpdateOne {
 	return suo
 }
 
-// SetConnectedAt sets the "connected_at" field.
-func (suo *SessionUpdateOne) SetConnectedAt(t time.Time) *SessionUpdateOne {
-	suo.mutation.SetConnectedAt(t)
-	return suo
-}
-
-// SetNillableConnectedAt sets the "connected_at" field if the given value is not nil.
-func (suo *SessionUpdateOne) SetNillableConnectedAt(t *time.Time) *SessionUpdateOne {
-	if t != nil {
-		suo.SetConnectedAt(*t)
-	}
-	return suo
-}
-
 // SetSignedAt sets the "signed_at" field.
 func (suo *SessionUpdateOne) SetSignedAt(t time.Time) *SessionUpdateOne {
 	suo.mutation.SetSignedAt(t)
 	return suo
 }
 
+// SetNillableSignedAt sets the "signed_at" field if the given value is not nil.
+func (suo *SessionUpdateOne) SetNillableSignedAt(t *time.Time) *SessionUpdateOne {
+	if t != nil {
+		suo.SetSignedAt(*t)
+	}
+	return suo
+}
+
 // ClearSignedAt clears the value of the "signed_at" field.
 func (suo *SessionUpdateOne) ClearSignedAt() *SessionUpdateOne {
 	suo.mutation.ClearSignedAt()
-	return suo
-}
-
-// SetUsed sets the "used" field.
-func (suo *SessionUpdateOne) SetUsed(b bool) *SessionUpdateOne {
-	suo.mutation.SetUsed(b)
-	return suo
-}
-
-// SetNillableUsed sets the "used" field if the given value is not nil.
-func (suo *SessionUpdateOne) SetNillableUsed(b *bool) *SessionUpdateOne {
-	if b != nil {
-		suo.SetUsed(*b)
-	}
 	return suo
 }
 
@@ -330,7 +384,6 @@ func (suo *SessionUpdateOne) Select(field string, fields ...string) *SessionUpda
 
 // Save executes the query and returns the updated Session entity.
 func (suo *SessionUpdateOne) Save(ctx context.Context) (*Session, error) {
-	suo.defaults()
 	return withHooks(ctx, suo.sqlSave, suo.mutation, suo.hooks)
 }
 
@@ -353,14 +406,6 @@ func (suo *SessionUpdateOne) Exec(ctx context.Context) error {
 func (suo *SessionUpdateOne) ExecX(ctx context.Context) {
 	if err := suo.Exec(ctx); err != nil {
 		panic(err)
-	}
-}
-
-// defaults sets the default values of the builder before save.
-func (suo *SessionUpdateOne) defaults() {
-	if _, ok := suo.mutation.SignedAt(); !ok && !suo.mutation.SignedAtCleared() {
-		v := session.UpdateDefaultSignedAt()
-		suo.mutation.SetSignedAt(v)
 	}
 }
 
@@ -390,6 +435,15 @@ func (suo *SessionUpdateOne) sqlSave(ctx context.Context) (_node *Session, err e
 			}
 		}
 	}
+	if value, ok := suo.mutation.Tid(); ok {
+		_spec.SetField(session.FieldTid, field.TypeUUID, value)
+	}
+	if value, ok := suo.mutation.Hsid(); ok {
+		_spec.SetField(session.FieldHsid, field.TypeUUID, value)
+	}
+	if suo.mutation.HsidCleared() {
+		_spec.ClearField(session.FieldHsid, field.TypeUUID)
+	}
 	if value, ok := suo.mutation.ConnectedAt(); ok {
 		_spec.SetField(session.FieldConnectedAt, field.TypeTime, value)
 	}
@@ -398,9 +452,6 @@ func (suo *SessionUpdateOne) sqlSave(ctx context.Context) (_node *Session, err e
 	}
 	if suo.mutation.SignedAtCleared() {
 		_spec.ClearField(session.FieldSignedAt, field.TypeTime)
-	}
-	if value, ok := suo.mutation.Used(); ok {
-		_spec.SetField(session.FieldUsed, field.TypeBool, value)
 	}
 	if suo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

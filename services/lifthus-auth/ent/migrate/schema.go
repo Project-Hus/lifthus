@@ -12,9 +12,10 @@ var (
 	// SessionsColumns holds the columns for the "sessions" table.
 	SessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "tid", Type: field.TypeUUID},
+		{Name: "hsid", Type: field.TypeUUID, Nullable: true},
 		{Name: "connected_at", Type: field.TypeTime},
 		{Name: "signed_at", Type: field.TypeTime, Nullable: true},
-		{Name: "used", Type: field.TypeBool, Default: false},
 		{Name: "uid", Type: field.TypeUint64, Nullable: true},
 	}
 	// SessionsTable holds the schema information for the "sessions" table.
@@ -25,7 +26,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "sessions_users_sessions",
-				Columns:    []*schema.Column{SessionsColumns[4]},
+				Columns:    []*schema.Column{SessionsColumns[5]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

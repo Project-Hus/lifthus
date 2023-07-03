@@ -17,18 +17,14 @@ import (
 func init() {
 	sessionFields := schema.Session{}.Fields()
 	_ = sessionFields
+	// sessionDescTid is the schema descriptor for tid field.
+	sessionDescTid := sessionFields[1].Descriptor()
+	// session.DefaultTid holds the default value on creation for the tid field.
+	session.DefaultTid = sessionDescTid.Default.(func() uuid.UUID)
 	// sessionDescConnectedAt is the schema descriptor for connected_at field.
-	sessionDescConnectedAt := sessionFields[2].Descriptor()
+	sessionDescConnectedAt := sessionFields[3].Descriptor()
 	// session.DefaultConnectedAt holds the default value on creation for the connected_at field.
 	session.DefaultConnectedAt = sessionDescConnectedAt.Default.(func() time.Time)
-	// sessionDescSignedAt is the schema descriptor for signed_at field.
-	sessionDescSignedAt := sessionFields[3].Descriptor()
-	// session.UpdateDefaultSignedAt holds the default value on update for the signed_at field.
-	session.UpdateDefaultSignedAt = sessionDescSignedAt.UpdateDefault.(func() time.Time)
-	// sessionDescUsed is the schema descriptor for used field.
-	sessionDescUsed := sessionFields[4].Descriptor()
-	// session.DefaultUsed holds the default value on creation for the used field.
-	session.DefaultUsed = sessionDescUsed.Default.(bool)
 	// sessionDescID is the schema descriptor for id field.
 	sessionDescID := sessionFields[0].Descriptor()
 	// session.DefaultID holds the default value on creation for the id field.

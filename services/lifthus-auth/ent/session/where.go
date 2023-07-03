@@ -56,9 +56,14 @@ func IDLTE(id uuid.UUID) predicate.Session {
 	return predicate.Session(sql.FieldLTE(FieldID, id))
 }
 
-// UID applies equality check predicate on the "uid" field. It's identical to UIDEQ.
-func UID(v uint64) predicate.Session {
-	return predicate.Session(sql.FieldEQ(FieldUID, v))
+// Tid applies equality check predicate on the "tid" field. It's identical to TidEQ.
+func Tid(v uuid.UUID) predicate.Session {
+	return predicate.Session(sql.FieldEQ(FieldTid, v))
+}
+
+// Hsid applies equality check predicate on the "hsid" field. It's identical to HsidEQ.
+func Hsid(v uuid.UUID) predicate.Session {
+	return predicate.Session(sql.FieldEQ(FieldHsid, v))
 }
 
 // ConnectedAt applies equality check predicate on the "connected_at" field. It's identical to ConnectedAtEQ.
@@ -66,44 +71,104 @@ func ConnectedAt(v time.Time) predicate.Session {
 	return predicate.Session(sql.FieldEQ(FieldConnectedAt, v))
 }
 
+// UID applies equality check predicate on the "uid" field. It's identical to UIDEQ.
+func UID(v uint64) predicate.Session {
+	return predicate.Session(sql.FieldEQ(FieldUID, v))
+}
+
 // SignedAt applies equality check predicate on the "signed_at" field. It's identical to SignedAtEQ.
 func SignedAt(v time.Time) predicate.Session {
 	return predicate.Session(sql.FieldEQ(FieldSignedAt, v))
 }
 
-// Used applies equality check predicate on the "used" field. It's identical to UsedEQ.
-func Used(v bool) predicate.Session {
-	return predicate.Session(sql.FieldEQ(FieldUsed, v))
+// TidEQ applies the EQ predicate on the "tid" field.
+func TidEQ(v uuid.UUID) predicate.Session {
+	return predicate.Session(sql.FieldEQ(FieldTid, v))
 }
 
-// UIDEQ applies the EQ predicate on the "uid" field.
-func UIDEQ(v uint64) predicate.Session {
-	return predicate.Session(sql.FieldEQ(FieldUID, v))
+// TidNEQ applies the NEQ predicate on the "tid" field.
+func TidNEQ(v uuid.UUID) predicate.Session {
+	return predicate.Session(sql.FieldNEQ(FieldTid, v))
 }
 
-// UIDNEQ applies the NEQ predicate on the "uid" field.
-func UIDNEQ(v uint64) predicate.Session {
-	return predicate.Session(sql.FieldNEQ(FieldUID, v))
+// TidIn applies the In predicate on the "tid" field.
+func TidIn(vs ...uuid.UUID) predicate.Session {
+	return predicate.Session(sql.FieldIn(FieldTid, vs...))
 }
 
-// UIDIn applies the In predicate on the "uid" field.
-func UIDIn(vs ...uint64) predicate.Session {
-	return predicate.Session(sql.FieldIn(FieldUID, vs...))
+// TidNotIn applies the NotIn predicate on the "tid" field.
+func TidNotIn(vs ...uuid.UUID) predicate.Session {
+	return predicate.Session(sql.FieldNotIn(FieldTid, vs...))
 }
 
-// UIDNotIn applies the NotIn predicate on the "uid" field.
-func UIDNotIn(vs ...uint64) predicate.Session {
-	return predicate.Session(sql.FieldNotIn(FieldUID, vs...))
+// TidGT applies the GT predicate on the "tid" field.
+func TidGT(v uuid.UUID) predicate.Session {
+	return predicate.Session(sql.FieldGT(FieldTid, v))
 }
 
-// UIDIsNil applies the IsNil predicate on the "uid" field.
-func UIDIsNil() predicate.Session {
-	return predicate.Session(sql.FieldIsNull(FieldUID))
+// TidGTE applies the GTE predicate on the "tid" field.
+func TidGTE(v uuid.UUID) predicate.Session {
+	return predicate.Session(sql.FieldGTE(FieldTid, v))
 }
 
-// UIDNotNil applies the NotNil predicate on the "uid" field.
-func UIDNotNil() predicate.Session {
-	return predicate.Session(sql.FieldNotNull(FieldUID))
+// TidLT applies the LT predicate on the "tid" field.
+func TidLT(v uuid.UUID) predicate.Session {
+	return predicate.Session(sql.FieldLT(FieldTid, v))
+}
+
+// TidLTE applies the LTE predicate on the "tid" field.
+func TidLTE(v uuid.UUID) predicate.Session {
+	return predicate.Session(sql.FieldLTE(FieldTid, v))
+}
+
+// HsidEQ applies the EQ predicate on the "hsid" field.
+func HsidEQ(v uuid.UUID) predicate.Session {
+	return predicate.Session(sql.FieldEQ(FieldHsid, v))
+}
+
+// HsidNEQ applies the NEQ predicate on the "hsid" field.
+func HsidNEQ(v uuid.UUID) predicate.Session {
+	return predicate.Session(sql.FieldNEQ(FieldHsid, v))
+}
+
+// HsidIn applies the In predicate on the "hsid" field.
+func HsidIn(vs ...uuid.UUID) predicate.Session {
+	return predicate.Session(sql.FieldIn(FieldHsid, vs...))
+}
+
+// HsidNotIn applies the NotIn predicate on the "hsid" field.
+func HsidNotIn(vs ...uuid.UUID) predicate.Session {
+	return predicate.Session(sql.FieldNotIn(FieldHsid, vs...))
+}
+
+// HsidGT applies the GT predicate on the "hsid" field.
+func HsidGT(v uuid.UUID) predicate.Session {
+	return predicate.Session(sql.FieldGT(FieldHsid, v))
+}
+
+// HsidGTE applies the GTE predicate on the "hsid" field.
+func HsidGTE(v uuid.UUID) predicate.Session {
+	return predicate.Session(sql.FieldGTE(FieldHsid, v))
+}
+
+// HsidLT applies the LT predicate on the "hsid" field.
+func HsidLT(v uuid.UUID) predicate.Session {
+	return predicate.Session(sql.FieldLT(FieldHsid, v))
+}
+
+// HsidLTE applies the LTE predicate on the "hsid" field.
+func HsidLTE(v uuid.UUID) predicate.Session {
+	return predicate.Session(sql.FieldLTE(FieldHsid, v))
+}
+
+// HsidIsNil applies the IsNil predicate on the "hsid" field.
+func HsidIsNil() predicate.Session {
+	return predicate.Session(sql.FieldIsNull(FieldHsid))
+}
+
+// HsidNotNil applies the NotNil predicate on the "hsid" field.
+func HsidNotNil() predicate.Session {
+	return predicate.Session(sql.FieldNotNull(FieldHsid))
 }
 
 // ConnectedAtEQ applies the EQ predicate on the "connected_at" field.
@@ -144,6 +209,36 @@ func ConnectedAtLT(v time.Time) predicate.Session {
 // ConnectedAtLTE applies the LTE predicate on the "connected_at" field.
 func ConnectedAtLTE(v time.Time) predicate.Session {
 	return predicate.Session(sql.FieldLTE(FieldConnectedAt, v))
+}
+
+// UIDEQ applies the EQ predicate on the "uid" field.
+func UIDEQ(v uint64) predicate.Session {
+	return predicate.Session(sql.FieldEQ(FieldUID, v))
+}
+
+// UIDNEQ applies the NEQ predicate on the "uid" field.
+func UIDNEQ(v uint64) predicate.Session {
+	return predicate.Session(sql.FieldNEQ(FieldUID, v))
+}
+
+// UIDIn applies the In predicate on the "uid" field.
+func UIDIn(vs ...uint64) predicate.Session {
+	return predicate.Session(sql.FieldIn(FieldUID, vs...))
+}
+
+// UIDNotIn applies the NotIn predicate on the "uid" field.
+func UIDNotIn(vs ...uint64) predicate.Session {
+	return predicate.Session(sql.FieldNotIn(FieldUID, vs...))
+}
+
+// UIDIsNil applies the IsNil predicate on the "uid" field.
+func UIDIsNil() predicate.Session {
+	return predicate.Session(sql.FieldIsNull(FieldUID))
+}
+
+// UIDNotNil applies the NotNil predicate on the "uid" field.
+func UIDNotNil() predicate.Session {
+	return predicate.Session(sql.FieldNotNull(FieldUID))
 }
 
 // SignedAtEQ applies the EQ predicate on the "signed_at" field.
@@ -194,16 +289,6 @@ func SignedAtIsNil() predicate.Session {
 // SignedAtNotNil applies the NotNil predicate on the "signed_at" field.
 func SignedAtNotNil() predicate.Session {
 	return predicate.Session(sql.FieldNotNull(FieldSignedAt))
-}
-
-// UsedEQ applies the EQ predicate on the "used" field.
-func UsedEQ(v bool) predicate.Session {
-	return predicate.Session(sql.FieldEQ(FieldUsed, v))
-}
-
-// UsedNEQ applies the NEQ predicate on the "used" field.
-func UsedNEQ(v bool) predicate.Session {
-	return predicate.Session(sql.FieldNEQ(FieldUsed, v))
 }
 
 // HasUser applies the HasEdge predicate on the "user" edge.

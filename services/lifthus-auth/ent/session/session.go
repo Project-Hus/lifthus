@@ -15,14 +15,16 @@ const (
 	Label = "session"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldUID holds the string denoting the uid field in the database.
-	FieldUID = "uid"
+	// FieldTid holds the string denoting the tid field in the database.
+	FieldTid = "tid"
+	// FieldHsid holds the string denoting the hsid field in the database.
+	FieldHsid = "hsid"
 	// FieldConnectedAt holds the string denoting the connected_at field in the database.
 	FieldConnectedAt = "connected_at"
+	// FieldUID holds the string denoting the uid field in the database.
+	FieldUID = "uid"
 	// FieldSignedAt holds the string denoting the signed_at field in the database.
 	FieldSignedAt = "signed_at"
-	// FieldUsed holds the string denoting the used field in the database.
-	FieldUsed = "used"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the session in the database.
@@ -39,10 +41,11 @@ const (
 // Columns holds all SQL columns for session fields.
 var Columns = []string{
 	FieldID,
-	FieldUID,
+	FieldTid,
+	FieldHsid,
 	FieldConnectedAt,
+	FieldUID,
 	FieldSignedAt,
-	FieldUsed,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -56,12 +59,10 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultTid holds the default value on creation for the "tid" field.
+	DefaultTid func() uuid.UUID
 	// DefaultConnectedAt holds the default value on creation for the "connected_at" field.
 	DefaultConnectedAt func() time.Time
-	// UpdateDefaultSignedAt holds the default value on update for the "signed_at" field.
-	UpdateDefaultSignedAt func() time.Time
-	// DefaultUsed holds the default value on creation for the "used" field.
-	DefaultUsed bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -74,9 +75,14 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByUID orders the results by the uid field.
-func ByUID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldUID, opts...).ToFunc()
+// ByTid orders the results by the tid field.
+func ByTid(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTid, opts...).ToFunc()
+}
+
+// ByHsid orders the results by the hsid field.
+func ByHsid(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHsid, opts...).ToFunc()
 }
 
 // ByConnectedAt orders the results by the connected_at field.
@@ -84,14 +90,14 @@ func ByConnectedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldConnectedAt, opts...).ToFunc()
 }
 
+// ByUID orders the results by the uid field.
+func ByUID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUID, opts...).ToFunc()
+}
+
 // BySignedAt orders the results by the signed_at field.
 func BySignedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSignedAt, opts...).ToFunc()
-}
-
-// ByUsed orders the results by the used field.
-func ByUsed(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldUsed, opts...).ToFunc()
 }
 
 // ByUserField orders the results by user field.
