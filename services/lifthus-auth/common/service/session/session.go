@@ -21,6 +21,7 @@ func IsExpired(err error) bool {
 // ValidateSession gets Lifthus session token in string and validates it.
 // if token is invalid, it returns "invalid session" error.
 // if token is expired, it returns "expired session" error.
+// if revoked token is used, it returns "illegal session" error.
 // and if it is valid, it returns Lifthus session and User entities.
 func ValidateSessionV2(ctx context.Context, lst string) (ls *ent.Session, lu *ent.User, err error) {
 	// parse the Lifthus session token.
@@ -28,14 +29,13 @@ func ValidateSessionV2(ctx context.Context, lst string) (ls *ent.Session, lu *en
 	if err != nil || claims["pps"].(string) != "lifthus_session" {
 		return nil, nil, fmt.Errorf("invalid session")
 	}
-	// get and parse the Hus session ID and TID.
+	// get and parse the session ID and TID.
 	sidStr := claims["sid"].(string)
-	sid, err := uuid.Parse(sidStr)
-	if err != nil {
+	sid, err1 := uuid.Parse(sidStr)
+	tidStr := claims["tid"].(string)
+	tid, err2 := uuid.Parse(tidStr)
+	if err1 != nil || err2 != nil {
 		return nil, nil, fmt.Errorf("invalid session")
-	}
-	if exp {
-		return nil, nil, fmt.Errorf("expired sesison")
 	}
 
 	// check if the session is valid by querying the database.
@@ -45,9 +45,47 @@ func ValidateSessionV2(ctx context.Context, lst string) (ls *ent.Session, lu *en
 		return nil, nil, fmt.Errorf("invalid session")
 	}
 
-	u := ls.Edges.User
+	if tid != ls.Tid {
+		// revoke all user's session and propagate (not implemented yet) ------------------------------------------------------------------------
+		return nil, nil, fmt.Errorf("illegal session")
+	}
 
-	return ls, u, nil
+	lu = ls.Edges.User
+
+	// if session is expired, return error with session entity to try refreshing the session.
+	if exp {
+		return ls, lu, fmt.Errorf("expired sesison")
+	}
+
+	return ls, lu, nil
+}
+
+// CreateSession issues new Lifthus session and returns the session entity and signed session token.
+func CreateSessionV2(ctx context.Context) (ls *ent.Session, newSignedToken string, err error) {
+	// create new lifthus session
+	ns, err := db.Client.Session.Create().Save(ctx)
+	if err != nil {
+		return nil, "", fmt.Errorf("creating session failed:%w", err)
+	}
+
+	// create new jwt session token with session id
+	st := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"purpose": "lifthus_session",
+		"sid":     ns.ID.String(),
+		"tid":     ns.Tid.String(),
+		"hsid":    "",
+		"uid":     "",
+		"exp":     time.Now().Add(time.Minute * 5).Unix(),
+	})
+
+	// sign and get the complete encoded token as a string using the secret
+	hsk := []byte(lifthus.HusSecretKey)
+	stSigned, err = st.SignedString(hsk)
+	if err != nil {
+		return "", "", fmt.Errorf("!!signing session token failed:%w", err)
+	}
+
+	return ns.ID.String(), stSigned, nil
 }
 
 // RefreshSession gets old Lifthus session and refreshes it.
