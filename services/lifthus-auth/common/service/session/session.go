@@ -70,22 +70,22 @@ func CreateSessionV2(ctx context.Context) (ls *ent.Session, newSignedToken strin
 
 	// create new jwt session token with session id
 	st := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"purpose": "lifthus_session",
-		"sid":     ns.ID.String(),
-		"tid":     ns.Tid.String(),
-		"hsid":    "",
-		"uid":     "",
-		"exp":     time.Now().Add(time.Minute * 5).Unix(),
+		"purpose":   "lifthus_session",
+		"sid":       ns.ID.String(),
+		"tid":       ns.Tid.String(),
+		"connected": false, // it tells that it is still not connected to Hus session.
+		"uid":       "",
+		"exp":       time.Now().Add(time.Minute * 5).Unix(),
 	})
 
 	// sign and get the complete encoded token as a string using the secret
 	hsk := []byte(lifthus.HusSecretKey)
-	stSigned, err = st.SignedString(hsk)
+	stSigned, err := st.SignedString(hsk)
 	if err != nil {
-		return "", "", fmt.Errorf("!!signing session token failed:%w", err)
+		return nil, "", fmt.Errorf("signing session token failed:%w", err)
 	}
 
-	return ns.ID.String(), stSigned, nil
+	return ns, stSigned, nil
 }
 
 // RefreshSession gets old Lifthus session and refreshes it.
