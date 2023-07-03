@@ -39,6 +39,22 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 	}
 	if err != nil {
 		// create new session
+		_, nlst, err := session.CreateSessionV2(c.Request().Context())
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "failed to issue new session")
+		}
+		nlstCookie := &http.Cookie{
+			Name:     "lifthus_st",
+			Value:    nlst,
+			Path:     "/",
+			Domain:   ".lifthus.com",
+			HttpOnly: true,
+			Secure:   false, // check again later
+			SameSite: http.SameSiteLaxMode,
+		}
+		c.SetCookie(nlstCookie)
+
+		return c.String(http.StatusCreated, "new session issued")
 	}
 
 	// by ls establish session
