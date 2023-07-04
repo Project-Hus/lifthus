@@ -26,6 +26,17 @@ import (
 // @Summary		 validates session. publishes new one if it isn't.
 // @Tags         auth
 func (ac authApiController) SessionHandler(c echo.Context) error {
+	/*
+		1. get session token from cookie
+		  the token string may be empty if there's no cookie.
+		  and may the token be invalid.
+		2. validate the token
+		  if expired, try refresh
+		3-1. if session invalid or refresh failed, issue a new session
+		3-2. if session valid,
+		  try connect to Cloudhus if it still isn't connected.
+		  if connected, just return it.
+	*/
 	// first get the Lifthus session token from cookie
 	lst, err := c.Cookie("lifthus_st")
 	if err != nil && err != http.ErrNoCookie {
@@ -57,7 +68,7 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 		return c.String(http.StatusCreated, "new session issued")
 	}
 
-	// by ls establish session
+	// depending on hsid prop in token, do connect
 
 	return nil
 }

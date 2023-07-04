@@ -20,7 +20,7 @@ func IsExpired(err error) bool {
 
 // ValidateSession gets Lifthus session token in string and validates it.
 // if token is invalid, it returns "invalid session" error.
-// if token is expired, it returns "expired session" error.
+// if token is expired, it returns "expired session" error. and IsExpired func is provided to check it.
 // if revoked token is used, it returns "illegal session" error.
 // and if it is valid, it returns Lifthus session and User entities.
 func ValidateSessionV2(ctx context.Context, lst string) (ls *ent.Session, lu *ent.User, err error) {
