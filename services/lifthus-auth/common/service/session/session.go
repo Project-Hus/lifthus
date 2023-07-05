@@ -20,14 +20,14 @@ func IsExpired(err error) bool {
 
 // ValidateSession gets Lifthus session token in string and validates it.
 // if token is invalid, it returns "invalid session" error.
-// if token is expired, it returns "expired session" error. and IsExpired func is provided to check it.
+// if token is expired but vaild except the expiration issue, it returns "expired session" error with session entity. (IsExpired func is provided to check it)
 // if revoked token is used, it returns "illegal session" error.
-// and if it is valid, it returns Lifthus session and User entities.
-func ValidateSessionV2(ctx context.Context, lst string) (ls *ent.Session, lu *ent.User, err error) {
+// and if it is valid, it returns Lifthus session with User edge.
+func ValidateSessionV2(ctx context.Context, lst string) (ls *ent.Session, err error) {
 	// parse the Lifthus session token.
 	claims, exp, err := helper.ParseJWTWithHMAC(lst)
 	if err != nil || claims["pps"].(string) != "lifthus_session" {
-		return nil, nil, fmt.Errorf("invalid session")
+		return nil, fmt.Errorf("invalid session")
 	}
 	// get and parse the session ID and TID.
 	sidStr := claims["sid"].(string)
@@ -35,29 +35,27 @@ func ValidateSessionV2(ctx context.Context, lst string) (ls *ent.Session, lu *en
 	tidStr := claims["tid"].(string)
 	tid, err2 := uuid.Parse(tidStr)
 	if err1 != nil || err2 != nil {
-		return nil, nil, fmt.Errorf("invalid session")
+		return nil, fmt.Errorf("invalid session")
 	}
 
 	// check if the session is valid by querying the database.
 	// and get the user entity too.
-	ls, err = db.Client.Session.Query().Where(session.ID(sid)).WithUser().Only(ctx)
+	ls, err = db.Client.Session.Query().Where(session.ID(sid)).WithUser().Only(ctx) // WithUser always.
 	if err != nil {
-		return nil, nil, fmt.Errorf("invalid session")
+		return nil, fmt.Errorf("invalid session")
 	}
 
 	if tid != ls.Tid {
 		// revoke all user's session and propagate (not implemented yet) ------------------------------------------------------------------------
-		return nil, nil, fmt.Errorf("illegal session")
+		return nil, fmt.Errorf("illegal session")
 	}
 
-	lu = ls.Edges.User
-
-	// if session is expired, return error with session entity to try refreshing the session.
+	// if session is valid regardless of expiration, return expiration error with session entity to try refreshing the session.
 	if exp {
-		return ls, lu, fmt.Errorf("expired sesison")
+		return ls, fmt.Errorf("expired sesison")
 	}
 
-	return ls, lu, nil
+	return ls, nil
 }
 
 // CreateSession issues new Lifthus session and returns the session entity and signed session token.
@@ -88,10 +86,16 @@ func CreateSessionV2(ctx context.Context) (ls *ent.Session, newSignedToken strin
 	return ns, stSigned, nil
 }
 
-// RefreshSession gets old Lifthus session and refreshes it.
-// queries the DB to verify whether the user is still signed and etc.
-func RefreshSession(ctx context.Context, ols *ent.Session) (ls *ent.Session, lu *ent.User, err error) {
-	return nil, nil, nil
+// RefreshSessionHard gets old Lifthus session and refreshes it.
+// it queries the DB to verify whether the user is still signed and etc.
+// the term Hard means that it does not only check Lifthus DB but it also double checks Cloudhus DB to verify whether the user is still signed.
+func RefreshSessionHard(ctx context.Context, ols *ent.Session) (nls *ent.Session, newSignedToken string, err error) {
+	lu := ols.QueryUser().OnlyX(ctx)
+	if lu != nil {
+		// do api call to cloudhus to check the session
+	}
+	// change tid, and issue new token etc
+	return nil, "", nil
 }
 
 // ========================================================================================

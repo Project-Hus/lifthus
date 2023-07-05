@@ -43,17 +43,17 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "failed to get cookie")
 	}
 	// validate the session
-	ls, _, err := session.ValidateSessionV2(c.Request().Context(), lst.Value)
-	// try refresh if expired
-	if session.IsExpired(err) {
-		ls, _, err = session.RefreshSession(c.Request().Context(), ls)
+	ls, err := session.ValidateSessionV2(c.Request().Context(), lst.Value)
+
+	var nlst string // new session token
+
+	// try refresh if valid or expired
+	if err == nil || session.IsExpired(err) {
+		ls, nlst, err = session.RefreshSessionHard(c.Request().Context(), ls)
 	}
-	if err != nil {
-		// create new session
-		_, nlst, err := session.CreateSessionV2(c.Request().Context())
-		if err != nil {
-			return c.String(http.StatusInternalServerError, "failed to issue new session")
-		}
+
+	// if refresh succeeded, return the refreshed session token
+	if err == nil {
 		nlstCookie := &http.Cookie{
 			Name:     "lifthus_st",
 			Value:    nlst,
@@ -65,12 +65,26 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 		}
 		c.SetCookie(nlstCookie)
 
-		return c.String(http.StatusCreated, "new session issued")
+		return c.String(http.StatusOK, "session refreshed")
 	}
 
-	// depending on hsid prop in token, do connect
+	// create new session in case the session is invalid or refresh failed
+	_, nlst, err = session.CreateSessionV2(c.Request().Context())
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to issue new session")
+	}
+	nlstCookie := &http.Cookie{
+		Name:     "lifthus_st",
+		Value:    nlst,
+		Path:     "/",
+		Domain:   ".lifthus.com",
+		HttpOnly: true,
+		Secure:   false, // check again later
+		SameSite: http.SameSiteLaxMode,
+	}
+	c.SetCookie(nlstCookie)
 
-	return nil
+	return c.String(http.StatusCreated, "new session issued")
 }
 
 // NewSessionHandler godoc
