@@ -141,6 +141,18 @@ paths:
       summary: gets uid from path param and makes signed user unfollow the given user
       tags:
       - relation
+  /session:
+    get:
+      responses:
+        "200":
+          description: Ok, session refreshed, session info JSON returned
+        "201":
+          description: Created, new session issued, redirect to cloudhus and do connect
+        "500":
+          description: Internal Server Error
+      summary: validates session. publishes new one if it isn't.
+      tags:
+      - auth
   /session/new:
     get:
       description: |-

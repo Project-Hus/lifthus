@@ -25,6 +25,9 @@ import (
 // @Router       /session [get]
 // @Summary		 validates session. publishes new one if it isn't.
 // @Tags         auth
+// @Success      200 "Ok, session refreshed, session info JSON returned"
+// @Success      201 "Created, new session issued, redirect to cloudhus and do connect"
+// @Failure      500 "Internal Server Error"
 func (ac authApiController) SessionHandler(c echo.Context) error {
 	/*
 		1. get session token from cookie
@@ -60,7 +63,7 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 			Path:     "/",
 			Domain:   ".lifthus.com",
 			HttpOnly: true,
-			Secure:   false, // check again later
+			Secure:   lifthus.CookieSecure,
 			SameSite: http.SameSiteLaxMode,
 		}
 		c.SetCookie(nlstCookie)
@@ -79,7 +82,7 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 		Path:     "/",
 		Domain:   ".lifthus.com",
 		HttpOnly: true,
-		Secure:   false, // check again later
+		Secure:   lifthus.CookieSecure,
 		SameSite: http.SameSiteLaxMode,
 	}
 	c.SetCookie(nlstCookie)

@@ -22,6 +22,8 @@ var Http *http.Client
 
 var LifthusURL = "http://localhost:3000"
 
+var CookieSecure = false
+
 func InitLifthusVars(husenv string, _ *ent.Client) {
 	Http = &http.Client{
 		Timeout: time.Second * 5,
@@ -42,6 +44,7 @@ func InitLifthusVars(husenv string, _ *ent.Client) {
 		CookieDomain = ".lifthus.com"
 		AuthURL = "https://auth.lifthus.com"
 		ApiURL = "https://api.lifthus.com"
+		CookieSecure = true
 	case "development":
 		Host = "localhost:9100"
 		URL = "http://localhost:9100"

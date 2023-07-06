@@ -159,6 +159,25 @@
                 }
             }
         },
+        "/session": {
+            "get": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "validates session. publishes new one if it isn't.",
+                "responses": {
+                    "200": {
+                        "description": "Ok, session refreshed, session info JSON returned"
+                    },
+                    "201": {
+                        "description": "Created, new session issued, redirect to cloudhus and do connect"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/session/new": {
             "get": {
                 "description": "case A: no session, return newly generated session token with 201.\ncase B-1: signed but expired, reset session info(used, signed_at, uid) except SID and return new session token with 201.\ncase B-2: not signed and expired, return new session token keeping SID with 201.\ncase C-1: valid and signed, just return with 200.\ncase C-2: valid and not signed, return with 201 to tell client to check Hus session.",
