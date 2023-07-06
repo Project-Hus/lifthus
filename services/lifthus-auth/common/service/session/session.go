@@ -2,12 +2,15 @@ package session
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"lifthus-auth/common/db"
+	"lifthus-auth/common/dto"
 	"lifthus-auth/common/helper"
 	"lifthus-auth/common/lifthus"
 	"lifthus-auth/ent"
 	"lifthus-auth/ent/session"
+	"net/http"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -68,17 +71,15 @@ func CreateSessionV2(ctx context.Context) (ls *ent.Session, newSignedToken strin
 
 	// create new jwt session token with session id
 	st := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"purpose":   "lifthus_session",
-		"sid":       ns.ID.String(),
-		"tid":       ns.Tid.String(),
-		"connected": false, // it tells that it is still not connected to Hus session.
-		"uid":       "",
-		"exp":       time.Now().Add(time.Minute * 5).Unix(),
+		"purpose": "lifthus_session",
+		"sid":     ns.ID.String(),
+		"tid":     ns.Tid.String(),
+		"uid":     "",
+		"exp":     time.Now().Add(time.Minute * 5).Unix(),
 	})
 
 	// sign and get the complete encoded token as a string using the secret
-	hsk := []byte(lifthus.HusSecretKey)
-	stSigned, err := st.SignedString(hsk)
+	stSigned, err := st.SignedString(lifthus.HusSecretKeyBytes)
 	if err != nil {
 		return nil, "", fmt.Errorf("signing session token failed:%w", err)
 	}
@@ -86,14 +87,58 @@ func CreateSessionV2(ctx context.Context) (ls *ent.Session, newSignedToken strin
 	return ns, stSigned, nil
 }
 
-// RefreshSessionHard gets old Lifthus session and refreshes it.
+// RefreshSessionHard gets Lifthus session and refreshes it.
 // it queries the DB to verify whether the user is still signed and etc.
-// the term Hard means that it does not only check Lifthus DB but it also double checks Cloudhus DB to verify whether the user is still signed.
-func RefreshSessionHard(ctx context.Context, ols *ent.Session) (nls *ent.Session, newSignedToken string, err error) {
-	lu := ols.QueryUser().OnlyX(ctx)
-	if lu != nil {
-		// do api call to cloudhus to check the session
+// the term Hard means that it does not only check Lifthus DB but it also double checks Cloudhus API to verify whether the user is signed.
+// if the user is signed, the user entity must be included in the edges.
+//
+// if the user turns out not to be registered, it does user-registration process as well.
+func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session, newSignedToken string, err error) {
+	// genreate session connection token
+	sct := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"purpose": "hus_connection",
+		"service": "lifthus",
+		"sid":     ls.ID.String(),
+		"exp":     time.Now().Add(time.Minute * 10).Unix(),
+	})
+	sctSigned, err := sct.SignedString(lifthus.HusSecretKeyBytes)
+	if err != nil {
+		return nil, "", fmt.Errorf("signing session connection token failed:%w", err)
 	}
+
+	req, err := http.NewRequest(http.MethodGet, "https://auth.cloudhus.com/auth/hus/connect/"+sctSigned, nil)
+	if err != nil {
+		return nil, "", fmt.Errorf("creating new request failed:%w", err)
+	}
+	resp, err := lifthus.Http.Do(req)
+	if err != nil {
+		return nil, "", fmt.Errorf("hus connection api failed:%w", err)
+	}
+	defer resp.Body.Close()
+
+	//
+	var husConn dto.HusConnDto
+	err = json.NewDecoder(resp.Body).Decode(&husConn)
+	if err != nil {
+		return nil, "", fmt.Errorf("decoding hus connection response failed:%w", err)
+	}
+
+	hsid, err := uuid.Parse(husConn.Hsid)
+	if err != nil {
+		return nil, "", fmt.Errorf("invalid hsid")
+	}
+
+	/* transaction */
+	tx, err := db.Client.Tx(ctx)
+	if err != nil {
+		err = db.Rollback(tx, err)
+		return nil, "", fmt.Errorf("starting transaction failed:%w", err)
+	}
+
+	// update the session by husConn
+
+	// register user if not registered
+
 	// change tid, and issue new token etc
 	return nil, "", nil
 }

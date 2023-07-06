@@ -68,7 +68,11 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 		}
 		c.SetCookie(nlstCookie)
 
-		return c.String(http.StatusOK, "session refreshed")
+		return c.JSON(http.StatusOK, struct {
+			UID *uint64 `json:"uid"`
+		}{
+			UID: ls.UID,
+		})
 	}
 
 	// create new session in case the session is invalid or refresh failed

@@ -10,6 +10,7 @@ import (
 
 var GoogleClientID = ""
 var HusSecretKey = ""
+var HusSecretKeyBytes []byte
 
 var Host = ""
 var URL = ""
@@ -32,6 +33,7 @@ func InitLifthusVars(husenv string, _ *ent.Client) {
 	ok1, ok2 := false, false
 	GoogleClientID, ok1 = os.LookupEnv("GOOGLE_CLIENT_ID")
 	HusSecretKey, ok2 = os.LookupEnv("HUS_SECRET_KEY")
+	HusSecretKeyBytes = []byte(HusSecretKey)
 	if !ok1 || !ok2 {
 		log.Fatalf("GOOGLE_CLIENT_ID or HUS_SECRET_KEY is not set")
 	}
