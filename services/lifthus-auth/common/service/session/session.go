@@ -116,6 +116,11 @@ func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session,
 	}
 	defer resp.Body.Close()
 
+	// if 404 not found, just return error
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, "", fmt.Errorf("invalid session")
+	}
+
 	//
 	var husConn dto.HusConnDto
 	err = json.NewDecoder(resp.Body).Decode(&husConn)
