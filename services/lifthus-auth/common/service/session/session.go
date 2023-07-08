@@ -106,6 +106,7 @@ func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session,
 		return nil, "", fmt.Errorf("signing session connection token failed:%w", err)
 	}
 
+	// from Cloudhus endpoint get the connected session information
 	req, err := http.NewRequest(http.MethodGet, "https://auth.cloudhus.com/auth/hus/connect/"+sctSigned, nil)
 	if err != nil {
 		return nil, "", fmt.Errorf("creating new request failed:%w", err)
@@ -115,23 +116,25 @@ func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session,
 		return nil, "", fmt.Errorf("hus connection api failed:%w", err)
 	}
 	defer resp.Body.Close()
-
-	// if 404 not found, just return error
-	if resp.StatusCode == http.StatusNotFound {
+	// if code not 200, return invalid session error
+	if resp.StatusCode != http.StatusOK {
 		return nil, "", fmt.Errorf("invalid session")
 	}
 
-	//
+	// decode the JSON response
 	var husConn dto.HusConnDto
 	err = json.NewDecoder(resp.Body).Decode(&husConn)
 	if err != nil {
 		return nil, "", fmt.Errorf("decoding hus connection response failed:%w", err)
 	}
 
+	// parse connected Hus session ID
 	hsid, err := uuid.Parse(husConn.Hsid)
 	if err != nil {
 		return nil, "", fmt.Errorf("invalid hsid")
 	}
+	// connected user (nil if not signed)
+	cu := husConn.User
 
 	/* transaction */
 	tx, err := db.Client.Tx(ctx)
@@ -140,9 +143,22 @@ func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session,
 		return nil, "", fmt.Errorf("starting transaction failed:%w", err)
 	}
 
-	// update the session by husConn
+	trx := tx.Session.UpdateOne(ls).SetHsid(hsid).SetTid(uuid.New())
+	// if the user is newly signed, update it.
+	// cases: cu != nil basically
+	// ls.Uid == nil -> new user signed
+	// ls.Uid != nil, ls.Uid == cu.Uid -> maintain session
+	// ls.Uid != nil, ls.Uid != cu.Uid -> update session user
+	if cu != nil && ((ls.Uid == nil) || (ls.Uid != nil && *ls.Uid != cu.Uid)) {
+		if ls.Uid != nil {}
 
-	// register user if not registered
+		u, err := db.QueryUserByID(ctx, *cu.)
+
+
+		trx = trx.SetUID(cu.Uid).SetSignedAt(time.Now())
+	}
+
+	nls, err = trx.Save(ctx)
 
 	// change tid, and issue new token etc
 	return nil, "", nil
