@@ -160,19 +160,19 @@ func (ac authApiController) sessionSignHandler(c echo.Context) error {
 		return c.String(http.StatusUnauthorized, err.Error())
 	}
 
-	// if it is already used to sign, return error.
-	if ls.Used {
-		err = fmt.Errorf("alredy used to sign")
-		log.Println(err)
-		return c.String(http.StatusUnauthorized, err.Error())
-	}
+	// // if it is already used to sign, return error.
+	// if ls.Used {
+	// 	err = fmt.Errorf("alredy used to sign")
+	// 	log.Println(err)
+	// 	return c.String(http.StatusUnauthorized, err.Error())
+	// }
 	sidUUID, err := uuid.Parse(sid)
 	if err != nil {
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	// if the session is not used, set the session to be used.
-	ac.dbClient.Session.UpdateOneID(sidUUID).SetUsed(true).Exec(c.Request().Context())
+	ac.dbClient.Session.UpdateOneID(sidUUID). /*SetUsed(true).*/ Exec(c.Request().Context())
 
 	// if the session is signed more than 5 seconds ago, revoke the session.
 	if time.Since(*ls.SignedAt).Seconds() > 5 {

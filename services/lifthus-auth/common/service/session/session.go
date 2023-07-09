@@ -261,7 +261,7 @@ func SignSession(ctx context.Context, client *ent.Client, sid string, uid uint64
 		return fmt.Errorf("!!parsing uuid failed: %w", err)
 	}
 	// update the session with uid
-	_, err = client.Session.UpdateOneID(sid_uuid).SetUID(uid).SetUsed(false).Save(ctx)
+	_, err = client.Session.UpdateOneID(sid_uuid).SetUID(uid). /*SetUsed(false).*/ Save(ctx)
 	if err != nil {
 		return fmt.Errorf("!!updating session with uid failed: %w", err)
 	}
@@ -319,7 +319,7 @@ func ValidateSession(ctx context.Context, client *ent.Client, st string) (
 
 	// if it is expired and signed, update the session in db to be unsigned.
 	if exp && uid != "" {
-		err = client.Session.UpdateOneID(sid_uuid).SetUsed(false).ClearSignedAt().ClearUID().Exec(ctx)
+		err = client.Session.UpdateOneID(sid_uuid). /*SetUsed(false).*/ ClearSignedAt().ClearUID().Exec(ctx)
 		if err != nil {
 			return "", "", false, fmt.Errorf("updating session failed:%w", err)
 		}
