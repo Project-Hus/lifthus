@@ -14,3 +14,10 @@ type HusConnUser struct {
 	GivenName       string  `json:"given_name"`
 	FamilyName      string  `json:"family_name"`
 }
+
+type SessionUserInfo struct {
+	UID        uint64  `json:"uid"`
+	Registered bool    `json:"registered"`
+	Username   *string `json:"username"`
+	Usercode   string  `json:"usercode"`
+}

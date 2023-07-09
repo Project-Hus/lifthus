@@ -25,6 +25,7 @@ import (
 // @Tags         auth
 // @Router       /session [get]
 // @Summary		 validates session. publishes new one if it isn't. refreshes expired session.
+//
 // @Success      200 "Ok, session refreshed, session info JSON returned"
 // @Success      201 "Created, new session issued, redirect to cloudhus and do connect"
 // @Failure      500 "Internal Server Error"
@@ -68,11 +69,19 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 		}
 		c.SetCookie(nlstCookie)
 
-		return c.JSON(http.StatusOK, struct {
-			UID *uint64 `json:"uid"`
-		}{
-			UID: ls.UID,
-		})
+		// returning sessoin user info
+		var uinf *dto.SessionUserInfo
+		if ls.Edges.User != nil {
+			lsu := ls.Edges.User
+			uinf = &dto.SessionUserInfo{
+				UID:        lsu.ID,
+				Registered: lsu.Registered,
+				Username:   lsu.Username,
+				Usercode:   lsu.Usercode,
+			}
+		}
+
+		return c.JSON(http.StatusOK, uinf)
 	}
 
 	// create new session in case the session is invalid or refresh failed
