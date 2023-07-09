@@ -103,6 +103,20 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 	return c.String(http.StatusCreated, "new session issued")
 }
 
+func (ac authApiController) SignInPropagationHandler(c echo.Context) error {
+	return nil
+}
+
+func (ac authApiController) SignOutHandler(c echo.Context) error {
+	return nil
+}
+
+func (ac authApiController) SignOutPropagationHandler(c echo.Context) error {
+	return nil
+}
+
+// ===================================
+
 // NewSessionHandler godoc
 // @Router       /session/new [get]
 // @Summary      accepts tokens in cookie, parse and validate them, and returns tokens depending on the token's status.
