@@ -2,8 +2,8 @@ package user
 
 import (
 	"fmt"
+	"lifthus-auth/common/db"
 	"lifthus-auth/common/dto"
-	"lifthus-auth/db"
 	"net/http"
 	"strconv"
 

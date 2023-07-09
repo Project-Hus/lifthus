@@ -1,7 +1,7 @@
 package relation
 
 import (
-	"lifthus-auth/db"
+	"lifthus-auth/common/db"
 	"net/http"
 	"strconv"
 

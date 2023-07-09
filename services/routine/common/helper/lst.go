@@ -7,7 +7,7 @@ import (
 )
 
 func ValidateLST(lst string) (uid *uint64, err error) {
-	lstClaims, exp, err := helper.ParseJWTwithHMAC(lst)
+	lstClaims, exp, err := helper.ParseJWTWithHMAC(lst)
 	if err != nil {
 		return nil, err
 	}

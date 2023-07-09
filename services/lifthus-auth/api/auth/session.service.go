@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"io"
 
+	"lifthus-auth/common/db"
 	"lifthus-auth/common/dto"
 	"lifthus-auth/common/helper"
 	"lifthus-auth/common/lifthus"
-	"lifthus-auth/db"
 	"strconv"
 
 	"lifthus-auth/common/service/session"
@@ -20,6 +20,102 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
+
+// SessionHandler godoc
+// @Tags         auth
+// @Router       /session [get]
+// @Summary		 validates session. publishes new one if it isn't. refreshes expired session.
+//
+// @Success      200 "Ok, session refreshed, session info JSON returned"
+// @Success      201 "Created, new session issued, redirect to cloudhus and do connect"
+// @Failure      500 "Internal Server Error"
+func (ac authApiController) SessionHandler(c echo.Context) error {
+	/*
+		1. get session token from cookie
+		  the token string may be empty if there's no cookie.
+		  and may the token be invalid.
+		2. validate the token
+		  if expired, try refresh
+		3-1. if session invalid or refresh failed, issue a new session
+		3-2. if session valid,
+		  try connect to Cloudhus if it still isn't connected.
+		  if connected, just return it.
+	*/
+	// first get the Lifthus session token from cookie
+	lst, err := c.Cookie("lifthus_st")
+	if err != nil && err != http.ErrNoCookie {
+		return c.String(http.StatusInternalServerError, "failed to get cookie")
+	}
+	// validate the session
+	ls, err := session.ValidateSessionV2(c.Request().Context(), lst.Value)
+
+	var nlst string // new session token
+
+	// try refresh if valid or expired
+	if err == nil || session.IsExpired(err) {
+		ls, nlst, err = session.RefreshSessionHard(c.Request().Context(), ls)
+	}
+
+	// if refresh succeeded, return the refreshed session token
+	if err == nil {
+		nlstCookie := &http.Cookie{
+			Name:     "lifthus_st",
+			Value:    nlst,
+			Path:     "/",
+			Domain:   ".lifthus.com",
+			HttpOnly: true,
+			Secure:   lifthus.CookieSecure,
+			SameSite: http.SameSiteLaxMode,
+		}
+		c.SetCookie(nlstCookie)
+
+		// returning sessoin user info
+		var uinf *dto.SessionUserInfo
+		if ls.Edges.User != nil {
+			lsu := ls.Edges.User
+			uinf = &dto.SessionUserInfo{
+				UID:        lsu.ID,
+				Registered: lsu.Registered,
+				Username:   lsu.Username,
+				Usercode:   lsu.Usercode,
+			}
+		}
+
+		return c.JSON(http.StatusOK, uinf)
+	}
+
+	// create new session in case the session is invalid or refresh failed
+	_, nlst, err = session.CreateSessionV2(c.Request().Context())
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to issue new session")
+	}
+	nlstCookie := &http.Cookie{
+		Name:     "lifthus_st",
+		Value:    nlst,
+		Path:     "/",
+		Domain:   ".lifthus.com",
+		HttpOnly: true,
+		Secure:   lifthus.CookieSecure,
+		SameSite: http.SameSiteLaxMode,
+	}
+	c.SetCookie(nlstCookie)
+
+	return c.String(http.StatusCreated, "new session issued")
+}
+
+func (ac authApiController) SignInPropagationHandler(c echo.Context) error {
+	return nil
+}
+
+func (ac authApiController) SignOutHandler(c echo.Context) error {
+	return nil
+}
+
+func (ac authApiController) SignOutPropagationHandler(c echo.Context) error {
+	return nil
+}
+
+// ===================================
 
 // NewSessionHandler godoc
 // @Router       /session/new [get]
@@ -166,7 +262,7 @@ func (ac authApiController) HusSessionHandler(c echo.Context) error {
 	}
 	hscb := string(body)
 
-	hscbParsed, exp, err := helper.ParseJWTwithHMAC(hscb)
+	hscbParsed, exp, err := helper.ParseJWTWithHMAC(hscb)
 	if err != nil {
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
@@ -240,7 +336,7 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 	}
 
 	// parse lifthus_st if it exists.
-	lst, exp, err := helper.ParseJWTwithHMAC(lifthus_st.Value)
+	lst, exp, err := helper.ParseJWTWithHMAC(lifthus_st.Value)
 	if err != nil {
 		log.Println(err)
 		return c.String(http.StatusUnauthorized, err.Error())
@@ -263,19 +359,19 @@ func (ac authApiController) SessionSignHandler(c echo.Context) error {
 		return c.String(http.StatusUnauthorized, err.Error())
 	}
 
-	// if it is already used to sign, return error.
-	if ls.Used {
-		err = fmt.Errorf("alredy used to sign")
-		log.Println(err)
-		return c.String(http.StatusUnauthorized, err.Error())
-	}
+	// // if it is already used to sign, return error.
+	// if ls.Used {
+	// 	err = fmt.Errorf("alredy used to sign")
+	// 	log.Println(err)
+	// 	return c.String(http.StatusUnauthorized, err.Error())
+	// }
 	sidUUID, err := uuid.Parse(sid)
 	if err != nil {
 		log.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 	// if the session is not used, set the session to be used.
-	ac.dbClient.Session.UpdateOneID(sidUUID).SetUsed(true).Exec(c.Request().Context())
+	ac.dbClient.Session.UpdateOneID(sidUUID). /*SetUsed(true).*/ Exec(c.Request().Context())
 
 	// if the session is signed more than 5 seconds ago, revoke the session.
 	if time.Since(*ls.SignedAt).Seconds() > 5 {

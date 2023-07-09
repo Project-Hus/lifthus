@@ -3,11 +3,14 @@ package lifthus
 import (
 	"lifthus-auth/ent"
 	"log"
+	"net/http"
 	"os"
+	"time"
 )
 
 var GoogleClientID = ""
 var HusSecretKey = ""
+var HusSecretKeyBytes []byte
 
 var Host = ""
 var URL = ""
@@ -16,12 +19,21 @@ var CookieDomain = ""
 var AuthURL = ""
 var ApiURL = ""
 
+var Http *http.Client
+
 var LifthusURL = "http://localhost:3000"
 
+var CookieSecure = false
+
 func InitLifthusVars(husenv string, _ *ent.Client) {
+	Http = &http.Client{
+		Timeout: time.Second * 5,
+	}
+
 	ok1, ok2 := false, false
 	GoogleClientID, ok1 = os.LookupEnv("GOOGLE_CLIENT_ID")
 	HusSecretKey, ok2 = os.LookupEnv("HUS_SECRET_KEY")
+	HusSecretKeyBytes = []byte(HusSecretKey)
 	if !ok1 || !ok2 {
 		log.Fatalf("GOOGLE_CLIENT_ID or HUS_SECRET_KEY is not set")
 	}
@@ -34,6 +46,7 @@ func InitLifthusVars(husenv string, _ *ent.Client) {
 		CookieDomain = ".lifthus.com"
 		AuthURL = "https://auth.lifthus.com"
 		ApiURL = "https://api.lifthus.com"
+		CookieSecure = true
 	case "development":
 		Host = "localhost:9100"
 		URL = "http://localhost:9100"

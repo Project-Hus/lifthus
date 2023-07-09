@@ -19,14 +19,16 @@ type Session struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"sid,omitempty"`
-	// UID holds the value of the "uid" field.
-	UID *uint64 `json:"uid,omitempty"`
+	// Tid holds the value of the "tid" field.
+	Tid uuid.UUID `json:"tid,omitempty"`
+	// Hsid holds the value of the "hsid" field.
+	Hsid *uuid.UUID `json:"hsid,omitempty"`
 	// ConnectedAt holds the value of the "connected_at" field.
 	ConnectedAt time.Time `json:"connected_at,omitempty"`
+	// UID holds the value of the "uid" field.
+	UID *uint64 `json:"uid,omitempty"`
 	// SignedAt holds the value of the "signed_at" field.
 	SignedAt *time.Time `json:"signed_at,omitempty"`
-	// Used holds the value of the "used" field.
-	Used bool `json:"used,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SessionQuery when eager-loading is set.
 	Edges        SessionEdges `json:"edges"`
@@ -60,13 +62,13 @@ func (*Session) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case session.FieldUsed:
-			values[i] = new(sql.NullBool)
+		case session.FieldHsid:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case session.FieldUID:
 			values[i] = new(sql.NullInt64)
 		case session.FieldConnectedAt, session.FieldSignedAt:
 			values[i] = new(sql.NullTime)
-		case session.FieldID:
+		case session.FieldID, session.FieldTid:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -89,12 +91,18 @@ func (s *Session) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				s.ID = *value
 			}
-		case session.FieldUID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field uid", values[i])
+		case session.FieldTid:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field tid", values[i])
+			} else if value != nil {
+				s.Tid = *value
+			}
+		case session.FieldHsid:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field hsid", values[i])
 			} else if value.Valid {
-				s.UID = new(uint64)
-				*s.UID = uint64(value.Int64)
+				s.Hsid = new(uuid.UUID)
+				*s.Hsid = *value.S.(*uuid.UUID)
 			}
 		case session.FieldConnectedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -102,18 +110,19 @@ func (s *Session) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				s.ConnectedAt = value.Time
 			}
+		case session.FieldUID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field uid", values[i])
+			} else if value.Valid {
+				s.UID = new(uint64)
+				*s.UID = uint64(value.Int64)
+			}
 		case session.FieldSignedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field signed_at", values[i])
 			} else if value.Valid {
 				s.SignedAt = new(time.Time)
 				*s.SignedAt = value.Time
-			}
-		case session.FieldUsed:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field used", values[i])
-			} else if value.Valid {
-				s.Used = value.Bool
 			}
 		default:
 			s.selectValues.Set(columns[i], values[i])
@@ -156,21 +165,26 @@ func (s *Session) String() string {
 	var builder strings.Builder
 	builder.WriteString("Session(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", s.ID))
-	if v := s.UID; v != nil {
-		builder.WriteString("uid=")
+	builder.WriteString("tid=")
+	builder.WriteString(fmt.Sprintf("%v", s.Tid))
+	builder.WriteString(", ")
+	if v := s.Hsid; v != nil {
+		builder.WriteString("hsid=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
 	builder.WriteString("connected_at=")
 	builder.WriteString(s.ConnectedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
+	if v := s.UID; v != nil {
+		builder.WriteString("uid=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
 	if v := s.SignedAt; v != nil {
 		builder.WriteString("signed_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
-	builder.WriteString(", ")
-	builder.WriteString("used=")
-	builder.WriteString(fmt.Sprintf("%v", s.Used))
 	builder.WriteByte(')')
 	return builder.String()
 }

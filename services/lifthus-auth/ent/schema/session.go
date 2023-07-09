@@ -28,10 +28,13 @@ func (Session) Annotations() []schema.Annotation {
 func (Session) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).StructTag(`json:"sid,omitempty"`).Default(uuid.New).Unique(), // sid
+		field.UUID("tid", uuid.UUID{}).Default(uuid.New),                                           // tid for rotation
+
+		field.UUID("hsid", uuid.UUID{}).Optional().Nillable(), // Hus session ID
+		field.Time("connected_at").Default(time.Now),          // connected at
+
 		field.Uint64("uid").Optional().Nillable(),
-		field.Time("connected_at").Default(time.Now),                          // connected at
-		field.Time("signed_at").Optional().Nillable().UpdateDefault(time.Now), // signed at
-		field.Bool("used").Default(false),                                     // used to sign Lifthus session
+		field.Time("signed_at").Optional().Nillable(), // signed at
 	}
 }
 

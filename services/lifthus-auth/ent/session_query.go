@@ -298,12 +298,12 @@ func (sq *SessionQuery) WithUser(opts ...func(*UserQuery)) *SessionQuery {
 // Example:
 //
 //	var v []struct {
-//		UID uint64 `json:"uid,omitempty"`
+//		Tid uuid.UUID `json:"tid,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Session.Query().
-//		GroupBy(session.FieldUID).
+//		GroupBy(session.FieldTid).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (sq *SessionQuery) GroupBy(field string, fields ...string) *SessionGroupBy {
@@ -321,11 +321,11 @@ func (sq *SessionQuery) GroupBy(field string, fields ...string) *SessionGroupBy 
 // Example:
 //
 //	var v []struct {
-//		UID uint64 `json:"uid,omitempty"`
+//		Tid uuid.UUID `json:"tid,omitempty"`
 //	}
 //
 //	client.Session.Query().
-//		Select(session.FieldUID).
+//		Select(session.FieldTid).
 //		Scan(ctx, &v)
 func (sq *SessionQuery) Select(fields ...string) *SessionSelect {
 	sq.ctx.Fields = append(sq.ctx.Fields, fields...)

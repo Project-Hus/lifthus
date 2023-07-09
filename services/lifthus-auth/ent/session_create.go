@@ -22,16 +22,30 @@ type SessionCreate struct {
 	hooks    []Hook
 }
 
-// SetUID sets the "uid" field.
-func (sc *SessionCreate) SetUID(u uint64) *SessionCreate {
-	sc.mutation.SetUID(u)
+// SetTid sets the "tid" field.
+func (sc *SessionCreate) SetTid(u uuid.UUID) *SessionCreate {
+	sc.mutation.SetTid(u)
 	return sc
 }
 
-// SetNillableUID sets the "uid" field if the given value is not nil.
-func (sc *SessionCreate) SetNillableUID(u *uint64) *SessionCreate {
+// SetNillableTid sets the "tid" field if the given value is not nil.
+func (sc *SessionCreate) SetNillableTid(u *uuid.UUID) *SessionCreate {
 	if u != nil {
-		sc.SetUID(*u)
+		sc.SetTid(*u)
+	}
+	return sc
+}
+
+// SetHsid sets the "hsid" field.
+func (sc *SessionCreate) SetHsid(u uuid.UUID) *SessionCreate {
+	sc.mutation.SetHsid(u)
+	return sc
+}
+
+// SetNillableHsid sets the "hsid" field if the given value is not nil.
+func (sc *SessionCreate) SetNillableHsid(u *uuid.UUID) *SessionCreate {
+	if u != nil {
+		sc.SetHsid(*u)
 	}
 	return sc
 }
@@ -50,6 +64,20 @@ func (sc *SessionCreate) SetNillableConnectedAt(t *time.Time) *SessionCreate {
 	return sc
 }
 
+// SetUID sets the "uid" field.
+func (sc *SessionCreate) SetUID(u uint64) *SessionCreate {
+	sc.mutation.SetUID(u)
+	return sc
+}
+
+// SetNillableUID sets the "uid" field if the given value is not nil.
+func (sc *SessionCreate) SetNillableUID(u *uint64) *SessionCreate {
+	if u != nil {
+		sc.SetUID(*u)
+	}
+	return sc
+}
+
 // SetSignedAt sets the "signed_at" field.
 func (sc *SessionCreate) SetSignedAt(t time.Time) *SessionCreate {
 	sc.mutation.SetSignedAt(t)
@@ -60,20 +88,6 @@ func (sc *SessionCreate) SetSignedAt(t time.Time) *SessionCreate {
 func (sc *SessionCreate) SetNillableSignedAt(t *time.Time) *SessionCreate {
 	if t != nil {
 		sc.SetSignedAt(*t)
-	}
-	return sc
-}
-
-// SetUsed sets the "used" field.
-func (sc *SessionCreate) SetUsed(b bool) *SessionCreate {
-	sc.mutation.SetUsed(b)
-	return sc
-}
-
-// SetNillableUsed sets the "used" field if the given value is not nil.
-func (sc *SessionCreate) SetNillableUsed(b *bool) *SessionCreate {
-	if b != nil {
-		sc.SetUsed(*b)
 	}
 	return sc
 }
@@ -146,13 +160,13 @@ func (sc *SessionCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (sc *SessionCreate) defaults() {
+	if _, ok := sc.mutation.Tid(); !ok {
+		v := session.DefaultTid()
+		sc.mutation.SetTid(v)
+	}
 	if _, ok := sc.mutation.ConnectedAt(); !ok {
 		v := session.DefaultConnectedAt()
 		sc.mutation.SetConnectedAt(v)
-	}
-	if _, ok := sc.mutation.Used(); !ok {
-		v := session.DefaultUsed
-		sc.mutation.SetUsed(v)
 	}
 	if _, ok := sc.mutation.ID(); !ok {
 		v := session.DefaultID()
@@ -162,11 +176,11 @@ func (sc *SessionCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (sc *SessionCreate) check() error {
+	if _, ok := sc.mutation.Tid(); !ok {
+		return &ValidationError{Name: "tid", err: errors.New(`ent: missing required field "Session.tid"`)}
+	}
 	if _, ok := sc.mutation.ConnectedAt(); !ok {
 		return &ValidationError{Name: "connected_at", err: errors.New(`ent: missing required field "Session.connected_at"`)}
-	}
-	if _, ok := sc.mutation.Used(); !ok {
-		return &ValidationError{Name: "used", err: errors.New(`ent: missing required field "Session.used"`)}
 	}
 	return nil
 }
@@ -203,6 +217,14 @@ func (sc *SessionCreate) createSpec() (*Session, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := sc.mutation.Tid(); ok {
+		_spec.SetField(session.FieldTid, field.TypeUUID, value)
+		_node.Tid = value
+	}
+	if value, ok := sc.mutation.Hsid(); ok {
+		_spec.SetField(session.FieldHsid, field.TypeUUID, value)
+		_node.Hsid = &value
+	}
 	if value, ok := sc.mutation.ConnectedAt(); ok {
 		_spec.SetField(session.FieldConnectedAt, field.TypeTime, value)
 		_node.ConnectedAt = value
@@ -210,10 +232,6 @@ func (sc *SessionCreate) createSpec() (*Session, *sqlgraph.CreateSpec) {
 	if value, ok := sc.mutation.SignedAt(); ok {
 		_spec.SetField(session.FieldSignedAt, field.TypeTime, value)
 		_node.SignedAt = &value
-	}
-	if value, ok := sc.mutation.Used(); ok {
-		_spec.SetField(session.FieldUsed, field.TypeBool, value)
-		_node.Used = value
 	}
 	if nodes := sc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

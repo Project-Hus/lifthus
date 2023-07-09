@@ -8,6 +8,8 @@ import (
 	"os"
 )
 
+var Client *ent.Client
+
 // ConncectToHusAuth returns hus_auth_db's ent client.
 // you've got to close it with Close() in defer out of this function.
 func ConnectToLifthusAuth() (*ent.Client, error) {
@@ -37,5 +39,15 @@ func ConnectToLifthusAuth() (*ent.Client, error) {
 		return nil, err
 	}
 
+	Client = client
+
 	return client, nil
+}
+
+// Rollback is a helper function to rollback transaction.
+func Rollback(tx *ent.Tx, err error) error {
+	if rerr := tx.Rollback(); rerr != nil {
+		err = fmt.Errorf("%w: %v", err, rerr)
+	}
+	return err
 }

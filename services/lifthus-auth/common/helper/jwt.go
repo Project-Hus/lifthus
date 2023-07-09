@@ -8,7 +8,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func ParseJWTwithHMAC(tokenString string) (claims jwt.MapClaims, expired bool, err error) {
+func ParseJWTWithHMAC(tokenString string) (claims jwt.MapClaims, expired bool, err error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("invalid signing method")

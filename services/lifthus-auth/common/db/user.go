@@ -10,6 +10,35 @@ import (
 	"time"
 )
 
+// QueryUserByID takes user ID and returns user entity.
+// if user is not found, it returns nil without error.
+func QueryUserByID(c context.Context, uid uint64) (*ent.User, error) {
+	u, err := Client.User.Query().Where(user.ID(uid)).Only(c)
+	if err != nil && !ent.IsNotFound(err) {
+		return nil, fmt.Errorf("querying user failed:%w", err)
+	}
+	return u, nil
+}
+
+// RegisterUser takes HusConnUser dto and register Cloudhus user to Lifthus.
+func RegisterUser(c context.Context, hcu dto.HusConnUser) (*ent.User, error) {
+	nu, err := Client.User.Create().
+		SetID(hcu.Uid).
+		SetProfileImageURL(*hcu.ProfileImageURL).
+		SetEmail(hcu.Email).
+		SetEmailVerified(hcu.EmailVerified).
+		SetName(hcu.Name).
+		SetGivenName(hcu.GivenName).
+		SetFamilyName(hcu.FamilyName).
+		Save(c)
+	if err != nil {
+		return nil, fmt.Errorf("registering new user failed:%w", err)
+	}
+	return nu, nil
+}
+
+// =====================================================
+
 func CreateNewLifthusUser(c context.Context, client *ent.Client, nu dto.HusSessionCheckBody) (*ent.User, error) {
 	// create new lifthus user
 	nuUid, err := strconv.ParseUint(nu.Uid, 10, 64)
