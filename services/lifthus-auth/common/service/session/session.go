@@ -134,7 +134,7 @@ func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session,
 		return nil, "", fmt.Errorf("invalid hsid")
 	}
 	// connected user (nil if not signed)
-	cu := husConn.User
+	cuDto := husConn.User
 
 	/* transaction */
 	tx, err := db.Client.Tx(ctx)
@@ -144,24 +144,60 @@ func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session,
 	}
 
 	trx := tx.Session.UpdateOne(ls).SetHsid(hsid).SetTid(uuid.New())
+	var cu *ent.User
 	// if the user is newly signed, update it.
 	// cases: cu != nil basically
 	// ls.Uid == nil -> new user signed
 	// ls.Uid != nil, ls.Uid == cu.Uid -> maintain session
 	// ls.Uid != nil, ls.Uid != cu.Uid -> update session user
-	if cu != nil && ((ls.Uid == nil) || (ls.Uid != nil && *ls.Uid != cu.Uid)) {
-		if ls.Uid != nil {}
-
-		u, err := db.QueryUserByID(ctx, *cu.)
-
-
-		trx = trx.SetUID(cu.Uid).SetSignedAt(time.Now())
+	//
+	// if a user is signed to Cloudhus sessino,
+	if cuDto != nil {
+		// query the user
+		cu, err = db.QueryUserByID(ctx, cuDto.Uid)
+		if err != nil {
+			err = db.Rollback(tx, err)
+			return nil, "", fmt.Errorf("querying user failed:%w", err)
+		}
+		// query succeeded but user not found, register the user
+		if cu == nil {
+			cu, err = db.RegisterUser(ctx, *cuDto)
+			if err != nil {
+				err = db.Rollback(tx, err)
+				return nil, "", fmt.Errorf("registering user failed:%w", err)
+			}
+		}
+		switch {
+		case ls.UID == nil:
+			fallthrough
+		case ls.UID != nil && *ls.UID != cuDto.Uid:
+			trx = trx.SetUID(cuDto.Uid).SetSignedAt(time.Now())
+		case ls.UID != nil && *ls.UID == cuDto.Uid:
+		}
 	}
 
 	nls, err = trx.Save(ctx)
+	if err != nil {
+		err = db.Rollback(tx, err)
+		return nil, "", fmt.Errorf("refreshing session failed:%w", err)
+	}
 
-	// change tid, and issue new token etc
-	return nil, "", nil
+	// create new jwt session token with session id
+	st := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"purpose": "lifthus_session",
+		"sid":     nls.ID.String(),
+		"tid":     nls.Tid.String(),
+		"uid":     cu.ID,
+		"exp":     time.Now().Add(time.Minute * 5).Unix(),
+	})
+
+	// sign and get the complete encoded token as a string using the secret
+	stSigned, err := st.SignedString(lifthus.HusSecretKeyBytes)
+	if err != nil {
+		return nil, "", fmt.Errorf("signing session token failed:%w", err)
+	}
+
+	return nls, stSigned, nil
 }
 
 // ========================================================================================
