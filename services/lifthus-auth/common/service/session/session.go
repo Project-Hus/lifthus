@@ -90,6 +90,7 @@ func CreateSessionV2(ctx context.Context) (ls *ent.Session, newSignedToken strin
 // RefreshSessionHard gets Lifthus session and refreshes it.
 // it queries the DB to verify whether the user is still signed and etc.
 // the term Hard means that it does not only check Lifthus DB but it also double checks Cloudhus API to verify whether the user is signed.
+//
 // if the user is signed, the user entity must be included in the edges.
 //
 // if the user turns out not to be registered, it does user-registration process as well.
@@ -182,6 +183,12 @@ func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session,
 		return nil, "", fmt.Errorf("refreshing session failed:%w", err)
 	}
 
+	nls, err = db.Client.Session.Query().Where(session.ID(nls.ID)).WithUser().Only(ctx)
+	if err != nil {
+		err = db.Rollback(tx, err)
+		return nil, "", fmt.Errorf("querying session failed:%w", err)
+	}
+
 	// create new jwt session token with session id
 	st := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"purpose": "lifthus_session",
@@ -194,7 +201,14 @@ func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session,
 	// sign and get the complete encoded token as a string using the secret
 	stSigned, err := st.SignedString(lifthus.HusSecretKeyBytes)
 	if err != nil {
+		err = db.Rollback(tx, err)
 		return nil, "", fmt.Errorf("signing session token failed:%w", err)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		err = db.Rollback(tx, err)
+		return nil, "", fmt.Errorf("committing transaction failed:%w", err)
 	}
 
 	return nls, stSigned, nil

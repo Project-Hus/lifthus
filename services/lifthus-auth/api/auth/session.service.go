@@ -22,9 +22,9 @@ import (
 )
 
 // SessionHandler godoc
-// @Router       /session [get]
-// @Summary		 validates session. publishes new one if it isn't.
 // @Tags         auth
+// @Router       /session [get]
+// @Summary		 validates session. publishes new one if it isn't. refreshes expired session.
 // @Success      200 "Ok, session refreshed, session info JSON returned"
 // @Success      201 "Created, new session issued, redirect to cloudhus and do connect"
 // @Failure      500 "Internal Server Error"
