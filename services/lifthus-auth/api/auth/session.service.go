@@ -104,6 +104,11 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 }
 
 func (ac authApiController) SignInPropagationHandler(c echo.Context) error {
+	// get string from body
+	body, err := io.ReadAll(c.Request().Body)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to read body")
+	}
 	return nil
 }
 
