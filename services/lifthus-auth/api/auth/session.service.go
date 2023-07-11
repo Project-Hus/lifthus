@@ -109,6 +109,9 @@ func (ac authApiController) SignInPropagationHandler(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to read body")
 	}
+
+	husConnClaims, expired, err := helper.ParseJWTWithHMAC(string(body))
+
 	return nil
 }
 
