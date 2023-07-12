@@ -1,9 +1,8 @@
 package middleware
 
 import (
-	"lifthus-auth/ent"
-
 	"lifthus-auth/common/service/session"
+	"lifthus-auth/ent"
 
 	"net/http"
 	"strconv"
