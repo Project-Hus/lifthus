@@ -103,8 +103,79 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 	return c.String(http.StatusCreated, "new session issued")
 }
 
+// SignInPropagationHandler godoc
+// @Tags         auth
+// @Router       /hus/sign [patch]
+// @Summary		 processes user sign-in propagation from cloudhuC.
+// @Description  the "sign_in_propagation" token should be included in the request body.
+// @Success      200 "Ok, session signed"
+// @Failure      400 "Bad Request"
+// @Failure	  500 "Internal Server Error"
 func (ac authApiController) SignInPropagationHandler(c echo.Context) error {
-	return nil
+	sipBytes, err := io.ReadAll(c.Request().Body)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to read body")
+	}
+	sip := string(sipBytes)
+
+	// parse the token
+	sipClaims, expired, err := helper.ParseJWTWithHMAC(sip)
+	if expired || err != nil || sipClaims["pps"].(string) != "sign_in_propagation" {
+		return c.String(http.StatusBadRequest, "invalid token")
+	}
+
+	// get the session ID
+	sid := sipClaims["csid"].(string)
+	suuid, err := uuid.Parse(sid)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "invalid token")
+	}
+	hsid := sipClaims["hsid"].(string)
+	hsuuid, err := uuid.Parse(hsid)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "invalid token")
+	}
+
+	// query the session
+	ls, err := db.QuerySessionByID(c.Request().Context(), suuid)
+	if err != nil || ls == nil {
+		return c.String(http.StatusInternalServerError, "failed to query session")
+	}
+	if ls.Hsid != nil && *ls.Hsid != hsuuid {
+		return c.String(http.StatusBadRequest, "invalid token")
+	}
+
+	// marshal the "user" to json bytes
+	cuB, err := json.Marshal(sipClaims["user"].(map[string]interface{}))
+	if err != nil {
+		return c.String(http.StatusBadRequest, "invalid token")
+	}
+	// unmarshal it to HusConnUser
+	var cu *dto.HusConnUser
+	err = json.Unmarshal(cuB, &cu)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "invalid token")
+	}
+
+	// query the user and register if not exists
+	lu, err := db.QueryUserByID(c.Request().Context(), cu.Uid)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to query user")
+	}
+	if lu == nil {
+		_, err := db.RegisterUser(c.Request().Context(), *cu)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "failed to register user")
+		}
+	}
+	/* REFRESH THE USER INFO WITH THE LATEST ONE (not implemented yet) */
+
+	_, err = ls.Update().SetUID(cu.Uid).SetSignedAt(time.Now()).Save(c.Request().Context())
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to update session")
+	}
+
+	return c.String(http.StatusOK, "signed")
 }
 
 func (ac authApiController) SignOutHandler(c echo.Context) error {
