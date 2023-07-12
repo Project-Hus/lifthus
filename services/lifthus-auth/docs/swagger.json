@@ -35,6 +35,26 @@
                 }
             }
         },
+        "/hus/sign": {
+            "patch": {
+                "description": "the \"sign_in_propagation\" token should be included in the request body.",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "processes user sign-in propagation from cloudhuC.",
+                "responses": {
+                    "200": {
+                        "description": "Ok, session signed"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/relation/follow/{uid}": {
             "post": {
                 "tags": [
@@ -164,7 +184,7 @@
                 "tags": [
                     "auth"
                 ],
-                "summary": "validates session. publishes new one if it isn't.",
+                "summary": "validates session. publishes new one if it isn't. refreshes expired session.",
                 "responses": {
                     "200": {
                         "description": "Ok, session refreshed, session info JSON returned"

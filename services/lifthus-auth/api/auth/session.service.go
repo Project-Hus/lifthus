@@ -105,10 +105,10 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 
 // SignInPropagationHandler godoc
 // @Tags         auth
-// @Router       /hus/connect [patch]
-// @Summary		 gets user sign-in propagation from cloudhus.
+// @Router       /hus/sign [patch]
+// @Summary		 processes user sign-in propagation from cloudhuC.
 // @Description  the "sign_in_propagation" token should be included in the request body.
-// @Success      200 "Ok"
+// @Success      200 "Ok, session signed"
 // @Failure      400 "Bad Request"
 // @Failure	  500 "Internal Server Error"
 func (ac authApiController) SignInPropagationHandler(c echo.Context) error {
