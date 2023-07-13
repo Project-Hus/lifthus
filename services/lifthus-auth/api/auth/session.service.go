@@ -105,9 +105,9 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 
 // SignInPropagationHandler godoc
 // @Tags         auth
-// @Router       /hus/sign [patch]
-// @Summary		 processes user sign-in propagation from cloudhuC.
-// @Description  the "sign_in_propagation" token should be included in the request body.
+// @Router       /hus/signin [patch]
+// @Summary		 processes user sign-in propagation from cloudhus.
+// @Description  the "signin_propagation" token should be included in the request body.
 // @Success      200 "Ok, session signed"
 // @Failure      400 "Bad Request"
 // @Failure	  500 "Internal Server Error"
@@ -120,7 +120,7 @@ func (ac authApiController) SignInPropagationHandler(c echo.Context) error {
 
 	// parse the token
 	sipClaims, expired, err := helper.ParseJWTWithHMAC(sip)
-	if expired || err != nil || sipClaims["pps"].(string) != "sign_in_propagation" {
+	if expired || err != nil || sipClaims["pps"].(string) != "signin_propagation" {
 		return c.String(http.StatusBadRequest, "invalid token")
 	}
 
@@ -178,11 +178,49 @@ func (ac authApiController) SignInPropagationHandler(c echo.Context) error {
 	return c.String(http.StatusOK, "signed")
 }
 
-func (ac authApiController) SignOutHandler(c echo.Context) error {
-	return nil
+// SignOutPropagationHandler godoc
+// @Tags         auth
+// @Router       /hus/signout [patch]
+// @Summary		 processes user sign-out propagation from cloudhus.
+// @Description  the "signout_propagation" token should be included in the request body.
+// @Success      200 "Ok, session signed"
+// @Failure      400 "Bad Request"
+// @Failure	  500 "Internal Server Error"
+func (ac authApiController) SignOutPropagationHandler(c echo.Context) error {
+	sopBytes, err := io.ReadAll(c.Request().Body)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to read body")
+	}
+	sop := string(sopBytes)
+
+	// parse the token
+	sopClaims, expired, err := helper.ParseJWTWithHMAC(sop)
+	if expired || err != nil || sopClaims["pps"].(string) != "signout_propagation" {
+		return c.String(http.StatusBadRequest, "invalid token")
+	}
+
+	hsid := sopClaims["hsid"].(string)
+	hsuuid, err := uuid.Parse(hsid)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "invalid token")
+	}
+
+	// query the latest related session
+	ls, err := db.QuerySessionByHsid(c.Request().Context(), hsuuid)
+	if err != nil || ls == nil {
+		return c.String(http.StatusInternalServerError, "failed to query session")
+	}
+
+	// sign the session out
+	_, err = ls.Update().SetNillableUID(nil).ClearSignedAt().Save(c.Request().Context())
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to update session")
+	}
+
+	return c.String(http.StatusOK, "signed out")
 }
 
-func (ac authApiController) SignOutPropagationHandler(c echo.Context) error {
+func (ac authApiController) SignOutHandler(c echo.Context) error {
 	return nil
 }
 
