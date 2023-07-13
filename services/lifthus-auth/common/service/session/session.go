@@ -18,8 +18,21 @@ import (
 	"github.com/google/uuid"
 )
 
+// Session Error represents the error that occurs in session service package.
+type SessionError struct {
+	Message string
+}
+
+func (e *SessionError) Error() string {
+	return e.Message
+}
+
+// ExpiredSessionError occurs when the session token is expired.
+var ExpiredSessionError = &SessionError{"expired session"}
+
+// IsExpired checks if the error is ExpiredSessionError.
 func IsExpired(err error) bool {
-	return err != nil && err.Error() == "expired session"
+	return err == ExpiredSessionError
 }
 
 // ValidateSession gets Lifthus session token in string and validates it.
@@ -56,7 +69,7 @@ func ValidateSessionV2(ctx context.Context, lst string) (ls *ent.Session, err er
 
 	// if session is valid regardless of expiration, return expiration error with session entity to try refreshing the session.
 	if exp {
-		return ls, fmt.Errorf("expired sesison")
+		return ls, ExpiredSessionError
 	}
 
 	return ls, nil
@@ -75,7 +88,6 @@ func CreateSessionV2(ctx context.Context) (ls *ent.Session, newSignedToken strin
 		"purpose": "lifthus_session",
 		"sid":     ns.ID.String(),
 		"tid":     ns.Tid.String(),
-		"uid":     "",
 		"exp":     time.Now().Add(time.Minute * 5).Unix(),
 	})
 
@@ -229,7 +241,6 @@ func CreateSession(ctx context.Context, client *ent.Client) (sid string, stSigne
 	st := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"purpose": "lifthus_session",
 		"sid":     ns.ID.String(),
-		"uid":     "",
 		"exp":     time.Now().Add(time.Minute * 5).Unix(),
 	})
 
@@ -334,7 +345,6 @@ func RefreshSessionToken(ctx context.Context, client *ent.Client, sid string) (s
 	st := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"purpose": "lifthus_session",
 		"sid":     sid,
-		"uid":     "",
 		"exp":     time.Now().Add(time.Minute * 5).Unix(),
 	})
 	stSigned, err = st.SignedString([]byte(lifthus.HusSecretKey))
