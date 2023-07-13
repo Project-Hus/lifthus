@@ -26,6 +26,11 @@ func NewAuthApiController(authApi *echo.Echo, params AuthApiControllerParams) *e
 
 	authApi.DELETE("/auth/session/revoke", authApiController.SessionRevokeHandler)
 
+	authApi.GET("/auth/session", authApiController.SessionHandler)
+	authApi.PATCH("/auth/session/signout", authApiController.SignOutHandler)
+	authApi.PATCH("/auth/hus/signin", authApiController.SignInPropagationHandler)
+	authApi.PATCH("/auth/hus/signout", authApiController.SignOutPropagationHandler)
+
 	return authApi
 }
 
@@ -49,4 +54,9 @@ type authApis interface {
 	SessionSignHandler(c echo.Context) error // from client
 
 	SessionRevokeHandler(c echo.Context) error // from client
+
+	SessionHandler(c echo.Context) error // from client
+	SignOutHandler(c echo.Context) error // from client
+	SignInPropagationHandler(c echo.Context) error
+	SignOutPropagationHandler(c echo.Context) error
 }
