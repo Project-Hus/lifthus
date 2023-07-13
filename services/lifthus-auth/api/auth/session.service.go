@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 
 	"lifthus-auth/common/db"
 	"lifthus-auth/common/dto"
@@ -105,9 +106,9 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 
 // SignInPropagationHandler godoc
 // @Tags         auth
-// @Router       /hus/sign [patch]
-// @Summary		 processes user sign-in propagation from cloudhuC.
-// @Description  the "sign_in_propagation" token should be included in the request body.
+// @Router       /hus/signin [patch]
+// @Summary		 processes user sign-in propagation from cloudhus.
+// @Description  the "signin_propagation" token should be included in the request body.
 // @Success      200 "Ok, session signed"
 // @Failure      400 "Bad Request"
 // @Failure	  500 "Internal Server Error"
@@ -120,7 +121,7 @@ func (ac authApiController) SignInPropagationHandler(c echo.Context) error {
 
 	// parse the token
 	sipClaims, expired, err := helper.ParseJWTWithHMAC(sip)
-	if expired || err != nil || sipClaims["pps"].(string) != "sign_in_propagation" {
+	if expired || err != nil || sipClaims["pps"].(string) != "signin_propagation" {
 		return c.String(http.StatusBadRequest, "invalid token")
 	}
 
@@ -178,12 +179,138 @@ func (ac authApiController) SignInPropagationHandler(c echo.Context) error {
 	return c.String(http.StatusOK, "signed")
 }
 
-func (ac authApiController) SignOutHandler(c echo.Context) error {
-	return nil
+// SignOutPropagationHandler godoc
+// @Tags         auth
+// @Router       /hus/signout [patch]
+// @Summary		 processes user sign-out propagation from cloudhus.
+// @Description  the "signout_propagation" token should be included in the request body.
+// @Success      200 "Ok, session signed"
+// @Failure      400 "Bad Request"
+// @Failure	  500 "Internal Server Error"
+func (ac authApiController) SignOutPropagationHandler(c echo.Context) error {
+	sopBytes, err := io.ReadAll(c.Request().Body)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to read body")
+	}
+	sop := string(sopBytes)
+
+	// parse the token
+	sopClaims, expired, err := helper.ParseJWTWithHMAC(sop)
+	if expired || err != nil || sopClaims["pps"].(string) != "signout_propagation" {
+		return c.String(http.StatusBadRequest, "invalid token")
+	}
+
+	hsid := sopClaims["hsid"].(string)
+	hsuuid, err := uuid.Parse(hsid)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "invalid token")
+	}
+
+	// query the latest related session
+	ls, err := db.QuerySessionByHsid(c.Request().Context(), hsuuid)
+	if err != nil || ls == nil {
+		return c.String(http.StatusInternalServerError, "failed to query session")
+	}
+
+	// sign out of the session
+	_, err = ls.Update().SetNillableUID(nil).ClearSignedAt().Save(c.Request().Context())
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to update session")
+	}
+
+	return c.String(http.StatusOK, "signed out")
 }
 
-func (ac authApiController) SignOutPropagationHandler(c echo.Context) error {
-	return nil
+// SignOutHandler godoc
+// @Tags         auth
+// @Router       /session/signout [patch]
+// @Summary		 gets sign-out request from the client and propagates it to Cloudhus.
+// @Success      200 "Ok, signed out of the session"
+// @Failure      400 "Bad Request"
+// @Failure	  401 "Unauthorized, the token is expired or the session is not signed"
+// @Failure	  500 "Internal Server Error"
+func (ac authApiController) SignOutHandler(c echo.Context) error {
+	// get lifthus_st from the cookie
+	lstSigned, err := c.Cookie("lifthus_st")
+	if err != nil {
+		return c.String(http.StatusBadRequest, "failed to get token")
+	}
+
+	ls, err := session.ValidateSessionV2(c.Request().Context(), lstSigned.Value)
+	if session.IsExpired(err) {
+		c.Response().Header().Set("WWW-Authenticate", `Bearer realm="lifthus", error="expired_token", error_description="the token is expired`)
+		return c.String(http.StatusUnauthorized, "expired token")
+	} else if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to validate session")
+	} else if ls.Edges.User == nil {
+		return c.String(http.StatusUnauthorized, "the session is not signed")
+	}
+
+	propagCh := make(chan error)
+	txCh := make(chan error)
+
+	go func() {
+		// generate new hus signout token
+		sot := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+			"pps":  "hus_signout",
+			"hsid": ls.Hsid.String(),
+			"type": "total",
+		})
+		sotSigned, err := sot.SignedString(lifthus.HusSecretKeyBytes)
+		if err != nil {
+			propagCh <- fmt.Errorf("failed to sign token")
+			return
+		}
+		// request to the Cloudhus endpoint
+		req, err := http.NewRequest(http.MethodPatch, "https://auth.cloudhus.com/auth/hus/signout"+"", strings.NewReader(sotSigned))
+		if err != nil {
+			propagCh <- fmt.Errorf("failed to create request")
+			return
+		}
+		resp, err := lifthus.Http.Do(req)
+		if err != nil {
+			propagCh <- fmt.Errorf("propagation failed")
+			return
+		}
+		defer resp.Body.Close()
+		// propagation failed or succeeded
+		if resp.StatusCode == http.StatusOK {
+			propagCh <- nil
+			return
+		}
+		propagCh <- fmt.Errorf("propagation failed")
+	}()
+
+	tx, err := db.Client.Tx(c.Request().Context())
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to start transaction")
+	}
+
+	go func() {
+		err := tx.Session.UpdateOne(ls).ClearUID().ClearSignedAt().Exec(c.Request().Context())
+		if err != nil {
+			err = db.Rollback(tx, err)
+			txCh <- err
+			return
+		}
+		txCh <- nil
+	}()
+
+	propagErr := <-propagCh
+	txErr := <-txCh
+
+	if propagErr != nil || txErr != nil {
+		_ = db.Rollback(tx, nil)
+		return c.String(http.StatusInternalServerError, "failed to sign out")
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		_ = db.Rollback(tx, err)
+		return c.String(http.StatusInternalServerError, "failed to sign out")
+	}
+
+	return c.String(http.StatusOK, "signed out")
 }
 
 // ===================================
