@@ -23,7 +23,7 @@ type SessionError struct {
 	Message string
 }
 
-func (e *SessionError) Error() string {
+func (e SessionError) Error() string {
 	return e.Message
 }
 

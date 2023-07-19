@@ -42,7 +42,7 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 		  try connect to Cloudhus if it still isn't connected.
 		  if connected, just return it.
 	*/
-	// first get the Lifthus session token from cookie
+	// 1. get sessoin token from cookie (maybe no cookie or invalid cookie)
 	lst, err := c.Cookie("lifthus_st")
 	if err != nil && err != http.ErrNoCookie {
 		return c.String(http.StatusInternalServerError, "failed to get cookie")
