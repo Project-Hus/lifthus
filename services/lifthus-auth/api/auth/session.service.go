@@ -32,12 +32,6 @@ import (
 // @Failure      500 "Internal Server Error"
 func (ac authApiController) SessionHandler(c echo.Context) error {
 	/*
-		3-1. if session invalid or refresh failed, issue a new session
-		3-2. if session valid,
-		  try connect to Cloudhus if it still isn't connected.
-		  if connected, just return it.
-	*/
-	/*
 		1. get sessoin token from cookie
 		maybe cookie is not set or cookie is empty string. or maybe invalid
 	*/
