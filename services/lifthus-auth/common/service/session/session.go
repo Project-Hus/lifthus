@@ -28,16 +28,16 @@ func (e SessionError) Error() string {
 }
 
 // ExpiredSessionError occurs when the session token is expired.
-var ExpiredSessionError = &SessionError{"expired session"}
+var ExpiredValidSessionError = &SessionError{"expired valid session"}
 
-// IsExpired checks if the error is ExpiredSessionError.
-func IsExpired(err error) bool {
-	return err == ExpiredSessionError
+// IsExpiredValid checks if the error is ExpiredValidSessionError.
+func IsExpiredValid(err error) bool {
+	return err == ExpiredValidSessionError
 }
 
 // ValidateSession gets Lifthus session token in string and validates it.
 // if token is invalid, it returns "invalid session" error.
-// if token is expired but vaild except the expiration issue, it returns "expired session" error with session entity. (IsExpired func is provided to check it)
+// if token is expired but vaild except the expiration issue, it returns "expired valid session" error with session entity. (IsExpiredValid func is provided to check it)
 // if revoked token is used, it returns "illegal session" error.
 // and if it is valid, it returns Lifthus session with User edge.
 func ValidateSessionV2(ctx context.Context, lst string) (ls *ent.Session, err error) {
@@ -67,9 +67,9 @@ func ValidateSessionV2(ctx context.Context, lst string) (ls *ent.Session, err er
 		return nil, fmt.Errorf("illegal session")
 	}
 
-	// if session is valid regardless of expiration, return expiration error with session entity to try refreshing the session.
+	// if session is valid regardless of expiration, return EV error with session entity to try refreshing the session.
 	if exp {
-		return ls, ExpiredSessionError
+		return ls, ExpiredValidSessionError
 	}
 
 	return ls, nil

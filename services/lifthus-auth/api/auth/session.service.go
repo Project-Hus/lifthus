@@ -42,18 +42,19 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 		  try connect to Cloudhus if it still isn't connected.
 		  if connected, just return it.
 	*/
-	// 1. get sessoin token from cookie (maybe no cookie or invalid cookie)
+	// 1. get sessoin token from cookie
+	// maybe cookie is not set or cookie is empty string. or maybe invalid
 	lst, err := c.Cookie("lifthus_st")
 	if err != nil && err != http.ErrNoCookie {
 		return c.String(http.StatusInternalServerError, "failed to get cookie")
 	}
-	// validate the session
+	// 2. validate the session
 	ls, err := session.ValidateSessionV2(c.Request().Context(), lst.Value)
 
 	var nlst string // new session token
 
 	// try refresh if valid or expired
-	if err == nil || session.IsExpired(err) {
+	if err == nil || session.IsExpiredValid(err) {
 		ls, nlst, err = session.RefreshSessionHard(c.Request().Context(), ls)
 	}
 
@@ -237,7 +238,7 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 	}
 
 	ls, err := session.ValidateSessionV2(c.Request().Context(), lstSigned.Value)
-	if session.IsExpired(err) {
+	if session.IsExpiredValid(err) {
 		c.Response().Header().Set("WWW-Authenticate", `Bearer realm="lifthus", error="expired_token", error_description="the token is expired`)
 		return c.String(http.StatusUnauthorized, "expired token")
 	} else if err != nil {
