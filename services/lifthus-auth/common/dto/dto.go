@@ -2,6 +2,14 @@ package dto
 
 import "time"
 
+// SessionUserInfo is SessionHandler's response
+type SessionUserInfo struct {
+	UID        uint64  `json:"uid"`
+	Registered bool    `json:"registered"`
+	Username   *string `json:"username"`
+	Usercode   string  `json:"usercode"`
+}
+
 type HusSessionCheckBody struct {
 	Sid             string `json:"sid"`
 	Uid             string `json:"uid"`
