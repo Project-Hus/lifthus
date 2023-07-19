@@ -32,28 +32,30 @@ import (
 // @Failure      500 "Internal Server Error"
 func (ac authApiController) SessionHandler(c echo.Context) error {
 	/*
-		1. get session token from cookie
-		  the token string may be empty if there's no cookie.
-		  and may the token be invalid.
-		2. validate the token
-		  if expired, try refresh
 		3-1. if session invalid or refresh failed, issue a new session
 		3-2. if session valid,
 		  try connect to Cloudhus if it still isn't connected.
 		  if connected, just return it.
 	*/
-	// 1. get sessoin token from cookie
-	// maybe cookie is not set or cookie is empty string. or maybe invalid
+	/*
+		1. get sessoin token from cookie
+		maybe cookie is not set or cookie is empty string. or maybe invalid
+	*/
 	lst, err := c.Cookie("lifthus_st")
 	if err != nil && err != http.ErrNoCookie {
 		return c.String(http.StatusInternalServerError, "failed to get cookie")
 	}
-	// 2. validate the session
+	/*
+		2. validate the session
+	*/
 	ls, err := session.ValidateSessionV2(c.Request().Context(), lst.Value)
 
 	var nlst string // new session token
 
-	// try refresh if valid or expired
+	/*
+		3-1. try refresh the session
+		if valid or expired but valid
+	*/
 	if err == nil || session.IsExpiredValid(err) {
 		ls, nlst, err = session.RefreshSessionHard(c.Request().Context(), ls)
 	}
@@ -73,6 +75,8 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 
 		// returning sessoin user info
 		var uinf *dto.SessionUserInfo
+
+		// if session is signed by any user, return the user info
 		if ls.Edges.User != nil {
 			lsu := ls.Edges.User
 			uinf = &dto.SessionUserInfo{
@@ -83,10 +87,21 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 			}
 		}
 
-		return c.JSON(http.StatusOK, uinf)
+		// the client will get OK sign and that is all. no more thing to do.
+		return c.JSON(http.StatusOK, struct {
+			User *dto.SessionUserInfo `json:"user"`
+		}{
+			User: uinf,
+		})
 	}
 
-	// create new session in case the session is invalid or refresh failed
+	/*
+		3-2. issue new session.
+		first, after validation above, the session may turn out to be invalid.
+		second, the refresh may have failed.
+		in both cases, err won't be nil and the flow comes here.
+		then issue a new session.
+	*/
 	_, nlst, err = session.CreateSessionV2(c.Request().Context())
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to issue new session")
@@ -102,6 +117,8 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 	}
 	c.SetCookie(nlstCookie)
 
+	// the client will get Created sign.
+	// in this case, the client must redirect to Cloudhus themselves to connect the sessions.
 	return c.String(http.StatusCreated, "new session issued")
 }
 
