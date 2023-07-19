@@ -82,11 +82,7 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 		}
 
 		// the client will get OK sign and that is all. no more thing to do.
-		return c.JSON(http.StatusOK, struct {
-			User *dto.SessionUserInfo `json:"user"`
-		}{
-			User: uinf,
-		})
+		return c.JSON(http.StatusOK, uinf)
 	}
 
 	/*
