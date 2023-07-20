@@ -92,7 +92,7 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 		in both cases, err won't be nil and the flow comes here.
 		then issue a new session.
 	*/
-	_, nlst, err = session.CreateSessionV2(c.Request().Context())
+	ns, nlst, err := session.CreateSessionV2(c.Request().Context())
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to issue new session")
 	}
@@ -109,7 +109,7 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 
 	// the client will get Created sign.
 	// in this case, the client must redirect to Cloudhus themselves to connect the sessions.
-	return c.String(http.StatusCreated, "new session issued")
+	return c.String(http.StatusCreated, ns.ID.String())
 }
 
 // SignInPropagationHandler godoc
