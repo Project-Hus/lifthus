@@ -61,9 +61,9 @@ paths:
         updating the info.
       tags:
       - auth
-  /hus/sign:
+  /hus/signin:
     patch:
-      description: the "sign_in_propagation" token should be included in the request
+      description: the "signin_propagation" token should be included in the request
         body.
       responses:
         "200":
@@ -72,7 +72,21 @@ paths:
           description: Bad Request
         "500":
           description: Internal Server Error
-      summary: processes user sign-in propagation from cloudhuC.
+      summary: processes user sign-in propagation from cloudhus.
+      tags:
+      - auth
+  /hus/signout:
+    patch:
+      description: the "signout_propagation" token should be included in the request
+        body.
+      responses:
+        "200":
+          description: Ok, session signed
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: processes user sign-out propagation from cloudhus.
       tags:
       - auth
   /relation/follow/{uid}:
@@ -213,6 +227,20 @@ paths:
         "500":
           description: internal server error
       summary: gets lifthus sid in cookie from client, and signs the lifthus token.
+      tags:
+      - auth
+  /session/signout:
+    patch:
+      responses:
+        "200":
+          description: Ok, signed out of the session
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized, the token is expired or the session is not signed
+        "500":
+          description: Internal Server Error
+      summary: gets sign-out request from the client and propagates it to Cloudhus.
       tags:
       - auth
   /user:

@@ -35,13 +35,33 @@
                 }
             }
         },
-        "/hus/sign": {
+        "/hus/signin": {
             "patch": {
-                "description": "the \"sign_in_propagation\" token should be included in the request body.",
+                "description": "the \"signin_propagation\" token should be included in the request body.",
                 "tags": [
                     "auth"
                 ],
-                "summary": "processes user sign-in propagation from cloudhuC.",
+                "summary": "processes user sign-in propagation from cloudhus.",
+                "responses": {
+                    "200": {
+                        "description": "Ok, session signed"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/hus/signout": {
+            "patch": {
+                "description": "the \"signout_propagation\" token should be included in the request body.",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "processes user sign-out propagation from cloudhus.",
                 "responses": {
                     "200": {
                         "description": "Ok, session signed"
@@ -253,6 +273,28 @@
                     },
                     "500": {
                         "description": "internal server error"
+                    }
+                }
+            }
+        },
+        "/session/signout": {
+            "patch": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "gets sign-out request from the client and propagates it to Cloudhus.",
+                "responses": {
+                    "200": {
+                        "description": "Ok, signed out of the session"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized, the token is expired or the session is not signed"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 }
             }

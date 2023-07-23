@@ -39,10 +39,15 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 	if err != nil && err != http.ErrNoCookie {
 		return c.String(http.StatusInternalServerError, "failed to get cookie")
 	}
+	var rawLst string
+
+	if lst != nil {
+		rawLst = lst.Value
+	}
 	/*
 		2. validate the session
 	*/
-	ls, err := session.ValidateSessionV2(c.Request().Context(), lst.Value)
+	ls, err := session.ValidateSessionV2(c.Request().Context(), rawLst)
 
 	var nlst string // new session token
 

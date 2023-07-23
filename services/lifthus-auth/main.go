@@ -68,7 +68,7 @@ func main() {
 	// connecting to lifthus_user_db with ent
 	dbClient, err := db.ConnectToLifthusAuth()
 	if err != nil {
-		log.Fatalf("[F]connecting db failed:%v", err)
+		log.Fatalf("connecting db failed:%v", err)
 	}
 	// main's defer in lambda environment is actually not executed.
 	defer dbClient.Close()
