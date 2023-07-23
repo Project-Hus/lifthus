@@ -68,11 +68,13 @@ func ValidateSessionV2(ctx context.Context, lst string) (
 		return nil, nil, false, fmt.Errorf("parsing uuid failed:%w", err)
 	}
 
-	uidUint, err := strconv.ParseUint(uidStr, 10, 64)
-	if err != nil {
-		return nil, nil, false, fmt.Errorf("parsing uid failed:%w", err)
+	if uidStr != "" {
+		uidUint, err := strconv.ParseUint(uidStr, 10, 64)
+		if err != nil {
+			return nil, nil, false, fmt.Errorf("parsing uid failed:%w", err)
+		}
+		uid = &uidUint
 	}
-	uid = &uidUint
 
 	return sid, uid, exp, nil
 }
