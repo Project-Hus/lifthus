@@ -5,7 +5,6 @@ import (
 	"lifthus-auth/ent"
 
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -36,19 +35,17 @@ func UidSetter(dbClient *ent.Client) echo.MiddlewareFunc {
 				}
 				lifthus_st = authCookie.Value
 			}
+
 			if lifthus_st == "" {
 				return next(c)
 			}
-			_, uid, exp, err := session.ValidateSession(c.Request().Context(), dbClient, lifthus_st)
+
+			_, uid, exp, err := session.ValidateSessionV2(c.Request().Context(), lifthus_st)
 			if err != nil {
 				return c.String(http.StatusInternalServerError, err.Error())
 			}
-			if uid != "" && !exp {
-				uidInUInt64, err := strconv.ParseUint(uid, 10, 64)
-				if err != nil {
-					return c.String(http.StatusInternalServerError, err.Error())
-				}
-				c.Set("uid", uidInUInt64)
+			if uid != nil && !exp {
+				c.Set("uid", *uid)
 			}
 			return next(c)
 		}
