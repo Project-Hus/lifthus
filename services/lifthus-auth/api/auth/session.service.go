@@ -47,7 +47,7 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 	/*
 		2. validate the session
 	*/
-	ls, err := session.ValidateSessionV2(c.Request().Context(), rawLst)
+	ls, err := session.ValidateSessionQueryUser(c.Request().Context(), rawLst)
 
 	var nlst string // new session token
 
@@ -249,7 +249,7 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "failed to get token")
 	}
 
-	ls, err := session.ValidateSessionV2(c.Request().Context(), lstSigned.Value)
+	ls, err := session.ValidateSessionQueryUser(c.Request().Context(), lstSigned.Value)
 	if session.IsExpiredValid(err) {
 		c.Response().Header().Set("WWW-Authenticate", `Bearer realm="lifthus", error="expired_token", error_description="the token is expired`)
 		return c.String(http.StatusUnauthorized, "expired token")

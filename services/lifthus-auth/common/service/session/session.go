@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"lifthus-auth/common/db"
 	"lifthus-auth/common/dto"
@@ -35,12 +36,53 @@ func IsExpiredValid(err error) bool {
 	return err == ExpiredValidSessionError
 }
 
-// ValidateSession gets Lifthus session token in string and validates it.
+// ValidateSessionV2 only validates the session token.
+// and returns the session ID, user ID, whether it is expired, and error.
+func ValidateSessionV2(ctx context.Context, lst string) (
+	sid *uuid.UUID,
+	uid *uint64,
+	exp bool,
+	err error,
+) {
+	// parse session token
+	stParsed, exp, err := helper.ParseJWTWithHMAC(lst)
+	if err != nil {
+		return nil, nil, false, fmt.Errorf("parsing jwt token failed:%w", err)
+	}
+	pps, ok := stParsed["pps"].(string)
+	if !ok || pps != "lifthus_session" {
+		return nil, nil, false, fmt.Errorf("parsing jwt token failed: wrong purpose")
+	}
+	// get sid and uid, if not found, return error
+	sidStr, ok := stParsed["sid"].(string)
+	if !ok {
+		return nil, nil, false, fmt.Errorf("parsing jwt token failed: sid not found")
+	}
+	uidStr, ok := stParsed["uid"].(string)
+	if !ok {
+		return nil, nil, false, fmt.Errorf("parsing jwt token failed: uid not found")
+	}
+	suuid, err := uuid.Parse(sidStr)
+	sid = &suuid
+	if err != nil {
+		return nil, nil, false, fmt.Errorf("parsing uuid failed:%w", err)
+	}
+
+	uidUint, err := strconv.ParseUint(uidStr, 10, 64)
+	if err != nil {
+		return nil, nil, false, fmt.Errorf("parsing uid failed:%w", err)
+	}
+	uid = &uidUint
+
+	return sid, uid, exp, nil
+}
+
+// ValidateSessionQueryUser gets Lifthus session token in string and validates it.
 // if token is invalid, it returns "invalid session" error.
 // if token is expired but vaild except the expiration issue, it returns "expired valid session" error with session entity. (IsExpiredValid func is provided to check it)
 // if revoked token is used, it returns "illegal session" error.
 // and if it is valid, it returns Lifthus session with User edge.
-func ValidateSessionV2(ctx context.Context, lst string) (ls *ent.Session, err error) {
+func ValidateSessionQueryUser(ctx context.Context, lst string) (ls *ent.Session, err error) {
 	// parse the Lifthus session token.
 	claims, exp, err := helper.ParseJWTWithHMAC(lst)
 	if err != nil || claims["pps"].(string) != "lifthus_session" {
@@ -85,10 +127,11 @@ func CreateSessionV2(ctx context.Context) (ls *ent.Session, newSignedToken strin
 
 	// create new jwt session token with session id
 	st := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"purpose": "lifthus_session",
-		"sid":     ns.ID.String(),
-		"tid":     ns.Tid.String(),
-		"exp":     time.Now().Add(time.Minute * 5).Unix(),
+		"pps": "lifthus_session",
+		"sid": ns.ID.String(),
+		"tid": ns.Tid.String(),
+		"uid": "",
+		"exp": time.Now().Add(time.Minute * 5).Unix(),
 	})
 
 	// sign and get the complete encoded token as a string using the secret
@@ -110,7 +153,7 @@ func CreateSessionV2(ctx context.Context) (ls *ent.Session, newSignedToken strin
 func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session, newSignedToken string, err error) {
 	// genreate session connection token
 	sct := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"purpose": "hus_connection",
+		"pps":     "hus_connection",
 		"service": "lifthus",
 		"sid":     ls.ID.String(),
 		"exp":     time.Now().Add(time.Minute * 10).Unix(),
@@ -202,13 +245,18 @@ func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session,
 		return nil, "", fmt.Errorf("querying session failed:%w", err)
 	}
 
+	var uidStr string
+	if cu != nil {
+		uidStr = strconv.FormatUint(cu.ID, 10)
+	}
+
 	// create new jwt session token with session id
 	st := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"purpose": "lifthus_session",
-		"sid":     nls.ID.String(),
-		"tid":     nls.Tid.String(),
-		"uid":     cu.ID,
-		"exp":     time.Now().Add(time.Minute * 5).Unix(),
+		"pps": "lifthus_session",
+		"sid": nls.ID.String(),
+		"tid": nls.Tid.String(),
+		"uid": uidStr,
+		"exp": time.Now().Add(time.Minute * 5).Unix(),
 	})
 
 	// sign and get the complete encoded token as a string using the secret
