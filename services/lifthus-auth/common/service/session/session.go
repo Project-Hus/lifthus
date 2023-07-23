@@ -128,6 +128,7 @@ func CreateSessionV2(ctx context.Context) (ls *ent.Session, newSignedToken strin
 	// create new jwt session token with session id
 	st := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"pps": "lifthus_session",
+		"iss": "https://auth.lifthus.com",
 		"sid": ns.ID.String(),
 		"tid": ns.Tid.String(),
 		"uid": "",
@@ -154,6 +155,7 @@ func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session,
 	// genreate session connection token
 	sct := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"pps":     "hus_connection",
+		"iss":     "https://auth.lifthus.com",
 		"service": "lifthus",
 		"sid":     ls.ID.String(),
 		"exp":     time.Now().Add(time.Minute * 10).Unix(),
@@ -253,6 +255,7 @@ func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session,
 	// create new jwt session token with session id
 	st := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"pps": "lifthus_session",
+		"iss": "https://auth.lifthus.com",
 		"sid": nls.ID.String(),
 		"tid": nls.Tid.String(),
 		"uid": uidStr,
