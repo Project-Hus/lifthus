@@ -4,7 +4,7 @@ import "time"
 
 // SessionUserInfo is SessionHandler's response
 type SessionUserInfo struct {
-	UID        uint64  `json:"uid"`
+	UID        string  `json:"uid"`
 	Registered bool    `json:"registered"`
 	Username   *string `json:"username"`
 	Usercode   string  `json:"usercode"`

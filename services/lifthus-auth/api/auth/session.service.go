@@ -79,7 +79,7 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 		if ls.Edges.User != nil {
 			lsu := ls.Edges.User
 			uinf = &dto.SessionUserInfo{
-				UID:        lsu.ID,
+				UID:        strconv.FormatUint(lsu.ID, 10),
 				Registered: lsu.Registered,
 				Username:   lsu.Username,
 				Usercode:   lsu.Usercode,
