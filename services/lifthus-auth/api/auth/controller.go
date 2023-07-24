@@ -24,7 +24,7 @@ func NewAuthApiController(authApi *echo.Echo, params AuthApiControllerParams) *e
 	authApi.PATCH("/auth/hus/session/sign", authApiController.HusSessionHandler)
 	authApi.GET("/auth/session/sign", authApiController.SessionSignHandler)
 
-	authApi.DELETE("/auth/session/revoke", authApiController.SessionRevokeHandler)
+	// authApi.DELETE("/auth/session/revoke", authApiController.SessionRevokeHandler)
 
 	authApi.GET("/auth/session", authApiController.SessionHandler)
 	authApi.PATCH("/auth/session/signout", authApiController.SignOutHandler)
