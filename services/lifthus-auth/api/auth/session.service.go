@@ -270,16 +270,20 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 	// get lifthus_st from the cookie
 	lstSigned, err := c.Cookie("lifthus_st")
 	if err != nil {
+		log.Println("failed to get cookie")
 		return c.String(http.StatusBadRequest, "failed to get token")
 	}
 
 	ls, err := session.ValidateSessionQueryUser(c.Request().Context(), lstSigned.Value)
 	if session.IsExpiredValid(err) {
 		c.Response().Header().Set("WWW-Authenticate", `Bearer realm="lifthus", error="expired_token", error_description="the token is expired`)
+		log.Println("session expired")
 		return c.String(http.StatusUnauthorized, "expired token")
 	} else if err != nil {
+		log.Println("failed to validate session")
 		return c.String(http.StatusInternalServerError, "failed to validate session")
 	} else if ls.Edges.User == nil {
+		log.Println("the session is not signed")
 		return c.String(http.StatusUnauthorized, "the session is not signed")
 	}
 
@@ -326,7 +330,6 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 	go func() {
 		err := tx.Session.UpdateOne(ls).ClearUID().ClearSignedAt().Exec(c.Request().Context())
 		if err != nil {
-			err = db.Rollback(tx, err)
 			txCh <- err
 			return
 		}
@@ -338,15 +341,18 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 
 	if propagErr != nil || txErr != nil {
 		_ = db.Rollback(tx, nil)
+		log.Println("failed to sign out propag or tx failed")
 		return c.String(http.StatusInternalServerError, "failed to sign out")
 	}
 
 	err = tx.Commit()
 	if err != nil {
 		_ = db.Rollback(tx, err)
+		log.Println("failed to commit tx")
 		return c.String(http.StatusInternalServerError, "failed to sign out")
 	}
 
+	log.Printf("user %d signed out", ls.Edges.User.ID)
 	return c.String(http.StatusOK, "signed out")
 }
 
