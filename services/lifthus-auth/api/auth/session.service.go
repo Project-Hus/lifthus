@@ -276,7 +276,7 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 
 	ls, err := session.ValidateSessionQueryUser(c.Request().Context(), lstSigned.Value)
 	if session.IsExpiredValid(err) {
-		c.Response().Header().Set("WWW-Authenticate", `Bearer realm="lifthus", error="expired_token", error_description="the token is expired`)
+		c.Response().Header().Set("WWW-Authenticate", `Bearer realm="lifthus", error="expired token", error_description="the token is expired, refresh it`)
 		log.Println("session expired")
 		return c.String(http.StatusUnauthorized, "expired token")
 	} else if err != nil {
@@ -287,8 +287,8 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 		return c.String(http.StatusUnauthorized, "the session is not signed")
 	}
 
-	propagCh := make(chan error)
-	txCh := make(chan error)
+	propagCh := make(chan error) // for waiting propagation goroutine
+	txCh := make(chan error)     // for waiting transaction goroutine
 
 	go func() {
 		// generate new hus signout token
