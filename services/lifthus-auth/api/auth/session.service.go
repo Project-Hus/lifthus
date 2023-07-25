@@ -117,6 +117,30 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 	return c.String(http.StatusCreated, ns.ID.String())
 }
 
+// GetSIDHandler godoc
+// @Tags         auth
+// @Router       /sid [get]
+// @Summary		 returns client's SID. should be encrypted later.
+//
+// @Success      200 "Ok, session ID"
+// @Failure      401 "Unauthorized, the token is expired"
+// @Failure      500 "Internal Server Error"
+func (ac authApiController) GetSIDHandler(c echo.Context) error {
+	lst, err := c.Cookie("lifthus_st")
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to get cookie")
+	}
+
+	sid, _, exp, err := session.ValidateSessionV2(c.Request().Context(), lst.Value)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to validate session")
+	} else if exp {
+		return c.String(http.StatusUnauthorized, "expired token")
+	}
+
+	return c.String(http.StatusOK, sid.String())
+}
+
 // SignInPropagationHandler godoc
 // @Tags         auth
 // @Router       /hus/signin [patch]

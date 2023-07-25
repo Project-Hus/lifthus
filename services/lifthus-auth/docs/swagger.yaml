@@ -243,6 +243,18 @@ paths:
       summary: gets sign-out request from the client and propagates it to Cloudhus.
       tags:
       - auth
+  /sid:
+    get:
+      responses:
+        "200":
+          description: Ok, session ID
+        "401":
+          description: Unauthorized, the token is expired
+        "500":
+          description: Internal Server Error
+      summary: returns client's SID. should be encrypted later.
+      tags:
+      - auth
   /user:
     post:
       description: it gets register info and registers user to lifthus
