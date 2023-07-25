@@ -20,12 +20,6 @@ func NewAuthApiController(authApi *echo.Echo, params AuthApiControllerParams) *e
 		return c.String(http.StatusOK, "Welcome to Lifthus")
 	})
 
-	// authApi.GET("/auth/session/new", authApiController.NewSessionHandler)
-	// authApi.PATCH("/auth/hus/session/sign", authApiController.HusSessionHandler)
-	// authApi.GET("/auth/session/sign", authApiController.SessionSignHandler)
-
-	// authApi.DELETE("/auth/session/revoke", authApiController.SessionRevokeHandler)
-
 	authApi.GET("/auth/session", authApiController.SessionHandler)
 	authApi.GET("/auth/sid", authApiController.GetSIDHandler)
 	authApi.PATCH("/auth/session/signout", authApiController.SignOutHandler)
@@ -48,14 +42,6 @@ type authApiController struct {
 
 // authApis interface defines what auth api has to handle
 type authApis interface {
-	/* Session establishing process */
-	// client -> lifthus -> client -> hus -> lifthus -> hus -> client -> SessionCheckHandler
-	NewSessionHandler(c echo.Context) error  // from client
-	HusSessionHandler(c echo.Context) error  // from hus
-	SessionSignHandler(c echo.Context) error // from client
-
-	SessionRevokeHandler(c echo.Context) error // from client
-
 	SessionHandler(c echo.Context) error // from client
 	GetSIDHandler(c echo.Context) error  // from client
 	SignOutHandler(c echo.Context) error // from client

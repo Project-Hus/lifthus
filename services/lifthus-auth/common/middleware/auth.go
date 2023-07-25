@@ -40,7 +40,7 @@ func UidSetter(dbClient *ent.Client) echo.MiddlewareFunc {
 				return next(c)
 			}
 
-			_, uid, exp, err := session.ValidateSessionV2(c.Request().Context(), lifthus_st)
+			_, uid, exp, err := session.ValidateSession(c.Request().Context(), lifthus_st)
 			if err != nil {
 				return c.String(http.StatusInternalServerError, err.Error())
 			}
