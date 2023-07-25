@@ -306,6 +306,25 @@ const docTemplate = `{
                 }
             }
         },
+        "/sid": {
+            "get": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "returns client's SID. should be encrypted later.",
+                "responses": {
+                    "200": {
+                        "description": "Ok, session ID"
+                    },
+                    "401": {
+                        "description": "Unauthorized, the token is expired"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/user": {
             "put": {
                 "description": "it gets uid from path param and updates user info",
