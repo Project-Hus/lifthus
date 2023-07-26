@@ -146,6 +146,13 @@ func CreateSession(ctx context.Context) (ls *ent.Session, newSignedToken string,
 	return ns, stSigned, nil
 }
 
+// RefreshSession gets Lifthus session and refreshes it.
+// Unlike RefreshSessionHard, it doesn't query Cloudhus API to verify whether the user is signed.
+// It only checks Lifthus DB and changes TID.
+func RefreshSession(ctx context.Context, ls *ent.Session) (nls *ent.Session, newSignedToken string, err error) {
+	return nil, "", nil
+}
+
 // RefreshSessionHard gets Lifthus session and refreshes it.
 // it queries the DB to verify whether the user is still signed and etc.
 // the term Hard means that it does not only check Lifthus DB but it also double checks Cloudhus API to verify whether the user is signed.
@@ -212,7 +219,7 @@ func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session,
 	// ls.Uid != nil, ls.Uid == cu.Uid -> maintain session
 	// ls.Uid != nil, ls.Uid != cu.Uid -> update session user
 	//
-	// if a user is signed to Cloudhus sessino,
+	// if a user is signed to Cloudhus session,
 	if cuDto != nil {
 		// query the user
 		cu, err = db.QueryUserByID(ctx, cuDto.Uid)
@@ -233,7 +240,7 @@ func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session,
 			fallthrough
 		case ls.UID != nil && *ls.UID != cuDto.Uid:
 			trx = trx.SetUID(cuDto.Uid).SetSignedAt(time.Now())
-		case ls.UID != nil && *ls.UID == cuDto.Uid:
+			//case ls.UID != nil && *ls.UID == cuDto.Uid: // do nothing
 		}
 	}
 
@@ -249,7 +256,7 @@ func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session,
 		return nil, "", fmt.Errorf("querying session failed:%w", err)
 	}
 
-	var uidStr string
+	var uidStr string // "" if not signed
 	if cu != nil {
 		uidStr = strconv.FormatUint(cu.ID, 10)
 	}
