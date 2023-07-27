@@ -353,9 +353,9 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "failed to sign out")
 	}
 
-	ls, lst, err := session.RefreshSession(c.Request().Context(), ls)
+	lst, err := session.SessionToToken(c.Request().Context(), ls)
 	if err != nil {
-		log.Println("failed to refresh session")
+		log.Println("failed to tokenize the session")
 		return c.String(http.StatusInternalServerError, "failed to sign out")
 	}
 
