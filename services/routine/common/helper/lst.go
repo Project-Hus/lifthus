@@ -14,7 +14,7 @@ func ValidateLST(lst string) (uid *uint64, err error) {
 	if exp {
 		return nil, nil
 	}
-	purpose, ok := lstClaims["purpose"].(string)
+	purpose, ok := lstClaims["pps"].(string)
 	if !ok || purpose != "lifthus_session" {
 		return nil, fmt.Errorf("invalid token")
 	}
