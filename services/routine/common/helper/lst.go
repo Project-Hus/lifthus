@@ -14,7 +14,7 @@ func ValidateLST(lst string) (uid *uint64, err error) {
 	if exp {
 		return nil, nil
 	}
-	purpose, ok := lstClaims["purpose"].(string)
+	purpose, ok := lstClaims["pps"].(string)
 	if !ok || purpose != "lifthus_session" {
 		return nil, fmt.Errorf("invalid token")
 	}
@@ -26,8 +26,3 @@ func ValidateLST(lst string) (uid *uint64, err error) {
 	uid = &uidInt
 	return uid, err
 }
-
-// "purpose": "lifthus_session",
-// 		"sid":     sid,
-// 		"uid":     strconv.FormatUint(*ls.UID, 10),
-// 		"exp":     time.Now().Add(time.Minute * 5).Unix(),

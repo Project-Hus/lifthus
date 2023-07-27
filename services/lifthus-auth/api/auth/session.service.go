@@ -250,7 +250,7 @@ func (ac authApiController) SignOutPropagationHandler(c echo.Context) error {
 	}
 
 	// sign out of the session
-	_, err = ls.Update().SetNillableUID(nil).ClearSignedAt().Save(c.Request().Context())
+	_, err = ls.Update().ClearUID().ClearSignedAt().Save(c.Request().Context())
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to update session")
 	}
@@ -352,6 +352,8 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 		log.Println("failed to commit tx")
 		return c.String(http.StatusInternalServerError, "failed to sign out")
 	}
+
+	
 
 	log.Printf("user %d signed out", ls.Edges.User.ID)
 	return c.String(http.StatusOK, "signed out")
