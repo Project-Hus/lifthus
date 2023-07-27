@@ -370,6 +370,10 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 
 	c.SetCookie(cookie)
 
-	log.Printf("user %d signed out", ls.Edges.User.ID)
+	// from context get uid
+	uid, ok := c.Get("uid").(uint64)
+	if ok {
+		log.Printf("user %d signed out", uid)
+	}
 	return c.String(http.StatusOK, "signed out")
 }
