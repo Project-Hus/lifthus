@@ -146,9 +146,28 @@ func CreateSession(ctx context.Context) (ls *ent.Session, newSignedToken string,
 	return ns, stSigned, nil
 }
 
+// SessionToToken takes lifthus session and returns signed session token.
+func SessionToToken(ctx context.Context, ls *ent.Session) (lst string, err error) {
+	// create new jwt session token with session id
+	st := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"pps": "lifthus_session",
+		"iss": "https://auth.lifthus.com",
+		"sid": ls.ID.String(),
+		"tid": ls.Tid.String(),
+		"uid": helper.UIDToString(ls.Edges.User),
+		"exp": time.Now().Add(time.Minute * 5).Unix(),
+	})
+
+	stSigned, err := st.SignedString(lifthus.HusSecretKeyBytes)
+	if err != nil {
+		return "", fmt.Errorf("signing session token failed:%w", err)
+	}
+
+	return stSigned, nil
+}
+
 // RefreshSession gets Lifthus session and refreshes it.
-// Unlike RefreshSessionHard, it doesn't query Cloudhus API to verify whether the user is signed.
-// It only checks Lifthus DB and changes TID.
+// Unlike RefreshSessionHard, it doesn't query Cloudhus API but only Lifthus DB.
 func RefreshSession(ctx context.Context, ls *ent.Session) (nls *ent.Session, newSignedToken string, err error) {
 	return nil, "", nil
 }

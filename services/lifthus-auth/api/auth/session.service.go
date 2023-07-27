@@ -328,7 +328,7 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 	}
 
 	go func() {
-		err := tx.Session.UpdateOne(ls).ClearUID().ClearSignedAt().Exec(c.Request().Context())
+		ls, err = tx.Session.UpdateOne(ls).ClearUID().ClearSignedAt().SetTid(uuid.New()).Save(c.Request().Context())
 		if err != nil {
 			db.Rollback(tx, err)
 			txCh <- err
@@ -353,7 +353,22 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "failed to sign out")
 	}
 
-	
+	ls, lst, err := session.RefreshSession(c.Request().Context(), ls)
+	if err != nil {
+		log.Println("failed to refresh session")
+		return c.String(http.StatusInternalServerError, "failed to sign out")
+	}
+
+	cookie := &http.Cookie{
+		Name:     "lifthus_st",
+		Value:    lst,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	}
+
+	c.SetCookie(cookie)
 
 	log.Printf("user %d signed out", ls.Edges.User.ID)
 	return c.String(http.StatusOK, "signed out")
