@@ -88,7 +88,7 @@ func ValidateSessionQueryUser(ctx context.Context, lst string) (ls *ent.Session,
 	// parse the Lifthus session token.
 	claims, exp, err := helper.ParseJWTWithHMAC(lst)
 	if err != nil || claims["pps"].(string) != "lifthus_session" {
-		return nil, fmt.Errorf("invalid session")
+		return nil, fmt.Errorf("invalid session: %w", err)
 	}
 	// get and parse the session ID and TID.
 	sidStr := claims["sid"].(string)
@@ -96,14 +96,14 @@ func ValidateSessionQueryUser(ctx context.Context, lst string) (ls *ent.Session,
 	tidStr := claims["tid"].(string)
 	tid, err2 := uuid.Parse(tidStr)
 	if err1 != nil || err2 != nil {
-		return nil, fmt.Errorf("invalid session")
+		return nil, fmt.Errorf("invalid session: %w", err)
 	}
 
 	// check if the session is valid by querying the database.
 	// and get the user entity too.
 	ls, err = db.Client.Session.Query().Where(session.ID(sid)).WithUser().Only(ctx) // WithUser always.
 	if err != nil {
-		return nil, fmt.Errorf("invalid session")
+		return nil, fmt.Errorf("invalid session:%w", err)
 	}
 
 	if tid != ls.Tid {

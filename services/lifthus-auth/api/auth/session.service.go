@@ -44,6 +44,8 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 	if lst != nil {
 		rawLst = lst.Value
 	}
+
+	log.Println("TMP", rawLst)
 	/*
 		2. validate the session
 	*/
@@ -89,7 +91,7 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 		// the client will get OK sign and that is all. no more thing to do.
 		return c.JSON(http.StatusOK, uinf)
 	}
-
+	log.Printf("issuing new session because of %v", err)
 	/*
 		3-2. issue new session.
 		first, after validation above, the session may turn out to be invalid.
@@ -116,6 +118,8 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 	// in this case, the client must redirect to Cloudhus themselves to connect the sessions.
 	return c.String(http.StatusCreated, ns.ID.String())
 }
+
+// 로그인 풀린 상태에서 리프터스 쿠키 지우고 클라우드허스 쿠키만 남은 상태에서 새로고침하면 발생
 
 // GetSIDHandler godoc
 // @Tags         auth
@@ -363,6 +367,7 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 		Name:     "lifthus_st",
 		Value:    lst,
 		Path:     "/",
+		Domain:   ".lifthus.com",
 		HttpOnly: true,
 		Secure:   true,
 		SameSite: http.SameSiteLaxMode,
