@@ -5,6 +5,7 @@ import { setupSwagger } from './openapi/swagger';
 import envbyjson from 'envbyjson';
 
 import cookieParser from 'cookie-parser';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 /* swagger not working in lambda environment */
 // import SwaggerUi from 'swagger-ui-express';
