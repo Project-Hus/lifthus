@@ -45,7 +45,6 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 		rawLst = lst.Value
 	}
 
-	log.Println("TMP", rawLst)
 	/*
 		2. validate the session
 	*/

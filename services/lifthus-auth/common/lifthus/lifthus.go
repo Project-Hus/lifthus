@@ -25,7 +25,9 @@ var LifthusURL = "http://localhost:3000"
 
 var CookieSecure = false
 
-var AccessTokenExpiration = time.Now().Add(time.Second * 10).Unix()
+func GetLstExp() int64 {
+	return time.Now().Add(time.Minute * 10).Unix() // 10 min basically
+}
 
 func InitLifthusVars(husenv string, _ *ent.Client) {
 	Http = &http.Client{
