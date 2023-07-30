@@ -1,6 +1,10 @@
 package guard
 
-import "github.com/labstack/echo/v4"
+import (
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+)
 
 // UserGuard check if the client is signed.
 // if there is embedded uid in context, it calls next handler,
@@ -15,11 +19,13 @@ func UserGuard(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 
 		if uidIntf == nil {
-			return c.String(401, "Unauthorized")
+			c.Response().Header().Set("WWW-Authenticate", `Bearer realm="auth.lifthus.com", error="not_signed"`)
+			return c.String(http.StatusUnauthorized, "Unauthorized")
 		}
 		_, ok := uidIntf.(uint64)
 		if !ok {
-			return c.String(401, "Unauthorized")
+			c.Response().Header().Set("WWW-Authenticate", `Bearer realm="auth.lifthus.com", error="not_signed"`)
+			return c.String(http.StatusUnauthorized, "Unauthorized")
 		}
 
 		return next(c)

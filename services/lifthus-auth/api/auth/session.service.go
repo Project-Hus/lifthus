@@ -139,7 +139,7 @@ func (ac authApiController) GetSIDHandler(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to validate session")
 	} else if exp {
-		c.Response().Header().Set("WWW-Authenticate", `Bearer realm="lifthus", error="expired_token", error_description="the token is expired, refresh it`)
+		c.Response().Header().Set("WWW-Authenticate", `Bearer realm="auth.lifthus.com", error="expired_token"`)
 		return c.String(http.StatusUnauthorized, "expired_token")
 	}
 
@@ -281,14 +281,15 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 
 	ls, err := session.ValidateSessionQueryUser(c.Request().Context(), lstSigned.Value)
 	if session.IsExpiredValid(err) {
-		c.Response().Header().Set("WWW-Authenticate", `Bearer realm="lifthus", error="expired_token", error_description="the token is expired, refresh it`)
 		log.Println("session expired")
+		c.Response().Header().Set("WWW-Authenticate", `Bearer realm="auth.lifthus.com", error="expired_token"`)
 		return c.String(http.StatusUnauthorized, "expired_token")
 	} else if err != nil {
 		log.Println("failed to validate session")
 		return c.String(http.StatusInternalServerError, "failed to validate session")
 	} else if ls.Edges.User == nil {
 		log.Println("the session is not signed")
+		c.Response().Header().Set("WWW-Authenticate", `Bearer realm="auth.lifthus.com", error="not_signed"`)
 		return c.String(http.StatusUnauthorized, "the session is not signed")
 	}
 
