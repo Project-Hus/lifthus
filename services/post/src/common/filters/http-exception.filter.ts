@@ -16,11 +16,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
     const status = exception.getStatus();
 
-    response.status(status).json({
-      statusCode: status,
-      timestamp: new Date().toISOString(),
-      path: request.url,
-      data: exception.message,
-    });
+    if (status === 401) {
+      response.status(status).send('expired_token');
+    } else {
+      response.status(status).json({
+        status: status,
+        timestamp: new Date().toISOString(),
+        path: request.url,
+        message: exception.message,
+      });
+    }
   }
 }
