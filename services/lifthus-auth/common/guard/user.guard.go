@@ -12,6 +12,12 @@ import (
 func UserGuard(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		uidIntf := c.Get("uid")
+		expIntf := c.Get("exp").(bool)
+
+		if expIntf {
+			return c.String(401, "expired_token")
+		}
+
 		if uidIntf == nil {
 			c.Response().Header().Set("WWW-Authenticate", `Bearer realm="auth.lifthus.com", error="not_signed"`)
 			return c.String(http.StatusUnauthorized, "Unauthorized")
