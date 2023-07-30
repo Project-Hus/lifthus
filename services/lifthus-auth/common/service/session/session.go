@@ -186,7 +186,7 @@ func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session,
 		"iss":     "https://auth.lifthus.com",
 		"service": "lifthus",
 		"sid":     ls.ID.String(),
-		"exp":     time.Now().Add(time.Minute * 10).Unix(),
+		"exp":     time.Now().Add(time.Second * 10).Unix(),
 	})
 	sctSigned, err := sct.SignedString(lifthus.HusSecretKeyBytes)
 	if err != nil {
