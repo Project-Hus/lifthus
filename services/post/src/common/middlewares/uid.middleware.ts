@@ -43,12 +43,17 @@ export class UidMiddleware implements NestMiddleware {
             await this.jwtService.verifyAsync<LifthusSessionJWTPayload>(
               lstSigned,
             );
+          req.exp = false;
           // if lifthus session token is valid, set uid to req
           // lst.uid to number
           if (lst.uid) {
             req.uid = parseInt(lst.uid);
           }
-        } catch (e) {}
+        } catch (e: any) {
+          if (e.name === 'TokenExpiredError') {
+            req.exp = true;
+          }
+        }
       }
     }
     next();

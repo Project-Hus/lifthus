@@ -47,6 +47,11 @@ func UidSetter(dbClient *ent.Client) echo.MiddlewareFunc {
 			if uid != nil && !exp {
 				c.Set("uid", *uid)
 			}
+			if exp {
+				c.Set("exp", true)
+			} else {
+				c.Set("exp", false)
+			}
 			return next(c)
 		}
 	}

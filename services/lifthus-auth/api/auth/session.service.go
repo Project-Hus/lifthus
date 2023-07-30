@@ -139,7 +139,8 @@ func (ac authApiController) GetSIDHandler(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to validate session")
 	} else if exp {
-		return c.String(http.StatusUnauthorized, "expired token")
+		c.Response().Header().Set("WWW-Authenticate", `Bearer realm="lifthus", error="expired_token", error_description="the token is expired, refresh it`)
+		return c.String(http.StatusUnauthorized, "expired_token")
 	}
 
 	return c.String(http.StatusOK, sid.String())
@@ -280,9 +281,9 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 
 	ls, err := session.ValidateSessionQueryUser(c.Request().Context(), lstSigned.Value)
 	if session.IsExpiredValid(err) {
-		c.Response().Header().Set("WWW-Authenticate", `Bearer realm="lifthus", error="expired token", error_description="the token is expired, refresh it`)
+		c.Response().Header().Set("WWW-Authenticate", `Bearer realm="lifthus", error="expired_token", error_description="the token is expired, refresh it`)
 		log.Println("session expired")
-		return c.String(http.StatusUnauthorized, "expired token")
+		return c.String(http.StatusUnauthorized, "expired_token")
 	} else if err != nil {
 		log.Println("failed to validate session")
 		return c.String(http.StatusInternalServerError, "failed to validate session")

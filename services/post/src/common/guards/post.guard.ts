@@ -3,6 +3,7 @@ import {
   CanActivate,
   ExecutionContext,
   Logger,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 
@@ -15,6 +16,12 @@ export class UserGuard implements CanActivate {
     const uid = context.switchToHttp().getRequest().uid;
     // undefined means not signed user so block.
     // and uid 0 can't exist. autoincrement starts from 1
+
+    const exp = context.switchToHttp().getRequest().exp;
+    if (exp) {
+      throw new UnauthorizedException('expired_token');
+    }
+
     if (!uid) {
       return false;
     }

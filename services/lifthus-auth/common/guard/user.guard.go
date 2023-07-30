@@ -8,6 +8,12 @@ import "github.com/labstack/echo/v4"
 func UserGuard(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		uidIntf := c.Get("uid")
+		expIntf := c.Get("exp").(bool)
+
+		if expIntf {
+			return c.String(401, "expired_token")
+		}
+
 		if uidIntf == nil {
 			return c.String(401, "Unauthorized")
 		}
