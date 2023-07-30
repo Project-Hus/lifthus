@@ -25,7 +25,7 @@ func (uc userApiController) RegisterUser(c echo.Context) error {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 	if registerInfo.Uid != uid {
-		return c.String(http.StatusUnauthorized, "Unauthorized")
+		return c.String(http.StatusBadRequest, "invalid uid")
 	}
 	_, err := uc.dbClient.User.UpdateOneID(uid).
 		SetRegistered(true).
