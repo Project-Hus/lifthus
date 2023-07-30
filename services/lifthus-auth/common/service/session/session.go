@@ -134,7 +134,7 @@ func CreateSession(ctx context.Context) (ls *ent.Session, newSignedToken string,
 		"sid": ns.ID.String(),
 		"tid": ns.Tid.String(),
 		"uid": "",
-		"exp": lifthus.AccessTokenExpiration,
+		"exp": lifthus.GetLstExp(),
 	})
 
 	// sign and get the complete encoded token as a string using the secret
@@ -155,7 +155,7 @@ func SessionToToken(ctx context.Context, ls *ent.Session) (lst string, err error
 		"sid": ls.ID.String(),
 		"tid": ls.Tid.String(),
 		"uid": helper.UIDToString(ls.Edges.User),
-		"exp": lifthus.AccessTokenExpiration,
+		"exp": lifthus.GetLstExp(),
 	})
 
 	stSigned, err := st.SignedString(lifthus.HusSecretKeyBytes)
@@ -287,7 +287,7 @@ func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session,
 		"sid": nls.ID.String(),
 		"tid": nls.Tid.String(),
 		"uid": uidStr,
-		"exp": lifthus.AccessTokenExpiration,
+		"exp": lifthus.GetLstExp(),
 	})
 
 	// sign and get the complete encoded token as a string using the secret
