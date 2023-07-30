@@ -173,7 +173,7 @@ func (uc userApiController) SetUserInfo(c echo.Context) error {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 	if userInfo.Uid != uid {
-		return c.String(http.StatusUnauthorized, "Unauthorized")
+		return c.String(http.StatusBadRequest, "invalid uid")
 	}
 	user, err := db.UpdateUserInfo(c.Request().Context(), uc.dbClient, *userInfo)
 	if err != nil {
