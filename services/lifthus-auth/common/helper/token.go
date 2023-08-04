@@ -24,7 +24,7 @@ func SignedLST(ls *ent.Session) (st string, err error) {
 
 // SignedHusConnectionToken generates it with given lifthus sessoin ID.
 func SignedHusConnectionToken(lsid string) (hct string, err error) {
-	ct := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+	ct := NewJWT(jwt.MapClaims{
 		"pps":     "hus_connection",
 		"iss":     "https://auth.lifthus.com",
 		"service": "lifthus",
