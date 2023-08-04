@@ -23,7 +23,8 @@ var Http *http.Client
 
 var LifthusURL = "http://localhost:3000"
 
-var CookieSecure = false
+var CookieSecure = true
+var CookieSameSite = http.SameSiteLaxMode
 
 func GetLstExp() int64 {
 	return time.Now().Add(time.Minute * 10).Unix() // 10 min basically
@@ -50,7 +51,6 @@ func InitLifthusVars(husenv string, _ *ent.Client) {
 		CookieDomain = ".lifthus.com"
 		AuthURL = "https://auth.lifthus.com"
 		ApiURL = "https://api.lifthus.com"
-		CookieSecure = true
 	case "development":
 		Host = "localhost:9100"
 		URL = "http://localhost:9100"
@@ -58,6 +58,7 @@ func InitLifthusVars(husenv string, _ *ent.Client) {
 		CookieDomain = ""
 		AuthURL = "http://localhost:9091"
 		ApiURL = "http://localhost:9091"
+		CookieSecure = false
 	case "native":
 		Host = "localhost:9100"
 		URL = "http://localhost:9101"
@@ -71,6 +72,7 @@ func InitLifthusVars(husenv string, _ *ent.Client) {
 		CookieDomain = ""
 		AuthURL = "http://localhost:9091"
 		ApiURL = "http://localhost:9091"
+		CookieSecure = false
 	default:
 		log.Fatal("HUS_ENV must be set(production|development|native)")
 	}
