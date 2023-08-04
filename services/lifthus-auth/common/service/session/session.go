@@ -249,13 +249,13 @@ func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session,
 		return nil, "", fmt.Errorf("committing transaction failed:%w", err)
 	}
 
-	ls, err = db.Client.Session.Query().Where(session.ID(nls.ID)).WithUser().Only(ctx)
+	nls, err = db.Client.Session.Query().Where(session.ID(nls.ID)).WithUser().Only(ctx)
 	if err != nil {
 		err = db.Rollback(tx, err)
 		return nil, "", fmt.Errorf("querying session failed:%w", err)
 	}
 
-	lst, err := helper.SignedLST(ls)
+	lst, err := helper.SignedLST(nls)
 	if err != nil {
 		return nil, "", fmt.Errorf("generating session token failed:%w", err)
 	}
