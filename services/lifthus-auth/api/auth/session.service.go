@@ -17,7 +17,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -62,16 +61,7 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 
 	// if refresh succeeded, return the refreshed session token
 	if err == nil {
-		nlstCookie := &http.Cookie{
-			Name:     "lifthus_st",
-			Value:    nlst,
-			Path:     "/",
-			Domain:   ".lifthus.com",
-			HttpOnly: true,
-			Secure:   lifthus.CookieSecure,
-			SameSite: http.SameSiteLaxMode,
-		}
-		c.SetCookie(nlstCookie)
+		c.SetCookie(helper.LSTCookieMaker(nlst))
 
 		// returning sessoin user info
 		var uinf *dto.SessionUserInfo
@@ -102,23 +92,13 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to issue new session")
 	}
-	nlstCookie := &http.Cookie{
-		Name:     "lifthus_st",
-		Value:    nlst,
-		Path:     "/",
-		Domain:   ".lifthus.com",
-		HttpOnly: true,
-		Secure:   lifthus.CookieSecure,
-		SameSite: http.SameSiteLaxMode,
-	}
-	c.SetCookie(nlstCookie)
+
+	c.SetCookie(helper.LSTCookieMaker(nlst))
 
 	// the client will get Created sign.
 	// in this case, the client must redirect to Cloudhus themselves to connect the sessions.
 	return c.String(http.StatusCreated, ns.ID.String())
 }
-
-// 로그인 풀린 상태에서 리프터스 쿠키 지우고 클라우드허스 쿠키만 남은 상태에서 새로고침하면 발생
 
 // GetSIDHandler godoc
 // @Tags         auth
@@ -296,19 +276,13 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 	txCh := make(chan error)     // for waiting transaction goroutine
 
 	go func() {
-		// generate new hus signout token
-		sot := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"pps":  "hus_signout",
-			"hsid": ls.Hsid.String(),
-			"type": "total",
-		})
-		sotSigned, err := sot.SignedString(lifthus.HusSecretKeyBytes)
+		sot, err := helper.SignedHusTotalSignOutToken(ls.Hsid.String())
 		if err != nil {
-			propagCh <- fmt.Errorf("failed to sign token")
+			propagCh <- fmt.Errorf("failed to generate token")
 			return
 		}
 		// request to the Cloudhus endpoint
-		req, err := http.NewRequest(http.MethodPatch, "https://auth.cloudhus.com/auth/hus/signout"+"", strings.NewReader(sotSigned))
+		req, err := http.NewRequest(http.MethodPatch, "https://auth.cloudhus.com/auth/hus/signout"+"", strings.NewReader(sot))
 		if err != nil {
 			propagCh <- fmt.Errorf("failed to create request")
 			return
@@ -364,17 +338,7 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "failed to sign out")
 	}
 
-	cookie := &http.Cookie{
-		Name:     "lifthus_st",
-		Value:    lst,
-		Path:     "/",
-		Domain:   ".lifthus.com",
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
-	}
-
-	c.SetCookie(cookie)
+	c.SetCookie(helper.LSTCookieMaker(lst))
 
 	// from context get uid
 	uid, ok := c.Get("uid").(uint64)
