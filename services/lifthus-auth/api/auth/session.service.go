@@ -62,16 +62,7 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 
 	// if refresh succeeded, return the refreshed session token
 	if err == nil {
-		nlstCookie := &http.Cookie{
-			Name:     "lifthus_st",
-			Value:    nlst,
-			Path:     "/",
-			Domain:   ".lifthus.com",
-			HttpOnly: true,
-			Secure:   lifthus.CookieSecure,
-			SameSite: http.SameSiteLaxMode,
-		}
-		c.SetCookie(nlstCookie)
+		c.SetCookie(lifthus.LSTCookieMaker(nlst))
 
 		// returning sessoin user info
 		var uinf *dto.SessionUserInfo
@@ -102,16 +93,8 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to issue new session")
 	}
-	nlstCookie := &http.Cookie{
-		Name:     "lifthus_st",
-		Value:    nlst,
-		Path:     "/",
-		Domain:   ".lifthus.com",
-		HttpOnly: true,
-		Secure:   lifthus.CookieSecure,
-		SameSite: http.SameSiteLaxMode,
-	}
-	c.SetCookie(nlstCookie)
+
+	c.SetCookie(lifthus.LSTCookieMaker(nlst))
 
 	// the client will get Created sign.
 	// in this case, the client must redirect to Cloudhus themselves to connect the sessions.
@@ -364,17 +347,7 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "failed to sign out")
 	}
 
-	cookie := &http.Cookie{
-		Name:     "lifthus_st",
-		Value:    lst,
-		Path:     "/",
-		Domain:   ".lifthus.com",
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
-	}
-
-	c.SetCookie(cookie)
+	c.SetCookie(lifthus.LSTCookieMaker(lst))
 
 	// from context get uid
 	uid, ok := c.Get("uid").(uint64)
