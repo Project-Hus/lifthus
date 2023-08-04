@@ -15,7 +15,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 )
 
@@ -127,43 +126,22 @@ func CreateSession(ctx context.Context) (ls *ent.Session, newSignedToken string,
 		return nil, "", fmt.Errorf("creating session failed:%w", err)
 	}
 
-	// create new jwt session token with session id
-	st := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"pps": "lifthus_session",
-		"iss": "https://auth.lifthus.com",
-		"sid": ns.ID.String(),
-		"tid": ns.Tid.String(),
-		"uid": "",
-		"exp": lifthus.GetLstExp(),
-	})
-
-	// sign and get the complete encoded token as a string using the secret
-	stSigned, err := st.SignedString(lifthus.HusSecretKeyBytes)
+	nst, err := helper.SignedLST(ns)
 	if err != nil {
-		return nil, "", fmt.Errorf("signing session token failed:%w", err)
+		return nil, "", fmt.Errorf("generating session token failed:%w", err)
 	}
 
-	return ns, stSigned, nil
+	return ns, nst, nil
 }
 
 // SessionToToken takes lifthus session and returns signed session token.
 func SessionToToken(ctx context.Context, ls *ent.Session) (lst string, err error) {
-	// create new jwt session token with session id
-	st := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"pps": "lifthus_session",
-		"iss": "https://auth.lifthus.com",
-		"sid": ls.ID.String(),
-		"tid": ls.Tid.String(),
-		"uid": helper.UIDToString(ls.Edges.User),
-		"exp": lifthus.GetLstExp(),
-	})
-
-	stSigned, err := st.SignedString(lifthus.HusSecretKeyBytes)
+	nst, err := helper.SignedLST(ls)
 	if err != nil {
-		return "", fmt.Errorf("signing session token failed:%w", err)
+		return "", fmt.Errorf("generating session token failed:%w", err)
 	}
 
-	return stSigned, nil
+	return nst, nil
 }
 
 // RefreshSession gets Lifthus session and refreshes it.
@@ -172,29 +150,22 @@ func RefreshSession(ctx context.Context, ls *ent.Session) (nls *ent.Session, new
 	return nil, "", nil
 }
 
-// RefreshSessionHard gets Lifthus session and refreshes it.
+// RefreshSessionHard takes Lifthus session and refreshes it.
 // it queries the DB to verify whether the user is still signed and etc.
-// the term Hard means that it does not only check Lifthus DB but it also double checks Cloudhus API to verify whether the user is signed.
 //
-// if the user is signed, the user entity must be included in the edges.
+// the term Hard does mean that it does not only check Lifthus DB but it also double checks Cloudhus API to verify whether the user is signed.
+// if the user is signed, the user entity must be included in the edges of the given session entity.
 //
 // if the user turns out not to be registered, it does user-registration process as well.
 func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session, newSignedToken string, err error) {
-	// genreate session connection token
-	sct := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"pps":     "hus_connection",
-		"iss":     "https://auth.lifthus.com",
-		"service": "lifthus",
-		"sid":     ls.ID.String(),
-		"exp":     time.Now().Add(time.Second * 10).Unix(),
-	})
-	sctSigned, err := sct.SignedString(lifthus.HusSecretKeyBytes)
+	// generate Hus connection token to query Cloudhus API
+	hct, err := helper.SignedHusConnectionToken(ls.ID.String())
 	if err != nil {
-		return nil, "", fmt.Errorf("signing session connection token failed:%w", err)
+		return nil, "", fmt.Errorf("generating hus connection token failed:%w", err)
 	}
 
 	// from Cloudhus endpoint get the connected session information
-	req, err := http.NewRequest(http.MethodGet, "https://auth.cloudhus.com/auth/hus/connect/"+sctSigned, nil)
+	req, err := http.NewRequest(http.MethodGet, "https://auth.cloudhus.com/auth/hus/connect/"+hct, nil)
 	if err != nil {
 		return nil, "", fmt.Errorf("creating new request failed:%w", err)
 	}
@@ -232,13 +203,11 @@ func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session,
 
 	trx := tx.Session.UpdateOne(ls).SetHsid(hsid).SetTid(uuid.New())
 	var cu *ent.User
-	// if the user is newly signed, update it.
-	// cases: cu != nil basically
-	// ls.Uid == nil -> new user signed
+	// if cu != nil
 	// ls.Uid != nil, ls.Uid == cu.Uid -> maintain session
+	// ls.Uid == nil -> new user signed
 	// ls.Uid != nil, ls.Uid != cu.Uid -> update session user
-	//
-	// if a user is signed to Cloudhus session,
+	// and else cu == nil then clear the UID field.
 	if cuDto != nil {
 		// query the user
 		cu, err = db.QueryUserByID(ctx, cuDto.Uid)
@@ -248,19 +217,24 @@ func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session,
 		}
 		// query succeeded but user not found, register the user
 		if cu == nil {
-			cu, err = db.RegisterUser(ctx, *cuDto)
+			_, err = db.RegisterUser(ctx, *cuDto)
 			if err != nil {
 				err = db.Rollback(tx, err)
 				return nil, "", fmt.Errorf("registering user failed:%w", err)
 			}
 		}
 		switch {
+		case ls.UID != nil && *ls.UID == cuDto.Uid:
+			break
 		case ls.UID == nil:
 			fallthrough
 		case ls.UID != nil && *ls.UID != cuDto.Uid:
 			trx = trx.SetUID(cuDto.Uid).SetSignedAt(time.Now())
 			//case ls.UID != nil && *ls.UID == cuDto.Uid: // do nothing
 		}
+	} else {
+		// clear UID if user not signed in Cloudhus
+		trx = trx.ClearUID()
 	}
 
 	nls, err = trx.Save(ctx)
@@ -269,39 +243,22 @@ func RefreshSessionHard(ctx context.Context, ls *ent.Session) (nls *ent.Session,
 		return nil, "", fmt.Errorf("refreshing session failed:%w", err)
 	}
 
-	nls, err = db.Client.Session.Query().Where(session.ID(nls.ID)).WithUser().Only(ctx)
-	if err != nil {
-		err = db.Rollback(tx, err)
-		return nil, "", fmt.Errorf("querying session failed:%w", err)
-	}
-
-	var uidStr string // "" if not signed
-	if cu != nil {
-		uidStr = strconv.FormatUint(cu.ID, 10)
-	}
-
-	// create new jwt session token with session id
-	st := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"pps": "lifthus_session",
-		"iss": "https://auth.lifthus.com",
-		"sid": nls.ID.String(),
-		"tid": nls.Tid.String(),
-		"uid": uidStr,
-		"exp": lifthus.GetLstExp(),
-	})
-
-	// sign and get the complete encoded token as a string using the secret
-	stSigned, err := st.SignedString(lifthus.HusSecretKeyBytes)
-	if err != nil {
-		err = db.Rollback(tx, err)
-		return nil, "", fmt.Errorf("signing session token failed:%w", err)
-	}
-
 	err = tx.Commit()
 	if err != nil {
 		err = db.Rollback(tx, err)
 		return nil, "", fmt.Errorf("committing transaction failed:%w", err)
 	}
 
-	return nls, stSigned, nil
+	ls, err = db.Client.Session.Query().Where(session.ID(nls.ID)).WithUser().Only(ctx)
+	if err != nil {
+		err = db.Rollback(tx, err)
+		return nil, "", fmt.Errorf("querying session failed:%w", err)
+	}
+
+	lst, err := helper.SignedLST(ls)
+	if err != nil {
+		return nil, "", fmt.Errorf("generating session token failed:%w", err)
+	}
+
+	return nls, lst, nil
 }
