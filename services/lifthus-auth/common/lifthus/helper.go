@@ -14,3 +14,8 @@ func AuthCookieMaker(name string, value string) *http.Cookie {
 		SameSite: CookieSameSite,
 	}
 }
+
+// LSTCookieMaker takes cookie's value and generate lifthus_st cookie.
+func LSTCookieMaker(value string) *http.Cookie {
+	return AuthCookieMaker("lifthus_st", value)
+}
