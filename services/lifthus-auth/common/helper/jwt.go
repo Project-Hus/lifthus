@@ -8,6 +8,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+// ParseJWTWithHMAC parses jwt token and tells about claims, expiration and erroneous things.
 func ParseJWTWithHMAC(tokenString string) (claims jwt.MapClaims, expired bool, err error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -28,4 +29,14 @@ func ParseJWTWithHMAC(tokenString string) (claims jwt.MapClaims, expired bool, e
 	} else {
 		return nil, false, fmt.Errorf("invalid token")
 	}
+}
+
+// NewJWT creates a new jwt token not signed.
+func NewJWT(c jwt.MapClaims) *jwt.Token {
+	return jwt.NewWithClaims(jwt.SigningMethodHS256, c)
+}
+
+// SignJWT signs a jwt token with HusSecretKey.
+func SignJWT(t *jwt.Token) (string, error) {
+	return t.SignedString(lifthus.HusSecretKeyBytes)
 }

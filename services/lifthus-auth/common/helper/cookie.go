@@ -1,6 +1,9 @@
-package lifthus
+package helper
 
-import "net/http"
+import (
+	"lifthus-auth/common/lifthus"
+	"net/http"
+)
 
 // CookieMaker takes name and value and generates default lifthus auth cookie.
 func AuthCookieMaker(name string, value string) *http.Cookie {
@@ -10,8 +13,8 @@ func AuthCookieMaker(name string, value string) *http.Cookie {
 		Path:     "/",
 		Domain:   ".lifthus.com",
 		HttpOnly: true,
-		Secure:   CookieSecure,
-		SameSite: CookieSameSite,
+		Secure:   lifthus.CookieSecure,
+		SameSite: lifthus.CookieSameSite,
 	}
 }
 
