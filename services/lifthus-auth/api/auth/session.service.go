@@ -100,6 +100,79 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 	return c.String(http.StatusCreated, ns.ID.String())
 }
 
+// SessionHandlerV2 godoc
+// @Tags         auth
+// @Router       /session-v2 [get]
+// @Summary		 validates session. publishes new one if it isn't. refreshes expired session.
+//
+// @Success      200 "Ok, session refreshed, session info JSON returned"
+// @Success      201 "Created, new session issued, redirect to cloudhus and do connect"
+// @Failure      500 "Internal Server Error"
+func (ac authApiController) SessionHandlerV2(c echo.Context) error {
+	/*
+		1. get session token from Authorization header
+		maybe it is not set or empty string. or maybe invalid.
+	*/
+	bearerLst := c.Request().Header.Get("Authorization")
+
+	lst, err := helper.CheckAuthHeader(bearerLst)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "invalid Authorization header form")
+	}
+
+	/*
+		2. validate the session
+	*/
+	ls, err := session.ValidateSessionQueryUser(c.Request().Context(), lst)
+
+	var nlst string // new session token
+
+	/*
+		3-1. try refresh the session
+		if valid or expired but valid
+	*/
+	if err == nil || session.IsExpiredValid(err) {
+		ls, nlst, err = session.RefreshSessionHard(c.Request().Context(), ls)
+	}
+
+	// if refresh succeeded, return the refreshed session token
+	if err == nil {
+		c = helper.SetAuthHeader(c, nlst)
+		// returning sessoin user info
+		var uinf *dto.SessionUserInfo
+		// if session is signed by any user, return the user info
+		if ls.Edges.User != nil {
+			lsu := ls.Edges.User
+			uinf = &dto.SessionUserInfo{
+				UID:        strconv.FormatUint(lsu.ID, 10),
+				Registered: lsu.Registered,
+				Username:   lsu.Username,
+				Usercode:   lsu.Usercode,
+			}
+		}
+		// the client will get OK sign and that is all. no more thing to do.
+		return c.JSON(http.StatusOK, uinf)
+	}
+	log.Printf("issuing new session because of %v", err)
+	/*
+		3-2. issue new session.
+		first, after validation above, the session may turn out to be invalid.
+		second, the refresh may have failed.
+		in both cases, err won't be nil and the flow comes here.
+		then issue a new session.
+	*/
+	ns, nlst, err := session.CreateSession(c.Request().Context())
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to issue new session")
+	}
+
+	c = helper.SetAuthHeader(c, nlst)
+
+	// the client will get Created sign.
+	// in this case, the client must redirect to Cloudhus themselves to connect the sessions.
+	return c.String(http.StatusCreated, ns.ID.String())
+}
+
 // GetSIDHandler godoc
 // @Tags         auth
 // @Router       /sid [get]
