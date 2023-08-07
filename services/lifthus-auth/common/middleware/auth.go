@@ -58,7 +58,7 @@ func UidSetter(dbClient *ent.Client) echo.MiddlewareFunc {
 	}
 }
 
-func UidSetterV2(dbClient *ent.Client) echo.MiddlewareFunc {
+func UidSetterV2() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 

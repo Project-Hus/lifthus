@@ -554,5 +554,5 @@ func (ac authApiController) SignOutHandlerV2(c echo.Context) error {
 	if ok {
 		log.Printf("user %d signed out", uid)
 	}
-	return c.String(http.StatusOK, "signed out")
+	return c.String(http.StatusOK, "signed_out")
 }

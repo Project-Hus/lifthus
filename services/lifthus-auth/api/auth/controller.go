@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"lifthus-auth/common/guard"
 	"lifthus-auth/ent"
 	"net/http"
 
@@ -20,9 +21,9 @@ func NewAuthApiController(authApi *echo.Echo, params AuthApiControllerParams) *e
 		return c.String(http.StatusOK, "Welcome to Lifthus")
 	})
 
-	authApi.GET("/auth/session", authApiController.SessionHandler)
-	authApi.GET("/auth/sid", authApiController.GetSIDHandler)
-	authApi.PATCH("/auth/session/signout", authApiController.SignOutHandler)
+	authApi.GET("/auth/session", authApiController.SessionHandlerV2)
+	authApi.GET("/auth/sid", authApiController.GetSIDHandlerV2)
+	authApi.PATCH("/auth/session/signout", authApiController.SignOutHandlerV2, guard.UserGuard)
 	authApi.PATCH("/auth/hus/signin", authApiController.SignInPropagationHandler)
 	authApi.PATCH("/auth/hus/signout", authApiController.SignOutPropagationHandler)
 
@@ -42,9 +43,9 @@ type authApiController struct {
 
 // authApis interface defines what auth api has to handle
 type authApis interface {
-	SessionHandler(c echo.Context) error // from client
-	GetSIDHandler(c echo.Context) error  // from client
-	SignOutHandler(c echo.Context) error // from client
+	SessionHandlerV2(c echo.Context) error // from client
+	GetSIDHandlerV2(c echo.Context) error  // from client
+	SignOutHandlerV2(c echo.Context) error // from client
 	SignInPropagationHandler(c echo.Context) error
 	SignOutPropagationHandler(c echo.Context) error
 }
