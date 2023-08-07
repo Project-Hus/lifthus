@@ -50,7 +50,6 @@ export class CommentService {
     cid: number;
     aid: number;
   }): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    Logger.log(`del!3ete comment ${cid} ${aid} monna`);
     return this.prisma.comment.deleteMany({
       where: { id: cid, author: aid },
     });

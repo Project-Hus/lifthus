@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"routine/common/helper"
-	"routine/ent"
 
 	"github.com/labstack/echo/v4"
 )
@@ -47,7 +46,7 @@ func UidSetter() echo.MiddlewareFunc {
 	}
 }
 
-func UidSetterV2(dbClient *ent.Client) echo.MiddlewareFunc {
+func UidSetterV2() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 

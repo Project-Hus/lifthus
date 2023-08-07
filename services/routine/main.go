@@ -91,7 +91,7 @@ func main() {
 	}))
 
 	// set uid to context if the user is signed
-	e.Pre(rmw.UidSetter())
+	e.Pre(rmw.UidSetterV2())
 
 	// REQUEST LOGGER
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
