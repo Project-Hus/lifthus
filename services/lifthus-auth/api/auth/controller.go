@@ -20,7 +20,7 @@ func NewAuthApiController(authApi *echo.Echo, params AuthApiControllerParams) *e
 	authApi.GET("/auth", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Welcome to Lifthus")
 	})
-
+	//
 	authApi.GET("/auth/session", authApiController.SessionHandler)
 	authApi.GET("/auth/sid", authApiController.GetSIDHandler)
 	authApi.PATCH("/auth/session/signout", authApiController.SignOutHandler, guard.UserGuard)
