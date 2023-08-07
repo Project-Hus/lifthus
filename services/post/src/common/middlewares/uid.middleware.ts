@@ -1,6 +1,6 @@
 import { JwtService } from '@nestjs/jwt';
 import { LifthusSessionJWTPayload } from '../types/session';
-import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 
 // class jsdoc template
@@ -22,6 +22,7 @@ export class UidMiddleware implements NestMiddleware {
         const lst = await this.jwtService.verifyAsync<LifthusSessionJWTPayload>(
           lstSigned,
         );
+        Logger.log(`lst: ${JSON.stringify(lst)}`);
         if (lst.uid) {
           req.uid = parseInt(lst.uid);
         }
