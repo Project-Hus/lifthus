@@ -113,9 +113,7 @@ func (ac authApiController) SessionHandlerV2(c echo.Context) error {
 		1. get session token from Authorization header
 		maybe it is not set or empty string. or maybe invalid.
 	*/
-	bearerLst := c.Request().Header.Get("Authorization")
-
-	lst, err := helper.CheckAuthHeader(bearerLst)
+	lst, err := helper.GetHeaderLST(c)
 	if err != nil {
 		return c.String(http.StatusBadRequest, "invalid Authorization header form")
 	}
