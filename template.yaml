@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  lifthus serverless microservices (dev)
+  lifthus serverless microservices
 
 Globals:
   Function:
@@ -14,24 +14,24 @@ Globals:
         # deployment : Parameter Store
         # local&native : env.json
         GOOGLE_CLIENT_ID: "{{resolve:ssm:GOOGLE_CLIENT_ID:1}}"
-        LIFTHUS_AUTH_DB_USER: "{{resolve:ssm:LIFTHUS_AUTH_DB_USER:1}}"
+        LIFTHUS_AUTH_DB_NAME: "{{resolve:ssm:LIFTHUS_AUTH_DB_NAME:1}}"
         LIFTHUS_AUTH_DB_PASSWORD: "{{resolve:ssm:LIFTHUS_AUTH_DB_PASSWORD:1}}"
-        DEV_LIFTHUS_AUTH_DB_NAME: "{{resolve:ssm:DEV_LIFTHUS_AUTH_DB_NAME:1}}"
-        DEV_LIFTHUS_AUTH_DB_HOST: "{{resolve:ssm:DEV_LIFTHUS_AUTH_DB_HOST:1}}"
-        DEV_LIFTHUS_AUTH_DB_PORT: "{{resolve:ssm:DEV_LIFTHUS_AUTH_DB_PORT:1}}"
+        LIFTHUS_AUTH_DB_USER: "{{resolve:ssm:LIFTHUS_AUTH_DB_USER:1}}"
+        LIFTHUS_AUTH_DB_HOST: "{{resolve:ssm:LIFTHUS_AUTH_DB_HOST:1}}"
+        LIFTHUS_AUTH_DB_PORT: "{{resolve:ssm:LIFTHUS_AUTH_DB_PORT:1}}"
 
+        LIFTHUS_POST_DB_URL: "{{resolve:ssm:LIFTHUS_POST_DB_URL:1}}"
+        LIFTHUS_POST_DB_NAME: "{{resolve:ssm:LIFTHUS_POST_DB_NAME:1}}"
         LIFTHUS_POST_DB_USER: "{{resolve:ssm:LIFTHUS_POST_DB_USER:1}}"
         LIFTHUS_POST_DB_PASSWORD: "{{resolve:ssm:LIFTHUS_POST_DB_PASSWORD:1}}"
-        DEV_LIFTHUS_POST_DB_URL: "{{resolve:ssm:DEV_LIFTHUS_POST_DB_URL:1}}"
-        DEV_LIFTHUS_POST_DB_NAME: "{{resolve:ssm:DEV_LIFTHUS_POST_DB_NAME:1}}"
-        DEV_LIFTHUS_POST_DB_HOST: "{{resolve:ssm:DEV_LIFTHUS_POST_DB_HOST:1}}"
-        DEV_LIFTHUS_POST_DB_PORT: "{{resolve:ssm:DEV_LIFTHUS_POST_DB_PORT:1}}"
+        LIFTHUS_POST_DB_HOST: "{{resolve:ssm:LIFTHUS_POST_DB_HOST:1}}"
+        LIFTHUS_POST_DB_PORT: "{{resolve:ssm:LIFTHUS_POST_DB_PORT:1}}"
 
+        LIFTHUS_ROUTINE_DB_NAME: "{{resolve:ssm:LIFTHUS_ROUTINE_DB_NAME:1}}"
         LIFTHUS_ROUTINE_DB_USER: "{{resolve:ssm:LIFTHUS_ROUTINE_DB_USER:1}}"
         LIFTHUS_ROUTINE_DB_PASSWORD: "{{resolve:ssm:LIFTHUS_ROUTINE_DB_PASSWORD:1}}"
-        DEV_LIFTHUS_ROUTINE_DB_NAME: "{{resolve:ssm:DEV_LIFTHUS_ROUTINE_DB_NAME:1}}"
-        DEV_LIFTHUS_ROUTINE_DB_HOST: "{{resolve:ssm:DEV_LIFTHUS_ROUTINE_DB_HOST:1}}"
-        DEV_LIFTHUS_ROUTINE_DB_PORT: "{{resolve:ssm:DEV_LIFTHUS_ROUTINE_DB_PORT:1}}"
+        LIFTHUS_ROUTINE_DB_HOST: "{{resolve:ssm:LIFTHUS_ROUTINE_DB_HOST:1}}"
+        LIFTHUS_ROUTINE_DB_PORT: "{{resolve:ssm:LIFTHUS_ROUTINE_DB_PORT:1}}"
 
         HUS_SECRET_KEY: "{{resolve:ssm:HUS_SECRET_KEY:1}}"
         HUS_ENV: "{{resolve:ssm:HUS_ENV:1}}"
@@ -45,18 +45,18 @@ Globals:
 
 Resources:
   # auth services ==================================================
-  DevLifthusAuthApi:
+  LifthusAuthApi:
     Type: AWS::Serverless::HttpApi
     Properties:
-      Name: DevLifthusAuthApi
+      Name: LifthusAuthApi
       Domain:
-        DomainName: "auth.dev.lifthus.com"
+        DomainName: "auth.lifthus.com"
         CertificateArn: "{{resolve:ssm:CLOUDHUS_ACM_ARN:1}}"
         EndpointConfiguration: REGIONAL
         Route53:
           HostedZoneId: "{{resolve:ssm:LIFTHUS_HOSTED_ZONE_ID:1}}"
-          RecordName: "auth.dev.lifthus.com"
-  DevLifthusAuthService:
+          RecordName: "auth.lifthus.com"
+  LifthusAuthService:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: services/lifthus-auth/
@@ -65,18 +65,18 @@ Resources:
       Architectures:
         - x86_64
       Events:
-        DevLifthusAuthServiceRoot:
+        LifthusAuthServiceRoot:
           Type: HttpApi
           Properties:
             ApiId:
-              Ref: DevLifthusAuthApi
+              Ref: LifthusAuthApi
             Path: "/auth"
             Method: ANY
-        DevLifthusAuthServiceProxy:
+        LifthusAuthServiceProxy:
           Type: HttpApi
           Properties:
             ApiId:
-              Ref: DevLifthusAuthApi
+              Ref: LifthusAuthApi
             Path: /auth/{proxy+}
             Method: ANY
         # * VPC applied well but outbound request from Lambda not working so this prop is commented out
@@ -87,19 +87,18 @@ Resources:
         #     - "{{resolve:ssm:CLOUDHUS_SG_ID:1}}"
 
   # lifthus api ==================================================
-  DevLifthusApi:
+  LifthusApi:
     Type: AWS::Serverless::HttpApi
     Properties:
-      Name: DevLifthusApi
+      Name: LifthusApi
       Domain:
-        DomainName: "api.dev.lifthus.com"
+        DomainName: "api.lifthus.com"
         CertificateArn: "{{resolve:ssm:CLOUDHUS_ACM_ARN:1}}"
         EndpointConfiguration: REGIONAL
         Route53:
           HostedZoneId: "{{resolve:ssm:LIFTHUS_HOSTED_ZONE_ID:1}}"
-          RecordName: "api.dev.lifthus.com"
   # lifthus post service
-  DevLifthusPostService:
+  LifthusPostService:
     Type: AWS::Serverless::Function
     Properties:
       MemorySize: 256
@@ -117,14 +116,14 @@ Resources:
           Type: HttpApi
           Properties:
             ApiId:
-              Ref: DevLifthusApi
+              Ref: LifthusApi
             Path: /post
             Method: ANY
         LifthusPostServiceProxy:
           Type: HttpApi
           Properties:
             ApiId:
-              Ref: DevLifthusApi
+              Ref: LifthusApi
             Path: /post/{proxy+}
             Method: ANY
     # SAM esbuild (not working properly)
@@ -146,7 +145,7 @@ Resources:
     #       - "class-transformer"
     #       - "class-validator"
   # lifthus routine service
-  DevLifthusRoutineService:
+  LifthusRoutineService:
     Type: AWS::Serverless::Function
     Properties:
       MemorySize: 128
@@ -160,18 +159,18 @@ Resources:
       Architectures:
         - x86_64
       Events:
-        DevLifthusRoutineServiceRoot:
+        LifthusRoutineServiceRoot:
           Type: HttpApi
           Properties:
             ApiId:
-              Ref: DevLifthusApi
+              Ref: LifthusApi
             Path: /routine
             Method: ANY
-        DevLifthusRoutineServiceProxy:
+        LifthusRoutineServiceProxy:
           Type: HttpApi
           Properties:
             ApiId:
-              Ref: DevLifthusApi
+              Ref: LifthusApi
             Path: /routine/{proxy+}
             Method: ANY
   ApplicationResourceGroup:
@@ -199,8 +198,8 @@ Outputs:
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   LifthusAuthApi:
-    Description: Lifthus auth dev api endpoint base url
-    Value: "https://auth.dev.lifthus.com/auth"
+    Description: Lifthus auth api endpoint base url
+    Value: "https://auth.lifthus.com/auth"
   LifthusApi:
-    Description: Lifthus dev api endpoint base url
-    Value: "https://api.dev.lifthus.com"
+    Description: Lifthus api endpoint base url
+    Value: "https://api.lifthus.com"
