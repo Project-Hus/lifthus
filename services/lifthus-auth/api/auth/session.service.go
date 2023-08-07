@@ -450,3 +450,109 @@ func (ac authApiController) SignOutHandler(c echo.Context) error {
 	}
 	return c.String(http.StatusOK, "signed out")
 }
+
+// SignOutHandlerV2 godoc
+// @Tags         auth
+// @Router       /session/signout [patch]
+// @Summary		 gets sign-out request from the client and propagates it to Cloudhus.
+// @Success      200 "Ok, signed out of the session"
+// @Failure      400 "Bad Request"
+// @Failure	  401 "Unauthorized, the token is expired or the session is not signed"
+// @Failure	  500 "Internal Server Error"
+func (ac authApiController) SignOutHandlerV2(c echo.Context) error {
+	// get lifthus_st from the cookie
+	lst, err := helper.GetHeaderLST(c)
+	if err != nil {
+		log.Println("failed to get cookie")
+		return c.String(http.StatusBadRequest, "no valid token")
+	}
+
+	ls, err := session.ValidateSessionQueryUser(c.Request().Context(), lst)
+	if session.IsExpiredValid(err) {
+		log.Println("session expired")
+		c.Response().Header().Set("WWW-Authenticate", `Bearer realm="auth.lifthus.com", error="expired_token"`)
+		return c.String(http.StatusUnauthorized, "expired_token")
+	} else if err != nil {
+		log.Println("failed to validate session")
+		return c.String(http.StatusInternalServerError, "failed to validate session")
+	} else if ls.Edges.User == nil {
+		log.Println("the session is not signed")
+		c.Response().Header().Set("WWW-Authenticate", `Bearer realm="auth.lifthus.com", error="not_signed"`)
+		return c.String(http.StatusUnauthorized, "the session is not signed")
+	}
+
+	propagCh := make(chan error) // for waiting propagation goroutine
+	txCh := make(chan error)     // for waiting transaction goroutine
+
+	go func() {
+		sot, err := helper.SignedHusTotalSignOutToken(ls.Hsid.String())
+		if err != nil {
+			propagCh <- fmt.Errorf("failed to generate token")
+			return
+		}
+		// request to the Cloudhus endpoint
+		req, err := http.NewRequest(http.MethodPatch, "https://auth.cloudhus.com/auth/hus/signout"+"", strings.NewReader(sot))
+		if err != nil {
+			propagCh <- fmt.Errorf("failed to create request")
+			return
+		}
+		resp, err := lifthus.Http.Do(req)
+		if err != nil {
+			propagCh <- fmt.Errorf("propagation failed")
+			return
+		}
+		defer resp.Body.Close()
+		// propagation failed or succeeded
+		if resp.StatusCode == http.StatusOK {
+			propagCh <- nil
+			return
+		}
+		propagCh <- fmt.Errorf("propagation failed")
+	}()
+
+	tx, err := db.Client.Tx(c.Request().Context())
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to start transaction")
+	}
+
+	go func() {
+		ls, err = tx.Session.UpdateOne(ls).ClearUID().ClearSignedAt().SetTid(uuid.New()).Save(c.Request().Context())
+		if err != nil {
+			db.Rollback(tx, err)
+			txCh <- err
+			return
+		}
+		txCh <- nil
+	}()
+
+	propagErr := <-propagCh
+	txErr := <-txCh
+
+	if propagErr != nil || txErr != nil {
+		_ = db.Rollback(tx, nil)
+		log.Println("failed to sign out propag or tx failed")
+		return c.String(http.StatusInternalServerError, "failed to sign out")
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		_ = db.Rollback(tx, err)
+		log.Println("failed to commit tx")
+		return c.String(http.StatusInternalServerError, "failed to sign out")
+	}
+
+	lst, err = session.SessionToToken(c.Request().Context(), ls)
+	if err != nil {
+		log.Println("failed to tokenize the session")
+		return c.String(http.StatusInternalServerError, "failed to sign out")
+	}
+
+	c = helper.SetAuthHeader(c, lst)
+
+	// from context get uid
+	uid, ok := c.Get("uid").(uint64)
+	if ok {
+		log.Printf("user %d signed out", uid)
+	}
+	return c.String(http.StatusOK, "signed out")
+}
