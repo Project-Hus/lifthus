@@ -101,7 +101,7 @@ func main() {
 	}))
 
 	// set uid to context if the user is signed
-	e.Pre(lmw.UidSetter(dbClient))
+	e.Pre(lmw.UidSetterV2())
 
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {

@@ -58,4 +58,24 @@ export class UidMiddleware implements NestMiddleware {
     }
     next();
   }
+  async useV2(req: Request, res: Response, next: NextFunction) {
+    // get Authorization header
+    const authHeader = req.headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const lstSigned = authHeader.slice(7);
+      try {
+        const lst = await this.jwtService.verifyAsync<LifthusSessionJWTPayload>(
+          lstSigned,
+        );
+        if (lst.uid) {
+          req.uid = parseInt(lst.uid);
+        }
+      } catch (e: any) {
+        if (e.name === 'TokenExpiredError') {
+          req.exp = true;
+        }
+      }
+    }
+    next();
+  }
 }
