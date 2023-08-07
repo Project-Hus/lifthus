@@ -10,6 +10,7 @@ import (
 	"lifthus-auth/common/dto"
 	"lifthus-auth/common/helper"
 	"lifthus-auth/common/lifthus"
+	"lifthus-auth/ent"
 	"strconv"
 
 	"lifthus-auth/common/service/session"
@@ -111,23 +112,20 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 func (ac authApiController) SessionHandlerV2(c echo.Context) error {
 	/*
 		1. get session token from Authorization header
-		maybe it is not set or empty string. or maybe invalid.
 	*/
-	lst, err := helper.GetHeaderLST(c)
-	if err != nil {
-		return c.String(http.StatusBadRequest, "invalid Authorization header form")
+	lst, err := helper.GetHeaderLST(c) // returns error if the format is invalid or it's empty.
+
+	/*
+		2. if there was no problem while getting the token from header, validate it.
+	*/
+	var ls *ent.Session
+	if err == nil {
+		ls, err = session.ValidateSessionQueryUser(c.Request().Context(), lst)
 	}
 
-	/*
-		2. validate the session
-	*/
-	ls, err := session.ValidateSessionQueryUser(c.Request().Context(), lst)
-
 	var nlst string // new session token
-
 	/*
-		3-1. try refresh the session
-		if valid or expired but valid
+		3-1. try refreshing the session if valid or expired but valid
 	*/
 	if err == nil || session.IsExpiredValid(err) {
 		ls, nlst, err = session.RefreshSessionHard(c.Request().Context(), ls)
@@ -193,6 +191,29 @@ func (ac authApiController) GetSIDHandler(c echo.Context) error {
 		return c.String(http.StatusUnauthorized, "expired_token")
 	}
 
+	return c.String(http.StatusOK, sid.String())
+}
+
+// GetSIDHandlerV2 godoc
+// @Tags         auth
+// @Router       /sid [get]
+// @Summary		 returns client's SID. should be encrypted later.
+//
+// @Success      200 "Ok, session ID"
+// @Failure      401 "Unauthorized, the token is expired"
+// @Failure      500 "Internal Server Error"
+func (ac authApiController) GetSIDHandlerV2(c echo.Context) error {
+	lst, err := helper.GetHeaderLST(c)
+	if err != nil {
+		return c.String(http.StatusUnauthorized, "no valid token")
+	}
+	sid, _, exp, err := session.ValidateSession(c.Request().Context(), lst)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to validate session")
+	} else if exp {
+		c.Response().Header().Set("WWW-Authenticate", `Bearer realm="auth.lifthus.com", error="expired_token"`)
+		return c.String(http.StatusUnauthorized, "expired_token")
+	}
 	return c.String(http.StatusOK, sid.String())
 }
 

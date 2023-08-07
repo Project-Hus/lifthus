@@ -16,6 +16,8 @@ func GetHeaderLST(c echo.Context) (string, error) {
 func CheckAuthHeader(ah string) (token string, err error) {
 	if ah != "" && !strings.HasPrefix(ah, "Bearer ") {
 		return "", fmt.Errorf("invalid authorization header")
+	} else if ah == "" {
+		return "", fmt.Errorf("no authorization header")
 	}
 	return strings.TrimPrefix(ah, "Bearer "), nil
 }
