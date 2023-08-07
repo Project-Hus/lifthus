@@ -12,8 +12,7 @@ Globals:
       Variables:
         # * Environment variables
         # deployment : Parameter Store
-        # local : env.json
-        # native : .env
+        # local&native : env.json
         GOOGLE_CLIENT_ID: "{{resolve:ssm:GOOGLE_CLIENT_ID:1}}"
         LIFTHUS_AUTH_DB_NAME: "{{resolve:ssm:LIFTHUS_AUTH_DB_NAME:1}}"
         LIFTHUS_AUTH_DB_PASSWORD: "{{resolve:ssm:LIFTHUS_AUTH_DB_PASSWORD:1}}"
