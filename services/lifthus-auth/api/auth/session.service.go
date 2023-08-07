@@ -24,92 +24,13 @@ import (
 
 // SessionHandler godoc
 // @Tags         auth
-// @Router       /session [get]
-// @Summary		 validates session. publishes new one if it isn't. refreshes expired session.
-//
-// @Success      200 "Ok, session refreshed, session info JSON returned"
-// @Success      201 "Created, new session issued, redirect to cloudhus and do connect"
-// @Failure      500 "Internal Server Error"
-func (ac authApiController) SessionHandler(c echo.Context) error {
-	/*
-		1. get session token from cookie
-		maybe cookie is not set or cookie is empty string. or maybe invalid
-	*/
-	lst, err := c.Cookie("lifthus_st")
-	if err != nil && err != http.ErrNoCookie {
-		return c.String(http.StatusInternalServerError, "failed to get cookie")
-	}
-	var rawLst string
-
-	if lst != nil {
-		rawLst = lst.Value
-	}
-
-	/*
-		2. validate the session
-	*/
-	ls, err := session.ValidateSessionQueryUser(c.Request().Context(), rawLst)
-
-	var nlst string // new session token
-
-	/*
-		3-1. try refresh the session
-		if valid or expired but valid
-	*/
-	if err == nil || session.IsExpiredValid(err) {
-		ls, nlst, err = session.RefreshSessionHard(c.Request().Context(), ls)
-	}
-
-	// if refresh succeeded, return the refreshed session token
-	if err == nil {
-		c.SetCookie(helper.LSTCookieMaker(nlst))
-
-		// returning sessoin user info
-		var uinf *dto.SessionUserInfo
-
-		// if session is signed by any user, return the user info
-		if ls.Edges.User != nil {
-			lsu := ls.Edges.User
-			uinf = &dto.SessionUserInfo{
-				UID:        strconv.FormatUint(lsu.ID, 10),
-				Registered: lsu.Registered,
-				Username:   lsu.Username,
-				Usercode:   lsu.Usercode,
-			}
-		}
-
-		// the client will get OK sign and that is all. no more thing to do.
-		return c.JSON(http.StatusOK, uinf)
-	}
-	log.Printf("issuing new session because of %v", err)
-	/*
-		3-2. issue new session.
-		first, after validation above, the session may turn out to be invalid.
-		second, the refresh may have failed.
-		in both cases, err won't be nil and the flow comes here.
-		then issue a new session.
-	*/
-	ns, nlst, err := session.CreateSession(c.Request().Context())
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to issue new session")
-	}
-
-	c.SetCookie(helper.LSTCookieMaker(nlst))
-
-	// the client will get Created sign.
-	// in this case, the client must redirect to Cloudhus themselves to connect the sessions.
-	return c.String(http.StatusCreated, ns.ID.String())
-}
-
-// SessionHandlerV2 godoc
-// @Tags         auth
 // @Router       /session-v2 [get]
 // @Summary		 validates session. publishes new one if it isn't. refreshes expired session.
 //
 // @Success      200 "Ok, session refreshed, session info JSON returned"
 // @Success      201 "Created, new session issued, redirect to cloudhus and do connect"
 // @Failure      500 "Internal Server Error"
-func (ac authApiController) SessionHandlerV2(c echo.Context) error {
+func (ac authApiController) SessionHandler(c echo.Context) error {
 	/*
 		1. get session token from Authorization header
 	*/
@@ -178,31 +99,6 @@ func (ac authApiController) SessionHandlerV2(c echo.Context) error {
 // @Failure      401 "Unauthorized, the token is expired"
 // @Failure      500 "Internal Server Error"
 func (ac authApiController) GetSIDHandler(c echo.Context) error {
-	lst, err := c.Cookie("lifthus_st")
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to get cookie")
-	}
-
-	sid, _, exp, err := session.ValidateSession(c.Request().Context(), lst.Value)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to validate session")
-	} else if exp {
-		c.Response().Header().Set("WWW-Authenticate", `Bearer realm="auth.lifthus.com", error="expired_token"`)
-		return c.String(http.StatusUnauthorized, "expired_token")
-	}
-
-	return c.String(http.StatusOK, sid.String())
-}
-
-// GetSIDHandlerV2 godoc
-// @Tags         auth
-// @Router       /sid [get]
-// @Summary		 returns client's SID. should be encrypted later.
-//
-// @Success      200 "Ok, session ID"
-// @Failure      401 "Unauthorized, the token is expired"
-// @Failure      500 "Internal Server Error"
-func (ac authApiController) GetSIDHandlerV2(c echo.Context) error {
 	lst, err := helper.GetHeaderLST(c)
 	if err != nil {
 		return c.String(http.StatusUnauthorized, "no valid token")
@@ -354,112 +250,6 @@ func (ac authApiController) SignOutPropagationHandler(c echo.Context) error {
 // @Failure	  401 "Unauthorized, the token is expired or the session is not signed"
 // @Failure	  500 "Internal Server Error"
 func (ac authApiController) SignOutHandler(c echo.Context) error {
-	// get lifthus_st from the cookie
-	lstSigned, err := c.Cookie("lifthus_st")
-	if err != nil {
-		log.Println("failed to get cookie")
-		return c.String(http.StatusBadRequest, "failed to get token")
-	}
-
-	ls, err := session.ValidateSessionQueryUser(c.Request().Context(), lstSigned.Value)
-	if session.IsExpiredValid(err) {
-		log.Println("session expired")
-		c.Response().Header().Set("WWW-Authenticate", `Bearer realm="auth.lifthus.com", error="expired_token"`)
-		return c.String(http.StatusUnauthorized, "expired_token")
-	} else if err != nil {
-		log.Println("failed to validate session")
-		return c.String(http.StatusInternalServerError, "failed to validate session")
-	} else if ls.Edges.User == nil {
-		log.Println("the session is not signed")
-		c.Response().Header().Set("WWW-Authenticate", `Bearer realm="auth.lifthus.com", error="not_signed"`)
-		return c.String(http.StatusUnauthorized, "the session is not signed")
-	}
-
-	propagCh := make(chan error) // for waiting propagation goroutine
-	txCh := make(chan error)     // for waiting transaction goroutine
-
-	go func() {
-		sot, err := helper.SignedHusTotalSignOutToken(ls.Hsid.String())
-		if err != nil {
-			propagCh <- fmt.Errorf("failed to generate token")
-			return
-		}
-		// request to the Cloudhus endpoint
-		req, err := http.NewRequest(http.MethodPatch, "https://auth.cloudhus.com/auth/hus/signout"+"", strings.NewReader(sot))
-		if err != nil {
-			propagCh <- fmt.Errorf("failed to create request")
-			return
-		}
-		resp, err := lifthus.Http.Do(req)
-		if err != nil {
-			propagCh <- fmt.Errorf("propagation failed")
-			return
-		}
-		defer resp.Body.Close()
-		// propagation failed or succeeded
-		if resp.StatusCode == http.StatusOK {
-			propagCh <- nil
-			return
-		}
-		propagCh <- fmt.Errorf("propagation failed")
-	}()
-
-	tx, err := db.Client.Tx(c.Request().Context())
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to start transaction")
-	}
-
-	go func() {
-		ls, err = tx.Session.UpdateOne(ls).ClearUID().ClearSignedAt().SetTid(uuid.New()).Save(c.Request().Context())
-		if err != nil {
-			db.Rollback(tx, err)
-			txCh <- err
-			return
-		}
-		txCh <- nil
-	}()
-
-	propagErr := <-propagCh
-	txErr := <-txCh
-
-	if propagErr != nil || txErr != nil {
-		_ = db.Rollback(tx, nil)
-		log.Println("failed to sign out propag or tx failed")
-		return c.String(http.StatusInternalServerError, "failed to sign out")
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		_ = db.Rollback(tx, err)
-		log.Println("failed to commit tx")
-		return c.String(http.StatusInternalServerError, "failed to sign out")
-	}
-
-	lst, err := session.SessionToToken(c.Request().Context(), ls)
-	if err != nil {
-		log.Println("failed to tokenize the session")
-		return c.String(http.StatusInternalServerError, "failed to sign out")
-	}
-
-	c.SetCookie(helper.LSTCookieMaker(lst))
-
-	// from context get uid
-	uid, ok := c.Get("uid").(uint64)
-	if ok {
-		log.Printf("user %d signed out", uid)
-	}
-	return c.String(http.StatusOK, "signed out")
-}
-
-// SignOutHandlerV2 godoc
-// @Tags         auth
-// @Router       /session/signout [patch]
-// @Summary		 gets sign-out request from the client and propagates it to Cloudhus.
-// @Success      200 "Ok, signed out of the session"
-// @Failure      400 "Bad Request"
-// @Failure	  401 "Unauthorized, the token is expired or the session is not signed"
-// @Failure	  500 "Internal Server Error"
-func (ac authApiController) SignOutHandlerV2(c echo.Context) error {
 	// get lifthus_st from the cookie
 	lst, err := helper.GetHeaderLST(c)
 	if err != nil {

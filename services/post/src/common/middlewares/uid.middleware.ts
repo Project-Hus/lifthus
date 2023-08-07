@@ -22,7 +22,6 @@ export class UidMiddleware implements NestMiddleware {
         const lst = await this.jwtService.verifyAsync<LifthusSessionJWTPayload>(
           lstSigned,
         );
-        Logger.log(`lst: ${JSON.stringify(lst)}`);
         if (lst.uid) {
           req.uid = parseInt(lst.uid);
         }
