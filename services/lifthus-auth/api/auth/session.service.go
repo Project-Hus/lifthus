@@ -31,7 +31,7 @@ import (
 // @Failure      500 "Internal Server Error"
 func (ac authApiController) SessionHandler(c echo.Context) error {
 	/*
-		1. get sessoin token from cookie
+		1. get session token from cookie
 		maybe cookie is not set or cookie is empty string. or maybe invalid
 	*/
 	lst, err := c.Cookie("lifthus_st")
@@ -136,6 +136,7 @@ func (ac authApiController) GetSIDHandler(c echo.Context) error {
 func (ac authApiController) SignInPropagationHandler(c echo.Context) error {
 	sipBytes, err := io.ReadAll(c.Request().Body)
 	if err != nil {
+		log.Println("failed to read body")
 		return c.String(http.StatusInternalServerError, "failed to read body")
 	}
 	sip := string(sipBytes)
@@ -143,6 +144,7 @@ func (ac authApiController) SignInPropagationHandler(c echo.Context) error {
 	// parse the token
 	sipClaims, expired, err := helper.ParseJWTWithHMAC(sip)
 	if expired || err != nil || sipClaims["pps"].(string) != "signin_propagation" {
+		log.Println("wrong purpose or expired or erroneous")
 		return c.String(http.StatusBadRequest, "invalid token")
 	}
 
@@ -150,43 +152,51 @@ func (ac authApiController) SignInPropagationHandler(c echo.Context) error {
 	sid := sipClaims["csid"].(string)
 	suuid, err := uuid.Parse(sid)
 	if err != nil {
+		log.Println("csid is not a valid uuid")
 		return c.String(http.StatusBadRequest, "invalid token")
 	}
 	hsid := sipClaims["hsid"].(string)
 	hsuuid, err := uuid.Parse(hsid)
 	if err != nil {
+		log.Println("hsid is not a valid uuid")
 		return c.String(http.StatusBadRequest, "invalid token")
 	}
 
 	// query the session
 	ls, err := db.QuerySessionByID(c.Request().Context(), suuid)
 	if err != nil || ls == nil {
+		log.Println("failed to query session")
 		return c.String(http.StatusInternalServerError, "failed to query session")
 	}
 	if ls.Hsid != nil && *ls.Hsid != hsuuid {
+		log.Println("hsid mismatch")
 		return c.String(http.StatusBadRequest, "invalid token")
 	}
 
 	// marshal the "user" to json bytes
 	cuB, err := json.Marshal(sipClaims["user"].(map[string]interface{}))
 	if err != nil {
+		log.Println("failed to marshal user dto")
 		return c.String(http.StatusBadRequest, "invalid token")
 	}
 	// unmarshal it to HusConnUser
 	var cu *dto.HusConnUser
 	err = json.Unmarshal(cuB, &cu)
 	if err != nil {
+		log.Println("failed to unmarshal user dto")
 		return c.String(http.StatusBadRequest, "invalid token")
 	}
 
 	// query the user and register if not exists
 	lu, err := db.QueryUserByID(c.Request().Context(), cu.Uid)
 	if err != nil {
+		log.Println("failed to query user")
 		return c.String(http.StatusInternalServerError, "failed to query user")
 	}
 	if lu == nil {
 		_, err := db.RegisterUser(c.Request().Context(), *cu)
 		if err != nil {
+			log.Println("failed to register user")
 			return c.String(http.StatusInternalServerError, "failed to register user")
 		}
 	}
@@ -194,6 +204,7 @@ func (ac authApiController) SignInPropagationHandler(c echo.Context) error {
 
 	_, err = ls.Update().SetUID(cu.Uid).SetSignedAt(time.Now()).Save(c.Request().Context())
 	if err != nil {
+		log.Println("failed to update session")
 		return c.String(http.StatusInternalServerError, "failed to update session")
 	}
 
