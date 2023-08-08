@@ -26,6 +26,8 @@ var LifthusURL = "http://localhost:3000"
 var CookieSecure = true
 var CookieSameSite = http.SameSiteLaxMode
 
+var LifthusServiceName = "lifthus"
+
 func GetLstExp() int64 {
 	return time.Now().Add(time.Minute * 10).Unix() // 10 min basically
 }
@@ -75,5 +77,10 @@ func InitLifthusVars(husenv string, _ *ent.Client) {
 		CookieSecure = false
 	default:
 		log.Fatal("HUS_ENV must be set(production|development|native)")
+	}
+	// for development server
+	_, ok := os.LookupEnv("DEV_LIFTHUS_ACM_ARN")
+	if ok {
+		LifthusServiceName = "lifthus-dev"
 	}
 }
