@@ -27,7 +27,7 @@ func SignedHusConnectionToken(lsid string) (hct string, err error) {
 	ct := NewJWT(jwt.MapClaims{
 		"pps":     "hus_connection",
 		"iss":     "https://auth.lifthus.com",
-		"service": "lifthus",
+		"service": lifthus.LifthusServiceName,
 		"sid":     lsid,
 		"exp":     time.Now().Add(time.Second * 10).Unix(),
 	})
