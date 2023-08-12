@@ -79,7 +79,7 @@ func InitLifthusVars(husenv string, _ *ent.Client) {
 		log.Fatal("HUS_ENV must be set(production|development|native)")
 	}
 	// for development server
-	_, ok := os.LookupEnv("DEV_LIFTHUS_ACM_ARN")
+	_, ok := os.LookupEnv("DEV_LIFTHUS_AUTH_DB_NAME")
 	if ok {
 		LifthusServiceName = "lifthus-dev"
 	}
