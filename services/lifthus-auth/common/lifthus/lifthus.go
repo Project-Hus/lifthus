@@ -80,7 +80,7 @@ func InitLifthusVars(husenv string, _ *ent.Client) {
 	}
 	// for development server
 	_, ok := os.LookupEnv("DEV_LIFTHUS_ACM_ARN")
-	if !ok {
+	if ok {
 		LifthusServiceName = "lifthus-dev"
 	}
 }
