@@ -154,7 +154,7 @@ paths:
       summary: gets uid from path param and makes signed user unfollow the given user
       tags:
       - relation
-  /session:
+  /session-v2:
     get:
       responses:
         "200":
@@ -194,26 +194,7 @@ paths:
       tags:
       - auth
   /user:
-    post:
-      description: it gets register info and registers user to lifthus
-      parameters:
-      - description: user register info
-        in: body
-        name: userinfo
-        required: true
-        schema:
-          $ref: '#/definitions/user.RegisterInfoDto'
-      responses:
-        "200":
-          description: returns register info as json
-        "400":
-          description: invalid body
-        "401":
-          description: unauthorized
-      summary: gets user register info and registers user
-      tags:
-      - user
-    put:
+    patch:
       description: it gets uid from path param and updates user info
       parameters:
       - description: user info
@@ -232,6 +213,25 @@ paths:
         "500":
           description: failed to set user info
       summary: gets uid from path param and updates user info
+      tags:
+      - user
+    post:
+      description: it gets register info and registers user to lifthus
+      parameters:
+      - description: user register info
+        in: body
+        name: userinfo
+        required: true
+        schema:
+          $ref: '#/definitions/user.RegisterInfoDto'
+      responses:
+        "200":
+          description: returns register info as json
+        "400":
+          description: invalid body
+        "401":
+          description: unauthorized
+      summary: gets user register info and registers user
       tags:
       - user
   /user/{uid}:
