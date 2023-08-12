@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"lifthus-auth/common/db"
 	"lifthus-auth/common/dto"
+	"lifthus-auth/ent"
 	"net/http"
 	"strconv"
 
@@ -157,7 +158,7 @@ func (uc userApiController) GetUserInfoByUsername(c echo.Context) error {
 }
 
 // SetUserInfo godoc
-// @Router       /user [put]
+// @Router       /user [patch]
 // @Param userinfo body dto.UpdateUserInfoDto true "user info"
 // @Summary      gets uid from path param and updates user info
 // @Description  it gets uid from path param and updates user info
@@ -176,8 +177,10 @@ func (uc userApiController) SetUserInfo(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "invalid uid")
 	}
 	user, err := db.UpdateUserInfo(c.Request().Context(), uc.dbClient, *userInfo)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+	if ent.IsConstraintError(err) {
+		return c.String(http.StatusConflict, "constraint error")
+	} else if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to set user info")
 	}
 
 	qu := &dto.QueryUserDto{

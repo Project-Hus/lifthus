@@ -21,7 +21,7 @@ func NewUserApiController(userApi *echo.Echo, params UserApiControllerParams) *e
 	userApi.POST("/auth/user", userApiController.RegisterUser, guard.UserGuard)
 
 	// Userinfo mutation endpoints
-	userApi.PUT("/auth/user", userApiController.SetUserInfo, guard.UserGuard)
+	userApi.PATCH("/auth/user", userApiController.SetUserInfo, guard.UserGuard)
 
 	// Userinfo query endpoints
 	userApi.GET("/auth/user/info/:uid", userApiController.GetUserInfo)

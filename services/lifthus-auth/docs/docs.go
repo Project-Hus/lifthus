@@ -189,7 +189,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/session": {
+        "/session-v2": {
             "get": {
                 "tags": [
                     "auth"
@@ -250,7 +250,36 @@ const docTemplate = `{
             }
         },
         "/user": {
-            "put": {
+            "post": {
+                "description": "it gets register info and registers user to lifthus",
+                "tags": [
+                    "user"
+                ],
+                "summary": "gets user register info and registers user",
+                "parameters": [
+                    {
+                        "description": "user register info",
+                        "name": "userinfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.RegisterInfoDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns register info as json"
+                    },
+                    "400": {
+                        "description": "invalid body"
+                    },
+                    "401": {
+                        "description": "unauthorized"
+                    }
+                }
+            },
+            "patch": {
                 "description": "it gets uid from path param and updates user info",
                 "tags": [
                     "user"
@@ -279,35 +308,6 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "failed to set user info"
-                    }
-                }
-            },
-            "post": {
-                "description": "it gets register info and registers user to lifthus",
-                "tags": [
-                    "user"
-                ],
-                "summary": "gets user register info and registers user",
-                "parameters": [
-                    {
-                        "description": "user register info",
-                        "name": "userinfo",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/user.RegisterInfoDto"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "returns register info as json"
-                    },
-                    "400": {
-                        "description": "invalid body"
-                    },
-                    "401": {
-                        "description": "unauthorized"
                     }
                 }
             }
