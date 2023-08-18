@@ -46,6 +46,20 @@ info:
   title: Lifthus user server
   version: 0.0.0
 paths:
+  /auth/account:
+    delete:
+      responses:
+        "200":
+          description: Ok, account deleted
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized, the token is expired or the session is not signed
+        "500":
+          description: Internal Server Error
+      summary: deletes user's lifthus account
+      tags:
+      - auth
   /hus/signin:
     patch:
       description: the "signin_propagation" token should be included in the request
@@ -154,7 +168,7 @@ paths:
       summary: gets uid from path param and makes signed user unfollow the given user
       tags:
       - relation
-  /session-v2:
+  /session:
     get:
       responses:
         "200":
