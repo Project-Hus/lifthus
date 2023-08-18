@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"lifthus-auth/common/guard"
 	"net/http"
 
@@ -46,7 +47,7 @@ func (ac authApiController) DeleteAccountController(c echo.Context) error {
 		return c.String(400, "invalid uid")
 	}
 
-	err := authService.DeleteAccountService(uid)
+	err := authService.DeleteAccountService(c.Request().Context(), uid)
 	if err != nil {
 		log.Errorf("failed to delete account: %v", err)
 		return c.String(500, "failed to delete account")
@@ -94,5 +95,5 @@ func newAuthService() authApiServices {
 
 // authApiServices interface defines what services should be implemented
 type authApiServices interface {
-	DeleteAccountService(uid uint64) error
+	DeleteAccountService(c context.Context, uid uint64) error
 }
