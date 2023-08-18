@@ -2,43 +2,69 @@ package auth
 
 import (
 	"lifthus-auth/common/guard"
-	"lifthus-auth/ent"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/log"
 )
 
-type AuthApiControllerParams struct {
-	DbClient   *ent.Client
-	HttpClient *http.Client
-}
-
-// NewAuthApiController returns Echo comprising of auth api routes. instance to main.
-func NewAuthApiController(authApi *echo.Echo, params AuthApiControllerParams) *echo.Echo {
-	authApiController := newAuthApiController(params)
+// NewAuthApiController takes Echo instance and attaches auth API controller to it.
+func NewAuthApiController(authApi *echo.Echo) *echo.Echo {
 
 	authApi.GET("/auth", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Welcome to Lifthus")
 	})
 
-	authApi.GET("/auth/session", authApiController.SessionHandler)
-	authApi.GET("/auth/sid", authApiController.GetSIDHandler)
-	authApi.PATCH("/auth/session/signout", authApiController.SignOutHandler, guard.UserGuard)
-	authApi.PATCH("/auth/hus/signin", authApiController.SignInPropagationHandler)
-	authApi.PATCH("/auth/hus/signout", authApiController.SignOutPropagationHandler)
+	authApi.GET("/auth/session", authController.SessionHandler)
+	authApi.GET("/auth/sid", authController.GetSIDHandler)
+	authApi.PATCH("/auth/session/signout", authController.SignOutHandler, guard.UserGuard)
+	authApi.PATCH("/auth/hus/signin", authController.SignInPropagationHandler)
+	authApi.PATCH("/auth/hus/signout", authController.SignOutPropagationHandler)
+
+	// new desgin patterns below
+	authApi.DELETE("/auth/account", authController.DeleteAccountController, guard.UserGuard)
 
 	return authApi
 }
 
-// newAuthApiController returns a new authApiController that implements every auth api features.
-func newAuthApiController(params AuthApiControllerParams) authApis {
-	return &authApiController{dbClient: params.DbClient, httpClient: params.HttpClient}
+// init initializes auth controller and service
+func init() {
+	authService = newAuthService()
+	authController = newAuthApiController()
 }
 
-// authApiController defines what auth api has to have and implements authApis interface at service file.
+// SessionHandler godoc
+// @Tags         auth
+// @Router       /auth/account [delete]
+// @Summary		 deletes user's lifthus account
+// @Success      200 "Ok, the account is deleted"
+// @Success      400 "Bad Request, invalid request"
+// @Failure      500 "Internal Server Error"
+func (ac authApiController) DeleteAccountController(c echo.Context) error {
+	uid, ok := c.Get("uid").(uint64)
+	if !ok {
+		return c.String(400, "invalid uid")
+	}
+
+	err := authService.DeleteAccountService(uid)
+	if err != nil {
+		log.Errorf("failed to delete account: %v", err)
+		return c.String(500, "failed to delete account")
+	}
+	return c.String(200, "account deleted")
+}
+
+/* ========== Controller declaration ========== */
+// authController is a controller set that handles auth api requests.
+var authController authApis
+
+// authApiController is a controller struct that implements authApis interface.
 type authApiController struct {
-	dbClient   *ent.Client
-	httpClient *http.Client
+}
+
+// newAuthApiController returns authApiController instance.
+func newAuthApiController() authApis {
+	return &authApiController{}
 }
 
 // authApis interface defines what auth api has to handle
@@ -48,4 +74,25 @@ type authApis interface {
 	SignOutHandler(c echo.Context) error // from client
 	SignInPropagationHandler(c echo.Context) error
 	SignOutPropagationHandler(c echo.Context) error
+
+	// new design patterns below
+	DeleteAccountController(c echo.Context) error
+}
+
+/* ========== Service declaration ========== */
+// authService is a service set that handles auth api requests.
+var authService authApiServices
+
+// authApiService is a service struct that implements authApiServices interface.
+type authApiService struct {
+}
+
+// newAuthService returns authApiService instance.
+func newAuthService() authApiServices {
+	return &authApiService{}
+}
+
+// authApiServices interface defines what services should be implemented
+type authApiServices interface {
+	DeleteAccountService(uid uint64) error
 }
