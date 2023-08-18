@@ -114,10 +114,6 @@ func main() {
 		}
 	})
 
-	authApiControllerParams := auth.AuthApiControllerParams{
-		DbClient:   dbClient,
-		HttpClient: authHttpClient,
-	}
 	userApiControllerParams := user.UserApiControllerParams{
 		DbClient:   dbClient,
 		HttpClient: authHttpClient,
@@ -127,7 +123,7 @@ func main() {
 		HttpClient: authHttpClient,
 	}
 
-	e = auth.NewAuthApiController(e, authApiControllerParams)
+	e = auth.NewAuthApiController(e)
 	e = user.NewUserApiController(e, userApiControllerParams)
 	e = relation.NewRelationApiController(e, relationApiControllerParams)
 

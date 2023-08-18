@@ -24,7 +24,7 @@ import (
 
 // SessionHandler godoc
 // @Tags         auth
-// @Router       /session-v2 [get]
+// @Router       /session [get]
 // @Summary		 validates session. publishes new one if it isn't. refreshes expired session.
 //
 // @Success      200 "Ok, session refreshed, session info JSON returned"
@@ -94,7 +94,6 @@ func (ac authApiController) SessionHandler(c echo.Context) error {
 // @Tags         auth
 // @Router       /sid [get]
 // @Summary		 returns client's SID. should be encrypted later.
-//
 // @Success      200 "Ok, session ID"
 // @Failure      401 "Unauthorized, the token is expired"
 // @Failure      500 "Internal Server Error"

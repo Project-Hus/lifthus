@@ -25,6 +25,28 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/account": {
+            "delete": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "deletes user's lifthus account",
+                "responses": {
+                    "200": {
+                        "description": "Ok, account deleted"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized, the token is expired or the session is not signed"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/hus/signin": {
             "patch": {
                 "description": "the \"signin_propagation\" token should be included in the request body.",
@@ -189,7 +211,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/session-v2": {
+        "/session": {
             "get": {
                 "tags": [
                     "auth"
