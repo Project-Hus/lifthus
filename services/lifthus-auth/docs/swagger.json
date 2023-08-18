@@ -26,10 +26,13 @@
                 "summary": "deletes user's lifthus account",
                 "responses": {
                     "200": {
-                        "description": "Ok, the account is deleted"
+                        "description": "Ok, account deleted"
                     },
                     "400": {
-                        "description": "Bad Request, invalid request"
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized, the token is expired or the session is not signed"
                     },
                     "500": {
                         "description": "Internal Server Error"

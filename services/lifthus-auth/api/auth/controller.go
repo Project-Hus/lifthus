@@ -3,10 +3,12 @@ package auth
 import (
 	"context"
 	"lifthus-auth/common/guard"
+	"lifthus-auth/common/helper"
 	"net/http"
 
+	"log"
+
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/gommon/log"
 )
 
 // NewAuthApiController takes Echo instance and attaches auth API controller to it.
@@ -47,11 +49,29 @@ func (ac authApiController) DeleteAccountController(c echo.Context) error {
 		return c.String(400, "invalid uid")
 	}
 
-	err := authService.DeleteAccountService(c.Request().Context(), uid)
+	// get lifthus_st from the cookie
+	lst, err := helper.GetHeaderLST(c)
 	if err != nil {
-		log.Errorf("failed to delete account: %v", err)
+		log.Println("failed to get lst")
+		return c.String(http.StatusBadRequest, "no valid token")
+	}
+
+	nlst, err := authService.signOutService(c.Request().Context(), lst)
+	if err != nil {
+		log.Printf("failed to sign out: %v", err)
+		return c.String(http.StatusInternalServerError, "failed to sign out")
+	}
+
+	c = helper.SetAuthHeader(c, nlst)
+
+	log.Printf("user %d signed out", uid)
+
+	err = authService.DeleteAccountService(c.Request().Context(), uid)
+	if err != nil {
+		log.Printf("failed to delete account: %v", err)
 		return c.String(500, "failed to delete account")
 	}
+
 	return c.String(200, "account deleted")
 }
 
@@ -96,4 +116,6 @@ func newAuthService() authApiServices {
 // authApiServices interface defines what services should be implemented
 type authApiServices interface {
 	DeleteAccountService(c context.Context, uid uint64) error
+
+	signOutService(c context.Context, lst string) (nlst string, err error)
 }
