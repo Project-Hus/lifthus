@@ -24,7 +24,7 @@ model Post {
 
   images PostImage[]
 
-  slug    String @unique @db.VarChar(50)
+  slug    String @unique @db.VarChar(255)
   content String @db.Text
 
   mentions Mention[]  @relation("mentions")

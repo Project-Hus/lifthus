@@ -51,13 +51,12 @@ export class PostQueryService {
         take: 10,
         skip: skip,
       });
-  
+
       return userPosts;
     } catch (error) {
       throw new Error('Failed to get user posts');
     }
   }
-  
 
   /**
    * Gets post by slug.
@@ -67,7 +66,7 @@ export class PostQueryService {
   getPostBySlug(slug: string): Promise<Post> {
     return this.prismaService.post.findUnique({
       where: {
-        slug: slug,
+        slug: encodeURIComponent(slug),
       },
       include: {
         images: {
@@ -79,11 +78,11 @@ export class PostQueryService {
             order: 'asc',
           },
         },
-          mentions: {
-            select: {
-              mentionee: true,
-            },
+        mentions: {
+          select: {
+            mentionee: true,
           },
+        },
       },
     });
   }
