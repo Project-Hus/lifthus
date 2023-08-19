@@ -33,13 +33,10 @@ const docTemplate = `{
                 "summary": "deletes user's lifthus account",
                 "responses": {
                     "200": {
-                        "description": "Ok, account deleted"
+                        "description": "Ok, the account is deleted"
                     },
                     "400": {
-                        "description": "Bad Request"
-                    },
-                    "401": {
-                        "description": "Unauthorized, the token is expired or the session is not signed"
+                        "description": "Bad Request, invalid request"
                     },
                     "500": {
                         "description": "Internal Server Error"

@@ -10,23 +10,16 @@ export class PostService {
   constructor(private readonly prisma: PrismaService) {}
 
   createPost(post: CreatePostDto): Promise<Post> {
+    // first, set the range of slug and get it.
     let slug: string;
-    // get slugEnd by the first '\n'.
     const slugEnd: number = post.content.indexOf('\n');
-    // if '\n' not found or the first '\n' is after 30th character, slice the first 30 characters.
     if (slugEnd == -1 || slugEnd > 30) {
-      // if automatically takes all if the content is less than 30 characters not throwing error.
       slug = post.content.slice(0, 30);
     } else {
-      // if '\n' is found and it is before 31th character, slice the content until '\n'.
       slug = post.content.slice(0, slugEnd);
     }
     // get slug
-    slug = slugify(slug) + '-' + crypto.randomBytes(8).toString('hex');
-
-    this.prisma.post.findMany({
-      where: { slug },
-    });
+    slug = encodeURIComponent(slug + crypto.randomBytes(8).toString('hex'));
 
     // Post create form
     let data: Prisma.PostCreateInput = {
