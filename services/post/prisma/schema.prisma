@@ -41,7 +41,7 @@ model PostImage {
   post   Post   @relation(fields: [postId], references: [id])
   order  Int    @unique
 
-  url String @db.VarChar(255)
+  url String @db.Text
 }
 
 model Comment {
