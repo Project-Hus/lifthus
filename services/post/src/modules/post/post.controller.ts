@@ -7,13 +7,16 @@ import {
   Post,
   Put,
   Req,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UserGuard } from 'src/common/guards/post.guard';
 import { Request } from 'express';
 import { PostService } from './post.service';
 import { Post as PPost, PostLike, Prisma } from '@prisma/client';
 import { CreatePostDto, UpdatePostDto } from './post.dto';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 /**
  * Mutation Controller
@@ -31,9 +34,11 @@ export class PostController {
    */
   @UseGuards(UserGuard)
   @Post()
+  @UseInterceptors(FilesInterceptor('images'))
   createPost(
     @Req() req: Request,
     @Body() post: CreatePostDto,
+    @UploadedFiles() images: Array<Express.Multer.File>,
   ): Promise<PPost> | { code: number; message: string } {
     const uid: number = req.uid;
     if (post.author !== uid) return { code: 403, message: 'Forbidden' };

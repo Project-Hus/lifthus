@@ -146,6 +146,11 @@ Resources:
     #       - "class-transformer"
     #       - "class-validator"
   # lifthus routine service
+  S3Bucket:
+    Type: "AWS::S3::Bucket"
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: LIFTHUS-POST-BUCKET
   DevLifthusRoutineService:
     Type: AWS::Serverless::Function
     Properties:
