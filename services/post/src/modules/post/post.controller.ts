@@ -14,7 +14,7 @@ import {
 import { UserGuard } from 'src/common/guards/post.guard';
 import { Request } from 'express';
 import { PostService } from './post.service';
-import { Post as PPost, PostLike, Prisma } from '@prisma/client';
+import { Post as PPost, Prisma } from '@prisma/client';
 import { CreatePostDto, UpdatePostDto } from './post.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 
