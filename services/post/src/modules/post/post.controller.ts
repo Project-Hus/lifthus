@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Logger,
   Param,
   Post,
@@ -39,9 +40,9 @@ export class PostController {
     @Req() req: Request,
     @Body() post: CreatePostDto,
     @UploadedFiles() images: Array<Express.Multer.File>,
-  ): Promise<PPost> | { code: number; message: string } {
+  ): Promise<PPost> {
     const uid: number = req.uid;
-    if (post.author !== uid) return { code: 403, message: 'Forbidden' };
+    if (post.author !== uid) throw new ForbiddenException();
     return this.postService.createPost(post);
   }
 
@@ -56,13 +57,11 @@ export class PostController {
   updatePost(
     @Req() req: Request,
     @Body() post: UpdatePostDto,
-  ):
-    | Prisma.PrismaPromise<Prisma.BatchPayload>
-    | { code: number; message: string } {
+  ): Prisma.PrismaPromise<Prisma.BatchPayload> {
     const uid: number = req.uid;
     const aid: number = post.author;
     // if the author is not signed user, return 403 Forbidden.
-    if (uid !== aid) return { code: 403, message: 'Forbidden' };
+    if (uid !== aid) throw new ForbiddenException();
     return this.postService.updatePost(post);
   }
 

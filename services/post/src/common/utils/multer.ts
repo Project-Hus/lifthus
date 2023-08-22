@@ -30,4 +30,6 @@ const upload = multer({
   }),
 });
 
+upload.single('');
+
 export default upload;
