@@ -105,7 +105,7 @@ Resources:
   DevLifthusPostService:
     Type: AWS::Serverless::Function
     Properties:
-      MemorySize: 256
+      MemorySize: 384
       # !! SAM esbuild (not working properly)
       #CodeUri: services/post/
       #Handler: src/lambda.handler
