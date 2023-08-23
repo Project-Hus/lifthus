@@ -16,20 +16,18 @@ const s3 = new aws.S3();
 const upload = multer({
   storage: multerS3({
     s3: s3,
-    bucket: 'LIFTHUS-POST-BUCKET',
+    bucket: 'lifthus-post-bucket',
     acl: 'public-read',
     contentType: multerS3.AUTO_CONTENT_TYPE,
     key: function (req, file, cb) {
       cb(
         null,
-        `${Date.now()}_${file.originalname}_${crypto
+        `post/images/${Date.now()}_${file.originalname}_${crypto
           .randomBytes(4)
           .toString('hex')}`,
       );
     },
   }),
 });
-
-upload.single('');
 
 export default upload;

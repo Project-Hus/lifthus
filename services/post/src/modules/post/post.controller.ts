@@ -18,6 +18,13 @@ import { PostService } from './post.service';
 import { Post as PPost, Prisma } from '@prisma/client';
 import { CreatePostDto, UpdatePostDto } from './post.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import crypto from 'crypto';
+import aws from 'aws-sdk';
+
+import multerS3 from 'multer-s3';
+import { S3Service } from './s3.service';
+
+const s3 = new aws.S3();
 
 /**
  * Mutation Controller
@@ -26,7 +33,10 @@ import { FilesInterceptor } from '@nestjs/platform-express';
  */
 @Controller('/post/post')
 export class PostController {
-  constructor(private readonly postService: PostService) {}
+  constructor(
+    private readonly postService: PostService,
+    private readonly s3Service: S3Service,
+  ) {}
 
   /**
    * generates new post by the form data if the user is signed.
@@ -35,15 +45,37 @@ export class PostController {
    */
   @UseGuards(UserGuard)
   @Post()
-  @UseInterceptors(FilesInterceptor('images'))
+  @UseInterceptors(
+    FilesInterceptor('images', 5, {
+      storage: multerS3({
+        s3: s3,
+        bucket: 'lifthus-post-bucket',
+        acl: 'public-read',
+        contentType: multerS3.AUTO_CONTENT_TYPE,
+        key: function (req, file, cb) {
+          cb(
+            null,
+            `post/images/${Date.now()}_${crypto
+              .randomBytes(4)
+              .toString('hex')}_${file.originalname}`,
+          );
+        },
+      }),
+    }),
+  )
   createPost(
     @Req() req: Request,
     @Body() post: CreatePostDto,
     @UploadedFiles() images: Array<Express.Multer.File>,
   ): Promise<PPost> {
+    this.s3Service.uploadImages(images);
     const uid: number = req.uid;
-    if (post.author !== uid) throw new ForbiddenException();
-    return this.postService.createPost(post);
+    const author: number = parseInt(post.author);
+    if (author !== uid) throw new ForbiddenException();
+    return this.postService.createPost({
+      post,
+      imageSrcs: images.map((image) => image.location),
+    });
   }
 
   /**
