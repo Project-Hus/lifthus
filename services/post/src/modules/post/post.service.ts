@@ -8,7 +8,13 @@ import { slugify } from 'src/common/utils/utils';
 export class PostService {
   constructor(private readonly prisma: PrismaService) {}
 
-  createPost(post: CreatePostDto): Promise<Post> {
+  createPost({
+    post,
+    imageSrcs,
+  }: {
+    post: CreatePostDto;
+    imageSrcs: string[];
+  }): Promise<Post> {
     // first, set the range of slug and get it.
     let slug: string;
     const slugEnd: number = post.content.indexOf('\n');
@@ -20,11 +26,22 @@ export class PostService {
     // get slug
     slug = slugify(slug);
 
+    let images: Prisma.PostImageCreateWithoutPostInput[] = [];
+    imageSrcs.forEach((location, idx) => {
+      images.push({
+        src: location,
+        order: idx,
+      });
+    });
+
     // Post create form
     let data: Prisma.PostCreateInput = {
-      author: post.author,
+      author: BigInt(post.author),
       slug,
       content: post.content,
+      images: {
+        create: images,
+      },
     };
 
     return this.prisma.post.create({

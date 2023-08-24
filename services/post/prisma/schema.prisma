@@ -38,10 +38,10 @@ model PostImage {
   id BigInt @id @default(autoincrement()) @db.UnsignedBigInt
 
   postId BigInt @db.UnsignedBigInt
-  post   Post   @relation(fields: [postId], references: [id])
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
   order  Int    @unique
 
-  url String @db.VarChar(255)
+  src String @db.LongText
 }
 
 model Comment {

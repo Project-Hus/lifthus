@@ -1,7 +1,8 @@
 export type CreatePostDto = {
   userGroup?: number;
-  author: number;
+  author: string;
   content: string;
+  images?: Express.Multer.File[];
 };
 
 export type UpdatePostDto = {

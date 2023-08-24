@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Logger,
   Param,
   Post,
@@ -30,9 +31,9 @@ export class CommentController {
   createComment(
     @Req() req: Request,
     @Body() comment: CreateCommentDto,
-  ): Promise<Comment> | { code: number; message: string } {
+  ): Promise<Comment> {
     const uid: number = req.uid; // embedded user id
-    if (comment.author !== uid) return { code: 403, message: 'Forbidden' };
+    if (comment.author !== uid) throw new ForbiddenException();
     return this.commentService.createComment(comment);
   }
 
@@ -47,10 +48,8 @@ export class CommentController {
   updateComment(
     @Req() req: Request,
     @Body() comment: UpdateCommentDto,
-  ):
-    | Prisma.PrismaPromise<Prisma.BatchPayload>
-    | { code: number; message: string } {
-    if (req.uid !== comment.author) return { code: 403, message: 'Forbidden' };
+  ): Prisma.PrismaPromise<Prisma.BatchPayload> {
+    if (req.uid !== comment.author) throw new ForbiddenException();
     return this.commentService.updateComment(comment);
   }
 

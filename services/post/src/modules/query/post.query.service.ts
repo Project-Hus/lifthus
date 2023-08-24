@@ -32,8 +32,9 @@ export class PostQueryService {
         include: {
           images: {
             select: {
+              order: true,
               id: true,
-              url: true,
+              src: true,
             },
             orderBy: {
               order: 'asc',
@@ -71,8 +72,9 @@ export class PostQueryService {
       include: {
         images: {
           select: {
+            order: true,
             id: true,
-            url: true,
+            src: true,
           },
           orderBy: {
             order: 'asc',
@@ -100,8 +102,9 @@ export class PostQueryService {
       include: {
         images: {
           select: {
+            order: true,
             id: true,
-            url: true,
+            src: true,
           },
           orderBy: {
             order: 'asc',
@@ -126,8 +129,9 @@ export class PostQueryService {
       include: {
         images: {
           select: {
+            order: true,
             id: true,
-            url: true,
+            src: true,
           },
           orderBy: {
             order: 'asc',
@@ -202,7 +206,8 @@ export class PostQueryService {
           images: {
             select: {
               id: true,
-              url: true,
+              order: true,
+              src: true,
             },
             orderBy: {
               order: 'asc',
@@ -271,7 +276,8 @@ export class PostQueryService {
         images: {
           select: {
             id: true,
-            url: true,
+            order: true,
+            src: true,
           },
           orderBy: {
             order: 'asc',

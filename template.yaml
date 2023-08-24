@@ -33,6 +33,9 @@ Globals:
         LIFTHUS_ROUTINE_DB_HOST: "{{resolve:ssm:LIFTHUS_ROUTINE_DB_HOST:1}}"
         LIFTHUS_ROUTINE_DB_PORT: "{{resolve:ssm:LIFTHUS_ROUTINE_DB_PORT:1}}"
 
+        LIFTHUS_ACCESS_KEY_ID: "{{resolve:ssm:LIFTHUS_ACCESS_KEY_ID:1}}"
+        LIFTHUS_SECRET_ACCESS_KEY: "{{resolve:ssm:LIFTHUS_SECRET_ACCESS_KEY:1}}"
+
         HUS_SECRET_KEY: "{{resolve:ssm:HUS_SECRET_KEY:1}}"
         HUS_ENV: "{{resolve:ssm:HUS_ENV:1}}"
   Api:
@@ -101,7 +104,7 @@ Resources:
   LifthusPostService:
     Type: AWS::Serverless::Function
     Properties:
-      MemorySize: 256
+      MemorySize: 384
       # !! SAM esbuild (not working properly)
       #CodeUri: services/post/
       #Handler: src/lambda.handler
@@ -145,6 +148,20 @@ Resources:
     #       - "class-transformer"
     #       - "class-validator"
   # lifthus routine service
+  S3Bucket:
+    Type: "AWS::S3::Bucket"
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: lifthus-post-bucket
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerPreferred
+      AccessControl: AwsExecRead
   LifthusRoutineService:
     Type: AWS::Serverless::Function
     Properties:
