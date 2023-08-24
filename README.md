@@ -3,7 +3,9 @@
 [Lifthus](https://www.lifthus.com)
 is most intelligent cross-platform routine management service.
 
-[Lifthus Beginning](https://docs.google.com/presentation/d/1UiRTRIvArtJDfQevNZeZTeK4EXtu1o76/edit?usp=sharing&ouid=108170774438783580095&rtpof=true&sd=true)
+We also run a development server(branch "dev") for integrated development environment:
+
+[Lifthus Dev API Server(less)](https://auth.dev.lifthus.com/auth)
 
 ```bash
 .

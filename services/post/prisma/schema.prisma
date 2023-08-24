@@ -12,7 +12,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DEV_LIFTHUS_POST_DB_URL")
+  url      = env("LIFTHUS_POST_DB_URL")
 }
 
 model Post {
