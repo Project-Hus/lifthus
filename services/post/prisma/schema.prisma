@@ -39,9 +39,11 @@ model PostImage {
 
   postId BigInt @db.UnsignedBigInt
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
-  order  Int    @unique
+  order  Int
 
   src String @db.LongText
+
+  @@unique([postId, order])
 }
 
 model Comment {
