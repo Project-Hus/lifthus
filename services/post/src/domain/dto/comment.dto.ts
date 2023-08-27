@@ -1,4 +1,4 @@
-export type CreateWaitingCommentDto = {
+export type CreatePreCommentDto = {
   author: bigint;
 };
 

@@ -1,6 +1,7 @@
 // task.service.ts
 import { Injectable } from '@nestjs/common';
-import { Post, PrePost } from './post.model';
+import { Post } from './post.model';
+import { PrePost } from './prePost.model';
 
 import {
   CreatePrePostDto,
@@ -8,12 +9,12 @@ import {
   PostUnlikeDto,
   UpdatePostDto,
 } from './dto/post.dto';
-import { Comment, WaitingComment } from './comment.model';
+import { Comment } from './comment.model';
+import { PreComment } from './preComment.model';
 import {
   CommentLikeDto,
   CommentUnlikeDto,
-  CreateCommentDto,
-  CreateWaitingCommentDto,
+  CreatePreCommentDto,
   UpdateCommentDto,
 } from './dto/comment.dto';
 
@@ -27,7 +28,7 @@ interface IUser {
   likePost(post: Post): PostLikeDto;
   unlikePost(post: Post): PostUnlikeDto;
 
-  createPreComment(comment: CreateWaitingCommentDto): WaitingComment;
+  createPreComment(comment: CreatePreCommentDto): PreComment;
   updateComment(comment: Comment, updateData: UpdateCommentDto): Comment;
   deleteComment(comment: Comment): Comment;
 
@@ -132,10 +133,10 @@ export class User implements IUser {
    * @param comment
    * @returns
    */
-  createPreComment(comment: CreateWaitingCommentDto): WaitingComment {
+  createPreComment(comment: CreatePreCommentDto): PreComment {
     if (this.id !== comment.author) return;
-    const newWaitingComment = new WaitingComment();
-    return newWaitingComment;
+    const newPreComment = new PreComment();
+    return newPreComment;
   }
 
   /**

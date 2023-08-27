@@ -71,15 +71,3 @@ export class Comment {
     return this.likers.includes(user.getID());
   }
 }
-
-export type CreateWaitingCommentInput = {};
-
-interface IWaitingImage {}
-@Injectable()
-export class WaitingComment {
-  private author: bigint;
-
-  private comments: Comment[] = [];
-
-  constructor() {}
-}
