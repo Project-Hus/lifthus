@@ -1,60 +1,106 @@
 // task.service.ts
 import { Injectable } from '@nestjs/common';
-import crypto from 'crypto';
-import { Post } from './post.model';
+import { Post, WaitingPost } from './post.model';
 import { Comment } from './comment.model';
-import { PostLike } from './postLike.model';
-import { CommentLike } from './commentLike.model';
+import { CreateCommentDto, UpdateCommentDto } from './dto/comment.dto';
+import { CreateUserDto } from './dto/user.dto';
+import {
+  CreatePostDto,
+  PostLikeDto,
+  PostUnlikeDto,
+  UpdatePostDto,
+} from './dto/post.dto';
 
+interface QueryCommentDto {}
 interface IUser {
-  id: bigint;
-  posts?: Post[];
-  comments?: Comment[];
-  postLikes?: PostLike[];
-  commentLikes?: CommentLike[];
+  getId(): bigint;
 
-  writePost(any): Post;
-  updatePost(any): Post;
-  deletePost(any): bigint;
+  createTmpPost(post: CreatePostDto): WaitingPost;
+  createPost(post: Post): Post;
+  updatePost(post: Post, updateData: UpdatePostDto): Post;
+  deletePost(post: Post): bigint;
 
-  likePost(any): PostLike;
-  unlikePost(any): bigint;
+  likePost(post: Post): PostLikeDto;
+  unlikePost(post: Post): PostUnlikeDto;
 
-  writeComment(any): Comment;
-  updateComment(any): Comment;
-  deleteComment(any): bigint;
+  // writeComment(comment: CreateCommentDto): Comment;
+  // updateComment(comment: UpdateCommentDto): Comment;
+  // deleteComment(comment: QueryCommentDto): bigint;
 
-  likeComment(any): CommentLike;
-  unlikeComment(any): bigint;
+  // likeComment(comment: QueryCommentDto): BigInt;
+  // unlikeComment(comment: QueryCommentDto): BigInt;
 }
 
 @Injectable()
 export class User implements IUser {
-  id: bigint;
-  posts?: Post[];
-  comments?: Comment[];
-  postLikes?: PostLike[];
-  commentLikes?: CommentLike[];
+  private readonly id: bigint;
+  private waitingPosts: WaitingPost[];
+  private posts: Post[];
+  private comments: Comment[];
+  private postLikes: bigint[];
+  private commentLikes: bigint[];
 
-  constructor(user: IUser) {
+  constructor(user: CreateUserDto) {
     this.id = user.id;
     this.posts = user.posts;
     this.comments = user.comments;
-    this.postLikes = user.postLikes;
-    this.commentLikes = user.commentLikes;
   }
 
-  writePost: () => Post;
-  updatePost: () => Post;
-  deletePost: () => bigint;
+  getId() {
+    return this.id;
+  }
 
-  likePost: () => PostLike;
-  unlikePost: () => bigint;
+  createTmpPost(post: CreatePostDto): WaitingPost {
+    if (this.id !== post.author.getId()) throw new Error('invalid author');
+    const newWaitingPost = new WaitingPost(post);
+    this.waitingPosts.push(newWaitingPost);
+    return newWaitingPost;
+  }
+  createPost(post: Post): Post {
+    if (this.id !== post.getAuthor().getId()) throw new Error('invalid author');
+    this.posts.push(post);
+    return post;
+  }
 
-  writeComment: () => Comment;
-  updateComment: () => Comment;
-  deleteComment: () => bigint;
+  updatePost(post: Post, updateData: UpdatePostDto): Post {
+    if (this.id !== post.getAuthor().getId()) throw new Error('invalid author');
+    return post.update(updateData);
+  }
+  deletePost(post: Post): bigint {
+    if (this.id !== post.getAuthor().getId()) throw new Error('invalid author');
+    return post.getId();
+  }
 
-  likeComment: () => CommentLike;
-  unlikeComment: () => bigint;
+  likePost(post: Post): PostLikeDto {
+    if (post.isLikedBy(this)) throw new Error('already liked');
+    post.like(this);
+    return {
+      user: this,
+      post,
+    };
+  }
+  unlikePost(post: Post): PostUnlikeDto {
+    if (!post.isLikedBy(this)) throw new Error('not liked');
+    post.unlike(this);
+    return {
+      user: this,
+      post,
+    };
+  }
+
+  // writeComment = (comment: CreateCommentDto): Comment => {
+  //   return Promise.reject(new Error('Method not implemented.'));
+  // };
+  // updateComment = (comment: UpdateCommentDto): Comment => {
+  //   return Promise.reject(new Error('Method not implemented.'));
+  // };
+  // deleteComment = (comment: QueryCommentDto): bigint => {
+  //   return Promise.reject(new Error('Method not implemented.'));
+  // };
+  // likeComment = (comment: QueryCommentDto): BigInt => {
+  //   return Promise.reject(new Error('Method not implemented.'));
+  // };
+  // unlikeComment = (comment: QueryCommentDto): BigInt => {
+  //   return Promise.reject(new Error('Method not implemented.'));
+  // };
 }

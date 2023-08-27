@@ -1,53 +1,149 @@
 // task.service.ts
 import { Injectable } from '@nestjs/common';
 import { Comment } from './comment.model';
-import crypto from 'crypto';
+
 import { User } from './user.model';
+import { CreatePostDto, QueryPostDto } from './dto/post.dto';
+
+import crypto from 'crypto';
+
+/* model for created posts */
 
 interface IPost {
-  id?: bigint;
-  createdAt?: Date;
-  updatedAt?: Date;
+  getId(): bigint;
+  getAuthor(): User;
 
-  images: IImage[];
-  userGroup?: bigint;
-  author: User;
-  slug: string;
+  update(updateData: UpdatePostForm);
+  getUpdatePostForm(): UpdatePostForm;
+
+  isLikedBy(user: User): boolean;
+  like(user: User): void;
+  unlike(user: User): void;
+}
+
+export type UpdatePostForm = {
+  id: bigint;
   content: string;
-  likenum: number;
-  likes: IPostLike[];
-  comments: Comment[];
-}
-
-interface IImage {
-  id: bigint; // id and order unique
-  order: number;
-  src: string;
-}
-
-interface IPostLike {
-  postId: bigint; // id with user
-  user: bigint;
-  createdAt: Date;
-}
-
+};
 @Injectable()
 export class Post {
-  private post: IPost;
+  private id: bigint;
+  private slug: string;
 
-  constructor(post: IPost) {
-    this.post = post;
+  private author: User;
+
+  private images: string[];
+  private content: string;
+
+  private likenum: number;
+  likers: bigint[];
+
+  private comments?: Comment[];
+
+  private createdAt: Date;
+  private updatedAt: Date;
+
+  constructor(post: QueryPostDto) {
+    this.id = post.id;
+    this.slug = post.slug;
+
+    this.author = post.author;
+
+    this.images = post.images;
+    this.content = post.content;
+
+    this.likenum = post.likenum;
+
+    this.comments = post.comments;
+
+    this.createdAt = post.createdAt;
+    this.updatedAt = post.updatedAt;
   }
 
-  private slugify(content: string): string {
-    return encodeURIComponent(content + crypto.randomBytes(8).toString('hex'));
+  getId(): bigint {
+    return this.id;
   }
 
-  public isCreated(): boolean {
-    return !!this.post.createdAt;
+  getAuthor(): User {
+    return this.author;
   }
 
-  public getPost() {
-    return this.post;
+  update(updateData: UpdatePostForm) {
+    this.content = updateData.content;
+    return this;
+  }
+
+  getUpdatePostForm(): UpdatePostForm {
+    return {
+      id: this.id,
+      content: this.content,
+    };
+  }
+
+  isLikedBy(user: User): boolean {
+    return this.likers.includes(user.getId());
+  }
+  like(user: User): void {
+    if (this.likers.includes(user.getId())) throw new Error('already liked');
+    this.likers.push(user.getId());
+    this.likenum++;
+  }
+  unlike(user: User): void {
+    if (!this.likers.includes(user.getId())) throw new Error('not liked');
+    this.likers = this.likers.filter((liker) => liker !== user.getId());
+    this.likenum--;
+  }
+}
+
+/* model for posts waiting to be created */
+interface IWaitingPost {
+  getCreatePostForm(): CreatePostForm;
+}
+
+export type CreatePostForm = {
+  author: bigint;
+  srcs: string[];
+  content: string;
+  slug: string;
+  likenum: number;
+};
+
+@Injectable()
+export class WaitingPost implements IWaitingPost {
+  private readonly author: User;
+  private readonly images: string[];
+  private readonly content: string;
+
+  private readonly slug: string;
+  private readonly likenum: number;
+
+  constructor(post: CreatePostDto) {
+    this.author = post.author;
+    this.images = post.images;
+    this.content = post.content;
+    this.slug = this.getSlug(post.content);
+    this.likenum = 0;
+  }
+
+  public getCreatePostForm(): CreatePostForm {
+    return {
+      author: this.author.getId(),
+      srcs: [...this.images],
+      content: this.content,
+      slug: this.slug,
+      likenum: this.likenum,
+    };
+  }
+
+  private getSlug(content: string): string {
+    let slug: string;
+    const slugEnd: number = content.indexOf('\n');
+    if (slugEnd == -1 || slugEnd > 30) {
+      slug = content.slice(0, 30);
+    } else {
+      slug = content.slice(0, slugEnd);
+    }
+    slug = encodeURIComponent(slug + crypto.randomBytes(8).toString('hex'));
+    return slug;
   }
 }

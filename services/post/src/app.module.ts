@@ -5,8 +5,6 @@ import { OpenapiService } from './openapi/openapi.service';
 import { UidMiddleware } from './common/middlewares/uid.middleware';
 import { QueryModule } from './modules/query.module';
 import { MutationModule } from './modules/mutation.module';
-import { APP_FILTER } from '@nestjs/core';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 @Module({
   imports: [
