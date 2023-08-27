@@ -1,4 +1,4 @@
-export type CreateWaitingPostDto = {
+export type CreatePrePostDto = {
   author: bigint;
   srcs: string[];
   content: string;

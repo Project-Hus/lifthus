@@ -1,5 +1,7 @@
 // task.service.ts
 import { Injectable } from '@nestjs/common';
+import { User } from './user.model';
+import { UpdateCommentDto } from './dto/comment.dto';
 
 interface IImage {
   // id BigInt @id @default(autoincrement()) @db.UnsignedBigInt
@@ -20,50 +22,64 @@ interface IImage {
 
 export type CreateCommentInput = {};
 
+interface IComment {
+  getID(): bigint;
+  getAuthor(): User;
+  update(updateData: UpdateCommentDto): Comment;
+
+  like(user: User): void;
+  unlike(user: User): void;
+  isLikedBy(user: User): boolean;
+}
 @Injectable()
 export class Comment {
-  private images: IImage[] = [];
-
-  private userGroup: bigint;
-  private author: bigint;
-  private createdAt: Date;
-  private updatedAt: Date;
-  private slug: string;
+  private id: bigint;
+  private author: User;
 
   private content: string;
-  private mentions: bigint[];
+
   private likenum: number;
-  private likes: bigint[];
+  private likers: bigint[];
+  constructor() {}
 
-  private comments: Comment[] = [];
+  getID() {
+    return this.id;
+  }
 
-  constructor() {
-    this.images = [];
-    this.comments = [];
+  getAuthor() {
+    return this.author;
+  }
+
+  update(updateData: UpdateCommentDto): Comment {
+    this.content = updateData.content;
+    return this;
+  }
+
+  like(user: User): void {
+    if (!this.isLikedBy(user)) {
+      this.likers.push(user.getID());
+    }
+  }
+
+  unlike(user: User): void {
+    if (this.isLikedBy(user)) {
+      this.likers = this.likers.filter((id) => id !== user.getID());
+    }
+  }
+
+  isLikedBy(user: User): boolean {
+    return this.likers.includes(user.getID());
   }
 }
 
 export type CreateWaitingCommentInput = {};
 
+interface IWaitingImage {}
 @Injectable()
 export class WaitingComment {
-  private images: IImage[] = [];
-
-  private userGroup: bigint;
   private author: bigint;
-  private createdAt: Date;
-  private updatedAt: Date;
-  private slug: string;
-
-  private content: string;
-  private mentions: bigint[];
-  private likenum: number;
-  private likes: bigint[];
 
   private comments: Comment[] = [];
 
-  constructor() {
-    this.images = [];
-    this.comments = [];
-  }
+  constructor() {}
 }

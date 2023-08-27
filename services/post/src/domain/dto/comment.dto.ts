@@ -1,3 +1,7 @@
+export type CreateWaitingCommentDto = {
+  author: bigint;
+};
+
 export type CreateCommentDto = {
   postId: bigint; // id with user
   parentId?: bigint;
@@ -10,4 +14,12 @@ export type UpdateCommentDto = {
   content: string;
 };
 
-export type QueryCommentDto = {};
+export type CommentLikeDto = {
+  userId: bigint;
+  commentId: bigint;
+};
+
+export type CommentUnlikeDto = {
+  userId: bigint;
+  commentId: bigint;
+};

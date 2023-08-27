@@ -28,7 +28,7 @@ export type CreatePostModelInput = {
 };
 
 interface IPost {
-  getId(): bigint;
+  getID(): bigint;
   getAuthor(): User;
 
   update(updateData: UpdatePostForm);
@@ -44,7 +44,7 @@ export type UpdatePostForm = {
   content: string;
 };
 @Injectable()
-export class Post {
+export class Post implements IPost {
   private id: bigint;
   private slug: string;
 
@@ -78,7 +78,7 @@ export class Post {
     this.updatedAt = post.updatedAt;
   }
 
-  getId(): bigint {
+  getID(): bigint {
     return this.id;
   }
 
@@ -99,33 +99,33 @@ export class Post {
   }
 
   isLikedBy(user: User): boolean {
-    return this.likers.includes(user.getId());
+    return this.likers.includes(user.getID());
   }
   like(user: User): void {
-    if (this.likers.includes(user.getId())) throw new Error('already liked');
-    this.likers.push(user.getId());
+    if (this.likers.includes(user.getID())) throw new Error('already liked');
+    this.likers.push(user.getID());
     this.likenum++;
   }
   unlike(user: User): void {
-    if (!this.likers.includes(user.getId())) throw new Error('not liked');
-    this.likers = this.likers.filter((liker) => liker !== user.getId());
+    if (!this.likers.includes(user.getID())) throw new Error('not liked');
+    this.likers = this.likers.filter((liker) => liker !== user.getID());
     this.likenum--;
   }
 }
 
 /* model for posts waiting to be created */
-interface IWaitingPost {
+interface IPrePost {
   getCreatePostForm(): CreatePostDto;
 }
 
-export type CreateWaitingPostModelInput = {
+export type CreatePrePostModelInput = {
   author: User;
   images: string[];
   content: string;
 };
 
 @Injectable()
-export class WaitingPost implements IWaitingPost {
+export class PrePost implements IPrePost {
   private readonly author: User;
   private readonly images: string[];
   private readonly content: string;
@@ -133,7 +133,7 @@ export class WaitingPost implements IWaitingPost {
   private readonly slug: string;
   private readonly likenum: number;
 
-  constructor(post: CreateWaitingPostModelInput) {
+  constructor(post: CreatePrePostModelInput) {
     this.author = post.author;
     this.images = post.images;
     this.content = post.content;
@@ -143,7 +143,7 @@ export class WaitingPost implements IWaitingPost {
 
   public getCreatePostForm(): CreatePostDto {
     return {
-      author: this.author.getId(),
+      author: this.author.getID(),
       srcs: [...this.images],
       content: this.content,
       slug: this.slug,
