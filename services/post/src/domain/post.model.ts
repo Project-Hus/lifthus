@@ -3,11 +3,29 @@ import { Injectable } from '@nestjs/common';
 import { Comment } from './comment.model';
 
 import { User } from './user.model';
-import { CreatePostDto, QueryPostDto } from './dto/post.dto';
+import { CreatePostDto } from './dto/post.dto';
 
 import crypto from 'crypto';
 
 /* model for created posts */
+
+export type CreatePostModelInput = {
+  id: bigint;
+  slug: string;
+
+  author: User;
+
+  images: string[];
+  content: string;
+
+  likenum: number;
+  likers: bigint[];
+
+  comments?: Comment[];
+
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 interface IPost {
   getId(): bigint;
@@ -43,7 +61,7 @@ export class Post {
   private createdAt: Date;
   private updatedAt: Date;
 
-  constructor(post: QueryPostDto) {
+  constructor(post: CreatePostModelInput) {
     this.id = post.id;
     this.slug = post.slug;
 
@@ -97,15 +115,13 @@ export class Post {
 
 /* model for posts waiting to be created */
 interface IWaitingPost {
-  getCreatePostForm(): CreatePostForm;
+  getCreatePostForm(): CreatePostDto;
 }
 
-export type CreatePostForm = {
-  author: bigint;
-  srcs: string[];
+export type CreateWaitingPostModelInput = {
+  author: User;
+  images: string[];
   content: string;
-  slug: string;
-  likenum: number;
 };
 
 @Injectable()
@@ -117,7 +133,7 @@ export class WaitingPost implements IWaitingPost {
   private readonly slug: string;
   private readonly likenum: number;
 
-  constructor(post: CreatePostDto) {
+  constructor(post: CreateWaitingPostModelInput) {
     this.author = post.author;
     this.images = post.images;
     this.content = post.content;
@@ -125,7 +141,7 @@ export class WaitingPost implements IWaitingPost {
     this.likenum = 0;
   }
 
-  public getCreatePostForm(): CreatePostForm {
+  public getCreatePostForm(): CreatePostDto {
     return {
       author: this.author.getId(),
       srcs: [...this.images],

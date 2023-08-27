@@ -1,29 +1,15 @@
-import { Comment } from '../comment.model';
-import { Post } from '../post.model';
-import { User } from '../user.model';
-
-export type CreatePostDto = {
-  author: User;
-  images: string[];
+export type CreateWaitingPostDto = {
+  author: bigint;
+  srcs: string[];
   content: string;
 };
 
-export type QueryPostDto = {
-  id: bigint;
-  slug: string;
-
-  author: User;
-
-  images: string[];
+export type CreatePostDto = {
+  author: bigint;
+  srcs: string[];
   content: string;
-
+  slug: string;
   likenum: number;
-  likers: bigint[];
-
-  comments?: Comment[];
-
-  createdAt: Date;
-  updatedAt: Date;
 };
 
 export type UpdatePostDto = {
@@ -32,11 +18,11 @@ export type UpdatePostDto = {
 };
 
 export type PostLikeDto = {
-  user: User;
-  post: Post;
+  userId: bigint;
+  postId: bigint;
 };
 
 export type PostUnlikeDto = {
-  user: User;
-  post: Post;
+  userId: bigint;
+  postId: bigint;
 };

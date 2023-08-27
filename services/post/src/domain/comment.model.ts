@@ -18,8 +18,35 @@ interface IImage {
   // @@unique([postId, order])
 }
 
+export type CreateCommentInput = {};
+
 @Injectable()
 export class Comment {
+  private images: IImage[] = [];
+
+  private userGroup: bigint;
+  private author: bigint;
+  private createdAt: Date;
+  private updatedAt: Date;
+  private slug: string;
+
+  private content: string;
+  private mentions: bigint[];
+  private likenum: number;
+  private likes: bigint[];
+
+  private comments: Comment[] = [];
+
+  constructor() {
+    this.images = [];
+    this.comments = [];
+  }
+}
+
+export type CreateWaitingCommentInput = {};
+
+@Injectable()
+export class WaitingComment {
   private images: IImage[] = [];
 
   private userGroup: bigint;

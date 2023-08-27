@@ -1,17 +1,16 @@
 // task.service.ts
 import { Injectable } from '@nestjs/common';
-import { Post, WaitingPost } from './post.model';
+import { CreateWaitingPostModelInput, Post, WaitingPost } from './post.model';
 import { Comment } from './comment.model';
-import { CreateCommentDto, UpdateCommentDto } from './dto/comment.dto';
-import { CreateUserDto } from './dto/user.dto';
+
 import {
   CreatePostDto,
+  CreateWaitingPostDto,
   PostLikeDto,
   PostUnlikeDto,
   UpdatePostDto,
 } from './dto/post.dto';
 
-interface QueryCommentDto {}
 interface IUser {
   getId(): bigint;
 
@@ -31,6 +30,14 @@ interface IUser {
   // unlikeComment(comment: QueryCommentDto): BigInt;
 }
 
+export type CreateUserModelInput = {
+  id: bigint;
+  posts?: Post[];
+  comments?: Comment[];
+  postLikes?: bigint[];
+  commentLikes?: bigint[];
+};
+
 @Injectable()
 export class User implements IUser {
   private readonly id: bigint;
@@ -40,7 +47,7 @@ export class User implements IUser {
   private postLikes: bigint[];
   private commentLikes: bigint[];
 
-  constructor(user: CreateUserDto) {
+  constructor(user: CreateUserModelInput) {
     this.id = user.id;
     this.posts = user.posts;
     this.comments = user.comments;
@@ -50,9 +57,13 @@ export class User implements IUser {
     return this.id;
   }
 
-  createTmpPost(post: CreatePostDto): WaitingPost {
-    if (this.id !== post.author.getId()) throw new Error('invalid author');
-    const newWaitingPost = new WaitingPost(post);
+  createTmpPost(post: CreateWaitingPostDto): WaitingPost {
+    if (this.id !== post.author) throw new Error('invalid author');
+    const newWaitingPost = new WaitingPost({
+      author: this,
+      content: post.content,
+      images: post.srcs,
+    });
     this.waitingPosts.push(newWaitingPost);
     return newWaitingPost;
   }
@@ -75,16 +86,16 @@ export class User implements IUser {
     if (post.isLikedBy(this)) throw new Error('already liked');
     post.like(this);
     return {
-      user: this,
-      post,
+      userId: this.id,
+      postId: post.getId(),
     };
   }
   unlikePost(post: Post): PostUnlikeDto {
     if (!post.isLikedBy(this)) throw new Error('not liked');
     post.unlike(this);
     return {
-      user: this,
-      post,
+      userId: this.id,
+      postId: post.getId(),
     };
   }
 

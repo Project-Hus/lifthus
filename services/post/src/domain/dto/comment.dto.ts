@@ -9,3 +9,5 @@ export type UpdateCommentDto = {
   id: bigint;
   content: string;
 };
+
+export type QueryCommentDto = {};

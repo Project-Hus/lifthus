@@ -2,7 +2,7 @@ import { Comment } from '../comment.model';
 import { Post } from '../post.model';
 import { User } from '../user.model';
 
-export type CreateUserDto = {
+export type CreateUserModelInput = {
   id: bigint;
   posts?: Post[];
   comments?: Comment[];
