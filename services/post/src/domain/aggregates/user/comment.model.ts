@@ -1,7 +1,7 @@
 // task.service.ts
 import { Injectable } from '@nestjs/common';
 import { User } from './user.model';
-import { UpdateCommentDto } from './dto/comment.dto';
+import { UpdateCommentDto } from '../../dto/comment.dto';
 
 interface IImage {
   // id BigInt @id @default(autoincrement()) @db.UnsignedBigInt

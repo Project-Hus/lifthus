@@ -1,11 +1,8 @@
 // task.service.ts
 import { Injectable } from '@nestjs/common';
 import { Comment } from './comment.model';
-
 import { User } from './user.model';
-import { CreatePostDto } from './dto/post.dto';
-
-import crypto from 'crypto';
+import { UpdatePostDto } from '../../dto/post.dto';
 
 export type CreatePostModelInput = {
   id: bigint;
@@ -29,18 +26,13 @@ interface IPost {
   getID(): bigint;
   getAuthor(): User;
 
-  update(updateData: UpdatePostForm);
-  getUpdatePostForm(): UpdatePostForm;
+  update(updateData: UpdatePostDto): Post;
+  getUpdatePostForm(): UpdatePostDto;
 
   isLikedBy(user: User): boolean;
   like(user: User): void;
   unlike(user: User): void;
 }
-
-export type UpdatePostForm = {
-  id: bigint;
-  content: string;
-};
 @Injectable()
 export class Post implements IPost {
   private id: bigint;
@@ -84,12 +76,12 @@ export class Post implements IPost {
     return this.author;
   }
 
-  update(updateData: UpdatePostForm) {
+  update(updateData: UpdatePostDto) {
     this.content = updateData.content;
     return this;
   }
 
-  getUpdatePostForm(): UpdatePostForm {
+  getUpdatePostForm(): UpdatePostDto {
     return {
       id: this.id,
       content: this.content,

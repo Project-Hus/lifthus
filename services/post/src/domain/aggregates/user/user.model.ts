@@ -8,7 +8,7 @@ import {
   PostLikeDto,
   PostUnlikeDto,
   UpdatePostDto,
-} from './dto/post.dto';
+} from '../../dto/post.dto';
 import { Comment } from './comment.model';
 import { PreComment } from './preComment.model';
 import {
@@ -16,7 +16,7 @@ import {
   CommentUnlikeDto,
   CreatePreCommentDto,
   UpdateCommentDto,
-} from './dto/comment.dto';
+} from '../../dto/comment.dto';
 
 interface IUser {
   getID(): bigint;
@@ -66,12 +66,11 @@ export class User implements IUser {
    */
   createPrePost(post: CreatePrePostDto): PrePost {
     if (this.id !== post.author) return;
-    const newPrePost = new PrePost({
+    return new PrePost({
       author: this,
       content: post.content,
       images: post.srcs,
     });
-    return newPrePost;
   }
 
   /**

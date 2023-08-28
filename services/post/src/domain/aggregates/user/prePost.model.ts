@@ -1,7 +1,7 @@
 import { User } from './user.model';
 import { Injectable } from '@nestjs/common';
 import crypto from 'crypto';
-import { CreatePostDto } from './dto/post.dto';
+import { CreatePostDto } from '../../dto/post.dto';
 
 interface IPrePost {
   getCreatePostForm(): CreatePostDto;
