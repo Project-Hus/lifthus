@@ -1,22 +1,22 @@
 // task.service.ts
 import { Injectable } from '@nestjs/common';
-import { Post } from './post.model';
-import { PrePost } from './prePost.model';
+import { Post } from '../post/post.model';
+import { PrePost } from '../post/prePost.model';
 
 import {
   CreatePrePostDto,
   PostLikeDto,
   PostUnlikeDto,
   UpdatePostDto,
-} from '../../dto/post.dto';
-import { Comment } from './comment.model';
-import { PreComment } from './preComment.model';
+} from '../../dto(later put out)/post.dto';
+import { Comment } from '../post/comment.model';
+import { PreComment } from '../post/preComment.model';
 import {
   CommentLikeDto,
   CommentUnlikeDto,
   CreatePreCommentDto,
   UpdateCommentDto,
-} from '../../dto/comment.dto';
+} from '../../dto(later put out)/comment.dto';
 
 interface IUser {
   getID(): bigint;

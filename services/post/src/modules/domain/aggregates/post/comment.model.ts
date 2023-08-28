@@ -1,7 +1,7 @@
 // task.service.ts
 import { Injectable } from '@nestjs/common';
-import { User } from './user.model';
-import { UpdateCommentDto } from '../../dto/comment.dto';
+import { User } from '../user/user.model';
+import { UpdateCommentDto } from '../../dto(later put out)/comment.dto';
 
 interface IImage {
   // id BigInt @id @default(autoincrement()) @db.UnsignedBigInt
@@ -31,6 +31,7 @@ interface IComment {
   unlike(user: User): void;
   isLikedBy(user: User): boolean;
 }
+
 @Injectable()
 export class Comment {
   private id: bigint;
