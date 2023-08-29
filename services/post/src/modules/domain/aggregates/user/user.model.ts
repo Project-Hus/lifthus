@@ -8,7 +8,7 @@ import {
   PostUnlikeDto,
   UpdatePostDto,
 } from '../../dto(later put out)/post.dto';
-import { Comment } from '../post/comment.model';
+import { Comment } from '../comment/comment.model';
 import {
   CommentLikeDto,
   CommentUnlikeDto,

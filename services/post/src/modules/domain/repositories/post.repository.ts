@@ -6,7 +6,7 @@ import {
   UpdatePostInput,
 } from '../aggregates/post/post.model';
 import { User } from '../aggregates/user/user.model';
-import { InsertCommentInput } from '../aggregates/post/comment.model';
+import { InsertCommentInput } from '../aggregates/comment/comment.model';
 
 @Injectable()
 export abstract class PostRepository {
@@ -123,21 +123,25 @@ export abstract class PostRepository {
     return post;
   }
 
-  async createPost(postInput: CreatePostInput) {
+  async createPost(postInput: CreatePostInput): Promise<Post | undefined> {
     const newPost = await this._createPost(Post.getInsertInput(postInput));
     if (newPost) this.cachePost(newPost);
     return newPost;
   }
 
-  async updatePost(post: Post) {
-    const updatedPost = await this._updatePost(post);
+  async updatePost(target: Post): Promise<Post | undefined> {
+    const updatedPost = await this._updatePost(target);
     if (updatedPost) this.cachePost(updatedPost);
     return updatedPost;
   }
 
-  async deletePost(post: Post) {
-    this.flushPost(post);
-    return await this._deletePost(post);
+  async deletePost(target: Post): Promise<Post | undefined> {
+    this.flushPost(target);
+    return await this._deletePost(target);
+  }
+
+  async getLikeNum(target: Post): Promise<number> {
+    return this._getLikeNum(target);
   }
 
   async createComment(newComment: InsertCommentInput) {
@@ -150,6 +154,9 @@ export abstract class PostRepository {
     return await this._deleteComment(comment);
   }
 
+  async likeComment(comment: Comment, user: User) {}
+  async unlikeComment(comment: Comment, user: User) {}
+
   abstract _getAllPosts(skip: number): Promise<Post[]>;
   abstract _getUsersPosts(users: User[], skip: number): Promise<Post[]>;
 
@@ -157,8 +164,10 @@ export abstract class PostRepository {
   abstract _getPostBySlug(slug: string): Promise<Post | undefined>;
 
   abstract _createPost(newPost: InsertPostInput): Promise<Post | undefined>;
-  abstract _updatePost(post: Post): Promise<Post | undefined>;
-  abstract _deletePost(post: Post): Promise<Post | undefined>;
+  abstract _updatePost(traget: Post): Promise<Post | undefined>;
+  abstract _deletePost(traget: Post): Promise<Post | undefined>;
+
+  abstract _getLikeNum(traget: Post): Promise<number>;
 
   abstract _createComment(
     comment: InsertCommentInput,

@@ -1,6 +1,5 @@
 // task.service.ts
 import { Injectable } from '@nestjs/common';
-import { Comment } from './comment.model';
 import { User } from '../user/user.model';
 import { UpdatePostDto } from '../../dto(later put out)/post.dto';
 
@@ -18,12 +17,12 @@ export type UpdatePostInput = {
 };
 
 export type LikePostInput = {
-  id: bigint;
+  postId: bigint;
   userId: bigint;
 };
 
 export type UnlikePostInput = {
-  id: bigint;
+  postId: bigint;
   userId: bigint;
 };
 
@@ -39,14 +38,20 @@ export class Post {
     private images: string[],
     private content: string,
 
-    private likenum: number,
-    private likers: Set<bigint>,
-
     private createdAt: Date,
     private updatedAt: Date,
-
-    private comments?: Comment[],
-  ) {}
+  ) {
+    if (
+      !id === undefined ||
+      !slug === undefined ||
+      !author === undefined ||
+      !images === undefined ||
+      !content === undefined ||
+      !createdAt === undefined ||
+      !updatedAt === undefined
+    )
+      throw new Error('invalid arguments');
+  }
 
   static getInsertInput(prePostInput: CreatePostInput): InsertPostInput {
     return {
@@ -67,30 +72,21 @@ export class Post {
     return this.author;
   }
 
-  isLikedBy(user: User): boolean {
-    return this.likers.has(user.getID());
+  queryPost(): any {
+    return {
+      id: this.id,
+      slug: this.slug,
+      author: this.author.getID(),
+      images: [...this.images],
+      content: this.content,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+    };
   }
 
   update(updatePostInput: UpdatePostDto): UpdatePostInput {
     this.content = updatePostInput.content;
     return updatePostInput;
-  }
-
-  like(user: User): LikePostInput {
-    if (this.likers.has(user.getID())) throw new Error('already liked');
-    this.likenum++;
-    return {
-      id: this.getID(),
-      userId: user.getID(),
-    };
-  }
-  unlike(user: User): UnlikePostInput {
-    if (!this.likers.has(user.getID())) throw new Error('not liked');
-    this.likenum--;
-    return {
-      id: this.getID(),
-      userId: user.getID(),
-    };
   }
 
   private static getSlug(content: string): string {
