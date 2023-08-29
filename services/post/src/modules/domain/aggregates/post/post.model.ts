@@ -6,7 +6,7 @@ import { UpdatePostDto } from '../../dto(later put out)/post.dto';
 
 import crypto from 'crypto';
 
-interface IPost {
+type IPost = {
   getID(): bigint | undefined;
   getAuthor(): User;
 
@@ -16,7 +16,7 @@ interface IPost {
   isLikedBy(user: User): boolean;
   like(user: User): void;
   unlike(user: User): void;
-}
+};
 @Injectable()
 export class Post implements IPost {
   private constructor(
