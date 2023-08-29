@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { User } from '../user/user.model';
 import { UpdateCommentDto } from '../../dto(later put out)/comment.dto';
 
+export type InsertCommentInput = {};
 interface IImage {
   // id BigInt @id @default(autoincrement()) @db.UnsignedBigInt
   // author    BigInt   @db.UnsignedBigInt

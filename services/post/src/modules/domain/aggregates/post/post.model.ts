@@ -6,98 +6,91 @@ import { UpdatePostDto } from '../../dto(later put out)/post.dto';
 
 import crypto from 'crypto';
 
-type IPost = {
-  getID(): bigint | undefined;
-  getAuthor(): User;
-
-  update(updateData: UpdatePostDto): Post;
-  getUpdatePostForm(): UpdatePostDto;
-
-  isLikedBy(user: User): boolean;
-  like(user: User): void;
-  unlike(user: User): void;
+export type CreatePostInput = {
+  author: User;
+  images: string[];
+  content: string;
 };
+
+export type UpdatePostInput = {
+  id: bigint;
+  content: string;
+};
+
+export type LikePostInput = {
+  id: bigint;
+  userId: bigint;
+};
+
+export type UnlikePostInput = {
+  id: bigint;
+  userId: bigint;
+};
+
+export type InsertPostInput = CreatePostInput & { slug: string };
+
 @Injectable()
-export class Post implements IPost {
+export class Post {
   private constructor(
+    private id: bigint,
+    private slug: string,
+
     private author: User,
     private images: string[],
     private content: string,
-    private slug: string,
 
-    private id?: bigint,
+    private likenum: number,
+    private likers: Set<bigint>,
 
-    private likenum?: number,
-    private likers?: bigint[],
+    private createdAt: Date,
+    private updatedAt: Date,
 
     private comments?: Comment[],
-
-    private createdAt?: Date,
-    private updatedAt?: Date,
   ) {}
 
-  static PrePost(author: User, images: string[], content: string) {
-    return new Post(author, images, content, this.getSlug(content));
+  static getInsertInput(prePostInput: CreatePostInput): InsertPostInput {
+    return {
+      ...prePostInput,
+      slug: Post.getSlug(prePostInput.content),
+    };
   }
 
-  static CreatedPost(
-    author: User,
-    images: string[],
-    content: string,
-    slug: string,
-    id: bigint,
-    likenum: number,
-    likers: bigint[],
-    comments: Comment[],
-    createdAt: Date,
-    updatedAt: Date,
-  ) {
-    return new Post(
-      author,
-      images,
-      content,
-      slug,
-      id,
-      likenum,
-      likers,
-      comments,
-      createdAt,
-      updatedAt,
-    );
-  }
-
-  getID(): bigint | undefined {
+  getID(): bigint {
     return this.id;
+  }
+
+  getSlug(): string {
+    return this.slug;
   }
 
   getAuthor(): User {
     return this.author;
   }
 
-  update(updateData: UpdatePostDto) {
-    this.content = updateData.content;
-    return this;
+  isLikedBy(user: User): boolean {
+    return this.likers.has(user.getID());
   }
 
-  getUpdatePostForm(): UpdatePostDto {
+  update(updatePostInput: UpdatePostDto): UpdatePostInput {
+    this.content = updatePostInput.content;
+    return updatePostInput;
+  }
+
+  like(user: User): LikePostInput {
+    if (this.likers.has(user.getID())) throw new Error('already liked');
+    this.likenum++;
     return {
-      id: this.id,
-      content: this.content,
+      id: this.getID(),
+      userId: user.getID(),
     };
   }
-
-  isLikedBy(user: User): boolean {
-    return this.likers.includes(user.getID());
-  }
-  like(user: User): void {
-    if (this.likers.includes(user.getID())) throw new Error('already liked');
-    this.likers.push(user.getID());
-    this.likenum++;
-  }
-  unlike(user: User): void {
-    if (!this.likers.includes(user.getID())) throw new Error('not liked');
-    this.likers = this.likers.filter((liker) => liker !== user.getID());
+  unlike(user: User): UnlikePostInput {
+    if (!this.likers.has(user.getID())) throw new Error('not liked');
     this.likenum--;
+    return {
+      id: this.getID(),
+      userId: user.getID(),
+    };
   }
 
   private static getSlug(content: string): string {

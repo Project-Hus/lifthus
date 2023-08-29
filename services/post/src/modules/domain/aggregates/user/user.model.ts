@@ -1,7 +1,6 @@
 // task.service.ts
 import { Injectable } from '@nestjs/common';
 import { Post } from '../post/post.model';
-import { PrePost } from '../post/prePost.model';
 
 import {
   CreatePrePostDto,
@@ -10,7 +9,6 @@ import {
   UpdatePostDto,
 } from '../../dto(later put out)/post.dto';
 import { Comment } from '../post/comment.model';
-import { PreComment } from '../post/preComment.model';
 import {
   CommentLikeDto,
   CommentUnlikeDto,
@@ -21,14 +19,12 @@ import {
 interface IUser {
   getID(): bigint;
 
-  createPrePost(post: CreatePrePostDto): PrePost;
   updatePost(post: Post, updateData: UpdatePostDto): Post;
   deletePost(post: Post): Post;
 
   likePost(post: Post): PostLikeDto;
   unlikePost(post: Post): PostUnlikeDto;
 
-  createPreComment(comment: CreatePreCommentDto): PreComment;
   updateComment(comment: Comment, updateData: UpdateCommentDto): Comment;
   deleteComment(comment: Comment): Comment;
 
@@ -56,21 +52,6 @@ export class User implements IUser {
 
   getID() {
     return this.id;
-  }
-
-  /**
-   * @description
-   * creates prePost which is the pre stage of the post before it is created in the database.
-   * @param post
-   * @returns
-   */
-  createPrePost(post: CreatePrePostDto): PrePost {
-    if (this.id !== post.author) return;
-    return new PrePost({
-      author: this,
-      content: post.content,
-      images: post.srcs,
-    });
   }
 
   /**
@@ -124,18 +105,6 @@ export class User implements IUser {
       userId: this.id,
       postId: post.getID(),
     };
-  }
-
-  /**
-   * @description
-   * creates preComment which is the pre stage of the comment before it is created in the database.
-   * @param comment
-   * @returns
-   */
-  createPreComment(comment: CreatePreCommentDto): PreComment {
-    if (this.id !== comment.author) return;
-    const newPreComment = new PreComment();
-    return newPreComment;
   }
 
   /**
