@@ -38,7 +38,7 @@ export class Comment {
     private updatedAt?: Date,
   ) {}
 
-  static createPre(p: CreatePreCommentInput): Comment {
+  static create(p: CreatePreCommentInput): Comment {
     return new Comment(p.author, p.post, p.content, p.parent);
   }
 
@@ -46,7 +46,7 @@ export class Comment {
     return !p.id;
   }
 
-  static create(p: CreateCommentInput): Comment {
+  static reconstitute(p: CreateCommentInput): Comment {
     return new Comment(
       p.author,
       p.post,
@@ -82,6 +82,10 @@ export class Comment {
 
   update(changes: UpdateCommentInput): Comment {
     this.content = changes.content;
+    return this;
+  }
+
+  delete(): Comment {
     return this;
   }
 }

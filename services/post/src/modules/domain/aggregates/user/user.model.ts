@@ -33,7 +33,7 @@ export class User {
   }
 
   createPost({ images, content }: UserCreatePostInput): Post {
-    return Post.createPre({ author: this, images, content });
+    return Post.create({ author: this, images, content });
   }
 
   updatePost(post: Post, changes: UserUpdatePostInput): Post | undefined {
@@ -57,7 +57,7 @@ export class User {
   }
 
   createComment(c: UserCreateCommentInput): Comment {
-    return Comment.createPre({ author: this, ...c });
+    return Comment.create({ author: this, ...c });
   }
 
   updateComment(comment: Comment, changes: UserUpdateCommentInput): Comment {

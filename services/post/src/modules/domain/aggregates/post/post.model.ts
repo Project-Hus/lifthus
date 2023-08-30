@@ -38,7 +38,7 @@ export class Post {
     private updatedAt?: Date,
   ) {}
 
-  static createPre(p: CreatePrePostInput): Post {
+  static create(p: CreatePrePostInput): Post {
     return new Post(Post.getSlug(p.content), p.author, p.images, p.content);
   }
 
@@ -46,7 +46,7 @@ export class Post {
     return !post.id;
   }
 
-  static create(postInput: CreatePostInput): Post {
+  static reconstitue(postInput: CreatePostInput): Post {
     return new Post(
       postInput.slug,
       postInput.author,
@@ -84,6 +84,10 @@ export class Post {
 
   update(changes: UserUpdatePostInput): Post {
     this.content = changes.content;
+    return this;
+  }
+
+  delete(): Post {
     return this;
   }
 
