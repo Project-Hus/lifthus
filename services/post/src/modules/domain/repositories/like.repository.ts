@@ -14,6 +14,11 @@ export abstract class LikeRepository<T> {
     this.likes.add(like);
     return like;
   }
+
+  async getLikeNum(t: T): Promise<number> {
+    return this._getLikeNum(t);
+  }
+
   async save(): Promise<void> {
     this._save(this.likes);
     this.clear();
@@ -29,6 +34,8 @@ export abstract class LikeRepository<T> {
   }
 
   abstract _getLike(u: User, t: T): Promise<Like<T>>;
+
+  abstract _getLikeNum(t: T): Promise<number>;
 
   abstract _save(likes: Set<Like<T>>): Promise<void>;
 }

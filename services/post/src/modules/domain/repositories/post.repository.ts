@@ -80,10 +80,6 @@ export abstract class PostRepository {
   }
   /* ==================== */
 
-  async isLiked(post: Post, user: User): Promise<UserPostLike> {
-    return await this._isLiked(post, user);
-  }
-
   async getAllPostSumms(skip: number): Promise<PostSummary[]> {
     if (Date.now() <= this.expAllPostsCache) return this.allPostsCache;
     this.allPostsCache = [];
@@ -145,18 +141,12 @@ export abstract class PostRepository {
     return await this._deletePost(post);
   }
 
-  async getLikeNum(target: Post): Promise<number> {
-    return this._getLikeNum(target);
-  }
-
   async likePost(post: Post, user: User) {
     return this._likePost(post, user);
   }
   async unlikePost(post: Post, user: User) {
     return this._unlikePost(post, user);
   }
-
-  abstract _isLiked(post: Post, user: User): Promise<UserPostLike>;
 
   abstract _getAllPostSumms(skip: number): Promise<PostSummary[]>;
   abstract _getUsersPostSumms(
@@ -170,8 +160,6 @@ export abstract class PostRepository {
   abstract _createPost(post: Post): Promise<Post | undefined>;
   abstract _updatePost(traget: Post): Promise<Post | undefined>;
   abstract _deletePost(traget: Post): Promise<Post | undefined>;
-
-  abstract _getLikeNum(traget: Post): Promise<number>;
 
   abstract _likePost(post: Post, user: User): Promise<Post | undefined>;
   abstract _unlikePost(post: Post, user: User): Promise<Post | undefined>;

@@ -37,13 +37,14 @@ export class Post {
     private id?: bigint,
     private createdAt?: Date,
     private updatedAt?: Date,
-
-    private querier?: User,
-    private querierLiked?: boolean,
   ) {}
 
   static createPre(p: CreatePrePostInput): Post {
     return new Post(Post.getSlug(p.content), p.author, p.images, p.content);
+  }
+
+  isPre(post: Post): boolean {
+    return !post.id;
   }
 
   static create(postInput: CreatePostInput): Post {
@@ -56,10 +57,6 @@ export class Post {
       postInput.createdAt,
       postInput.updatedAt,
     );
-  }
-
-  isPre(post: Post): boolean {
-    return !post.id;
   }
 
   getID(): bigint {
