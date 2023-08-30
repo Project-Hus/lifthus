@@ -3,23 +3,22 @@ import { User } from '../user/user.model';
 import { Post } from '../post/post.model';
 
 @Injectable()
-export class Like {
+export class Like<T> {
   constructor(
-    readonly user: User,
+    readonly liker: User,
+    readonly target: T,
     private liked: boolean,
-    readonly post?: Post,
-    readonly comment?: Comment,
   ) {}
 
-  like(l: Like): Like | undefined {
-    if (l.liked) return;
-    l.liked = true;
-    return l;
+  like(u: User): Like<T> | undefined {
+    if (u.getID() !== this.liker.getID() || this.liked) return undefined;
+    this.liked = true;
+    return this;
   }
 
-  unlike(l: Like): Like | undefined {
-    if (!l.liked) return;
-    l.liked = false;
-    return l;
+  unlike(u: User): Like<T> | undefined {
+    if (u.getID() !== this.liker.getID() || !this.liked) return undefined;
+    this.liked = false;
+    return this;
   }
 }

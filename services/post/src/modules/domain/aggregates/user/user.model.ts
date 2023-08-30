@@ -2,19 +2,15 @@
 import { Injectable } from '@nestjs/common';
 import { Post } from '../post/post.model';
 
-import { UpdatePostDto } from '../../dto(later put out)/post.dto';
 import { Comment } from '../comment/comment.model';
-import {
-  CommentLikeDto,
-  CommentUnlikeDto,
-  UpdateCommentDto,
-} from '../../dto(later put out)/comment.dto';
-
-import { UserPostLike } from '../../repositories/post.repository';
 import { Like } from '../like/like.model';
 
 export type UserCreatePostInput = {
   images: string[];
+  content: string;
+};
+
+export type UserUpdatePostInput = {
   content: string;
 };
 @Injectable()
@@ -29,9 +25,9 @@ export class User {
     return Post.createPre({ author: this, images, content });
   }
 
-  updatePost(post: Post, updateData: UpdatePostDto): Post | undefined {
+  updatePost(post: Post, changes: UserUpdatePostInput): Post | undefined {
     if (this.id !== post.getAuthor().getID()) return undefined;
-    return post.update(updateData);
+    return post.update(changes);
   }
 
   deletePost(post: Post): Post | undefined {
@@ -49,31 +45,31 @@ export class User {
     return unlike.unlike(unlike);
   }
 
-  updateComment(comment: Comment, updateData: UpdateCommentDto): Comment {
-    if (this.id !== comment.getAuthor().getID()) return;
-    return comment.update(updateData);
-  }
+  // updateComment(comment: Comment, updateData: UpdateCommentDto): Comment {
+  //   if (this.id !== comment.getAuthor().getID()) return;
+  //   return comment.update(updateData);
+  // }
 
-  deleteComment(comment: Comment): Comment {
-    if (this.id !== comment.getAuthor().getID()) return;
-    return comment;
-  }
+  // deleteComment(comment: Comment): Comment {
+  //   if (this.id !== comment.getAuthor().getID()) return;
+  //   return comment;
+  // }
 
-  likeComment(comment: Comment): CommentLikeDto {
-    if (comment.isLikedBy(this)) return;
-    comment.like(this);
-    return {
-      userId: this.id,
-      commentId: comment.getID(),
-    };
-  }
+  // likeComment(comment: Comment): CommentLikeDto {
+  //   if (comment.isLikedBy(this)) return;
+  //   comment.like(this);
+  //   return {
+  //     userId: this.id,
+  //     commentId: comment.getID(),
+  //   };
+  // }
 
-  unlikeComment(comment: Comment): CommentUnlikeDto {
-    if (!comment.isLikedBy(this)) throw new Error('not liked');
-    comment.unlike(this);
-    return {
-      userId: this.id,
-      commentId: comment.getID(),
-    };
-  }
+  // unlikeComment(comment: Comment): CommentUnlikeDto {
+  //   if (!comment.isLikedBy(this)) throw new Error('not liked');
+  //   comment.unlike(this);
+  //   return {
+  //     userId: this.id,
+  //     commentId: comment.getID(),
+  //   };
+  // }
 }

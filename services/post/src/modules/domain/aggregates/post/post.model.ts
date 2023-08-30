@@ -1,7 +1,6 @@
 // task.service.ts
 import { Injectable } from '@nestjs/common';
-import { User } from '../user/user.model';
-import { UpdatePostDto } from '../../dto(later put out)/post.dto';
+import { User, UserUpdatePostInput } from '../user/user.model';
 
 import crypto from 'crypto';
 
@@ -87,7 +86,7 @@ export class Post {
     };
   }
 
-  update(changes: UpdatePostDto): Post {
+  update(changes: UserUpdatePostInput): Post {
     this.content = changes.content;
     return this;
   }
