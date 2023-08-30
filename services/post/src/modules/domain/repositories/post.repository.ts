@@ -1,14 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { CreatePostInput, Post } from '../aggregates/post/post.model';
+import { Post } from '../aggregates/post/post.model';
 import { User } from '../aggregates/user/user.model';
 
 import { PostSummary } from '../aggregates/post/postSummary.model';
-
-export type UserPostLike = {
-  user: User;
-  post: Post;
-  liked: boolean;
-};
 
 @Injectable()
 export abstract class PostRepository {

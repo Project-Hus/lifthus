@@ -27,7 +27,7 @@ export type UpdatePostInput = {
 
 @Injectable()
 export class Post {
-  private constructor(
+  constructor(
     private slug: string,
     private author: User,
     private images: string[],
