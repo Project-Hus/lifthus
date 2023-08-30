@@ -1,6 +1,6 @@
 // task.service.ts
 import { Injectable } from '@nestjs/common';
-import { Post, PrePostInput } from '../post/post.model';
+import { Post } from '../post/post.model';
 
 import { UpdatePostDto } from '../../dto(later put out)/post.dto';
 import { Comment } from '../comment/comment.model';
@@ -9,9 +9,14 @@ import {
   CommentUnlikeDto,
   UpdateCommentDto,
 } from '../../dto(later put out)/comment.dto';
-import { bool } from 'aws-sdk/clients/signer';
-import { UserPostLike } from '../../repositories/post.repository';
 
+import { UserPostLike } from '../../repositories/post.repository';
+import { Like } from '../like/like.model';
+
+export type UserCreatePostInput = {
+  images: string[];
+  content: string;
+};
 @Injectable()
 export class User {
   constructor(private id: bigint) {}
@@ -20,39 +25,28 @@ export class User {
     return this.id;
   }
 
-  createPost(postData: PrePostInput): Post {
-    return Post.createPre(postData, this);
+  createPost({ images, content }: UserCreatePostInput): Post {
+    return Post.createPre({ author: this, images, content });
   }
 
-  updatePost(post: Post, updateData: UpdatePostDto): Post {
-    if (this.id !== post.getAuthor().getID()) return;
+  updatePost(post: Post, updateData: UpdatePostDto): Post | undefined {
+    if (this.id !== post.getAuthor().getID()) return undefined;
     return post.update(updateData);
   }
 
-  deletePost(post: Post): DeletePostInput {
-    if (this.id !== post.getAuthor().getID()) return;
-    return {
-      deleter: this,
-      post,
-    };
+  deletePost(post: Post): Post | undefined {
+    if (this.id !== post.getAuthor().getID()) return undefined;
+    return post;
   }
 
-  likePost(upl: UserPostLike): LikePostInput {
-    if (upl.liked) return { liker: this, post: u };
-    post.like(this);
-    return {
-      userId: this.id,
-      postId: post.getID(),
-    };
+  likePost(like: Like): Like | undefined {
+    if (like.user.getID() !== this.id) return undefined;
+    return like.like(like);
   }
 
-  unlikePost(post: Post): UnlikePostInput {
-    if (!post.isLikedBy(this)) return;
-    post.unlike(this);
-    return {
-      userId: this.id,
-      postId: post.getID(),
-    };
+  unlikePost(unlike: Like): Like | undefined {
+    if (unlike.user.getID() !== this.id) return undefined;
+    return unlike.unlike(unlike);
   }
 
   updateComment(comment: Comment, updateData: UpdateCommentDto): Comment {

@@ -43,8 +43,8 @@ export class Post {
     private querierLiked?: boolean,
   ) {}
 
-  static createPre(p: CreatePrePostInput, u: User): Post {
-    return new Post(Post.getSlug(p.content), u, p.images, p.content);
+  static createPre(p: CreatePrePostInput): Post {
+    return new Post(Post.getSlug(p.content), p.author, p.images, p.content);
   }
 
   static create(postInput: CreatePostInput): Post {

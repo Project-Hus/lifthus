@@ -1,11 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import {
-  CreatePostInput,
-  InsertPostInput,
-  Post,
-} from '../aggregates/post/post.model';
+import { CreatePostInput, Post } from '../aggregates/post/post.model';
 import { User } from '../aggregates/user/user.model';
-import { InsertCommentInput } from '../aggregates/comments/comment.model';
+
 import { PostSummary } from '../aggregates/post/postSummary.model';
 
 export type UserPostLike = {
@@ -133,9 +129,8 @@ export abstract class PostRepository {
     return post;
   }
 
-  async createPost(postInput: CreatePostInput): Promise<Post | undefined> {
-    const newPost = await this._createPost(Post.createPre(postInput));
-    if (newPost) this.cachePost(newPost);
+  async createPost(post: Post): Promise<Post | undefined> {
+    const newPost = await this._createPost(post);
     return newPost;
   }
 
@@ -154,25 +149,12 @@ export abstract class PostRepository {
     return this._getLikeNum(target);
   }
 
-  async createComment(newComment: InsertCommentInput) {
-    return await this._createComment(newComment);
-  }
-  async updateComment(comment: Comment) {
-    return await this._updateComment(comment);
-  }
-  async deleteComment(comment: Comment) {
-    return await this._deleteComment(comment);
-  }
-
   async likePost(post: Post, user: User) {
     return this._likePost(post, user);
   }
   async unlikePost(post: Post, user: User) {
     return this._unlikePost(post, user);
   }
-
-  async likeComment(comment: Comment, user: User) {}
-  async unlikeComment(comment: Comment, user: User) {}
 
   abstract _isLiked(post: Post, user: User): Promise<UserPostLike>;
 
@@ -185,27 +167,12 @@ export abstract class PostRepository {
   abstract _getPostByID(pid: bigint): Promise<Post | undefined>;
   abstract _getPostBySlug(slug: string): Promise<Post | undefined>;
 
-  abstract _createPost(newPost: InsertPostInput): Promise<Post | undefined>;
+  abstract _createPost(post: Post): Promise<Post | undefined>;
   abstract _updatePost(traget: Post): Promise<Post | undefined>;
   abstract _deletePost(traget: Post): Promise<Post | undefined>;
 
   abstract _getLikeNum(traget: Post): Promise<number>;
 
-  abstract _createComment(
-    comment: InsertCommentInput,
-  ): Promise<Comment | undefined>;
-  abstract _updateComment(comment: Comment): Promise<Comment | undefined>;
-  abstract _deleteComment(comment: Comment): Promise<Comment | undefined>;
-
   abstract _likePost(post: Post, user: User): Promise<Post | undefined>;
   abstract _unlikePost(post: Post, user: User): Promise<Post | undefined>;
-
-  abstract _likeComment(
-    comment: Comment,
-    user: User,
-  ): Promise<Comment | undefined>;
-  abstract _unlikeComment(
-    comment: Comment,
-    user: User,
-  ): Promise<Comment | undefined>;
 }
