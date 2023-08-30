@@ -5,8 +5,9 @@ import { Post } from '../post/post.model';
 
 export type CreatePreCommentInput = {
   author: User;
-  content: string;
   post: Post;
+  parent?: Comment;
+  content: string;
 };
 
 export type CreateCommentInput = {
@@ -27,8 +28,8 @@ export type UpdateCommentInput = {
 export class Comment {
   constructor(
     private author: User,
-    private content: string,
     private post: Post,
+    private content: string,
     private parent?: Comment,
 
     private id?: bigint,
@@ -38,7 +39,7 @@ export class Comment {
   ) {}
 
   static createPre(p: CreatePreCommentInput): Comment {
-    return new Comment(p.author, p.content, p.post);
+    return new Comment(p.author, p.post, p.content, p.parent);
   }
 
   isPre(p: Comment): boolean {
@@ -48,8 +49,8 @@ export class Comment {
   static create(p: CreateCommentInput): Comment {
     return new Comment(
       p.author,
-      p.content,
       p.post,
+      p.content,
       p.parent,
       p.id,
       p.replies,

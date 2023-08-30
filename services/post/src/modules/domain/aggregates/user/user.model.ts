@@ -2,7 +2,11 @@
 import { Injectable } from '@nestjs/common';
 import { Post } from '../post/post.model';
 
-import { Comment } from '../comment/comment.model';
+import {
+  Comment,
+  CreateCommentInput,
+  CreatePreCommentInput,
+} from '../comment/comment.model';
 import { Like } from '../like/like.model';
 
 export type UserCreatePostInput = {
@@ -13,6 +17,11 @@ export type UserCreatePostInput = {
 export type UserUpdatePostInput = {
   content: string;
 };
+
+export type UserUpdateCommentInput = {
+  content: string;
+};
+
 @Injectable()
 export class User {
   constructor(private id: bigint) {}
@@ -45,31 +54,27 @@ export class User {
     return like.unlike(this);
   }
 
-  // updateComment(comment: Comment, updateData: UpdateCommentDto): Comment {
-  //   if (this.id !== comment.getAuthor().getID()) return;
-  //   return comment.update(updateData);
-  // }
+  createComment(c: CreatePreCommentInput): Comment {
+    return Comment.createPre(c);
+  }
 
-  // deleteComment(comment: Comment): Comment {
-  //   if (this.id !== comment.getAuthor().getID()) return;
-  //   return comment;
-  // }
+  updateComment(comment: Comment, changes: UserUpdateCommentInput): Comment {
+    if (this.id !== comment.getAuthor().getID()) return;
+    return comment.update(changes);
+  }
 
-  // likeComment(comment: Comment): CommentLikeDto {
-  //   if (comment.isLikedBy(this)) return;
-  //   comment.like(this);
-  //   return {
-  //     userId: this.id,
-  //     commentId: comment.getID(),
-  //   };
-  // }
+  deleteComment(comment: Comment): Comment {
+    if (this.id !== comment.getAuthor().getID()) return;
+    return comment;
+  }
 
-  // unlikeComment(comment: Comment): CommentUnlikeDto {
-  //   if (!comment.isLikedBy(this)) throw new Error('not liked');
-  //   comment.unlike(this);
-  //   return {
-  //     userId: this.id,
-  //     commentId: comment.getID(),
-  //   };
-  // }
+  likeComment(like: Like<Comment>): Like<Comment> | undefined {
+    if (like.liker.getID() !== this.id || like.isLiked()) return undefined;
+    return like.like(this);
+  }
+
+  unlikeComment(like: Like<Comment>): Like<Comment> | undefined {
+    if (like.liker.getID() !== this.id || !like.isLiked()) return undefined;
+    return like.unlike(this);
+  }
 }
