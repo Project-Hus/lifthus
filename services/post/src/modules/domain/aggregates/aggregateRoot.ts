@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
+/**
+ * @description
+ * AggregateRoot is the base class for all aggregate roots, this class is used to track the status of each aggregate root.
+ */
 @Injectable()
 export class AggregateRoot {
   private created: boolean = false;
