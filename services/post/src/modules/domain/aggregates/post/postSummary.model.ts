@@ -4,6 +4,7 @@ type PostSumm = {
   id: bigint;
   author: bigint;
   createdAt: Date;
+  imageSrc: string;
   slug: string;
   likenum: number;
   commentnum: number;
@@ -16,6 +17,7 @@ export class PostSummary {
     private id: bigint,
     private author: bigint,
     private createdAt: Date,
+    private imageSrc: string,
     private slug: string,
     private likenum: number,
     private commentnum: number,
@@ -26,6 +28,7 @@ export class PostSummary {
       id: this.id,
       author: this.author,
       createdAt: this.createdAt,
+      imageSrc: this.imageSrc,
       slug: this.slug,
       likenum: this.likenum,
       commentnum: this.commentnum,

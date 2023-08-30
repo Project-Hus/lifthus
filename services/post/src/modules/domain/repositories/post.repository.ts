@@ -11,6 +11,7 @@ import {
   User,
 } from '../aggregates/user/user.model';
 import { InsertCommentInput } from '../aggregates/comment/comment.model';
+import { PostSummary } from '../aggregates/post/postSummary.model';
 
 export type UserPostLike = {
   user: User;
@@ -25,10 +26,10 @@ export abstract class PostRepository {
   private postsCacheSlug: Map<string, Post> = new Map();
   private expCacheTable: Map<bigint, number> = new Map();
 
-  private allPostsCache: Post[] = [];
+  private allPostsCache: PostSummary[] = [];
   private expAllPostsCache: number = 0;
 
-  private usersPostsCache: Map<string, Post[]> = new Map();
+  private usersPostsCache: Map<string, PostSummary[]> = new Map();
   private expUsersPostsCache: Map<string, number> = new Map();
 
   static readonly CACHE_EXPIRE_MILISEC = 5000;
@@ -92,10 +93,10 @@ export abstract class PostRepository {
     return await this._isLiked(post, user);
   }
 
-  async getAllPosts(skip: number): Promise<Post[]> {
+  async getAllPostSumms(skip: number): Promise<PostSummary[]> {
     if (Date.now() <= this.expAllPostsCache) return this.allPostsCache;
     this.allPostsCache = [];
-    const allPosts = await this._getAllPosts(skip);
+    const allPosts = await this._getAllPostSumms(skip);
     this.allPostsCache = allPosts;
     this.expAllPostsCache = Date.now() + PostRepository.CACHE_EXPIRE_MILISEC;
     setTimeout(() => {
@@ -105,12 +106,12 @@ export abstract class PostRepository {
     return allPosts;
   }
 
-  async getUsersPosts(users: User[], skip: number): Promise<Post[]> {
+  async getUsersPostSumms(users: User[], skip: number): Promise<PostSummary[]> {
     const cacheKey = this.getUsersCacheKey(users, skip);
     if (Date.now() <= this.expUsersPostsCache.get(cacheKey))
       return this.usersPostsCache.get(cacheKey)!;
     this.usersPostsCache.delete(cacheKey);
-    const usersPosts = await this._getUsersPosts(users, skip);
+    const usersPosts = await this._getUsersPostSumms(users, skip);
     this.usersPostsCache.set(cacheKey, usersPosts);
     setTimeout(() => {
       this.usersPostsCache.delete(cacheKey);
@@ -182,8 +183,11 @@ export abstract class PostRepository {
 
   abstract _isLiked(post: Post, user: User): Promise<UserPostLike>;
 
-  abstract _getAllPosts(skip: number): Promise<Post[]>;
-  abstract _getUsersPosts(users: User[], skip: number): Promise<Post[]>;
+  abstract _getAllPostSumms(skip: number): Promise<PostSummary[]>;
+  abstract _getUsersPostSumms(
+    users: User[],
+    skip: number,
+  ): Promise<PostSummary[]>;
 
   abstract _getPostByID(pid: bigint): Promise<Post | undefined>;
   abstract _getPostBySlug(slug: string): Promise<Post | undefined>;
