@@ -1,9 +1,10 @@
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
 export class AggregateRoot {
-  constructor(
-    private created: boolean = false,
-    private updated: boolean = false,
-    private deleted: boolean = false,
-  ) {}
+  private created: boolean = false;
+  private updated: boolean = false;
+  private deleted: boolean = false;
   private setCreated() {
     this.created = true;
   }
