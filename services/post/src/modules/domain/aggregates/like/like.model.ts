@@ -10,6 +10,10 @@ export class Like<T> {
     private liked: boolean,
   ) {}
 
+  isLiked(): boolean {
+    return this.liked;
+  }
+
   like(u: User): Like<T> | undefined {
     if (u.getID() !== this.liker.getID() || this.liked) return undefined;
     this.liked = true;

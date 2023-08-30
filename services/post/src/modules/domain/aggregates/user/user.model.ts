@@ -35,14 +35,14 @@ export class User {
     return post;
   }
 
-  likePost(like: Like): Like | undefined {
-    if (like.user.getID() !== this.id) return undefined;
-    return like.like(like);
+  likePost(like: Like<Post>): Like<Post> | undefined {
+    if (like.liker.getID() !== this.id || like.isLiked()) return undefined;
+    return like.like(this);
   }
 
-  unlikePost(unlike: Like): Like | undefined {
-    if (unlike.user.getID() !== this.id) return undefined;
-    return unlike.unlike(unlike);
+  unlikePost(like: Like<Post>): Like<Post> | undefined {
+    if (like.liker.getID() !== this.id || !like.isLiked()) return undefined;
+    return like.unlike(this);
   }
 
   // updateComment(comment: Comment, updateData: UpdateCommentDto): Comment {
