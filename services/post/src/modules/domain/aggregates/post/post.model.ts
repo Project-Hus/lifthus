@@ -5,10 +5,21 @@ import { UpdatePostDto } from '../../dto(later put out)/post.dto';
 
 import crypto from 'crypto';
 
-export type CreatePostInput = {
+export type CreatePrePostInput = {
   author: User;
   images: string[];
   content: string;
+};
+
+export type CreatePostInput = {
+  slug: string;
+  author: User;
+  images: string[];
+  content: string;
+
+  id: bigint;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type UpdatePostInput = {
@@ -16,40 +27,40 @@ export type UpdatePostInput = {
   content: string;
 };
 
-export type InsertPostInput = CreatePostInput & { slug: string };
-
 @Injectable()
 export class Post {
   private constructor(
-    private id: bigint,
     private slug: string,
-
     private author: User,
     private images: string[],
     private content: string,
 
-    private createdAt: Date,
-    private updatedAt: Date,
+    private id?: bigint,
+    private createdAt?: Date,
+    private updatedAt?: Date,
 
-    private likers: User[],
-  ) {
-    if (
-      !id === undefined ||
-      !slug === undefined ||
-      !author === undefined ||
-      !images === undefined ||
-      !content === undefined ||
-      !createdAt === undefined ||
-      !updatedAt === undefined
-    )
-      throw new Error('invalid arguments');
+    private querier?: User,
+    private querierLiked?: boolean,
+  ) {}
+
+  static createPre(p: CreatePrePostInput, u: User): Post {
+    return new Post(Post.getSlug(p.content), u, p.images, p.content);
   }
 
-  static createPre(prePostInput: CreatePostInput): InsertPostInput {
-    return {
-      ...prePostInput,
-      slug: Post.getSlug(prePostInput.content),
-    };
+  static create(postInput: CreatePostInput): Post {
+    return new Post(
+      postInput.slug,
+      postInput.author,
+      postInput.images,
+      postInput.content,
+      postInput.id,
+      postInput.createdAt,
+      postInput.updatedAt,
+    );
+  }
+
+  isPre(post: Post): boolean {
+    return !post.id;
   }
 
   getID(): bigint {
@@ -76,9 +87,9 @@ export class Post {
     };
   }
 
-  update(post: Post, changes: UpdatePostDto): Post {
-    changes.content = post.content;
-    return post;
+  update(changes: UpdatePostDto): Post {
+    this.content = changes.content;
+    return this;
   }
 
   private static getSlug(content: string): string {

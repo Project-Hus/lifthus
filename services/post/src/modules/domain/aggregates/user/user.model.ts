@@ -1,6 +1,6 @@
 // task.service.ts
 import { Injectable } from '@nestjs/common';
-import { CreatePostInput, InsertPostInput, Post } from '../post/post.model';
+import { Post, PrePostInput } from '../post/post.model';
 
 import { UpdatePostDto } from '../../dto(later put out)/post.dto';
 import { Comment } from '../comment/comment.model';
@@ -12,36 +12,21 @@ import {
 import { bool } from 'aws-sdk/clients/signer';
 import { UserPostLike } from '../../repositories/post.repository';
 
-export type DeletePostInput = {
-  deleter: User;
-  post: Post;
-};
-
-export type LikePostInput = {
-  liker: User;
-  post: Post;
-};
-
-export type UnlikePostInput = {
-  unliker: User;
-  post: Post;
-};
-
 @Injectable()
 export class User {
-  constructor(private id: bigint, postLikes: Map<bigint, bool> = new Map()) {}
+  constructor(private id: bigint) {}
 
   getID() {
     return this.id;
   }
 
-  createPost(postData: CreatePostInput): InsertPostInput {
-    return Post.createPre(postData);
+  createPost(postData: PrePostInput): Post {
+    return Post.createPre(postData, this);
   }
 
   updatePost(post: Post, updateData: UpdatePostDto): Post {
     if (this.id !== post.getAuthor().getID()) return;
-    return post.update(post, updateData);
+    return post.update(updateData);
   }
 
   deletePost(post: Post): DeletePostInput {

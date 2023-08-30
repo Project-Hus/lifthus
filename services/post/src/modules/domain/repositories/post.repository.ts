@@ -4,13 +4,8 @@ import {
   InsertPostInput,
   Post,
 } from '../aggregates/post/post.model';
-import {
-  DeletePostInput,
-  LikePostInput,
-  UnlikePostInput,
-  User,
-} from '../aggregates/user/user.model';
-import { InsertCommentInput } from '../aggregates/comment/comment.model';
+import { User } from '../aggregates/user/user.model';
+import { InsertCommentInput } from '../aggregates/comments/comment.model';
 import { PostSummary } from '../aggregates/post/postSummary.model';
 
 export type UserPostLike = {
@@ -150,9 +145,9 @@ export abstract class PostRepository {
     return updatedPost;
   }
 
-  async deletePost(dpi: DeletePostInput): Promise<Post | undefined> {
-    this.flushPost(dpi.post);
-    return await this._deletePost(dpi.post);
+  async deletePost(post: Post): Promise<Post | undefined> {
+    this.flushPost(post);
+    return await this._deletePost(post);
   }
 
   async getLikeNum(target: Post): Promise<number> {
@@ -169,13 +164,11 @@ export abstract class PostRepository {
     return await this._deleteComment(comment);
   }
 
-  async likePost(lpi: LikePostInput) {
-    if (!lpi) return;
-    return this._likePost(lpi);
+  async likePost(post: Post, user: User) {
+    return this._likePost(post, user);
   }
-  async unlikePost(upi: UnlikePostInput) {
-    if (!upi) return;
-    return this._unlikePost(upi);
+  async unlikePost(post: Post, user: User) {
+    return this._unlikePost(post, user);
   }
 
   async likeComment(comment: Comment, user: User) {}
@@ -204,8 +197,8 @@ export abstract class PostRepository {
   abstract _updateComment(comment: Comment): Promise<Comment | undefined>;
   abstract _deleteComment(comment: Comment): Promise<Comment | undefined>;
 
-  abstract _likePost(lpi: LikePostInput): Promise<Post | undefined>;
-  abstract _unlikePost(upi: UnlikePostInput): Promise<Post | undefined>;
+  abstract _likePost(post: Post, user: User): Promise<Post | undefined>;
+  abstract _unlikePost(post: Post, user: User): Promise<Post | undefined>;
 
   abstract _likeComment(
     comment: Comment,
