@@ -22,7 +22,6 @@ export type CreatePostInput = {
 };
 
 export type UpdatePostInput = {
-  id: bigint;
   content: string;
 };
 

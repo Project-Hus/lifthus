@@ -1,75 +1,86 @@
 // task.service.ts
 import { Injectable } from '@nestjs/common';
 import { User } from '../user/user.model';
-import { UpdateCommentDto } from '../../dto(later put out)/comment.dto';
+import { Post } from '../post/post.model';
 
-export type InsertCommentInput = {};
-interface IImage {
-  // id BigInt @id @default(autoincrement()) @db.UnsignedBigInt
-  // author    BigInt   @db.UnsignedBigInt
-  // createdAt DateTime @default(now())
-  // updatedAt DateTime @updatedAt
-  // post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
-  // postId BigInt? @db.UnsignedBigInt
-  // parentId BigInt?   @db.UnsignedBigInt
-  // parent   Comment?  @relation("replies", fields: [parentId], references: [id], onDelete: Cascade)
-  // replies  Comment[] @relation("replies")
-  // content String @db.VarChar(531)
-  // likenum  Int           @default(0)
-  // mentions Mention[]     @relation("mentions")
-  // likes    CommentLike[]
-  // @@unique([postId, order])
-}
+export type CreatePreCommentInput = {
+  author: User;
+  content: string;
+  post: Post;
+};
 
-export type CreateCommentInput = {};
+export type CreateCommentInput = {
+  id: bigint;
+  author: User;
+  content: string;
+  post: Post;
+  parent?: Comment;
+  replies: Comment[];
+  createdAt: Date;
+  updatedAt: Date;
+};
 
-interface IComment {
-  getID(): bigint;
-  getAuthor(): User;
-  update(updateData: UpdateCommentDto): Comment;
-
-  like(user: User): void;
-  unlike(user: User): void;
-  isLikedBy(user: User): boolean;
-}
-
+export type UpdateCommentInput = {
+  content: string;
+};
 @Injectable()
 export class Comment {
-  private id: bigint;
-  private author: User;
+  constructor(
+    private author: User,
+    private content: string,
+    private post: Post,
+    private parent?: Comment,
 
-  private content: string;
+    private id?: bigint,
+    private replies?: Comment[],
+    private createdAt?: Date,
+    private updatedAt?: Date,
+  ) {}
 
-  private likenum: number;
-  private likers: bigint[];
-  constructor() {}
+  static createPre(p: CreatePreCommentInput): Comment {
+    return new Comment(p.author, p.content, p.post);
+  }
 
-  getID() {
+  isPre(p: Comment): boolean {
+    return !p.id;
+  }
+
+  static create(p: CreateCommentInput): Comment {
+    return new Comment(
+      p.author,
+      p.content,
+      p.post,
+      p.parent,
+      p.id,
+      p.replies,
+      p.createdAt,
+      p.updatedAt,
+    );
+  }
+
+  getID(): bigint {
     return this.id;
   }
 
-  getAuthor() {
+  getAuthor(): User {
     return this.author;
   }
 
-  update(updateData: UpdateCommentDto): Comment {
-    this.content = updateData.content;
+  queryComment(): any {
+    return {
+      author: this.author,
+      content: this.content,
+      post: this.post,
+      parent: this.parent,
+      id: this.id,
+      replies: this.replies,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+    };
+  }
+
+  update(changes: UpdateCommentInput): Comment {
+    this.content = changes.content;
     return this;
-  }
-
-  like(user: User): void {
-    if (!this.isLikedBy(user)) {
-      this.likers.push(user.getID());
-    }
-  }
-
-  unlike(user: User): void {
-    if (this.isLikedBy(user)) {
-      this.likers = this.likers.filter((id) => id !== user.getID());
-    }
-  }
-
-  isLikedBy(user: User): boolean {
-    return this.likers.includes(user.getID());
   }
 }
