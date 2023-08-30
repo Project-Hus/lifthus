@@ -2,11 +2,7 @@
 import { Injectable } from '@nestjs/common';
 import { Post } from '../post/post.model';
 
-import {
-  Comment,
-  CreateCommentInput,
-  CreatePreCommentInput,
-} from '../comment/comment.model';
+import { Comment } from '../comment/comment.model';
 import { Like } from '../like/like.model';
 
 export type UserCreatePostInput = {
@@ -15,6 +11,12 @@ export type UserCreatePostInput = {
 };
 
 export type UserUpdatePostInput = {
+  content: string;
+};
+
+export type UserCreateCommentInput = {
+  post: Post;
+  parent?: Comment;
   content: string;
 };
 
@@ -54,8 +56,8 @@ export class User {
     return like.unlike(this);
   }
 
-  createComment(c: CreatePreCommentInput): Comment {
-    return Comment.createPre(c);
+  createComment(c: UserCreateCommentInput): Comment {
+    return Comment.createPre({ author: this, ...c });
   }
 
   updateComment(comment: Comment, changes: UserUpdateCommentInput): Comment {
