@@ -3,10 +3,20 @@ import {
   CreatePostInput,
   InsertPostInput,
   Post,
-  UpdatePostInput,
 } from '../aggregates/post/post.model';
-import { User } from '../aggregates/user/user.model';
+import {
+  DeletePostInput,
+  LikePostInput,
+  UnlikePostInput,
+  User,
+} from '../aggregates/user/user.model';
 import { InsertCommentInput } from '../aggregates/comment/comment.model';
+
+export type UserPostLike = {
+  user: User;
+  post: Post;
+  liked: boolean;
+};
 
 @Injectable()
 export abstract class PostRepository {
@@ -78,6 +88,10 @@ export abstract class PostRepository {
   }
   /* ==================== */
 
+  async isLiked(post: Post, user: User): Promise<UserPostLike> {
+    return await this._isLiked(post, user);
+  }
+
   async getAllPosts(skip: number): Promise<Post[]> {
     if (Date.now() <= this.expAllPostsCache) return this.allPostsCache;
     this.allPostsCache = [];
@@ -124,7 +138,7 @@ export abstract class PostRepository {
   }
 
   async createPost(postInput: CreatePostInput): Promise<Post | undefined> {
-    const newPost = await this._createPost(Post.getInsertInput(postInput));
+    const newPost = await this._createPost(Post.createPre(postInput));
     if (newPost) this.cachePost(newPost);
     return newPost;
   }
@@ -135,9 +149,9 @@ export abstract class PostRepository {
     return updatedPost;
   }
 
-  async deletePost(target: Post): Promise<Post | undefined> {
-    this.flushPost(target);
-    return await this._deletePost(target);
+  async deletePost(dpi: DeletePostInput): Promise<Post | undefined> {
+    this.flushPost(dpi.post);
+    return await this._deletePost(dpi.post);
   }
 
   async getLikeNum(target: Post): Promise<number> {
@@ -154,8 +168,19 @@ export abstract class PostRepository {
     return await this._deleteComment(comment);
   }
 
+  async likePost(lpi: LikePostInput) {
+    if (!lpi) return;
+    return this._likePost(lpi);
+  }
+  async unlikePost(upi: UnlikePostInput) {
+    if (!upi) return;
+    return this._unlikePost(upi);
+  }
+
   async likeComment(comment: Comment, user: User) {}
   async unlikeComment(comment: Comment, user: User) {}
+
+  abstract _isLiked(post: Post, user: User): Promise<UserPostLike>;
 
   abstract _getAllPosts(skip: number): Promise<Post[]>;
   abstract _getUsersPosts(users: User[], skip: number): Promise<Post[]>;
@@ -174,4 +199,16 @@ export abstract class PostRepository {
   ): Promise<Comment | undefined>;
   abstract _updateComment(comment: Comment): Promise<Comment | undefined>;
   abstract _deleteComment(comment: Comment): Promise<Comment | undefined>;
+
+  abstract _likePost(lpi: LikePostInput): Promise<Post | undefined>;
+  abstract _unlikePost(upi: UnlikePostInput): Promise<Post | undefined>;
+
+  abstract _likeComment(
+    comment: Comment,
+    user: User,
+  ): Promise<Comment | undefined>;
+  abstract _unlikeComment(
+    comment: Comment,
+    user: User,
+  ): Promise<Comment | undefined>;
 }

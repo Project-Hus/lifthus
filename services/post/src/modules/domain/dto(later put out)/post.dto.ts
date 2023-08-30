@@ -16,13 +16,3 @@ export type UpdatePostDto = {
   id: bigint;
   content: string;
 };
-
-export type PostLikeDto = {
-  userId: bigint;
-  postId: bigint;
-};
-
-export type PostUnlikeDto = {
-  userId: bigint;
-  postId: bigint;
-};

@@ -16,16 +16,6 @@ export type UpdatePostInput = {
   content: string;
 };
 
-export type LikePostInput = {
-  postId: bigint;
-  userId: bigint;
-};
-
-export type UnlikePostInput = {
-  postId: bigint;
-  userId: bigint;
-};
-
 export type InsertPostInput = CreatePostInput & { slug: string };
 
 @Injectable()
@@ -40,6 +30,8 @@ export class Post {
 
     private createdAt: Date,
     private updatedAt: Date,
+
+    private likers: User[],
   ) {
     if (
       !id === undefined ||
@@ -53,7 +45,7 @@ export class Post {
       throw new Error('invalid arguments');
   }
 
-  static getInsertInput(prePostInput: CreatePostInput): InsertPostInput {
+  static createPre(prePostInput: CreatePostInput): InsertPostInput {
     return {
       ...prePostInput,
       slug: Post.getSlug(prePostInput.content),
@@ -84,9 +76,9 @@ export class Post {
     };
   }
 
-  update(updatePostInput: UpdatePostDto): UpdatePostInput {
-    this.content = updatePostInput.content;
-    return updatePostInput;
+  update(post: Post, changes: UpdatePostDto): Post {
+    changes.content = post.content;
+    return post;
   }
 
   private static getSlug(content: string): string {
