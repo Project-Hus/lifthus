@@ -1,64 +1,62 @@
 import { Injectable } from '@nestjs/common';
 import { Like } from '../domain/aggregates/like/like.model';
 import { User } from '../domain/aggregates/user/user.model';
-import { stringifyAny } from 'src/common/utils/utils';
+import { LikeRepository } from '../domain/repositories/like.repository';
+import { PrismaService } from 'src/prisma/prisma.service';
+
+import { Post } from '../domain/aggregates/post/post.model';
 
 @Injectable()
-export abstract class LikeRepository<T> {
-  private likes: Map<string, Like<T>> = new Map();
-  private likeOrigins: Map<string, string> = new Map();
-
-  constructor() {}
-
-  private getCachekey(u: User, t: T): string {
-    return stringifyAny({ u, t });
-  }
-  private getCacheString(like: Like<T>): string {
-    return stringifyAny(like);
-  }
-  private isUpdated(like: Like<T>, origin: string): boolean {
-    return this.getCacheString(like) !== origin;
+export abstract class PrismaPostLikeRepository extends LikeRepository<Post> {
+  constructor(private readonly prismaService: PrismaService) {
+    super();
   }
 
-  async getLike(u: User, t: T): Promise<Like<T>> {
-    const like = await this._getLike(u, t);
-    const cacheKey = this.getCachekey(u, t);
-    this.likes.set(cacheKey, like);
-    this.likeOrigins.set(cacheKey, this.getCacheString(like));
-    return like;
-  }
-
-  async getLikeNum(t: T): Promise<number> {
-    return this._getLikeNum(t);
-  }
-
-  async save(): Promise<void> {
-    // filter out what has changed
-    const changes: Set<Like<T>> = new Set();
-    this.likes.forEach((like, key) => {
-      const origin = this.likeOrigins.get(key);
-      if (this.isUpdated(like, origin)) changes.add(like);
+  async _getLike(u: User, t: Post): Promise<Like<Post>> {
+    const postLike = await this.prismaService.postLike.findUnique({
+      where: {
+        postId_user: {
+          postId: t.getID(),
+          user: u.getID(),
+        },
+      },
     });
-    // pass the chages
-    this.clear();
-    this._save(changes);
+    return new Like(u, t, !!postLike);
   }
 
-  async cancel(): Promise<void> {
-    this.clear();
-    return this._save(new Set());
+  async _getLikeNum(t: Post): Promise<number> {
+    return this.prismaService.postLike.count({
+      where: {
+        postId: t.getID(),
+      },
+    });
   }
 
-  private clear() {
-    this.likes.clear();
-    this.likeOrigins.clear();
+  async _save(likes: Set<Like<Post>>): Promise<void> {
+    try {
+      const likesList = Array.from(likes);
+      this.prismaService.$transaction(
+        likesList.map((like) => {
+          return like.isLiked()
+            ? this.prismaService.postLike.delete({
+                where: {
+                  postId_user: {
+                    postId: like.target.getID(),
+                    user: like.liker.getID(),
+                  },
+                },
+              })
+            : this.prismaService.postLike.create({
+                data: {
+                  postId: like.target.getID(),
+                  user: like.liker.getID(),
+                },
+              });
+        }),
+      );
+      return;
+    } catch (e) {
+      return Promise.reject(e);
+    }
   }
-
-  // Abstract methods to be implemented by the actual repository
-
-  abstract _getLike(u: User, t: T): Promise<Like<T>>;
-
-  abstract _getLikeNum(t: T): Promise<number>;
-
-  abstract _save(likes: Set<Like<T>>): Promise<void>;
 }
