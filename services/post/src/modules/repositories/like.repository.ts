@@ -5,6 +5,7 @@ import { LikeRepository } from '../domain/repositories/like.repository';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { Post } from '../domain/aggregates/post/post.model';
+import { Comment } from '../domain/aggregates/comment/comment.model';
 
 @Injectable()
 export abstract class PrismaPostLikeRepository extends LikeRepository<Post> {
@@ -49,6 +50,61 @@ export abstract class PrismaPostLikeRepository extends LikeRepository<Post> {
             : this.prismaService.postLike.create({
                 data: {
                   postId: like.target.getID(),
+                  user: like.liker.getID(),
+                },
+              });
+        }),
+      );
+      return;
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
+}
+
+@Injectable()
+export abstract class PrismaCommentLikeRepository extends LikeRepository<Comment> {
+  constructor(private readonly prismaService: PrismaService) {
+    super();
+  }
+
+  async _getLike(u: User, t: Comment): Promise<Like<Comment>> {
+    const commentLike = await this.prismaService.commentLike.findUnique({
+      where: {
+        commentId_user: {
+          commentId: t.getID(),
+          user: u.getID(),
+        },
+      },
+    });
+    return new Like(u, t, !!commentLike);
+  }
+
+  async _getLikeNum(t: Comment): Promise<number> {
+    return this.prismaService.commentLike.count({
+      where: {
+        commentId: t.getID(),
+      },
+    });
+  }
+
+  async _save(likes: Set<Like<Comment>>): Promise<void> {
+    try {
+      const likesList = Array.from(likes);
+      this.prismaService.$transaction(
+        likesList.map((like) => {
+          return like.isLiked()
+            ? this.prismaService.commentLike.delete({
+                where: {
+                  commentId_user: {
+                    commentId: like.target.getID(),
+                    user: like.liker.getID(),
+                  },
+                },
+              })
+            : this.prismaService.commentLike.create({
+                data: {
+                  commentId: like.target.getID(),
                   user: like.liker.getID(),
                 },
               });
