@@ -4,9 +4,6 @@ import { Post } from './aggregates/post/post.model';
 import { User } from './aggregates/user/user.model';
 import { Comment } from './aggregates/comment/comment.model';
 import { PostSummary } from './aggregates/post/postSummary.model';
-import { UserRepository } from './repositories/user.repository';
-import { PostRepository } from './repositories/post.repository';
-import { LikeRepository } from './repositories/like.repository';
 
 @Module({
   imports: [],

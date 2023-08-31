@@ -17,6 +17,9 @@ export abstract class LikeRepository<T> {
   private getCacheString(like: Like<T>): string {
     return stringifyAny(like);
   }
+  private isUpdated(like: Like<T>, origin: string): boolean {
+    return this.getCacheString(like) !== origin;
+  }
 
   async getLike(u: User, t: T): Promise<Like<T>> {
     const like = await this._getLike(u, t);
@@ -30,16 +33,20 @@ export abstract class LikeRepository<T> {
     return this._getLikeNum(t);
   }
 
+  abstract _getLike(u: User, t: T): Promise<Like<T>>;
+
+  abstract _getLikeNum(t: T): Promise<number>;
+
   async save(): Promise<void> {
     // filter out what has changed
     const changes: Set<Like<T>> = new Set();
     this.likes.forEach((like, key) => {
       const origin = this.likeOrigins.get(key);
-      if (origin !== this.getCacheString(like)) [changes.add(like)];
+      if (this.isUpdated(like, origin)) changes.add(like);
     });
     // pass the chages
-    this._save(changes);
     this.clear();
+    this._save(changes);
   }
 
   async cancel(): Promise<void> {
@@ -51,10 +58,6 @@ export abstract class LikeRepository<T> {
     this.likes.clear();
     this.likeOrigins.clear();
   }
-
-  abstract _getLike(u: User, t: T): Promise<Like<T>>;
-
-  abstract _getLikeNum(t: T): Promise<number>;
 
   abstract _save(likes: Set<Like<T>>): Promise<void>;
 }
