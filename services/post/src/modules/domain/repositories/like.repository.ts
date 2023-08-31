@@ -33,10 +33,6 @@ export abstract class LikeRepository<T> {
     return this._getLikeNum(t);
   }
 
-  abstract _getLike(u: User, t: T): Promise<Like<T>>;
-
-  abstract _getLikeNum(t: T): Promise<number>;
-
   async save(): Promise<void> {
     // filter out what has changed
     const changes: Set<Like<T>> = new Set();
@@ -58,6 +54,12 @@ export abstract class LikeRepository<T> {
     this.likes.clear();
     this.likeOrigins.clear();
   }
+
+  // Abstract methods to be implemented by the actual repository
+
+  abstract _getLike(u: User, t: T): Promise<Like<T>>;
+
+  abstract _getLikeNum(t: T): Promise<number>;
 
   abstract _save(likes: Set<Like<T>>): Promise<void>;
 }

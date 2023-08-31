@@ -60,19 +60,6 @@ export abstract class PostRepository {
     return await this._deletePost(post);
   }
 
-  abstract _getAllPostSumms(skip: number): Promise<PostSummary[]>;
-  abstract _getUsersPostSumms(
-    users: User[],
-    skip: number,
-  ): Promise<PostSummary[]>;
-
-  abstract _getPostByID(pid: bigint): Promise<Post | undefined>;
-  abstract _getPostBySlug(slug: string): Promise<Post | undefined>;
-
-  abstract _createPost(post: Post): Promise<Post | undefined>;
-  abstract _updatePost(traget: Post): Promise<Post | undefined>;
-  abstract _deletePost(traget: Post): Promise<Post | undefined>;
-
   private clear() {
     this.posts.clear();
     this.postOrigins.clear();
@@ -92,6 +79,20 @@ export abstract class PostRepository {
     this.clear();
     return this._save(new Set());
   }
+
+  // Abstract methods to be implemented by the actual repository
+
+  abstract _getAllPostSumms(skip: number): Promise<PostSummary[]>;
+  abstract _getUsersPostSumms(
+    users: User[],
+    skip: number,
+  ): Promise<PostSummary[]>;
+
+  abstract _getPostByID(pid: bigint): Promise<Post | undefined>;
+  abstract _getPostBySlug(slug: string): Promise<Post | undefined>;
+
+  abstract _createPost(post: Post): Promise<Post | undefined>;
+  abstract _deletePost(traget: Post): Promise<Post | undefined>;
 
   abstract _save(changes: Set<Post>): Promise<void>;
 }
