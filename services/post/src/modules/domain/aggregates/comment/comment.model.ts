@@ -40,52 +40,70 @@ export type UpdateCommentInput = {
 
 @Injectable()
 export class Comment {
-  constructor(
-    private author: bigint,
-    private content: string,
+  private author: bigint;
+  private content: string;
 
-    private postId: bigint,
+  private postId: bigint;
 
-    private parentId?: bigint,
+  private parentId?: bigint;
 
-    private id?: bigint,
-    private createdAt?: Date,
-    private updatedAt?: Date,
+  private id?: bigint;
+  private createdAt?: Date;
+  private updatedAt?: Date;
 
-    private replies?: Comment[],
-  ) {}
+  private replies?: Comment[];
 
   static createComment(c: CreatePreCommentInput): Comment {
-    return new Comment(c.author, c.content, c.postId);
+    return new Comment().setNewComment(c);
+  }
+
+  private setNewComment(c: CreatePreCommentInput): Comment {
+    this.author = c.author;
+    this.content = c.content;
+    this.postId = c.postId;
+    return this;
   }
 
   static queryComment(p: CreateCommentInput): Comment {
-    return new Comment(
-      p.author,
-      p.content,
-      p.postId,
-      undefined,
-      p.id,
-      p.createdAt,
-      p.updatedAt,
-      p.replies,
-    );
+    return new Comment().setQueryComment(p);
+  }
+
+  private setQueryComment(p: CreateCommentInput): Comment {
+    this.author = p.author;
+    this.content = p.content;
+    this.postId = p.postId;
+    this.id = p.id;
+    this.createdAt = p.createdAt;
+    this.updatedAt = p.updatedAt;
+    this.replies = p.replies;
+    return this;
   }
 
   static createReply(c: CreatePreReplyCommentInput): Comment {
-    return new Comment(c.author, c.content, c.postId, c.parentId);
+    return new Comment().setNewReply(c);
+  }
+
+  private setNewReply(c: CreatePreReplyCommentInput): Comment {
+    this.author = c.author;
+    this.content = c.content;
+    this.postId = c.postId;
+    this.parentId = c.parentId;
+    return this;
   }
 
   static queryReply(p: CreateReplyInput): Comment {
-    return new Comment(
-      p.author,
-      p.content,
-      p.postId,
-      p.parentId,
-      p.id,
-      p.createdAt,
-      p.updatedAt,
-    );
+    return new Comment().setQueryReply(p);
+  }
+
+  private setQueryReply(p: CreateReplyInput): Comment {
+    this.author = p.author;
+    this.content = p.content;
+    this.postId = p.postId;
+    this.parentId = p.parentId;
+    this.id = p.id;
+    this.createdAt = p.createdAt;
+    this.updatedAt = p.updatedAt;
+    return this;
   }
 
   isPre(): boolean {
