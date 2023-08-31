@@ -1,5 +1,12 @@
-// import { Injectable } from '@nestjs/common';
+/*
+ Current behavior checks all change from repository.
+ Extending AggregateRoot method sets several flags to tell whether the aggregate root is updated,
+ and the actual repository would check those flags to update them or not.
+ Anyway this method is not used currently.
+*/
 
+// import { Injectable } from '@nestjs/common';
+//
 // /**
 //  * @description
 //  * AggregateRoot is the base class for all aggregate roots, this class is used to track the status of each aggregate root.
