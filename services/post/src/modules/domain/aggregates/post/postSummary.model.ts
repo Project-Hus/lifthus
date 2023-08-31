@@ -10,13 +10,25 @@ export type PostSumm = {
 
 @Injectable()
 export class PostSummary {
-  constructor(
-    private id: bigint,
-    private author: bigint,
-    private createdAt: Date,
-    private images: string[],
-    private slug: string,
-  ) {}
+  private id: bigint;
+  private author: bigint;
+  private createdAt: Date;
+  private images: string[];
+  private slug: string;
+
+  static create(p: PostSumm): PostSummary {
+    return new PostSummary().setPostSummary(p);
+  }
+
+  private setPostSummary(p: PostSumm): PostSummary {
+    this.id = p.id;
+    this.author = p.author;
+    this.createdAt = p.createdAt;
+    this.images = p.images;
+    this.slug = p.slug;
+    return this;
+  }
+
   getSumm(): PostSumm {
     return {
       id: this.id,

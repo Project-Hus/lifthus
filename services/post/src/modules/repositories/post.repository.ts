@@ -69,13 +69,13 @@ export class PrismaPostRepository extends PostRepository {
         });
 
       return allPosts.map((post: PostSummWithImage) => {
-        return new PostSummary(
-          post.id,
-          post.author,
-          post.createdAt,
-          post.images.map((image) => image.src),
-          post.slug,
-        );
+        return PostSummary.create({
+          id: post.id,
+          author: post.author,
+          createdAt: post.createdAt,
+          images: post.images.map((image) => image.src),
+          slug: post.slug,
+        });
       });
     } catch (e) {
       return Promise.reject(e);
@@ -113,13 +113,13 @@ export class PrismaPostRepository extends PostRepository {
         skip: skip,
       });
       return usersPosts.map((post: PostSummWithImage) => {
-        return new PostSummary(
-          post.id,
-          post.author,
-          post.createdAt,
-          post.images.map((image) => image.src),
-          post.slug,
-        );
+        return PostSummary.create({
+          id: post.id,
+          author: post.author,
+          createdAt: post.createdAt,
+          images: post.images.map((image) => image.src),
+          slug: post.slug,
+        });
       });
     } catch (e) {
       return Promise.reject(e);
