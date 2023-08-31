@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { Comment } from '../aggregates/comment/comment.model';
-import { User } from '../aggregates/user/user.model';
-
 import { stringifyAny } from 'src/common/utils/utils';
 import { Post } from '../aggregates/post/post.model';
 
@@ -22,8 +20,8 @@ export abstract class CommentRepository {
     return this.getCacheString(p) !== origin;
   }
 
-  async getCommentByID(pid: bigint): Promise<Comment | undefined> {
-    const comment = await this._getCommentByID(pid);
+  async getCommentByID(cid: bigint): Promise<Comment | null> {
+    const comment = await this._getCommentByID(cid);
     const cacheKey = this.getCachekey(comment);
     this.comments.set(cacheKey, comment);
     this.commentOrigins.set(cacheKey, this.getCacheString(comment));
@@ -34,14 +32,14 @@ export abstract class CommentRepository {
     return await this._getComments(post);
   }
 
-  async createComment(comment: Comment): Promise<Comment | undefined> {
+  async createComment(comment: Comment): Promise<Comment> {
     const newComment = await this._createComment(comment);
     const cacheKey = this.getCachekey(newComment);
     this.comments.set(cacheKey, newComment);
     return newComment;
   }
 
-  async deleteComment(comment: Comment): Promise<Comment | undefined> {
+  async deleteComment(comment: Comment): Promise<Comment> {
     const cacheKey = this.getCachekey(comment);
     this.comments.delete(cacheKey);
     this.commentOrigins.delete(cacheKey);
@@ -70,11 +68,11 @@ export abstract class CommentRepository {
 
   // Abstract methods to be implemented by the actual repository
 
-  abstract _getCommentByID(pid: bigint): Promise<Comment | undefined>;
+  abstract _getCommentByID(cid: bigint): Promise<Comment | null>;
   abstract _getComments(post: Post): Promise<Comment[]>;
 
-  abstract _createComment(comment: Comment): Promise<Comment | undefined>;
-  abstract _deleteComment(traget: Comment): Promise<Comment | undefined>;
+  abstract _createComment(comment: Comment): Promise<Comment>;
+  abstract _deleteComment(traget: Comment): Promise<Comment>;
 
   abstract _save(changes: Set<Comment>): Promise<void>;
 }

@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '../user/user.model';
-import { Post } from '../post/post.model';
 
 @Injectable()
 export class Like<T> {

@@ -1,18 +1,18 @@
 // task.service.ts
 import { Injectable } from '@nestjs/common';
-import { User, UserUpdatePostInput } from '../user/user.model';
+import { UserUpdatePostInput } from '../user/user.model';
 
 import crypto from 'crypto';
 
 export type CreatePrePostInput = {
-  author: User;
+  author: bigint;
   images: string[];
   content: string;
 };
 
 export type CreatePostInput = {
   slug: string;
-  author: User;
+  author: bigint;
   images: string[];
   content: string;
 
@@ -29,7 +29,7 @@ export type UpdatePostInput = {
 export class Post {
   constructor(
     private slug: string,
-    private author: User,
+    private author: bigint,
     private images: string[],
     private content: string,
 
@@ -66,7 +66,7 @@ export class Post {
     return this.slug;
   }
 
-  getAuthor(): User {
+  getAuthor(): bigint {
     return this.author;
   }
 
@@ -82,7 +82,7 @@ export class Post {
     return {
       id: this.id,
       slug: this.slug,
-      author: this.author.getID(),
+      author: this.author,
       images: [...this.images],
       content: this.content,
       createdAt: this.createdAt,

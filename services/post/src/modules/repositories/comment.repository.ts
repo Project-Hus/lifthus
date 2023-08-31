@@ -1,79 +1,177 @@
 import { Injectable } from '@nestjs/common';
-import { Comment } from '../domain/aggregates/comment/comment.model';
+import {
+  Comment,
+  CreateReplyInput,
+} from '../domain/aggregates/comment/comment.model';
 
-import { stringifyAny } from 'src/common/utils/utils';
 import { Post } from '../domain/aggregates/post/post.model';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CommentRepository } from '../domain/repositories/comment.repository';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
-export abstract class CommentRepository {
-  private comments: Map<bigint, Comment> = new Map();
-  private commentOrigins: Map<bigint, string> = new Map();
-
-  private getCachekey(p: Comment): bigint {
-    return BigInt(p.getID());
+export class PrismaCommentRepository extends CommentRepository {
+  constructor(private prismaService: PrismaService) {
+    super();
   }
 
-  private getCacheString(p: Comment): string {
-    return stringifyAny(p);
+  async _getCommentByID(cid: bigint): Promise<Comment | null> {
+    try {
+      const comm = await this.prismaService.comment.findUnique({
+        where: {
+          id: cid,
+        },
+        include: {
+          replies: {
+            select: {
+              id: true,
+              author: true,
+              createdAt: true,
+              updatedAt: true,
+              content: true,
+            },
+          },
+        },
+      });
+      if (!comm) return null;
+      return Comment.queryComment({
+        id: comm.id,
+        author: comm.author,
+        content: comm.content,
+        postId: comm.postId,
+        createdAt: comm.createdAt,
+        updatedAt: comm.updatedAt,
+        replies: comm.replies.map((r) => {
+          return Comment.queryReply({
+            id: r.id,
+            postId: comm.postId,
+            parentId: comm.id,
+            author: r.author,
+            content: r.content,
+            createdAt: r.createdAt,
+            updatedAt: r.updatedAt,
+          });
+        }),
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
   }
 
-  private isUpdated(p: Comment, origin: string): boolean {
-    return this.getCacheString(p) !== origin;
+  async _getComments(post: Post): Promise<Comment[]> {
+    try {
+      const comms = await this.prismaService.comment.findMany({
+        where: {
+          postId: post.getID(),
+          parentId: null,
+        },
+        include: {
+          replies: {
+            select: {
+              id: true,
+              author: true,
+              createdAt: true,
+              updatedAt: true,
+              content: true,
+            },
+          },
+        },
+      });
+      const comments: Comment[] = comms.map((comm) => {
+        const replies: Comment[] = comm.replies.map((r) => {
+          return Comment.queryReply({
+            id: r.id,
+            author: r.author,
+            postId: comm.postId,
+            parentId: comm.id,
+            content: r.content,
+            createdAt: r.createdAt,
+            updatedAt: r.updatedAt,
+          });
+        });
+        return Comment.queryComment({
+          id: comm.id,
+          author: comm.author,
+          postId: comm.postId,
+          content: comm.content,
+          createdAt: comm.createdAt,
+          updatedAt: comm.updatedAt,
+          replies: replies,
+        });
+      });
+      return comments;
+    } catch (e) {
+      return Promise.reject(e);
+    }
   }
 
-  async getCommentByID(pid: bigint): Promise<Comment | undefined> {
-    const comment = await this._getCommentByID(pid);
-    const cacheKey = this.getCachekey(comment);
-    this.comments.set(cacheKey, comment);
-    this.commentOrigins.set(cacheKey, this.getCacheString(comment));
-    return comment;
+  async _createComment(comment: Comment): Promise<Comment> {
+    if (!comment.isPre()) return Promise.reject('Comment already created');
+    try {
+      const newComm = await this.prismaService.comment.create({
+        data: {
+          postId: comment.getPostID(),
+          parentId: comment.getParentID(),
+          author: comment.getAuthor(),
+          content: comment.getContent(),
+        },
+      });
+      if (!newComm.parentId) {
+        return Comment.queryComment({
+          id: newComm.id,
+          author: newComm.author,
+          postId: newComm.postId,
+          content: newComm.content,
+          createdAt: newComm.createdAt,
+          updatedAt: newComm.updatedAt,
+          replies: [],
+        });
+      }
+      return Comment.queryReply({
+        id: newComm.id,
+        author: newComm.author,
+        postId: newComm.postId,
+        parentId: newComm.parentId,
+        content: newComm.content,
+        createdAt: newComm.createdAt,
+        updatedAt: newComm.updatedAt,
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
+  async _deleteComment(target: Comment): Promise<Comment> {
+    try {
+      const deletedComment = await this.prismaService.comment.delete({
+        where: {
+          id: target.getID(),
+        },
+      });
+      return target;
+    } catch (e) {
+      return Promise.reject(e);
+    }
   }
 
-  async getComments(post: Post): Promise<Comment[]> {
-    return await this._getComments(post);
+  async _save(changes: Set<Comment>): Promise<void> {
+    try {
+      const changeList = Array.from(changes);
+      // start prisma transaction
+      await this.prismaService.$transaction([
+        ...changeList.map((change) => {
+          return this.prismaService.comment.update({
+            where: {
+              id: change.getID(),
+            },
+            data: {
+              content: change.getContent(),
+            },
+          });
+        }),
+      ]);
+      return;
+    } catch (e) {
+      return Promise.reject(e);
+    }
   }
-
-  async createComment(comment: Comment): Promise<Comment | undefined> {
-    const newComment = await this._createComment(comment);
-    const cacheKey = this.getCachekey(newComment);
-    this.comments.set(cacheKey, newComment);
-    return newComment;
-  }
-
-  async deleteComment(comment: Comment): Promise<Comment | undefined> {
-    const cacheKey = this.getCachekey(comment);
-    this.comments.delete(cacheKey);
-    this.commentOrigins.delete(cacheKey);
-    return await this._deleteComment(comment);
-  }
-
-  private clear() {
-    this.comments.clear();
-    this.commentOrigins.clear();
-  }
-
-  async save(): Promise<void> {
-    const changes: Set<Comment> = new Set();
-    this.comments.forEach((comment, key) => {
-      const origin = this.commentOrigins.get(key);
-      if (this.isUpdated(comment, origin)) changes.add(comment);
-    });
-    this.clear();
-    return this._save(changes);
-  }
-
-  async cancel(): Promise<void> {
-    this.clear();
-    return this._save(new Set());
-  }
-
-  // Abstract methods to be implemented by the actual repository
-
-  abstract _getCommentByID(pid: bigint): Promise<Comment | undefined>;
-  abstract _getComments(post: Post): Promise<Comment[]>;
-
-  abstract _createComment(comment: Comment): Promise<Comment | undefined>;
-  abstract _deleteComment(traget: Comment): Promise<Comment | undefined>;
-
-  abstract _save(changes: Set<Comment>): Promise<void>;
 }

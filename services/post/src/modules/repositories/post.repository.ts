@@ -144,7 +144,7 @@ export class PrismaPostRepository extends PostRepository {
       if (!post) return null;
       return Post.reconstitue({
         slug: post.slug,
-        author: new User(post.author),
+        author: post.author,
         images: post.images.map((image) => image.src),
         content: post.content,
         id: post.id,
@@ -178,7 +178,7 @@ export class PrismaPostRepository extends PostRepository {
       if (!post) return null;
       return Post.reconstitue({
         slug: post.slug,
-        author: new User(post.author),
+        author: post.author,
         images: post.images.map((image) => image.src),
         content: post.content,
         id: post.id,
@@ -194,7 +194,7 @@ export class PrismaPostRepository extends PostRepository {
     if (!post.isPre()) return undefined;
     try {
       let createInput: Prisma.PostCreateInput = {
-        author: post.getAuthor().getID(),
+        author: post.getAuthor(),
         slug: post.getSlug(),
         content: post.getContent(),
         images: {
