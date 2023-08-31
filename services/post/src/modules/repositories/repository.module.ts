@@ -5,6 +5,12 @@ import { PrismaPostRepository } from './post.repository';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserRepository } from './user.repository';
 import { UserRepository as AbstractUserRepository } from '../domain/repositories/user.repository';
+import { LikeRepository } from '../domain/repositories/like.repository';
+import { Post } from '../domain/aggregates/post/post.model';
+import {
+  PrismaCommentLikeRepository,
+  PrismaPostLikeRepository,
+} from './like.repository';
 
 @Module({
   imports: [DomainModule],
@@ -18,6 +24,8 @@ import { UserRepository as AbstractUserRepository } from '../domain/repositories
       provide: PostRepository,
       useClass: PrismaPostRepository,
     },
+    PrismaPostLikeRepository,
+    PrismaCommentLikeRepository,
   ],
 })
 export class RepositoryModule {}

@@ -8,7 +8,7 @@ import { Post } from '../domain/aggregates/post/post.model';
 import { Comment } from '../domain/aggregates/comment/comment.model';
 
 @Injectable()
-export abstract class PrismaPostLikeRepository extends LikeRepository<Post> {
+export class PrismaPostLikeRepository extends LikeRepository<Post> {
   constructor(private readonly prismaService: PrismaService) {
     super();
   }
@@ -63,7 +63,7 @@ export abstract class PrismaPostLikeRepository extends LikeRepository<Post> {
 }
 
 @Injectable()
-export abstract class PrismaCommentLikeRepository extends LikeRepository<Comment> {
+export class PrismaCommentLikeRepository extends LikeRepository<Comment> {
   constructor(private readonly prismaService: PrismaService) {
     super();
   }
