@@ -27,19 +27,25 @@ export type UpdatePostInput = {
 
 @Injectable()
 export class Post {
-  constructor(
-    private slug: string,
-    private author: bigint,
-    private images: string[],
-    private content: string,
+  private slug: string;
+  private author: bigint;
+  private images: string[];
+  private content: string;
 
-    private id?: bigint,
-    private createdAt?: Date,
-    private updatedAt?: Date,
-  ) {}
+  private id?: bigint;
+  private createdAt?: Date;
+  private updatedAt?: Date;
 
   static create(p: CreatePrePostInput): Post {
-    return new Post(Post.getSlug(p.content), p.author, p.images, p.content);
+    return new Post().setNewPost(p);
+  }
+
+  private setNewPost(p: CreatePrePostInput): Post {
+    this.slug = Post.getSlug(p.content);
+    this.author = p.author;
+    this.images = p.images;
+    this.content = p.content;
+    return this;
   }
 
   isPre(): boolean {
@@ -47,15 +53,18 @@ export class Post {
   }
 
   static query(postInput: CreatePostInput): Post {
-    return new Post(
-      postInput.slug,
-      postInput.author,
-      postInput.images,
-      postInput.content,
-      postInput.id,
-      postInput.createdAt,
-      postInput.updatedAt,
-    );
+    return new Post().setQuery(postInput);
+  }
+
+  private setQuery(p: CreatePostInput): Post {
+    this.slug = p.slug;
+    this.author = p.author;
+    this.images = p.images;
+    this.content = p.content;
+    this.id = p.id;
+    this.createdAt = p.createdAt;
+    this.updatedAt = p.updatedAt;
+    return this;
   }
 
   getID(): bigint {
