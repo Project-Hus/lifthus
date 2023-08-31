@@ -25,7 +25,16 @@ export type UserUpdateCommentInput = {
 
 @Injectable()
 export class User {
-  constructor(private id: bigint) {}
+  private id: bigint;
+
+  static create(id: bigint): User {
+    return new User().setID(id);
+  }
+
+  private setID(id: bigint): User {
+    this.id = id;
+    return this;
+  }
 
   getID() {
     return this.id;

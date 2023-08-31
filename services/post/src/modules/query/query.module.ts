@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { CommentQueryController } from './comment/query.controller';
+import { CommentQueryController } from './comment/comment.query.controller';
 import { PostQueryService } from './post/post.query.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CommentQueryService } from './comment/comment.query.service';

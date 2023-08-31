@@ -5,6 +5,6 @@ import { User } from '../aggregates/user/user.model';
 export class UserRepository {
   constructor() {}
   getUser(id: bigint): User {
-    return new User(id);
+    return User.create(id);
   }
 }

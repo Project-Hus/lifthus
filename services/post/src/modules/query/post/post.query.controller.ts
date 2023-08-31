@@ -6,24 +6,26 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PostQueryService } from './post.query.service';
-import { Post } from '@prisma/client';
+import { Post as PrismaPost } from '@prisma/client';
+import { Post } from 'src/modules/domain/aggregates/post/post.model';
+import { PostSummary } from 'src/modules/domain/aggregates/post/postSummary.model';
 
 @Controller('/post/query/post')
 export class PostQueryController {
   constructor(private readonly postQueryService: PostQueryService) {}
 
-  @Get('/post/slug/:slug')
+  @Get('/slug/:slug')
   getPostBySlug(@Param('slug') slug: string): Promise<Post> {
-    return this.postQueryService.getPostBySlug(slug);
+    return this.postQueryService.getPostBySlugV2(slug);
   }
 
-  @Get('/post/id/:id')
+  @Get('/id/:id')
   getPostById(@Param('id') idStr: string): Promise<Post> {
     const id = Number(idStr);
     if (isNaN(id)) {
       throw new BadRequestException();
     }
-    return this.postQueryService.getPostById(id);
+    return this.postQueryService.getPostByIdV2(id);
   }
 
   /**
@@ -32,10 +34,10 @@ export class PostQueryController {
    * @returns Post[]
    * @example /post/query/post/all/0
    */
-  @Get('/post/all/:skip')
-  getAllPosts(@Param('skip') skipStr: string): Promise<Post[]> {
+  @Get('/all/:skip')
+  getAllPosts(@Param('skip') skipStr: string): Promise<PostSummary[]> {
     const skip = Number(skipStr) || 0;
-    return this.postQueryService.getAllPosts(Number(skip));
+    return this.postQueryService.getAllPostsV2(Number(skip));
   }
 
   /**
@@ -44,11 +46,11 @@ export class PostQueryController {
    * @returns Post[]
    * @example /post/query/post?users=1,2,3
    */
-  @Get('/post')
+  @Get('')
   getUsersPosts(
     @Query('users') usersStr: string,
     @Query('skip') skipStr: string,
-  ): Promise<Post[]> {
+  ): Promise<PostSummary[]> {
     const users: number[] = usersStr
       .split(',')
       .map((userStr) => Number(userStr));
@@ -56,14 +58,14 @@ export class PostQueryController {
       throw new BadRequestException();
     }
     const skip = Number(skipStr) || 0;
-    return this.postQueryService.getUsersPosts({ users, skip });
+    return this.postQueryService.getUsersPostsV2({ users, skip });
   }
 
   @Get('/postnc')
   getUsersPostsNoComments(
     @Query('users') usersStr: string,
     @Query('skip') skipStr: string,
-  ): Promise<Post[]> {
+  ): Promise<PrismaPost[]> {
     const users: number[] = usersStr
       .split(',')
       .map((userStr) => Number(userStr));
@@ -86,7 +88,7 @@ export class PostQueryController {
   getUserPosts(
     @Param('uid') uid: any,
     @Param('skip') skip: any,
-  ): Promise<Post[]> {
+  ): Promise<PrismaPost[]> {
     skip = skip || 0;
     return this.postQueryService.getUserPosts(Number(uid), Number(skip));
   }
