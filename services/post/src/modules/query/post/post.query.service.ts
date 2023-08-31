@@ -13,7 +13,6 @@ export class PostQueryService {
     private readonly prismaService: PrismaService,
     private readonly userRepo: UserRepository,
     private readonly postRepo: PrismaPostRepository,
-    private readonly userModel: User,
   ) {}
   getHello(): string {
     return 'Hello World!';

@@ -8,5 +8,6 @@ import { PostSummary } from './aggregates/post/postSummary.model';
 @Module({
   imports: [],
   providers: [User, PostSummary, Post, Comment, Like],
+  exports: [User, PostSummary, Post, Comment, Like],
 })
 export class DomainModule {}

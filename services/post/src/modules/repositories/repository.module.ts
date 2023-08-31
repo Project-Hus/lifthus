@@ -30,5 +30,12 @@ import { PrismaCommentRepository } from './comment.repository';
     PrismaPostLikeRepository,
     PrismaCommentLikeRepository,
   ],
+  exports: [
+    UserRepository,
+    PostRepository,
+    CommentRepository,
+    PrismaPostLikeRepository,
+    PrismaCommentLikeRepository,
+  ],
 })
 export class RepositoryModule {}
