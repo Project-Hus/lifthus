@@ -5,8 +5,8 @@ import {
   Query,
   BadRequestException,
 } from '@nestjs/common';
-import { PostQueryService } from './post.query.service';
-import { CommentQueryService } from './comment.query.service';
+import { PostQueryService } from './post/post.query.service';
+import { CommentQueryService } from './comment/comment.query.service';
 import { Post, Comment } from '@prisma/client';
 
 @Controller('/post/query')

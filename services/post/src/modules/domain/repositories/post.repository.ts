@@ -30,30 +30,32 @@ export abstract class PostRepository {
     return await this._getUsersPostSumms(users, skip);
   }
 
-  async getPostByID(pid: bigint): Promise<Post | undefined> {
+  async getPostByID(pid: bigint): Promise<Post | null> {
     const post = await this._getPostByID(pid);
+    if (!post) return null;
     const cacheKey = this.getCachekey(post);
     this.posts.set(cacheKey, post);
     this.postOrigins.set(cacheKey, this.getCacheString(post));
     return post;
   }
 
-  async getPostBySlug(slug: string): Promise<Post | undefined> {
+  async getPostBySlug(slug: string): Promise<Post | null> {
     const post = await this._getPostBySlug(slug);
+    if (!post) return null;
     const cacheKey = this.getCachekey(post);
     this.posts.set(cacheKey, post);
     this.postOrigins.set(cacheKey, this.getCacheString(post));
     return post;
   }
 
-  async createPost(post: Post): Promise<Post | undefined> {
+  async createPost(post: Post): Promise<Post> {
     const newPost = await this._createPost(post);
     const cacheKey = this.getCachekey(newPost);
     this.posts.set(cacheKey, newPost);
     return newPost;
   }
 
-  async deletePost(post: Post): Promise<Post | undefined> {
+  async deletePost(post: Post): Promise<Post> {
     const cacheKey = this.getCachekey(post);
     this.posts.delete(cacheKey);
     this.postOrigins.delete(cacheKey);
@@ -88,11 +90,11 @@ export abstract class PostRepository {
     skip: number,
   ): Promise<PostSummary[]>;
 
-  abstract _getPostByID(pid: bigint): Promise<Post | undefined>;
-  abstract _getPostBySlug(slug: string): Promise<Post | undefined>;
+  abstract _getPostByID(pid: bigint): Promise<Post | null>;
+  abstract _getPostBySlug(slug: string): Promise<Post | null>;
 
-  abstract _createPost(post: Post): Promise<Post | undefined>;
-  abstract _deletePost(traget: Post): Promise<Post | undefined>;
+  abstract _createPost(post: Post): Promise<Post>;
+  abstract _deletePost(traget: Post): Promise<Post>;
 
   abstract _save(changes: Set<Post>): Promise<void>;
 }

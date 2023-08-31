@@ -42,8 +42,8 @@ export class Post {
     return new Post(Post.getSlug(p.content), p.author, p.images, p.content);
   }
 
-  isPre(post: Post): boolean {
-    return !post.id;
+  isPre(): boolean {
+    return !this.id;
   }
 
   static reconstitue(postInput: CreatePostInput): Post {
@@ -68,6 +68,14 @@ export class Post {
 
   getAuthor(): User {
     return this.author;
+  }
+
+  getContent(): string {
+    return this.content;
+  }
+
+  getImageSrcs(): string[] {
+    return this.images;
   }
 
   queryPost(): any {
