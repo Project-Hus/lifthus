@@ -11,6 +11,8 @@ import {
   PrismaCommentLikeRepository,
   PrismaPostLikeRepository,
 } from './like.repository';
+import { CommentRepository } from '../domain/repositories/comment.repository';
+import { PrismaCommentRepository } from './comment.repository';
 
 @Module({
   imports: [DomainModule],
@@ -24,6 +26,7 @@ import {
       provide: PostRepository,
       useClass: PrismaPostRepository,
     },
+    { provide: CommentRepository, useClass: PrismaCommentRepository },
     PrismaPostLikeRepository,
     PrismaCommentLikeRepository,
   ],

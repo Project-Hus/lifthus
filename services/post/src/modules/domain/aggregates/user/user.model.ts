@@ -2,7 +2,7 @@
 import { Injectable } from '@nestjs/common';
 import { Post } from '../post/post.model';
 
-import { Comment } from '../comment/comment.model';
+import { Comment, CreatePreCommentInput } from '../comment/comment.model';
 import { Like } from '../like/like.model';
 
 export type UserCreatePostInput = {
@@ -14,9 +14,8 @@ export type UserUpdatePostInput = {
   content: string;
 };
 
-export type UserCreateCommentInput = {
-  post: Post;
-  parent?: Comment;
+export type UserCreatePreCommentInput = {
+  postId: bigint;
   content: string;
 };
 
@@ -33,16 +32,16 @@ export class User {
   }
 
   createPost({ images, content }: UserCreatePostInput): Post {
-    return Post.create({ author: this, images, content });
+    return Post.create({ author: this.id, images, content });
   }
 
   updatePost(post: Post, changes: UserUpdatePostInput): Post | undefined {
-    if (this.id !== post.getAuthor().getID()) return undefined;
+    if (this.id !== post.getAuthor()) return undefined;
     return post.update(changes);
   }
 
   deletePost(post: Post): Post | undefined {
-    if (this.id !== post.getAuthor().getID()) return undefined;
+    if (this.id !== post.getAuthor()) return undefined;
     return post;
   }
 
@@ -56,17 +55,17 @@ export class User {
     return like.unlike(this);
   }
 
-  createComment(c: UserCreateCommentInput): Comment {
-    return Comment.create({ author: this, ...c });
+  createComment(c: UserCreatePreCommentInput): Comment {
+    return Comment.createComment({ author: this.id, ...c });
   }
 
   updateComment(comment: Comment, changes: UserUpdateCommentInput): Comment {
-    if (this.id !== comment.getAuthor().getID()) return;
+    if (this.id !== comment.getAuthor()) return;
     return comment.update(changes);
   }
 
   deleteComment(comment: Comment): Comment {
-    if (this.id !== comment.getAuthor().getID()) return;
+    if (this.id !== comment.getAuthor()) return;
     return comment;
   }
 

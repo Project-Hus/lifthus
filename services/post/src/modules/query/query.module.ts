@@ -5,9 +5,12 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CommentQueryService } from './comment/comment.query.service';
 import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from 'src/common/filters/http-exception.filter';
+import { RepositoryModule } from '../repositories/repository.module';
+import { DomainModule } from '../domain/domain.module';
 
 @Module({
   controllers: [QueryController],
+  imports: [DomainModule, RepositoryModule],
   providers: [
     PrismaService,
     PostQueryService,
