@@ -231,6 +231,24 @@ export class PrismaPostRepository extends PostRepository {
   }
 
   async _save(changes: Set<Post>): Promise<void> {
-    return;
+    try {
+      const changeList = Array.from(changes);
+      // start prisma transaction
+      await this.prismaService.$transaction([
+        ...changeList.map((change) => {
+          return this.prismaService.post.update({
+            where: {
+              id: change.getID(),
+            },
+            data: {
+              content: change.getContent(),
+            },
+          });
+        }),
+      ]);
+      return;
+    } catch (e) {
+      return Promise.reject(e);
+    }
   }
 }
