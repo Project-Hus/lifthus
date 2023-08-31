@@ -22,7 +22,7 @@ export class PrismaPostLikeRepository extends LikeRepository<Post> {
         },
       },
     });
-    return new Like(u, t, !!postLike);
+    return Like.create(u, t, !!postLike);
   }
 
   async _getLikeNum(t: Post): Promise<number> {
@@ -42,15 +42,15 @@ export class PrismaPostLikeRepository extends LikeRepository<Post> {
             ? this.prismaService.postLike.delete({
                 where: {
                   postId_user: {
-                    postId: like.target.getID(),
-                    user: like.liker.getID(),
+                    postId: like.getTarget().getID(),
+                    user: like.getLiker().getID(),
                   },
                 },
               })
             : this.prismaService.postLike.create({
                 data: {
-                  postId: like.target.getID(),
-                  user: like.liker.getID(),
+                  postId: like.getTarget().getID(),
+                  user: like.getLiker().getID(),
                 },
               });
         }),
@@ -77,7 +77,7 @@ export class PrismaCommentLikeRepository extends LikeRepository<Comment> {
         },
       },
     });
-    return new Like(u, t, !!commentLike);
+    return Like.create(u, t, !!commentLike);
   }
 
   async _getLikeNum(t: Comment): Promise<number> {
@@ -97,15 +97,15 @@ export class PrismaCommentLikeRepository extends LikeRepository<Comment> {
             ? this.prismaService.commentLike.delete({
                 where: {
                   commentId_user: {
-                    commentId: like.target.getID(),
-                    user: like.liker.getID(),
+                    commentId: like.getTarget().getID(),
+                    user: like.getLiker().getID(),
                   },
                 },
               })
             : this.prismaService.commentLike.create({
                 data: {
-                  commentId: like.target.getID(),
-                  user: like.liker.getID(),
+                  commentId: like.getTarget().getID(),
+                  user: like.getLiker().getID(),
                 },
               });
         }),

@@ -55,12 +55,13 @@ export class User {
   }
 
   likePost(like: Like<Post>): Like<Post> | undefined {
-    if (like.liker.getID() !== this.id || like.isLiked()) return undefined;
+    if (like.getLiker().getID() !== this.id || like.isLiked()) return undefined;
     return like.like(this);
   }
 
   unlikePost(like: Like<Post>): Like<Post> | undefined {
-    if (like.liker.getID() !== this.id || !like.isLiked()) return undefined;
+    if (like.getLiker().getID() !== this.id || !like.isLiked())
+      return undefined;
     return like.unlike(this);
   }
 
@@ -79,12 +80,13 @@ export class User {
   }
 
   likeComment(like: Like<Comment>): Like<Comment> | undefined {
-    if (like.liker.getID() !== this.id || like.isLiked()) return undefined;
+    if (like.getLiker().getID() !== this.id || like.isLiked()) return undefined;
     return like.like(this);
   }
 
   unlikeComment(like: Like<Comment>): Like<Comment> | undefined {
-    if (like.liker.getID() !== this.id || !like.isLiked()) return undefined;
+    if (like.getLiker().getID() !== this.id || !like.isLiked())
+      return undefined;
     return like.unlike(this);
   }
 }
