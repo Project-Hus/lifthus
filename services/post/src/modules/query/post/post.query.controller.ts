@@ -5,34 +5,12 @@ import {
   Query,
   BadRequestException,
 } from '@nestjs/common';
-import { PostQueryService } from './post/post.query.service';
-import { CommentQueryService } from './comment/comment.query.service';
-import { Post, Comment } from '@prisma/client';
+import { PostQueryService } from './post.query.service';
+import { Post } from '@prisma/client';
 
-@Controller('/post/query')
-export class QueryController {
-  constructor(
-    private readonly postQueryService: PostQueryService,
-    private readonly commentQueryService: CommentQueryService,
-  ) {}
-
-  @Get()
-  getHello(): string {
-    return this.postQueryService.getHello();
-  }
-
-  @Get('/comment')
-  getComments(
-    @Query('pid') pidStr: string,
-    @Query('skip') skipStr: string,
-  ): Promise<Comment[]> {
-    const pid = Number(pidStr);
-    if (isNaN(pid)) {
-      throw new BadRequestException();
-    }
-    const skip = Number(skipStr) || 0;
-    return this.commentQueryService.getComments({ pid, skip });
-  }
+@Controller('/post/query/post')
+export class PostQueryController {
+  constructor(private readonly postQueryService: PostQueryService) {}
 
   @Get('/post/slug/:slug')
   getPostBySlug(@Param('slug') slug: string): Promise<Post> {

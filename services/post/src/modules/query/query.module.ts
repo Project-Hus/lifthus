@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { QueryController } from './query.controller';
+import { CommentQueryController } from './comment/query.controller';
 import { PostQueryService } from './post/post.query.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CommentQueryService } from './comment/comment.query.service';
@@ -7,9 +7,10 @@ import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from 'src/common/filters/http-exception.filter';
 import { RepositoryModule } from '../repositories/repository.module';
 import { DomainModule } from '../domain/domain.module';
+import { PostQueryController } from './post/post.query.controller';
 
 @Module({
-  controllers: [QueryController],
+  controllers: [CommentQueryController, PostQueryController],
   imports: [DomainModule, RepositoryModule],
   providers: [
     PrismaService,
