@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Post } from '../aggregates/post/post.model';
+import { Post, UpdatePostInput } from '../aggregates/post/post.model';
 import { User } from '../aggregates/user/user.model';
 import { PostSummary } from '../aggregates/post/postSummary.model';
 
@@ -30,7 +30,7 @@ export abstract class PostRepository {
   }
 
   async save(post: Post): Promise<Post> {
-    return this._save(post);
+    return this._save(post.getID(), post.getUpdates());
   }
 
   // Abstract methods to be implemented by the actual repository
@@ -47,5 +47,5 @@ export abstract class PostRepository {
   abstract _createPost(post: Post): Promise<Post>;
   abstract _deletePost(traget: Post): Promise<Post>;
 
-  abstract _save(post: Post): Promise<Post>;
+  abstract _save(pid: bigint, updates: UpdatePostInput): Promise<Post>;
 }

@@ -46,7 +46,7 @@ export class Post {
     return !this.id;
   }
 
-  static reconstitue(postInput: CreatePostInput): Post {
+  static query(postInput: CreatePostInput): Post {
     return new Post(
       postInput.slug,
       postInput.author,
@@ -93,6 +93,12 @@ export class Post {
   update(changes: UserUpdatePostInput): Post {
     this.content = changes.content;
     return this;
+  }
+
+  getUpdates(): UpdatePostInput {
+    return {
+      content: this.content,
+    };
   }
 
   delete(): Post {

@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CreatePostInput, Post } from '../domain/aggregates/post/post.model';
+import {
+  CreatePostInput,
+  Post,
+  UpdatePostInput,
+} from '../domain/aggregates/post/post.model';
 import { PostSummary } from '../domain/aggregates/post/postSummary.model';
 import { User } from '../domain/aggregates/user/user.model';
 import { PostRepository } from '../domain/repositories/post.repository';
@@ -142,7 +146,7 @@ export class PrismaPostRepository extends PostRepository {
         },
       });
       if (!post) return null;
-      return Post.reconstitue({
+      return Post.query({
         slug: post.slug,
         author: post.author,
         images: post.images.map((image) => image.src),
@@ -176,7 +180,7 @@ export class PrismaPostRepository extends PostRepository {
         },
       });
       if (!post) return null;
-      return Post.reconstitue({
+      return Post.query({
         slug: post.slug,
         author: post.author,
         images: post.images.map((image) => image.src),
@@ -209,9 +213,29 @@ export class PrismaPostRepository extends PostRepository {
 
       const newPost = await this.prismaService.post.create({
         data: createInput,
+        include: {
+          images: {
+            select: {
+              order: true,
+              id: true,
+              src: true,
+            },
+            orderBy: {
+              order: 'asc',
+            },
+          },
+        },
       });
-      const newPostID = newPost.id;
-      return await this._getPostByID(newPostID);
+
+      return Post.query({
+        slug: newPost.slug,
+        author: newPost.author,
+        images: newPost.images.map((image) => image.src),
+        content: newPost.content,
+        id: newPost.id,
+        createdAt: newPost.createdAt,
+        updatedAt: newPost.updatedAt,
+      });
     } catch (e) {
       return Promise.reject(e);
     }
@@ -223,6 +247,7 @@ export class PrismaPostRepository extends PostRepository {
         where: {
           id: target.getID(),
         },
+        include: {},
       });
       return target;
     } catch (e) {
@@ -230,23 +255,36 @@ export class PrismaPostRepository extends PostRepository {
     }
   }
 
-  async _save(changes: Set<Post>): Promise<void> {
+  async _save(pid: bigint, updates: UpdatePostInput): Promise<Post> {
     try {
-      const changeList = Array.from(changes);
-      // start prisma transaction
-      await this.prismaService.$transaction([
-        ...changeList.map((change) => {
-          return this.prismaService.post.update({
-            where: {
-              id: change.getID(),
+      const updatedPost = await this.prismaService.post.update({
+        where: {
+          id: pid,
+        },
+        include: {
+          images: {
+            select: {
+              order: true,
+              id: true,
+              src: true,
             },
-            data: {
-              content: change.getContent(),
+            orderBy: {
+              order: 'asc',
             },
-          });
-        }),
-      ]);
-      return;
+          },
+        },
+        data: updates,
+      });
+
+      return Post.query({
+        slug: updatedPost.slug,
+        author: updatedPost.author,
+        images: updatedPost.images.map((image) => image.src),
+        content: updatedPost.content,
+        id: updatedPost.id,
+        createdAt: updatedPost.createdAt,
+        updatedAt: updatedPost.updatedAt,
+      });
     } catch (e) {
       return Promise.reject(e);
     }
