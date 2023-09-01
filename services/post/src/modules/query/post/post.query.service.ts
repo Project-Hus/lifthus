@@ -1,18 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Post as PrismaPost } from '@prisma/client';
 import { Post } from 'src/modules/domain/aggregates/post/post.model';
 import { PostSummary } from 'src/modules/domain/aggregates/post/postSummary.model';
 import { User } from 'src/modules/domain/aggregates/user/user.model';
-import { PrismaPostRepository } from 'src/modules/repositories/post.repository';
-import { UserRepository } from 'src/modules/repositories/user.repository';
+import { PostRepository } from 'src/modules/domain/repositories/post.repository';
+import { UserRepository } from 'src/modules/domain/repositories/user.repository';
+
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class PostQueryService {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly userRepo: UserRepository,
-    private readonly postRepo: PrismaPostRepository,
+    @Inject('UserRepository') private readonly userRepo: UserRepository,
+    @Inject('PostRepository') private readonly postRepo: PostRepository,
   ) {}
   getHello(): string {
     return 'Hello World!';

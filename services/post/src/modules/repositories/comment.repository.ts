@@ -11,7 +11,7 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PrismaCommentRepository extends CommentRepository {
-  constructor(private prismaService: PrismaService) {
+  constructor(private readonly prismaService: PrismaService) {
     super();
   }
 
