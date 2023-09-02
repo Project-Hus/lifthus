@@ -20,4 +20,4 @@ import { S3Service } from './post/s3.service';
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
   ],
 })
-export class MutationModule {}
+export class CommandModule {}

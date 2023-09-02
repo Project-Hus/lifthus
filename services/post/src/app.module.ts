@@ -1,11 +1,10 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
-import { OpenapiController } from './openapi/openapi.controller';
+import { OpenapiController } from 'src/openapi/openapi.controller';
 import { JwtModule } from '@nestjs/jwt';
-import { OpenapiService } from './openapi/openapi.service';
-import { UidMiddleware } from './common/middlewares/uid.middleware';
-import { QueryModule } from './modules/query/query.module';
-import { MutationModule } from './modules/command/mutation.module';
-import { RepositoryModule } from './modules/repositories/repository.module';
+import { OpenapiService } from 'src/openapi/openapi.service';
+import { UidMiddleware } from 'src/common/middlewares/uid.middleware';
+import { QueryModule } from 'src/modules/query/query.module';
+import { CommandModule } from 'src/modules/command/command.module';
 
 @Module({
   imports: [
@@ -13,7 +12,7 @@ import { RepositoryModule } from './modules/repositories/repository.module';
       secret: process.env.HUS_SECRET_KEY,
     }),
     QueryModule,
-    MutationModule,
+    CommandModule,
   ],
   controllers: [OpenapiController],
   providers: [OpenapiService],
