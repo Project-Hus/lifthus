@@ -17,4 +17,6 @@ import { DomainModule } from '../domain/domain.module';
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
   ],
 })
-export class QueryModule {}
+export class QueryModule {
+  constructor(private readonly RepositoryModule: RepositoryModule) {}
+}

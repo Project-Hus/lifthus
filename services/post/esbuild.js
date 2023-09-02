@@ -18,6 +18,7 @@ const config = {
         "cache-manager",
         "class-transformer",
         "class-validator",
+        '@prisma/client/package.json',
     ]
 };
 

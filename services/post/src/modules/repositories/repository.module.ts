@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Injectable, Logger, Module } from '@nestjs/common';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -16,16 +16,7 @@ import { UserRepository } from '../domain/repositories/user.repository';
 import { Post } from '../domain/aggregates/post/post.model';
 import { Comment } from '../domain/aggregates/comment/comment.model';
 import { DomainModule } from '../domain/domain.module';
-
-//
-export abstract class ABC {
-  hi(): string {
-    return 'hi';
-  }
-}
-
-export class CON extends ABC {}
-//
+import { ABC, CON } from './test.class';
 
 const postRepositoryProvider = {
   provide: PostRepository,
@@ -45,7 +36,7 @@ const userRepositoryProvider = {
     // { provide: CommentRepository, useClass: PrismaCommentRepository },
     // { provide: LikeRepository<Post>, useClass: PrismaPostLikeRepository },
     // { provide: LikeRepository<Comment>, useClass: PrismaCommentLikeRepository },
-    { provide: ABC, useClass: CON },
+    { provide: ABC, useClass: ABC },
   ],
   exports: [
     PrismaService,
