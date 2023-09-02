@@ -18,3 +18,7 @@ export const getCookie = (data: string, ctx: ExecutionContext): string => {
 export const slugify = (data: string): string => {
   return encodeURIComponent(data + crypto.randomBytes(8).toString('hex'));
 };
+
+export const stringifyAny = (data: any): string => {
+  return JSON.stringify(data);
+};
