@@ -5,6 +5,7 @@ import { PostSummary } from 'src/modules/domain/aggregates/post/postSummary.mode
 import { User } from 'src/modules/domain/aggregates/user/user.model';
 import { PostRepository } from 'src/modules/domain/repositories/post.repository';
 import { UserRepository } from 'src/modules/domain/repositories/user.repository';
+import { ABC } from 'src/modules/repositories/repository.module';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -12,6 +13,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class PostQueryService {
   constructor(
     private readonly prismaService: PrismaService,
+    private readonly abc: ABC,
     private readonly userRepo: UserRepository,
     private readonly postRepo: PostRepository,
   ) {}

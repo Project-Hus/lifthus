@@ -17,6 +17,16 @@ import { Post } from '../domain/aggregates/post/post.model';
 import { Comment } from '../domain/aggregates/comment/comment.model';
 import { DomainModule } from '../domain/domain.module';
 
+//
+export abstract class ABC {
+  hi(): string {
+    return 'hi';
+  }
+}
+
+export class CON extends ABC {}
+//
+
 const postRepositoryProvider = {
   provide: PostRepository,
   useClass: PrismaPostRepository,
@@ -35,6 +45,7 @@ const userRepositoryProvider = {
     // { provide: CommentRepository, useClass: PrismaCommentRepository },
     // { provide: LikeRepository<Post>, useClass: PrismaPostLikeRepository },
     // { provide: LikeRepository<Comment>, useClass: PrismaCommentLikeRepository },
+    { provide: ABC, useClass: CON },
   ],
   exports: [
     PrismaService,
@@ -43,6 +54,7 @@ const userRepositoryProvider = {
     // CommentRepository,
     // LikeRepository<Post>,
     // LikeRepository<Comment>,
+    ABC,
   ],
 })
 export class RepositoryModule {}
