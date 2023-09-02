@@ -16,7 +16,7 @@ export class PostQueryController {
 
   @Get('/slug/:slug')
   getPostBySlug(@Param('slug') slug: string): Promise<Post> {
-    return this.postQueryService.getPostBySlugV2(slug);
+    return this.postQueryService.getPostBySlug(slug);
   }
 
   @Get('/id/:id')
@@ -25,7 +25,7 @@ export class PostQueryController {
     if (isNaN(id)) {
       throw new BadRequestException();
     }
-    return this.postQueryService.getPostByIdV2(id);
+    return this.postQueryService.getPostById(id);
   }
 
   /**
@@ -34,10 +34,10 @@ export class PostQueryController {
    * @returns Post[]
    * @example /post/query/post/all/0
    */
-  @Get('/all/:skip')
-  getAllPosts(@Param('skip') skipStr: string): Promise<PostSummary[]> {
+  @Get('/all')
+  getAllPosts(@Query('skip') skipStr: string): Promise<PostSummary[]> {
     const skip = Number(skipStr) || 0;
-    return this.postQueryService.getAllPostsV2(Number(skip));
+    return this.postQueryService.getAllPosts(Number(skip));
   }
 
   /**
@@ -58,38 +58,6 @@ export class PostQueryController {
       throw new BadRequestException();
     }
     const skip = Number(skipStr) || 0;
-    return this.postQueryService.getUsersPostsV2({ users, skip });
-  }
-
-  @Get('/postnc')
-  getUsersPostsNoComments(
-    @Query('users') usersStr: string,
-    @Query('skip') skipStr: string,
-  ): Promise<PrismaPost[]> {
-    const users: number[] = usersStr
-      .split(',')
-      .map((userStr) => Number(userStr));
-    if (users.some((user) => isNaN(user))) {
-      throw new BadRequestException();
-    }
-    const skip = Number(skipStr) || 0;
-    return this.postQueryService.getUsersPostsNoComments({ users, skip });
-  }
-
-  /**
-   * gets user ID and skip number from url params and returns 10 posts from the skip number.
-   * @param req
-   * @param res
-   * @param uid
-   * @param skip
-   * @returns {Post[]}
-   */
-  @Get('/post/user/:uid/:skip')
-  getUserPosts(
-    @Param('uid') uid: any,
-    @Param('skip') skip: any,
-  ): Promise<PrismaPost[]> {
-    skip = skip || 0;
-    return this.postQueryService.getUserPosts(Number(uid), Number(skip));
+    return this.postQueryService.getUsersPosts({ users, skip });
   }
 }

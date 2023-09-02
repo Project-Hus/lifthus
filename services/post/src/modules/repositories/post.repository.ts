@@ -1,14 +1,17 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+
+import { PostRepository } from 'src/modules/domain/repositories/post.repository';
+
+import { PrismaService } from 'src/prisma/prisma.service';
+
+import { User } from 'src/modules/domain/aggregates/user/user.model';
 import {
   Post,
   UpdatePostInput,
 } from 'src/modules/domain/aggregates/post/post.model';
 import { PostSummary } from 'src/modules/domain/aggregates/post/postSummary.model';
-import { User } from 'src/modules/domain/aggregates/user/user.model';
-import { PostRepository } from 'src/modules/domain/repositories/post.repository';
-import { PrismaService } from 'src/prisma/prisma.service';
 
-import { Prisma, Post as PrismaPost } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 type PostSummWithImage = {
   id: bigint;
