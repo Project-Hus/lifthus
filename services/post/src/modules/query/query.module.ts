@@ -1,4 +1,4 @@
-import { Module, Query } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { CommentQueryController } from './comment/comment.query.controller';
 import { PostQueryService } from './post/post.query.service';
 import { CommentQueryService } from './comment/comment.query.service';
@@ -9,7 +9,7 @@ import { RepositoryModule } from '../repositories/repository.module';
 import { DomainModule } from '../domain/domain.module';
 
 @Module({
-  imports: [DomainModule, RepositoryModule],
+  imports: [RepositoryModule],
   controllers: [CommentQueryController, PostQueryController],
   providers: [
     PostQueryService,

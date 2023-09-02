@@ -17,19 +17,29 @@ import { Post } from '../domain/aggregates/post/post.model';
 import { Comment } from '../domain/aggregates/comment/comment.model';
 import { DomainModule } from '../domain/domain.module';
 
+const postRepositoryProvider = {
+  provide: PostRepository,
+  useClass: PrismaPostRepository,
+};
+
+const userRepositoryProvider = {
+  provide: UserRepository,
+  useClass: ConcreteUserRepository,
+};
+
 @Module({
   providers: [
     PrismaService,
-    { provide: 'PostRepository', useClass: PrismaPostRepository },
-    { provide: 'UserRepository', useClass: ConcreteUserRepository },
+    userRepositoryProvider,
+    postRepositoryProvider,
     // { provide: CommentRepository, useClass: PrismaCommentRepository },
     // { provide: LikeRepository<Post>, useClass: PrismaPostLikeRepository },
     // { provide: LikeRepository<Comment>, useClass: PrismaCommentLikeRepository },
   ],
   exports: [
     PrismaService,
-    'UserRepository',
-    'PostRepository',
+    userRepositoryProvider,
+    postRepositoryProvider,
     // CommentRepository,
     // LikeRepository<Post>,
     // LikeRepository<Comment>,

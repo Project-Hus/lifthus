@@ -12,8 +12,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class PostQueryService {
   constructor(
     private readonly prismaService: PrismaService,
-    @Inject('UserRepository') private readonly userRepo: UserRepository,
-    @Inject('PostRepository') private readonly postRepo: PostRepository,
+    private readonly userRepo: UserRepository,
+    private readonly postRepo: PostRepository,
   ) {}
   getHello(): string {
     return 'Hello World!';
