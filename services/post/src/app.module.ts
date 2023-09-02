@@ -5,6 +5,7 @@ import { OpenapiService } from './openapi/openapi.service';
 import { UidMiddleware } from './common/middlewares/uid.middleware';
 import { QueryModule } from './modules/query/query.module';
 import { MutationModule } from './modules/command/mutation.module';
+import { RepositoryModule } from './modules/repositories/repository.module';
 
 @Module({
   imports: [

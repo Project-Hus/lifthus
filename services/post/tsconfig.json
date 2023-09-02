@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
+    "module": "CommonJS", 
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -10,7 +10,7 @@
     
     "sourceMap": false,
 
-    "outDir": "./dist",
+    "outDir": "dist",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,

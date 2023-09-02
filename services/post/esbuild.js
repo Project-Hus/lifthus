@@ -9,6 +9,9 @@ const config = {
     target: ['node18'],
     bundle: true,
     keepNames: true,
+
+    minify: true,
+
     plugins: [],
     entryPoints,
     outfile,

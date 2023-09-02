@@ -1,12 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
-  CreatePostInput,
   Post,
   UpdatePostInput,
-} from '../domain/aggregates/post/post.model';
-import { PostSummary } from '../domain/aggregates/post/postSummary.model';
-import { User } from '../domain/aggregates/user/user.model';
-import { PostRepository } from '../domain/repositories/post.repository';
+} from 'src/modules/domain/aggregates/post/post.model';
+import { PostSummary } from 'src/modules/domain/aggregates/post/postSummary.model';
+import { User } from 'src/modules/domain/aggregates/user/user.model';
+import { PostRepository } from 'src/modules/domain/repositories/post.repository';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { Prisma, Post as PrismaPost } from '@prisma/client';
@@ -40,7 +39,9 @@ type PrismaPostImage = {
 
 @Injectable()
 export class PrismaPostRepository extends PostRepository {
-  constructor(private readonly prismaService: PrismaService) {
+  constructor(
+    @Inject(PrismaService) private readonly prismaService: PrismaService,
+  ) {
     super();
   }
 

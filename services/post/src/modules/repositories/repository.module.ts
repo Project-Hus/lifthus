@@ -1,51 +1,38 @@
-import { Injectable, Logger, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
+
+import { Post } from 'src/modules/domain/aggregates/post/post.model';
+import { Comment } from 'src/modules/domain/aggregates/comment/comment.model';
+
+import { UserRepository } from 'src/modules/domain/repositories/user.repository';
+import { PostRepository } from 'src/modules/domain/repositories/post.repository';
+import { CommentRepository } from 'src/modules/domain/repositories/comment.repository';
+import { LikeRepository } from 'src/modules/domain/repositories/like.repository';
 
 import { PrismaService } from 'src/prisma/prisma.service';
-
-import { ConcreteUserRepository } from './user.repository';
-import { PrismaPostRepository } from './post.repository';
-import { PrismaCommentRepository } from './comment.repository';
+import { ConcreteUserRepository } from 'src/modules/repositories/user.repository';
+import { PrismaPostRepository } from 'src/modules/repositories/post.repository';
+import { PrismaCommentRepository } from 'src/modules/repositories/comment.repository';
 import {
   PrismaCommentLikeRepository,
   PrismaPostLikeRepository,
-} from './like.repository';
-import { LikeRepository } from '../domain/repositories/like.repository';
-import { PostRepository } from '../domain/repositories/post.repository';
-import { CommentRepository } from '../domain/repositories/comment.repository';
-import { UserRepository } from '../domain/repositories/user.repository';
-import { Post } from '../domain/aggregates/post/post.model';
-import { Comment } from '../domain/aggregates/comment/comment.model';
-import { DomainModule } from '../domain/domain.module';
-import { ABC, CON } from './test.class';
-
-const postRepositoryProvider = {
-  provide: PostRepository,
-  useClass: PrismaPostRepository,
-};
-
-const userRepositoryProvider = {
-  provide: UserRepository,
-  useClass: ConcreteUserRepository,
-};
+} from 'src/modules/repositories/like.repository';
 
 @Module({
   providers: [
     PrismaService,
-    userRepositoryProvider,
-    postRepositoryProvider,
-    // { provide: CommentRepository, useClass: PrismaCommentRepository },
-    // { provide: LikeRepository<Post>, useClass: PrismaPostLikeRepository },
-    // { provide: LikeRepository<Comment>, useClass: PrismaCommentLikeRepository },
-    { provide: ABC, useClass: ABC },
+    { provide: UserRepository, useClass: ConcreteUserRepository },
+    { provide: PostRepository, useClass: PrismaPostRepository },
+    { provide: CommentRepository, useClass: PrismaCommentRepository },
+    { provide: LikeRepository<Post>, useClass: PrismaPostLikeRepository },
+    { provide: LikeRepository<Comment>, useClass: PrismaCommentLikeRepository },
   ],
   exports: [
     PrismaService,
-    userRepositoryProvider,
-    postRepositoryProvider,
-    // CommentRepository,
-    // LikeRepository<Post>,
-    // LikeRepository<Comment>,
-    ABC,
+    UserRepository,
+    PostRepository,
+    CommentRepository,
+    LikeRepository<Post>,
+    LikeRepository<Comment>,
   ],
 })
 export class RepositoryModule {}

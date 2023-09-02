@@ -1,11 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Post as PrismaPost } from '@prisma/client';
 import { Post } from 'src/modules/domain/aggregates/post/post.model';
 import { PostSummary } from 'src/modules/domain/aggregates/post/postSummary.model';
 import { User } from 'src/modules/domain/aggregates/user/user.model';
 import { PostRepository } from 'src/modules/domain/repositories/post.repository';
 import { UserRepository } from 'src/modules/domain/repositories/user.repository';
-import { ABC } from 'src/modules/repositories/test.class';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -13,7 +12,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class PostQueryService {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly abc: ABC,
     private readonly userRepo: UserRepository,
     private readonly postRepo: PostRepository,
   ) {}
