@@ -9,6 +9,9 @@ const config = {
     target: ['node18'],
     bundle: true,
     keepNames: true,
+
+    minify: true,
+
     plugins: [],
     entryPoints,
     outfile,
@@ -18,6 +21,7 @@ const config = {
         "cache-manager",
         "class-transformer",
         "class-validator",
+        '@prisma/client/package.json',
     ]
 };
 

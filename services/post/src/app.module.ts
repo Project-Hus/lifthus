@@ -3,10 +3,9 @@ import { OpenapiController } from './openapi/openapi.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { OpenapiService } from './openapi/openapi.service';
 import { UidMiddleware } from './common/middlewares/uid.middleware';
-import { QueryModule } from './modules/query.module';
-import { MutationModule } from './modules/mutation.module';
-import { APP_FILTER } from '@nestjs/core';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { QueryModule } from './modules/query/query.module';
+import { MutationModule } from './modules/command/mutation.module';
+import { RepositoryModule } from './modules/repositories/repository.module';
 
 @Module({
   imports: [
