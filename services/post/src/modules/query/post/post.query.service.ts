@@ -10,7 +10,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class PostQueryService {
   constructor(
-    private readonly prismaService: PrismaService,
     private readonly userRepo: UserRepository,
     private readonly postRepo: PostRepository,
   ) {}
