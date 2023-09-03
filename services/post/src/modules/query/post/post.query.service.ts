@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Post } from 'src/modules/domain/aggregates/post/post.model';
 import { PostSummary } from 'src/modules/domain/aggregates/post/postSummary.model';
 import { User } from 'src/modules/domain/aggregates/user/user.model';
@@ -10,8 +10,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class PostQueryService {
   constructor(
-    private readonly userRepo: UserRepository,
-    private readonly postRepo: PostRepository,
+    @Inject(UserRepository) private readonly userRepo: UserRepository,
+    @Inject(PostRepository) private readonly postRepo: PostRepository,
   ) {}
   getHello(): string {
     return 'Hello World!';
