@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   ForbiddenException,
+  Inject,
   Logger,
   Param,
   Post,
@@ -34,8 +35,8 @@ const s3 = new aws.S3();
 @Controller('/post/post')
 export class PostController {
   constructor(
-    private readonly postService: PostService,
-    private readonly s3Service: S3Service,
+    @Inject(PostService) private readonly postService: PostService,
+    @Inject(S3Service) private readonly s3Service: S3Service,
   ) {}
 
   /**

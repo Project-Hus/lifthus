@@ -1,6 +1,6 @@
 import { JwtService } from '@nestjs/jwt';
-import { LifthusSessionJWTPayload } from '../types/session';
-import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import { LifthusSessionJWTPayload } from 'src/common/types/session';
+import { Inject, Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 
 // class jsdoc template
@@ -12,7 +12,7 @@ import { Request, Response, NextFunction } from 'express';
  */
 @Injectable()
 export class UidMiddleware implements NestMiddleware {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(@Inject(JwtService) private readonly jwtService: JwtService) {}
   async use(req: Request, res: Response, next: NextFunction) {
     // get Authorization header
     const authHeader = req.headers['authorization'];

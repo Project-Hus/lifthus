@@ -5,8 +5,6 @@ import { User } from 'src/modules/domain/aggregates/user/user.model';
 import { PostRepository } from 'src/modules/domain/repositories/post.repository';
 import { UserRepository } from 'src/modules/domain/repositories/user.repository';
 
-import { PrismaService } from 'src/prisma/prisma.service';
-
 @Injectable()
 export class PostQueryService {
   constructor(

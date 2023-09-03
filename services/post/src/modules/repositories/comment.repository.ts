@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   Comment,
   CreateReplyInput,
@@ -11,7 +11,9 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PrismaCommentRepository extends CommentRepository {
-  constructor(private readonly prismaService: PrismaService) {
+  constructor(
+    @Inject(PrismaService) private readonly prismaService: PrismaService,
+  ) {
     super();
   }
 

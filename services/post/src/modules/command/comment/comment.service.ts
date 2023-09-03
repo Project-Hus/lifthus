@@ -1,11 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Comment, CommentLike, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCommentDto, UpdateCommentDto } from './comment.dto';
 
 @Injectable()
 export class CommentService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   createComment(comment: CreateCommentDto): Promise<Comment> {
     const newComment: Prisma.CommentCreateInput = {

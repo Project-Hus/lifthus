@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { CommentQueryController } from './comment/comment.query.controller';
+import { CommentQueryController } from 'src/modules/query/comment/comment.query.controller';
 import { PostQueryService } from 'src/modules/query/post/post.query.service';
 import { CommentQueryService } from 'src/modules/query/comment/comment.query.service';
 import { APP_FILTER } from '@nestjs/core';

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePostDto, UpdatePostDto } from './post.dto';
@@ -10,9 +10,9 @@ import { Post } from 'src/modules/domain/aggregates/post/post.model';
 @Injectable()
 export class PostService {
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly userRepo: UserRepository,
-    private readonly postRepo: PostRepository,
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(UserRepository) private readonly userRepo: UserRepository,
+    @Inject(PostRepository) private readonly postRepo: PostRepository,
   ) {}
 
   async createPost({

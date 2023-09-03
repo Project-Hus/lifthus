@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   ForbiddenException,
+  Inject,
   Logger,
   Param,
   Post,
@@ -19,7 +20,9 @@ import { Request } from 'express';
 
 @Controller('/post/comment')
 export class CommentController {
-  constructor(private readonly commentService: CommentService) {}
+  constructor(
+    @Inject(CommentService) private readonly commentService: CommentService,
+  ) {}
 
   /**
    * generates new post by the form data if the user is signed.

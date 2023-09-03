@@ -141,7 +141,6 @@ Resources:
         # OutExtension:
         #   - .js=.mjs
         Target: "es2017"
-        Sourcemap: false
         External:
           - "@nestjs/microservices"
           - "@nestjs/websockets"
