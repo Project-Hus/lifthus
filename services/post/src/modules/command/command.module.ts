@@ -12,12 +12,14 @@ import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from 'src/common/filters/http-exception.filter';
 
 import { RepositoryModule } from 'src/modules/repositories/repository.module';
+import { Post2Service } from 'src/modules/command/post/post2.service';
 
 @Module({
   imports: [RepositoryModule],
   controllers: [PostController, CommentController],
   providers: [
     PostService,
+    Post2Service,
     CommentService,
     PrismaService,
     S3Service,

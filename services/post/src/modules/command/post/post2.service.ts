@@ -2,13 +2,12 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePostDto, UpdatePostDto } from './post.dto';
-import { slugify } from 'src/common/utils/utils';
 import { UserRepository } from 'src/modules/domain/repositories/user.repository';
 import { PostRepository } from 'src/modules/domain/repositories/post.repository';
 import { Post } from 'src/modules/domain/aggregates/post/post.model';
 
 @Injectable()
-export class PostService {
+export class Post2Service {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(UserRepository) private readonly userRepo: UserRepository,
@@ -24,7 +23,9 @@ export class PostService {
   }): Promise<Post> {
     try {
       const author = this.userRepo.getUser(BigInt(post.author));
-      const images: string[] = post.images.map((file) => file.location);
+      const images: string[] = !!post.images
+        ? post.images.map((file) => file.location)
+        : [];
       const userPost = author.createPost({ images, content: post.content });
       return await this.postRepo.createPost(userPost);
     } catch (err) {
