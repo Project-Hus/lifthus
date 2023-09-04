@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Comment as PrismaComment } from '@prisma/client';
-import { Comment } from 'src/modules/domain/aggregates/comment/comment.model';
-import { CommentRepository } from 'src/modules/domain/repositories/comment.repository';
-import { PostRepository } from 'src/modules/domain/repositories/post.repository';
+import { Comment } from 'src/domain/aggregates/comment/comment.model';
+import { CommentRepository } from 'src/domain/repositories/comment.repository';
+import { PostRepository } from 'src/domain/repositories/post.repository';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()

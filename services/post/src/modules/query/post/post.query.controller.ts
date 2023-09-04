@@ -7,8 +7,8 @@ import {
   Inject,
 } from '@nestjs/common';
 import { PostQueryService } from 'src/modules/query/post/post.query.service';
-import { Post } from 'src/modules/domain/aggregates/post/post.model';
-import { PostSummary } from 'src/modules/domain/aggregates/post/postSummary.model';
+import { Post } from 'src/domain/aggregates/post/post.model';
+import { PostSummary } from 'src/domain/aggregates/post/postSummary.model';
 
 @Controller('/post/query/post')
 export class PostQueryController {

@@ -2,9 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePostDto, UpdatePostDto } from './post.dto';
-import { UserRepository } from 'src/modules/domain/repositories/user.repository';
-import { PostRepository } from 'src/modules/domain/repositories/post.repository';
-import { Post } from 'src/modules/domain/aggregates/post/post.model';
+import { UserRepository } from 'src/domain/repositories/user.repository';
+import { PostRepository } from 'src/domain/repositories/post.repository';
+import { Post } from 'src/domain/aggregates/post/post.model';
 
 @Injectable()
 export class Post2Service {

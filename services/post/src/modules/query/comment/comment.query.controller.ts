@@ -6,7 +6,7 @@ import {
   Inject,
 } from '@nestjs/common';
 import { CommentQueryService } from 'src/modules/query/comment/comment.query.service';
-import { Comment } from 'src/modules/domain/aggregates/comment/comment.model';
+import { Comment } from 'src/domain/aggregates/comment/comment.model';
 
 @Controller('/post/query/comment')
 export class CommentQueryController {

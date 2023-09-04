@@ -25,7 +25,7 @@ import aws from 'aws-sdk';
 
 import multerS3 from 'multer-s3';
 import { S3Service } from './s3.service';
-import { Post as DPost } from 'src/modules/domain/aggregates/post/post.model';
+import { Post as DPost } from 'src/domain/aggregates/post/post.model';
 
 const s3 = new aws.S3();
 
