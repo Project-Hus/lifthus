@@ -41,7 +41,7 @@ export class Post {
   }
 
   private setNewPost(p: CreatePrePostInput): Post {
-    this.slug = Post.getSlug(p.content);
+    this.slug = Post.generateSlug(p.content);
     this.author = p.author;
     this.images = p.images;
     this.content = p.content;
@@ -114,7 +114,7 @@ export class Post {
     return this;
   }
 
-  private static getSlug(content: string): string {
+  private static generateSlug(content: string): string {
     let slug: string;
     const slugEnd: number = content.indexOf('\n');
     if (slugEnd == -1 || slugEnd > 30) {
@@ -122,7 +122,7 @@ export class Post {
     } else {
       slug = content.slice(0, slugEnd);
     }
-    slug = encodeURIComponent(slug + crypto.randomBytes(8).toString('hex'));
+    slug = slug + 'code' + crypto.randomBytes(8).toString('hex');
     return slug;
   }
 }
