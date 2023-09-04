@@ -165,7 +165,7 @@ export class PrismaPostRepository extends PostRepository {
     try {
       const post: PostWithImages = await this.prismaService.post.findUnique({
         where: {
-          slug: encodeURIComponent(slug),
+          slug: slug,
         },
         include: {
           images: {
