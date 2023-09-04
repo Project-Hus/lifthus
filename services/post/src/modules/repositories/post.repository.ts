@@ -1,15 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { PostRepository } from 'src/modules/domain/repositories/post.repository';
+import { PostRepository } from 'src/domain/repositories/post.repository';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 
-import { User } from 'src/modules/domain/aggregates/user/user.model';
-import {
-  Post,
-  UpdatePostInput,
-} from 'src/modules/domain/aggregates/post/post.model';
-import { PostSummary } from 'src/modules/domain/aggregates/post/postSummary.model';
+import { User } from 'src/domain/aggregates/user/user.model';
+import { Post, UpdatePostInput } from 'src/domain/aggregates/post/post.model';
+import { PostSummary } from 'src/domain/aggregates/post/postSummary.model';
 
 import { Prisma } from '@prisma/client';
 

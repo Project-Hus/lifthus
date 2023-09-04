@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { Like } from '../domain/aggregates/like/like.model';
-import { User } from '../domain/aggregates/user/user.model';
-import { LikeRepository } from '../domain/repositories/like.repository';
+import { Like } from '../../domain/aggregates/like/like.model';
+import { User } from '../../domain/aggregates/user/user.model';
+import { LikeRepository } from '../../domain/repositories/like.repository';
 import { PrismaService } from 'src/prisma/prisma.service';
 
-import { Post } from '../domain/aggregates/post/post.model';
-import { Comment } from '../domain/aggregates/comment/comment.model';
+import { Post } from '../../domain/aggregates/post/post.model';
+import { Comment } from '../../domain/aggregates/comment/comment.model';
 
 @Injectable()
 export class PrismaPostLikeRepository extends LikeRepository<Post> {

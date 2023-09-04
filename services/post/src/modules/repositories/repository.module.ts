@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 
-import { Post } from 'src/modules/domain/aggregates/post/post.model';
-import { Comment } from 'src/modules/domain/aggregates/comment/comment.model';
+import { Post } from 'src/domain/aggregates/post/post.model';
+import { Comment } from 'src/domain/aggregates/comment/comment.model';
 
-import { UserRepository } from 'src/modules/domain/repositories/user.repository';
-import { PostRepository } from 'src/modules/domain/repositories/post.repository';
-import { CommentRepository } from 'src/modules/domain/repositories/comment.repository';
-import { LikeRepository } from 'src/modules/domain/repositories/like.repository';
+import { UserRepository } from 'src/domain/repositories/user.repository';
+import { PostRepository } from 'src/domain/repositories/post.repository';
+import { CommentRepository } from 'src/domain/repositories/comment.repository';
+import { LikeRepository } from 'src/domain/repositories/like.repository';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ConcreteUserRepository } from 'src/modules/repositories/user.repository';

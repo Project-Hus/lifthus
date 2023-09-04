@@ -4,15 +4,18 @@ import {
   Param,
   Query,
   BadRequestException,
+  Inject,
 } from '@nestjs/common';
-import { PostQueryService } from './post.query.service';
-import { Post as PrismaPost } from '@prisma/client';
-import { Post } from 'src/modules/domain/aggregates/post/post.model';
-import { PostSummary } from 'src/modules/domain/aggregates/post/postSummary.model';
+import { PostQueryService } from 'src/modules/query/post/post.query.service';
+import { Post } from 'src/domain/aggregates/post/post.model';
+import { PostSummary } from 'src/domain/aggregates/post/postSummary.model';
 
 @Controller('/post/query/post')
 export class PostQueryController {
-  constructor(private readonly postQueryService: PostQueryService) {}
+  constructor(
+    @Inject(PostQueryService)
+    private readonly postQueryService: PostQueryService,
+  ) {}
 
   @Get('/slug/:slug')
   getPostBySlug(@Param('slug') slug: string): Promise<Post> {

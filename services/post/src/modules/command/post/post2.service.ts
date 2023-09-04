@@ -1,52 +1,36 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Post, PostLike, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePostDto, UpdatePostDto } from './post.dto';
-import { slugify } from 'src/common/utils/utils';
+import { UserRepository } from 'src/domain/repositories/user.repository';
+import { PostRepository } from 'src/domain/repositories/post.repository';
+import { Post } from 'src/domain/aggregates/post/post.model';
 
 @Injectable()
-export class PostService {
-  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+export class Post2Service {
+  constructor(
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(UserRepository) private readonly userRepo: UserRepository,
+    @Inject(PostRepository) private readonly postRepo: PostRepository,
+  ) {}
 
-  createPost({
+  async createPost({
     post,
     imageSrcs,
   }: {
     post: CreatePostDto;
     imageSrcs: string[];
   }): Promise<Post> {
-    // first, set the range of slug and get it.
-    let slug: string;
-    const slugEnd: number = post.content.indexOf('\n');
-    if (slugEnd == -1 || slugEnd > 30) {
-      slug = post.content.slice(0, 30);
-    } else {
-      slug = post.content.slice(0, slugEnd);
-    }
-    // get slug
-    slug = slugify(slug);
-
-    let images: Prisma.PostImageCreateWithoutPostInput[] = [];
-    imageSrcs.forEach((location, idx) => {
-      images.push({
-        src: location,
-        order: idx,
+    try {
+      const author = this.userRepo.getUser(BigInt(post.author));
+      const userPost = author.createPost({
+        images: imageSrcs,
+        content: post.content,
       });
-    });
-
-    // Post create form
-    let data: Prisma.PostCreateInput = {
-      author: BigInt(post.author),
-      slug,
-      content: post.content,
-      images: {
-        create: images,
-      },
-    };
-
-    return this.prisma.post.create({
-      data,
-    });
+      return await this.postRepo.createPost(userPost);
+    } catch (err) {
+      throw err;
+    }
   }
 
   /**

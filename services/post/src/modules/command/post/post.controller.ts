@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   ForbiddenException,
+  Inject,
   Logger,
   Param,
   Post,
@@ -15,6 +16,7 @@ import {
 import { UserGuard } from 'src/common/guards/post.guard';
 import { Request } from 'express';
 import { PostService } from './post.service';
+import { Post2Service } from 'src/modules/command/post/post2.service';
 import { Post as PPost, Prisma } from '@prisma/client';
 import { CreatePostDto, UpdatePostDto } from './post.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -23,6 +25,7 @@ import aws from 'aws-sdk';
 
 import multerS3 from 'multer-s3';
 import { S3Service } from './s3.service';
+import { Post as DPost } from 'src/domain/aggregates/post/post.model';
 
 const s3 = new aws.S3();
 
@@ -34,8 +37,9 @@ const s3 = new aws.S3();
 @Controller('/post/post')
 export class PostController {
   constructor(
-    private readonly postService: PostService,
-    private readonly s3Service: S3Service,
+    @Inject(PostService) private readonly postService: PostService,
+    @Inject(Post2Service) private readonly post2Service: Post2Service,
+    @Inject(S3Service) private readonly s3Service: S3Service,
   ) {}
 
   /**
@@ -67,12 +71,12 @@ export class PostController {
     @Req() req: Request,
     @Body() post: CreatePostDto,
     @UploadedFiles() images: Array<Express.Multer.File>,
-  ): Promise<PPost> {
+  ): Promise<DPost> {
     this.s3Service.uploadImages(images);
     const uid: number = req.uid;
     const author: number = parseInt(post.author);
     if (author !== uid) throw new ForbiddenException();
-    return this.postService.createPost({
+    return this.post2Service.createPost({
       post,
       imageSrcs: images.map((image) => image.location),
     });

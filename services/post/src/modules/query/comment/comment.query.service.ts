@@ -1,39 +1,22 @@
-import { Injectable } from '@nestjs/common';
-import { Comment } from '@prisma/client';
+import { Inject, Injectable } from '@nestjs/common';
+import { Comment as PrismaComment } from '@prisma/client';
+import { Comment } from 'src/domain/aggregates/comment/comment.model';
+import { CommentRepository } from 'src/domain/repositories/comment.repository';
+import { PostRepository } from 'src/domain/repositories/post.repository';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class CommentQueryService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    @Inject(PrismaService) private readonly prismaService: PrismaService,
+    @Inject(PostRepository) private readonly postRepo: PostRepository,
+    @Inject(CommentRepository) private readonly commentRepo: CommentRepository,
+  ) {}
 
-  /**
-   * Get comments of specified post.
-   * @param param0
-   * @returns
-   */
-  getComments({
-    pid,
-    skip,
-  }: {
-    pid: number;
-    skip: number;
-  }): Promise<Comment[]> {
+  async getComments({ pid, skip }): Promise<Comment[]> {
     try {
-      const comments = this.prismaService.comment.findMany({
-        where: {
-          postId: pid,
-        },
-        skip: skip,
-        include: {
-          replies: true,
-          mentions: {
-            select: {
-              mentionee: true,
-            },
-          },
-        },
-      });
-
+      const post = await this.postRepo.getPostByID(pid);
+      const comments = await this.commentRepo.getComments(post);
       return comments;
     } catch (error) {
       throw new Error('Failed to get comments');

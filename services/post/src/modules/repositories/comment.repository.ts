@@ -1,17 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   Comment,
   CreateReplyInput,
-} from '../domain/aggregates/comment/comment.model';
+} from '../../domain/aggregates/comment/comment.model';
 
-import { Post } from '../domain/aggregates/post/post.model';
+import { Post } from '../../domain/aggregates/post/post.model';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CommentRepository } from '../domain/repositories/comment.repository';
+import { CommentRepository } from '../../domain/repositories/comment.repository';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PrismaCommentRepository extends CommentRepository {
-  constructor(private readonly prismaService: PrismaService) {
+  constructor(
+    @Inject(PrismaService) private readonly prismaService: PrismaService,
+  ) {
     super();
   }
 

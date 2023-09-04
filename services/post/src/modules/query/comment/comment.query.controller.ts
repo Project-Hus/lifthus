@@ -1,10 +1,19 @@
-import { Controller, Get, Query, BadRequestException } from '@nestjs/common';
-import { CommentQueryService } from './comment.query.service';
-import { Comment } from '@prisma/client';
+import {
+  Controller,
+  Get,
+  Query,
+  BadRequestException,
+  Inject,
+} from '@nestjs/common';
+import { CommentQueryService } from 'src/modules/query/comment/comment.query.service';
+import { Comment } from 'src/domain/aggregates/comment/comment.model';
 
 @Controller('/post/query/comment')
 export class CommentQueryController {
-  constructor(private readonly commentQueryService: CommentQueryService) {}
+  constructor(
+    @Inject(CommentQueryService)
+    private readonly commentQueryService: CommentQueryService,
+  ) {}
 
   @Get()
   getComments(
