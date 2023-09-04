@@ -22,7 +22,7 @@
 
     "strict": true,
     "preserveConstEnums": true,
-    "noEmit": false,
+    "noEmit": true,
     "moduleResolution":"node",
 
     "esModuleInterop": true,

@@ -17,7 +17,10 @@ DEFAULT_GOAL := build
 # 	sam build
 # .PHONY: build
 
-build:
+type:
+ 	tsc -p services/post/tsconfig.build.json
+
+build: type
 	sam build
 	cp services/post/prisma/schema.prisma .aws-sam/build/DevLifthusPostService
 	cp services/post/node_modules/.prisma/client/libquery_engine-rhel-openssl-1.0.x.so.node .aws-sam/build/DevLifthusPostService
