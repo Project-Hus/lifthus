@@ -12,10 +12,6 @@ import { RepositoryModule } from 'src/modules/repositories/repository.module';
 @Module({
   imports: [RepositoryModule],
   controllers: [CommentController],
-  providers: [
-    CommentService,
-    PrismaService,
-    { provide: APP_FILTER, useClass: HttpExceptionFilter },
-  ],
+  providers: [CommentService, PrismaService],
 })
 export class CommentCommandModule {}

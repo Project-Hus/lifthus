@@ -15,12 +15,6 @@ import { Post2Service } from 'src/modules/command/post/post2.service';
 @Module({
   imports: [RepositoryModule],
   controllers: [PostController],
-  providers: [
-    PostService,
-    Post2Service,
-    PrismaService,
-    S3Service,
-    { provide: APP_FILTER, useClass: HttpExceptionFilter },
-  ],
+  providers: [PostService, Post2Service, PrismaService, S3Service],
 })
 export class PostCommandModule {}
