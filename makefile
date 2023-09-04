@@ -18,7 +18,8 @@ DEFAULT_GOAL := build
 # .PHONY: build
 
 type:
- 	tsc -p services/post/tsconfig.build.json
+	tsc -p services/post/tsconfig.build.json
+.PHONY: type
 
 build: type
 	sam build

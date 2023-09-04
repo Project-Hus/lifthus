@@ -23,10 +23,10 @@ export class Post2Service {
   }): Promise<Post> {
     try {
       const author = this.userRepo.getUser(BigInt(post.author));
-      const images: string[] = !!post.images
-        ? post.images.map((file) => file.location)
-        : [];
-      const userPost = author.createPost({ images, content: post.content });
+      const userPost = author.createPost({
+        images: imageSrcs,
+        content: post.content,
+      });
       return await this.postRepo.createPost(userPost);
     } catch (err) {
       throw err;
