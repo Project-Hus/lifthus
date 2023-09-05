@@ -7,9 +7,9 @@ import {
   Inject,
 } from '@nestjs/common';
 import { PostQueryService } from 'src/modules/query/post/post.query.service';
-import { Post } from 'src/domain/aggregates/post/post.model';
 
 import { PostSummaryDto } from 'src/dto/outbound/postSummary.dto';
+import { PostDto } from 'src/dto/outbound/post.dto';
 
 @Controller('/post/query/post')
 export class PostQueryController {
@@ -19,17 +19,13 @@ export class PostQueryController {
   ) {}
 
   @Get('/slug/:slug')
-  getPostBySlug(@Param('slug') slug: string): Promise<Post> {
+  getPostBySlug(@Param('slug') slug: string): Promise<PostDto> {
     return this.postQueryService.getPostBySlug(slug);
   }
 
   @Get('/id/:id')
-  getPostById(@Param('id') idStr: string): Promise<Post> {
-    const id = Number(idStr);
-    if (isNaN(id)) {
-      throw new BadRequestException();
-    }
-    return this.postQueryService.getPostById(id);
+  getPostById(@Param('id') idStr: string): Promise<PostDto> {
+    return this.postQueryService.getPostById(idStr);
   }
 
   /**

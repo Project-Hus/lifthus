@@ -6,6 +6,7 @@ import { CommentRepository } from 'src/domain/repositories/comment.repository';
 import { PostLikeRepository } from 'src/domain/repositories/like.repository';
 import { PostRepository } from 'src/domain/repositories/post.repository';
 import { UserRepository } from 'src/domain/repositories/user.repository';
+import { PostDto } from 'src/dto/outbound/post.dto';
 import { PostSummaryDto } from 'src/dto/outbound/postSummary.dto';
 
 @Injectable()
@@ -75,15 +76,25 @@ export class PostQueryService {
    * @param slug
    * @returns
    */
-  getPostBySlug(slug: string): Promise<Post> {
+  async getPostBySlug(slug: string): Promise<PostDto> {
     try {
-      return this.postRepo.getPostBySlug(slug);
+      const post = await this.postRepo.getPostBySlug(slug);
+      const ln = await this.likeRepo.getLikesNum(post.getID());
+      const cn = await this.commentRepo.getCommentsNum(post.getID());
+      return new PostDto(post, ln, cn);
     } catch (err) {
-      throw err;
+      return Promise.reject(err);
     }
   }
 
-  getPostById(id: number): Promise<Post> {
-    return this.postRepo.getPostByID(BigInt(id));
+  async getPostById(id: string): Promise<PostDto> {
+    try {
+      const post = await this.postRepo.getPostByID(BigInt(id));
+      const ln = await this.likeRepo.getLikesNum(post.getID());
+      const cn = await this.commentRepo.getCommentsNum(post.getID());
+      return new PostDto(post, ln, cn);
+    } catch (err) {
+      return Promise.reject(err);
+    }
   }
 }
