@@ -126,6 +126,14 @@ export class Comment {
     return this.parentId;
   }
 
+  getCreatedAt(): Date {
+    return this.createdAt;
+  }
+
+  getUpdatedAt(): Date {
+    return this.updatedAt;
+  }
+
   getContent(): string {
     return this.content;
   }
