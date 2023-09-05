@@ -28,7 +28,13 @@ export class CommentQueryService {
       const commentDtos: CommentDto[] = await Promise.all(
         comments.map(async (c) => {
           const ln = await this.likeRepo.getLikesNum(c.getID());
-          return new CommentDto(c, ln);
+          const rps = await Promise.all(
+            c.getReplies().map(async (rp) => {
+              const ln = await this.likeRepo.getLikesNum(rp.getID());
+              return new CommentDto(rp, ln);
+            }),
+          );
+          return new CommentDto(c, ln, rps);
         }),
       );
       return commentDtos;
