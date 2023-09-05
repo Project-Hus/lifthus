@@ -1,25 +1,39 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Comment as PrismaComment } from '@prisma/client';
 import { Comment } from 'src/domain/aggregates/comment/comment.model';
-import { CommentRepository } from 'src/domain/repositories/comment.repository';
-import { PostRepository } from 'src/domain/repositories/post.repository';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { CommentRepository } from 'src/modules/repositories/abstract/comment.repository';
+import { PostRepository } from 'src/modules/repositories/abstract/post.repository';
+import { CommentDto } from 'src/dto/outbound/comment.dto';
+import { CommentLikeRepository } from 'src/modules/repositories/abstract/like.repository';
 
 @Injectable()
 export class CommentQueryService {
   constructor(
-    @Inject(PrismaService) private readonly prismaService: PrismaService,
     @Inject(PostRepository) private readonly postRepo: PostRepository,
     @Inject(CommentRepository) private readonly commentRepo: CommentRepository,
+    @Inject(CommentLikeRepository)
+    private readonly likeRepo: CommentLikeRepository,
   ) {}
 
-  async getComments({ pid, skip }): Promise<Comment[]> {
+  async getComments({
+    pid,
+    skip,
+  }: {
+    pid: string;
+    skip: number;
+  }): Promise<CommentDto[]> {
     try {
-      const post = await this.postRepo.getPostByID(pid);
-      const comments = await this.commentRepo.getComments(post);
-      return comments;
+      const comments: Comment[] = await this.commentRepo.getComments(
+        BigInt(pid),
+      );
+      const commentDtos: CommentDto[] = await Promise.all(
+        comments.map(async (c) => {
+          const ln = await this.likeRepo.getLikesNum(c.getID());
+          return new CommentDto(c, ln);
+        }),
+      );
+      return commentDtos;
     } catch (error) {
-      throw new Error('Failed to get comments');
+      return Promise.reject(error);
     }
   }
 }

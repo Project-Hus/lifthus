@@ -151,9 +151,19 @@ export class Comment {
     };
   }
 
+  getReplies(): Comment[] {
+    return this.replies;
+  }
+
   update(changes: UpdateCommentInput): Comment {
     this.content = changes.content;
     return this;
+  }
+
+  getUpdates(): UpdateCommentInput {
+    return {
+      content: this.content,
+    };
   }
 
   delete(): Comment {

@@ -1,12 +1,11 @@
 import { Comment } from 'src/domain/aggregates/comment/comment.model';
-
 export class CommentDto {
   id: string;
 
   author: string;
 
   postId: string;
-  parentId: string;
+  parentId?: string;
 
   content: string;
 
@@ -15,8 +14,8 @@ export class CommentDto {
 
   likesNum: number;
 
-  replies?: Comment[];
-  constructor(c: Comment, likesNum: number, replies?: Comment[]) {
+  replies?: CommentDto[];
+  constructor(c: Comment, likesNum: number, replies?: CommentDto[]) {
     this.id = c.getID().toString();
     this.author = c.getAuthor().toString();
 

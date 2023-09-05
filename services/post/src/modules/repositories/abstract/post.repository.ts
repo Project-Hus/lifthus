@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Post, UpdatePostInput } from '../aggregates/post/post.model';
-import { User } from '../aggregates/user/user.model';
-import { PostSummary } from '../aggregates/post/postSummary.model';
+import {
+  Post,
+  UpdatePostInput,
+} from '../../../domain/aggregates/post/post.model';
+import { User } from '../../../domain/aggregates/user/user.model';
+import { PostSummary } from '../../../domain/aggregates/post/postSummary.model';
 
 @Injectable()
 export abstract class PostRepository {

@@ -6,7 +6,7 @@ import {
   Inject,
 } from '@nestjs/common';
 import { CommentQueryService } from 'src/modules/query/comment/comment.query.service';
-import { Comment } from 'src/domain/aggregates/comment/comment.model';
+import { CommentDto } from 'src/dto/outbound/comment.dto';
 
 @Controller('/post/query/comment')
 export class CommentQueryController {
@@ -19,12 +19,8 @@ export class CommentQueryController {
   getComments(
     @Query('pid') pidStr: string,
     @Query('skip') skipStr: string,
-  ): Promise<Comment[]> {
-    const pid = Number(pidStr);
-    if (isNaN(pid)) {
-      throw new BadRequestException();
-    }
+  ): Promise<CommentDto[]> {
     const skip = Number(skipStr) || 0;
-    return this.commentQueryService.getComments({ pid, skip });
+    return this.commentQueryService.getComments({ pid: pidStr, skip });
   }
 }

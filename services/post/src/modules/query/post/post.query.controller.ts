@@ -52,9 +52,6 @@ export class PostQueryController {
     @Query('skip') skipStr: string,
   ): Promise<PostSummaryDto[]> {
     const users: string[] = usersStr.split(',').map((userStr) => userStr);
-    if (users.some((user) => isNaN(Number(user)))) {
-      throw new BadRequestException();
-    }
     const skip = Number(skipStr) || 0;
     return this.postQueryService.getUsersPosts({ users, skip });
   }

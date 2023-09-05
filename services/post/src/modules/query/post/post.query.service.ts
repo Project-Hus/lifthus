@@ -2,10 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Post } from 'src/domain/aggregates/post/post.model';
 import { PostSummary } from 'src/domain/aggregates/post/postSummary.model';
 import { User } from 'src/domain/aggregates/user/user.model';
-import { CommentRepository } from 'src/domain/repositories/comment.repository';
-import { PostLikeRepository } from 'src/domain/repositories/like.repository';
-import { PostRepository } from 'src/domain/repositories/post.repository';
-import { UserRepository } from 'src/domain/repositories/user.repository';
+import { CommentRepository } from 'src/modules/repositories/abstract/comment.repository';
+import { PostLikeRepository } from 'src/modules/repositories/abstract/like.repository';
+import { PostRepository } from 'src/modules/repositories/abstract/post.repository';
+import { UserRepository } from 'src/modules/repositories/abstract/user.repository';
 import { PostDto } from 'src/dto/outbound/post.dto';
 import { PostSummaryDto } from 'src/dto/outbound/postSummary.dto';
 

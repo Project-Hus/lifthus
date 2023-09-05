@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Like } from '../../domain/aggregates/like/like.model';
 import { User } from '../../domain/aggregates/user/user.model';
-import { LikeRepository } from '../../domain/repositories/like.repository';
+import { LikeRepository } from './abstract/like.repository';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { Post } from '../../domain/aggregates/post/post.model';
@@ -36,29 +36,32 @@ export class PrismaPostLikeRepository extends LikeRepository<Post> {
     return n;
   }
 
-  async _save(likes: Set<Like<Post>>): Promise<void> {
+  async _save(like: Like<Post>): Promise<void> {
     try {
-      const likesList = Array.from(likes);
-      this.prismaService.$transaction(
-        likesList.map((like) => {
-          return like.isLiked()
-            ? this.prismaService.postLike.delete({
-                where: {
-                  postId_user: {
-                    postId: like.getTarget().getID(),
-                    user: like.getLiker().getID(),
-                  },
-                },
-              })
-            : this.prismaService.postLike.create({
-                data: {
-                  postId: like.getTarget().getID(),
-                  user: like.getLiker().getID(),
-                },
-              });
-        }),
-      );
-      return;
+      const postLike = await this.prismaService.postLike.findUnique({
+        where: {
+          postId_user: {
+            postId: like.getTarget().getID(),
+            user: like.getLiker().getID(),
+          },
+        },
+      });
+      if (postLike === null)
+        await this.prismaService.postLike.create({
+          data: {
+            postId: like.getTarget().getID(),
+            user: like.getLiker().getID(),
+          },
+        });
+      else
+        await this.prismaService.postLike.delete({
+          where: {
+            postId_user: {
+              postId: like.getTarget().getID(),
+              user: like.getLiker().getID(),
+            },
+          },
+        });
     } catch (e) {
       return Promise.reject(e);
     }
@@ -93,29 +96,32 @@ export class PrismaCommentLikeRepository extends LikeRepository<Comment> {
     });
   }
 
-  async _save(likes: Set<Like<Comment>>): Promise<void> {
+  async _save(like: Like<Comment>): Promise<void> {
     try {
-      const likesList = Array.from(likes);
-      this.prismaService.$transaction(
-        likesList.map((like) => {
-          return like.isLiked()
-            ? this.prismaService.commentLike.delete({
-                where: {
-                  commentId_user: {
-                    commentId: like.getTarget().getID(),
-                    user: like.getLiker().getID(),
-                  },
-                },
-              })
-            : this.prismaService.commentLike.create({
-                data: {
-                  commentId: like.getTarget().getID(),
-                  user: like.getLiker().getID(),
-                },
-              });
-        }),
-      );
-      return;
+      const commentLike = await this.prismaService.commentLike.findUnique({
+        where: {
+          commentId_user: {
+            commentId: like.getTarget().getID(),
+            user: like.getLiker().getID(),
+          },
+        },
+      });
+      if (commentLike === null)
+        await this.prismaService.commentLike.create({
+          data: {
+            commentId: like.getTarget().getID(),
+            user: like.getLiker().getID(),
+          },
+        });
+      else
+        await this.prismaService.commentLike.delete({
+          where: {
+            commentId_user: {
+              commentId: like.getTarget().getID(),
+              user: like.getLiker().getID(),
+            },
+          },
+        });
     } catch (e) {
       return Promise.reject(e);
     }
