@@ -148,20 +148,20 @@ Resources:
           - "class-transformer"
           - "class-validator"
   # lifthus routine service
-  S3Bucket:
-    Type: "AWS::S3::Bucket"
-    DeletionPolicy: Retain
-    Properties:
-      BucketName: lifthus-post-bucket
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: false
-        BlockPublicPolicy: false
-        IgnorePublicAcls: false
-        RestrictPublicBuckets: false
-      OwnershipControls:
-        Rules:
-          - ObjectOwnership: BucketOwnerPreferred
-      AccessControl: AwsExecRead
+  # S3Bucket:
+  #   Type: "AWS::S3::Bucket"
+  #   DeletionPolicy: Retain
+  #   Properties:
+  #     BucketName: lifthus-post-bucket
+  #     PublicAccessBlockConfiguration:
+  #       BlockPublicAcls: false
+  #       BlockPublicPolicy: false
+  #       IgnorePublicAcls: false
+  #       RestrictPublicBuckets: false
+  #     OwnershipControls:
+  #       Rules:
+  #         - ObjectOwnership: BucketOwnerPreferred
+  #     AccessControl: AwsExecRead
   DevLifthusRoutineService:
     Type: AWS::Serverless::Function
     Properties:

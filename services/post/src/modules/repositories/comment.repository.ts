@@ -1,4 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import {
   Comment,
   CreateReplyInput,
@@ -104,6 +109,18 @@ export class PrismaCommentRepository extends CommentRepository {
       return comments;
     } catch (e) {
       return Promise.reject(e);
+    }
+  }
+
+  async _getCommentsNum(pid: bigint): Promise<number> {
+    try {
+      return this.prismaService.comment.count({
+        where: {
+          postId: pid,
+        },
+      });
+    } catch (err) {
+      throw new InternalServerErrorException();
     }
   }
 

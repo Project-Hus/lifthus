@@ -32,6 +32,10 @@ export abstract class CommentRepository {
     return await this._getComments(post);
   }
 
+  async getCommentsNum(pid: bigint): Promise<number> {
+    return await this._getCommentsNum(pid);
+  }
+
   async createComment(comment: Comment): Promise<Comment> {
     const newComment = await this._createComment(comment);
     const cacheKey = this.getCachekey(newComment);
@@ -70,6 +74,7 @@ export abstract class CommentRepository {
 
   abstract _getCommentByID(cid: bigint): Promise<Comment | null>;
   abstract _getComments(post: Post): Promise<Comment[]>;
+  abstract _getCommentsNum(pid: bigint): Promise<number>;
 
   abstract _createComment(comment: Comment): Promise<Comment>;
   abstract _deleteComment(traget: Comment): Promise<Comment>;

@@ -29,8 +29,8 @@ export abstract class LikeRepository<T> {
     return like;
   }
 
-  async getLikeNum(t: T): Promise<number> {
-    return this._getLikeNum(t);
+  async getLikeNum(tid: bigint): Promise<number> {
+    return this._getLikeNum(tid);
   }
 
   async save(): Promise<void> {
@@ -59,7 +59,7 @@ export abstract class LikeRepository<T> {
 
   abstract _getLike(u: User, t: T): Promise<Like<T>>;
 
-  abstract _getLikeNum(t: T): Promise<number>;
+  abstract _getLikeNum(tid: bigint): Promise<number>;
 
   abstract _save(likes: Set<Like<T>>): Promise<void>;
 }

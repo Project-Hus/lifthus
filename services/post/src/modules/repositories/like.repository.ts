@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Like } from '../../domain/aggregates/like/like.model';
 import { User } from '../../domain/aggregates/user/user.model';
 import { LikeRepository } from '../../domain/repositories/like.repository';
@@ -9,7 +9,9 @@ import { Comment } from '../../domain/aggregates/comment/comment.model';
 
 @Injectable()
 export class PrismaPostLikeRepository extends LikeRepository<Post> {
-  constructor(private readonly prismaService: PrismaService) {
+  constructor(
+    @Inject(PrismaService) private readonly prismaService: PrismaService,
+  ) {
     super();
   }
 
@@ -25,10 +27,10 @@ export class PrismaPostLikeRepository extends LikeRepository<Post> {
     return Like.create(u, t, !!postLike);
   }
 
-  async _getLikeNum(t: Post): Promise<number> {
+  async _getLikeNum(pid: bigint): Promise<number> {
     return this.prismaService.postLike.count({
       where: {
-        postId: t.getID(),
+        postId: pid,
       },
     });
   }
@@ -64,7 +66,9 @@ export class PrismaPostLikeRepository extends LikeRepository<Post> {
 
 @Injectable()
 export class PrismaCommentLikeRepository extends LikeRepository<Comment> {
-  constructor(private readonly prismaService: PrismaService) {
+  constructor(
+    @Inject(PrismaService) private readonly prismaService: PrismaService,
+  ) {
     super();
   }
 
@@ -80,10 +84,10 @@ export class PrismaCommentLikeRepository extends LikeRepository<Comment> {
     return Like.create(u, t, !!commentLike);
   }
 
-  async _getLikeNum(t: Comment): Promise<number> {
+  async _getLikeNum(cid: bigint): Promise<number> {
     return this.prismaService.commentLike.count({
       where: {
-        commentId: t.getID(),
+        commentId: cid,
       },
     });
   }

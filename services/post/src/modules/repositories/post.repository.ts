@@ -74,6 +74,7 @@ export class PrismaPostRepository extends PostRepository {
           id: post.id,
           author: post.author,
           createdAt: post.createdAt,
+          updatedAt: post.updatedAt,
           images: post.images.map((image) => image.src),
           slug: post.slug,
         });
@@ -118,6 +119,7 @@ export class PrismaPostRepository extends PostRepository {
           id: post.id,
           author: post.author,
           createdAt: post.createdAt,
+          updatedAt: post.updatedAt,
           images: post.images.map((image) => image.src),
           slug: post.slug,
         });

@@ -8,7 +8,8 @@ import {
 } from '@nestjs/common';
 import { PostQueryService } from 'src/modules/query/post/post.query.service';
 import { Post } from 'src/domain/aggregates/post/post.model';
-import { PostSummary } from 'src/domain/aggregates/post/postSummary.model';
+
+import { PostSummaryDto } from 'src/dto/outbound/postSummary.dto';
 
 @Controller('/post/query/post')
 export class PostQueryController {
@@ -38,7 +39,7 @@ export class PostQueryController {
    * @example /post/query/post/all/0
    */
   @Get('/all')
-  getAllPosts(@Query('skip') skipStr: string): Promise<PostSummary[]> {
+  getAllPosts(@Query('skip') skipStr: string): Promise<PostSummaryDto[]> {
     const skip = Number(skipStr) || 0;
     return this.postQueryService.getAllPosts(Number(skip));
   }
@@ -53,11 +54,9 @@ export class PostQueryController {
   getUsersPosts(
     @Query('users') usersStr: string,
     @Query('skip') skipStr: string,
-  ): Promise<PostSummary[]> {
-    const users: number[] = usersStr
-      .split(',')
-      .map((userStr) => Number(userStr));
-    if (users.some((user) => isNaN(user))) {
+  ): Promise<PostSummaryDto[]> {
+    const users: string[] = usersStr.split(',').map((userStr) => userStr);
+    if (users.some((user) => isNaN(Number(user)))) {
       throw new BadRequestException();
     }
     const skip = Number(skipStr) || 0;
