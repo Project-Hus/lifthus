@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Like } from '../../domain/aggregates/like/like.model';
 import { User } from '../../domain/aggregates/user/user.model';
 import { LikeRepository } from '../../domain/repositories/like.repository';
@@ -27,12 +27,13 @@ export class PrismaPostLikeRepository extends LikeRepository<Post> {
     return Like.create(u, t, !!postLike);
   }
 
-  async _getLikeNum(pid: bigint): Promise<number> {
-    return this.prismaService.postLike.count({
+  async _getLikesNum(pid: bigint): Promise<number> {
+    const n = await this.prismaService.postLike.count({
       where: {
         postId: pid,
       },
     });
+    return n;
   }
 
   async _save(likes: Set<Like<Post>>): Promise<void> {
@@ -84,8 +85,8 @@ export class PrismaCommentLikeRepository extends LikeRepository<Comment> {
     return Like.create(u, t, !!commentLike);
   }
 
-  async _getLikeNum(cid: bigint): Promise<number> {
-    return this.prismaService.commentLike.count({
+  async _getLikesNum(cid: bigint): Promise<number> {
+    return await this.prismaService.commentLike.count({
       where: {
         commentId: cid,
       },

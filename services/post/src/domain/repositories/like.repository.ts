@@ -29,8 +29,8 @@ export abstract class LikeRepository<T> {
     return like;
   }
 
-  async getLikeNum(tid: bigint): Promise<number> {
-    return this._getLikeNum(tid);
+  async getLikesNum(tid: bigint): Promise<number> {
+    return this._getLikesNum(tid);
   }
 
   async save(): Promise<void> {
@@ -59,7 +59,13 @@ export abstract class LikeRepository<T> {
 
   abstract _getLike(u: User, t: T): Promise<Like<T>>;
 
-  abstract _getLikeNum(tid: bigint): Promise<number>;
+  abstract _getLikesNum(tid: bigint): Promise<number>;
 
   abstract _save(likes: Set<Like<T>>): Promise<void>;
 }
+
+@Injectable()
+export abstract class PostLikeRepository extends LikeRepository<Post> {}
+
+@Injectable()
+export abstract class CommentLikeRepository extends LikeRepository<Comment> {}

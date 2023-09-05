@@ -6,18 +6,17 @@ export class PostSummaryDto {
   images: string[];
   slug: string;
   abstract: string;
-  likeNum: number;
-  commentNum: number;
+  likesNum: number;
+  commentsNum: number;
   constructor(psinput: PostSumamryDtoInput) {
-    const slug = psinput.slug;
     this.id = psinput.id.toString();
     this.author = psinput.author.toString();
     this.createdAt = psinput.createdAt;
     this.updatedAt = psinput.updatedAt;
     this.images = psinput.images;
     this.slug = psinput.slug;
-    this.likeNum = psinput.likeNum;
-    this.commentNum = psinput.commentNum;
+    this.likesNum = psinput.likesNum;
+    this.commentsNum = psinput.commentsNum;
     this.abstract = psinput.abstract;
   }
 
@@ -37,6 +36,6 @@ export type PostSumamryDtoInput = {
   images: string[];
   slug: string;
   abstract: string;
-  likeNum: number;
-  commentNum: number;
+  likesNum: number;
+  commentsNum: number;
 };

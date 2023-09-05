@@ -6,7 +6,11 @@ import { Comment } from 'src/domain/aggregates/comment/comment.model';
 import { UserRepository } from 'src/domain/repositories/user.repository';
 import { PostRepository } from 'src/domain/repositories/post.repository';
 import { CommentRepository } from 'src/domain/repositories/comment.repository';
-import { LikeRepository } from 'src/domain/repositories/like.repository';
+import {
+  CommentLikeRepository,
+  LikeRepository,
+  PostLikeRepository,
+} from 'src/domain/repositories/like.repository';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ConcreteUserRepository } from 'src/modules/repositories/user.repository';
@@ -23,16 +27,19 @@ import {
     { provide: UserRepository, useClass: ConcreteUserRepository },
     { provide: PostRepository, useClass: PrismaPostRepository },
     { provide: CommentRepository, useClass: PrismaCommentRepository },
-    { provide: LikeRepository<Post>, useClass: PrismaPostLikeRepository },
-    { provide: LikeRepository<Comment>, useClass: PrismaCommentLikeRepository },
+    { provide: PostLikeRepository, useClass: PrismaPostLikeRepository },
+    {
+      provide: CommentLikeRepository,
+      useClass: PrismaCommentLikeRepository,
+    },
   ],
   exports: [
     PrismaService,
     UserRepository,
     PostRepository,
     CommentRepository,
-    LikeRepository<Post>,
-    LikeRepository<Comment>,
+    PostLikeRepository,
+    CommentLikeRepository,
   ],
 })
 export class RepositoryModule {}

@@ -3,7 +3,10 @@ import { Post } from 'src/domain/aggregates/post/post.model';
 import { PostSummary } from 'src/domain/aggregates/post/postSummary.model';
 import { User } from 'src/domain/aggregates/user/user.model';
 import { CommentRepository } from 'src/domain/repositories/comment.repository';
-import { LikeRepository } from 'src/domain/repositories/like.repository';
+import {
+  LikeRepository,
+  PostLikeRepository,
+} from 'src/domain/repositories/like.repository';
 import { PostRepository } from 'src/domain/repositories/post.repository';
 import { UserRepository } from 'src/domain/repositories/user.repository';
 import {
@@ -17,8 +20,8 @@ export class PostQueryService {
     @Inject(UserRepository) private readonly userRepo: UserRepository,
     @Inject(PostRepository) private readonly postRepo: PostRepository,
     @Inject(CommentRepository) private readonly commentRepo: CommentRepository,
-    @Inject(LikeRepository<Post>)
-    private readonly likeRepo: LikeRepository<Post>,
+    @Inject(PostLikeRepository)
+    private readonly likeRepo: PostLikeRepository,
   ) {}
   getHello(): string {
     return 'Hello World!';
@@ -51,8 +54,8 @@ export class PostQueryService {
             images: ps.images,
             slug: ps.slug,
             abstract: PostSummaryDto.getAbstractFromSlug(ps.slug),
-            likeNum: await this.likeRepo.getLikeNum(ps.id),
-            commentNum: await this.commentRepo.getCommentsNum(ps.id),
+            likesNum: await this.likeRepo.getLikesNum(ps.id),
+            commentsNum: await this.commentRepo.getCommentsNum(ps.id),
           };
           return new PostSummaryDto(pinp);
         }),
@@ -79,8 +82,8 @@ export class PostQueryService {
             images: ps.images,
             slug: ps.slug,
             abstract: PostSummaryDto.getAbstractFromSlug(ps.slug),
-            likeNum: await this.likeRepo.getLikeNum(ps.id),
-            commentNum: await this.commentRepo.getCommentsNum(ps.id),
+            likesNum: await this.likeRepo.getLikesNum(ps.id),
+            commentsNum: await this.commentRepo.getCommentsNum(ps.id),
           };
           return new PostSummaryDto(pinp);
         }),
