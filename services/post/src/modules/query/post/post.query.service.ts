@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Post } from 'src/domain/aggregates/post/post.model';
 import { PostSummary } from 'src/domain/aggregates/post/postSummary.model';
 import { User } from 'src/domain/aggregates/user/user.model';
@@ -42,7 +42,7 @@ export class PostQueryService {
           const ps = pse.getSumm();
           const ln = await this.likeRepo.getLikesNum(ps.id);
           const cn = await this.commentRepo.getCommentsNum(ps.id);
-          const clientLiked = client
+          const clientLiked = !!client
             ? (await this.likeRepo.getLike(client, ps.id)).isLiked()
             : false;
           return new PostSummaryDto(pse, ln, cn, clientLiked);
@@ -67,7 +67,7 @@ export class PostQueryService {
           const ps = pse.getSumm();
           const ln = await this.likeRepo.getLikesNum(ps.id);
           const cn = await this.commentRepo.getCommentsNum(ps.id);
-          const clientLiked = client
+          const clientLiked = !!client
             ? (await this.likeRepo.getLike(client, ps.id)).isLiked()
             : false;
           return new PostSummaryDto(pse, ln, cn, clientLiked);
@@ -92,7 +92,7 @@ export class PostQueryService {
       const post = await this.postRepo.getPostBySlug(slug);
       const ln = await this.likeRepo.getLikesNum(post.getID());
       const cn = await this.commentRepo.getCommentsNum(post.getID());
-      const clientLiked = client
+      const clientLiked = !!client
         ? (await this.likeRepo.getLike(client, post.getID())).isLiked()
         : false;
       return new PostDto(post, ln, cn, clientLiked);
@@ -106,7 +106,7 @@ export class PostQueryService {
       const post = await this.postRepo.getPostByID(BigInt(id));
       const ln = await this.likeRepo.getLikesNum(post.getID());
       const cn = await this.commentRepo.getCommentsNum(post.getID());
-      const clientLiked = client
+      const clientLiked = !!client
         ? (await this.likeRepo.getLike(client, post.getID())).isLiked()
         : false;
       return new PostDto(post, ln, cn, clientLiked);

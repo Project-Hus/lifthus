@@ -8,7 +8,7 @@ export class Like<T> {
   private liked: boolean;
 
   static create<T>(liker: bigint, target: bigint, liked: boolean): Like<T> {
-    return new Like<T>().setLiker(liker).setrTarget(target);
+    return new Like<T>().setLiker(liker).setTarget(target).setLiked(liked);
   }
 
   private setLiker(liker: bigint): Like<T> {
@@ -16,10 +16,15 @@ export class Like<T> {
     return this;
   }
 
-  private setrTarget(target: bigint): Like<T> {
+  private setTarget(target: bigint): Like<T> {
     this.target = target;
     return this;
   }
+
+  private setLiked = (liked: boolean): Like<T> => {
+    this.liked = liked;
+    return this;
+  };
 
   getLiker(): bigint {
     return this.liker;
