@@ -3,16 +3,10 @@ import { Post } from 'src/domain/aggregates/post/post.model';
 import { PostSummary } from 'src/domain/aggregates/post/postSummary.model';
 import { User } from 'src/domain/aggregates/user/user.model';
 import { CommentRepository } from 'src/domain/repositories/comment.repository';
-import {
-  LikeRepository,
-  PostLikeRepository,
-} from 'src/domain/repositories/like.repository';
+import { PostLikeRepository } from 'src/domain/repositories/like.repository';
 import { PostRepository } from 'src/domain/repositories/post.repository';
 import { UserRepository } from 'src/domain/repositories/user.repository';
-import {
-  PostSummaryDto,
-  PostSumamryDtoInput,
-} from 'src/dto/outbound/postSummary.dto';
+import { PostSummaryDto } from 'src/dto/outbound/postSummary.dto';
 
 @Injectable()
 export class PostQueryService {
@@ -46,18 +40,9 @@ export class PostQueryService {
       const postSummDtos: PostSummaryDto[] = await Promise.all(
         PostSummEnts.map(async (pse: PostSummary) => {
           const ps = pse.getSumm();
-          const pinp: PostSumamryDtoInput = {
-            id: ps.id,
-            author: ps.author,
-            createdAt: ps.createdAt,
-            updatedAt: ps.updatedAt,
-            images: ps.images,
-            slug: ps.slug,
-            abstract: PostSummaryDto.getAbstractFromSlug(ps.slug),
-            likesNum: await this.likeRepo.getLikesNum(ps.id),
-            commentsNum: await this.commentRepo.getCommentsNum(ps.id),
-          };
-          return new PostSummaryDto(pinp);
+          const ln = await this.likeRepo.getLikesNum(ps.id);
+          const cn = await this.commentRepo.getCommentsNum(ps.id);
+          return new PostSummaryDto(pse, ln, cn);
         }),
       );
       return postSummDtos;
@@ -74,18 +59,9 @@ export class PostQueryService {
       const postSummDtos: PostSummaryDto[] = await Promise.all(
         PostSummEnts.map(async (pse: PostSummary) => {
           const ps = pse.getSumm();
-          const pinp: PostSumamryDtoInput = {
-            id: ps.id,
-            author: ps.author,
-            createdAt: ps.createdAt,
-            updatedAt: ps.updatedAt,
-            images: ps.images,
-            slug: ps.slug,
-            abstract: PostSummaryDto.getAbstractFromSlug(ps.slug),
-            likesNum: await this.likeRepo.getLikesNum(ps.id),
-            commentsNum: await this.commentRepo.getCommentsNum(ps.id),
-          };
-          return new PostSummaryDto(pinp);
+          const ln = await this.likeRepo.getLikesNum(ps.id);
+          const cn = await this.commentRepo.getCommentsNum(ps.id);
+          return new PostSummaryDto(pse, ln, cn);
         }),
       );
       return postSummDtos;

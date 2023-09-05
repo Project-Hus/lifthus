@@ -83,6 +83,14 @@ export class Post {
     return this.content;
   }
 
+  getCreatedAt(): Date {
+    return this.createdAt;
+  }
+
+  getUpdatedAt(): Date {
+    return this.updatedAt;
+  }
+
   getImageSrcs(): string[] {
     return this.images;
   }

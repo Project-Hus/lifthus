@@ -1,3 +1,5 @@
+import { PostSummary } from 'src/domain/aggregates/post/postSummary.model';
+
 export class PostSummaryDto {
   id: string;
   author: string;
@@ -8,16 +10,17 @@ export class PostSummaryDto {
   abstract: string;
   likesNum: number;
   commentsNum: number;
-  constructor(psinput: PostSumamryDtoInput) {
-    this.id = psinput.id.toString();
-    this.author = psinput.author.toString();
-    this.createdAt = psinput.createdAt;
-    this.updatedAt = psinput.updatedAt;
-    this.images = psinput.images;
-    this.slug = psinput.slug;
-    this.likesNum = psinput.likesNum;
-    this.commentsNum = psinput.commentsNum;
-    this.abstract = psinput.abstract;
+  constructor(pse: PostSummary, likesNum: number, commentsNum: number) {
+    const ps = pse.getSumm();
+    this.id = ps.id.toString();
+    this.author = ps.author.toString();
+    this.createdAt = ps.createdAt;
+    this.updatedAt = ps.updatedAt;
+    this.images = ps.images;
+    this.slug = ps.slug;
+    this.likesNum = likesNum;
+    this.commentsNum = commentsNum;
+    this.abstract = PostSummaryDto.getAbstractFromSlug(ps.slug);
   }
 
   static getAbstractFromSlug(slug: string) {
@@ -27,15 +30,3 @@ export class PostSummaryDto {
     return slug.slice(0, codeIdx);
   }
 }
-
-export type PostSumamryDtoInput = {
-  id: bigint;
-  author: bigint;
-  createdAt: Date;
-  updatedAt: Date;
-  images: string[];
-  slug: string;
-  abstract: string;
-  likesNum: number;
-  commentsNum: number;
-};
