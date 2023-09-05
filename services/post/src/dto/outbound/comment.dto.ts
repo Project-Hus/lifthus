@@ -14,8 +14,15 @@ export class CommentDto {
 
   likesNum: number;
 
+  clientLiked: boolean;
+
   replies?: CommentDto[];
-  constructor(c: Comment, likesNum: number, replies?: CommentDto[]) {
+  constructor(
+    c: Comment,
+    likesNum: number,
+    clientLiked: boolean,
+    replies?: CommentDto[],
+  ) {
     this.id = c.getID().toString();
     this.author = c.getAuthor().toString();
 
@@ -30,5 +37,7 @@ export class CommentDto {
     this.likesNum = likesNum;
 
     this.replies = replies;
+
+    this.clientLiked = clientLiked;
   }
 }

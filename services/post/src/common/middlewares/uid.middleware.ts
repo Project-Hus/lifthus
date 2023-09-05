@@ -23,7 +23,7 @@ export class UidMiddleware implements NestMiddleware {
           lstSigned,
         );
         if (lst.uid) {
-          req.uid = parseInt(lst.uid);
+          req.uid = BigInt(lst.uid);
         }
       } catch (e: any) {
         if (e.name === 'TokenExpiredError') {

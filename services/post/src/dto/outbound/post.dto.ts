@@ -14,7 +14,14 @@ export class PostDto {
 
   likesNum: number;
   commentsNum: number;
-  constructor(post: Post, likesNum: number, commentsNum: number) {
+
+  clientLiked: boolean;
+  constructor(
+    post: Post,
+    likesNum: number,
+    commentsNum: number,
+    clientLiked: boolean,
+  ) {
     this.id = post.getID().toString();
     this.author = post.getAuthor().toString();
     this.createdAt = post.getCreatedAt();
@@ -24,5 +31,6 @@ export class PostDto {
     this.content = post.getContent();
     this.likesNum = likesNum;
     this.commentsNum = commentsNum;
+    this.clientLiked = clientLiked;
   }
 }

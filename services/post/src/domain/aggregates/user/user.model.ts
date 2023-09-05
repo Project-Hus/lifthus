@@ -1,5 +1,5 @@
 // task.service.ts
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Post } from '../post/post.model';
 
 import { Comment, CreatePreCommentInput } from '../comment/comment.model';
@@ -44,24 +44,25 @@ export class User {
     return Post.create({ author: this.id, images, content });
   }
 
-  updatePost(post: Post, changes: UserUpdatePostInput): Post | undefined {
-    if (this.id !== post.getAuthor()) return undefined;
+  updatePost(post: Post, changes: UserUpdatePostInput): Post {
+    if (this.id !== post.getAuthor()) throw BadRequestException;
     return post.update(changes);
   }
 
-  deletePost(post: Post): Post | undefined {
-    if (this.id !== post.getAuthor()) return undefined;
+  deletePost(post: Post): Post {
+    if (this.id !== post.getAuthor()) throw BadRequestException;
     return post;
   }
 
-  likePost(like: Like<Post>): Like<Post> | undefined {
-    if (like.getLiker().getID() !== this.id || like.isLiked()) return undefined;
+  likePost(like: Like<Post>): Like<Post> {
+    if (like.getLiker() !== this.id || like.isLiked())
+      throw BadRequestException;
     return like.like(this);
   }
 
-  unlikePost(like: Like<Post>): Like<Post> | undefined {
-    if (like.getLiker().getID() !== this.id || !like.isLiked())
-      return undefined;
+  unlikePost(like: Like<Post>): Like<Post> {
+    if (like.getLiker() !== this.id || !like.isLiked())
+      throw BadRequestException;
     return like.unlike(this);
   }
 
@@ -79,14 +80,15 @@ export class User {
     return comment;
   }
 
-  likeComment(like: Like<Comment>): Like<Comment> | undefined {
-    if (like.getLiker().getID() !== this.id || like.isLiked()) return undefined;
+  likeComment(like: Like<Comment>): Like<Comment> {
+    if (like.getLiker() !== this.id || like.isLiked())
+      throw BadRequestException;
     return like.like(this);
   }
 
-  unlikeComment(like: Like<Comment>): Like<Comment> | undefined {
-    if (like.getLiker().getID() !== this.id || !like.isLiked())
-      return undefined;
+  unlikeComment(like: Like<Comment>): Like<Comment> {
+    if (like.getLiker() !== this.id || !like.isLiked())
+      throw BadRequestException;
     return like.unlike(this);
   }
 }

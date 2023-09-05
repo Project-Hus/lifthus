@@ -1,15 +1,9 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Query,
-  BadRequestException,
-  Inject,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query, Inject } from '@nestjs/common';
 import { PostQueryService } from 'src/modules/query/post/post.query.service';
 
 import { PostSummaryDto } from 'src/dto/outbound/postSummary.dto';
 import { PostDto } from 'src/dto/outbound/post.dto';
+import { Uid } from 'src/common/decorators/authParam.decorator';
 
 @Controller('/post/query/post')
 export class PostQueryController {
@@ -19,13 +13,19 @@ export class PostQueryController {
   ) {}
 
   @Get('/slug/:slug')
-  getPostBySlug(@Param('slug') slug: string): Promise<PostDto> {
-    return this.postQueryService.getPostBySlug(slug);
+  getPostBySlug(
+    @Param('slug') slug: string,
+    @Uid() client: BigInt | undefined,
+  ): Promise<PostDto> {
+    return this.postQueryService.getPostBySlug(slug, client);
   }
 
   @Get('/id/:id')
-  getPostById(@Param('id') idStr: string): Promise<PostDto> {
-    return this.postQueryService.getPostById(idStr);
+  getPostById(
+    @Param('id') idStr: string,
+    @Uid() client: BigInt | undefined,
+  ): Promise<PostDto> {
+    return this.postQueryService.getPostById(idStr, client);
   }
 
   /**
@@ -35,9 +35,12 @@ export class PostQueryController {
    * @example /post/query/post/all/0
    */
   @Get('/all')
-  getAllPosts(@Query('skip') skipStr: string): Promise<PostSummaryDto[]> {
+  getAllPosts(
+    @Query('skip') skipStr: string,
+    @Uid() client: BigInt | undefined,
+  ): Promise<PostSummaryDto[]> {
     const skip = Number(skipStr) || 0;
-    return this.postQueryService.getAllPosts(Number(skip));
+    return this.postQueryService.getAllPosts(skip, client);
   }
 
   /**
@@ -50,9 +53,10 @@ export class PostQueryController {
   getUsersPosts(
     @Query('users') usersStr: string,
     @Query('skip') skipStr: string,
+    @Uid() client: BigInt | undefined,
   ): Promise<PostSummaryDto[]> {
     const users: string[] = usersStr.split(',').map((userStr) => userStr);
     const skip = Number(skipStr) || 0;
-    return this.postQueryService.getUsersPosts({ users, skip });
+    return this.postQueryService.getUsersPosts({ users, skip, client });
   }
 }

@@ -15,16 +15,16 @@ export class PrismaPostLikeRepository extends LikeRepository<Post> {
     super();
   }
 
-  async _getLike(u: User, t: Post): Promise<Like<Post>> {
+  async _getLike(uid: bigint, pid: bigint): Promise<Like<Post>> {
     const postLike = await this.prismaService.postLike.findUnique({
       where: {
         postId_user: {
-          postId: t.getID(),
-          user: u.getID(),
+          postId: pid,
+          user: uid,
         },
       },
     });
-    return Like.create(u, t, !!postLike);
+    return Like.create(uid, pid, !!postLike);
   }
 
   async _getLikesNum(pid: bigint): Promise<number> {
@@ -41,24 +41,24 @@ export class PrismaPostLikeRepository extends LikeRepository<Post> {
       const postLike = await this.prismaService.postLike.findUnique({
         where: {
           postId_user: {
-            postId: like.getTarget().getID(),
-            user: like.getLiker().getID(),
+            postId: like.getTarget(),
+            user: like.getLiker(),
           },
         },
       });
       if (postLike === null)
         await this.prismaService.postLike.create({
           data: {
-            postId: like.getTarget().getID(),
-            user: like.getLiker().getID(),
+            postId: like.getTarget(),
+            user: like.getLiker(),
           },
         });
       else
         await this.prismaService.postLike.delete({
           where: {
             postId_user: {
-              postId: like.getTarget().getID(),
-              user: like.getLiker().getID(),
+              postId: like.getTarget(),
+              user: like.getLiker(),
             },
           },
         });
@@ -76,16 +76,16 @@ export class PrismaCommentLikeRepository extends LikeRepository<Comment> {
     super();
   }
 
-  async _getLike(u: User, t: Comment): Promise<Like<Comment>> {
+  async _getLike(uid: bigint, cid: bigint): Promise<Like<Comment>> {
     const commentLike = await this.prismaService.commentLike.findUnique({
       where: {
         commentId_user: {
-          commentId: t.getID(),
-          user: u.getID(),
+          commentId: cid,
+          user: uid,
         },
       },
     });
-    return Like.create(u, t, !!commentLike);
+    return Like.create(uid, cid, !!commentLike);
   }
 
   async _getLikesNum(cid: bigint): Promise<number> {
@@ -101,24 +101,24 @@ export class PrismaCommentLikeRepository extends LikeRepository<Comment> {
       const commentLike = await this.prismaService.commentLike.findUnique({
         where: {
           commentId_user: {
-            commentId: like.getTarget().getID(),
-            user: like.getLiker().getID(),
+            commentId: like.getTarget(),
+            user: like.getLiker(),
           },
         },
       });
       if (commentLike === null)
         await this.prismaService.commentLike.create({
           data: {
-            commentId: like.getTarget().getID(),
-            user: like.getLiker().getID(),
+            commentId: like.getTarget(),
+            user: like.getLiker(),
           },
         });
       else
         await this.prismaService.commentLike.delete({
           where: {
             commentId_user: {
-              commentId: like.getTarget().getID(),
-              user: like.getLiker().getID(),
+              commentId: like.getTarget(),
+              user: like.getLiker(),
             },
           },
         });

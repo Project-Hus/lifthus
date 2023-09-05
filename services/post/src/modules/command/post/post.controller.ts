@@ -73,9 +73,9 @@ export class PostController {
     @UploadedFiles() images: Array<Express.Multer.File>,
   ): Promise<DPost> {
     this.s3Service.uploadImages(images);
-    const uid: number = req.uid;
+    const uid: bigint = req.uid;
     const author: number = parseInt(post.author);
-    if (author !== uid) throw new ForbiddenException();
+    if (BigInt(author) !== uid) throw new ForbiddenException();
     return this.post2Service.createPost({
       post,
       imageSrcs: images.map((image) => image.location),
@@ -94,10 +94,10 @@ export class PostController {
     @Req() req: Request,
     @Body() post: UpdatePostDto,
   ): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    const uid: number = req.uid;
+    const uid: bigint = req.uid;
     const aid: number = post.author;
     // if the author is not signed user, return 403 Forbidden.
-    if (uid !== aid) throw new ForbiddenException();
+    if (uid !== BigInt(aid)) throw new ForbiddenException();
     return this.postService.updatePost(post);
   }
 
@@ -113,7 +113,10 @@ export class PostController {
     @Req() req: Request,
     @Param('pid') pid: any,
   ): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    return this.postService.deletePost({ aid: req.uid, pid: Number(pid) });
+    return this.postService.deletePost({
+      aid: Number(req.uid),
+      pid: Number(pid),
+    });
   }
 
   /**
@@ -125,7 +128,10 @@ export class PostController {
   @UseGuards(UserGuard)
   @Post('/like/:pid')
   likePost(@Req() req: Request, @Param('pid') pid: any): Promise<number> {
-    return this.postService.likePost({ uid: req.uid, pid: Number(pid) });
+    return this.postService.likePost({
+      uid: Number(req.uid),
+      pid: Number(pid),
+    });
   }
 
   // /**

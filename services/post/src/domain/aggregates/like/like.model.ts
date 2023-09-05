@@ -3,29 +3,29 @@ import { User } from '../user/user.model';
 
 @Injectable()
 export class Like<T> {
-  private liker: User;
-  private target: T;
+  private liker: bigint;
+  private target: bigint;
   private liked: boolean;
 
-  static create<T>(liker: User, target: T, liked: boolean): Like<T> {
+  static create<T>(liker: bigint, target: bigint, liked: boolean): Like<T> {
     return new Like<T>().setLiker(liker).setrTarget(target);
   }
 
-  private setLiker(liker: User): Like<T> {
+  private setLiker(liker: bigint): Like<T> {
     this.liker = liker;
     return this;
   }
 
-  private setrTarget(target: T): Like<T> {
+  private setrTarget(target: bigint): Like<T> {
     this.target = target;
     return this;
   }
 
-  getLiker(): User {
+  getLiker(): bigint {
     return this.liker;
   }
 
-  getTarget(): T {
+  getTarget(): bigint {
     return this.target;
   }
 
@@ -34,13 +34,13 @@ export class Like<T> {
   }
 
   like(u: User): Like<T> | undefined {
-    if (u.getID() !== this.liker.getID() || this.liked) return undefined;
+    if (u.getID() !== this.liker || this.liked) return undefined;
     this.liked = true;
     return this;
   }
 
   unlike(u: User): Like<T> | undefined {
-    if (u.getID() !== this.liker.getID() || !this.liked) return undefined;
+    if (u.getID() !== this.liker || !this.liked) return undefined;
     this.liked = false;
     return this;
   }

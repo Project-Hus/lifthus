@@ -6,8 +6,8 @@ import { stringifyAny } from 'src/common/utils/utils';
 
 @Injectable()
 export abstract class LikeRepository<T> {
-  async getLike(u: User, t: T): Promise<Like<T>> {
-    const like = await this._getLike(u, t);
+  async getLike(uid: BigInt, tid: BigInt): Promise<Like<T>> {
+    const like = await this._getLike(uid, tid);
     return like;
   }
 
@@ -21,7 +21,7 @@ export abstract class LikeRepository<T> {
 
   // Abstract methods to be implemented by the actual repository
 
-  abstract _getLike(u: User, t: T): Promise<Like<T>>;
+  abstract _getLike(uid: BigInt, tid: BigInt): Promise<Like<T>>;
 
   abstract _getLikesNum(tid: bigint): Promise<number>;
 

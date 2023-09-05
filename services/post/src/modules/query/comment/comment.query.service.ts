@@ -8,7 +8,6 @@ import { CommentLikeRepository } from 'src/modules/repositories/abstract/like.re
 @Injectable()
 export class CommentQueryService {
   constructor(
-    @Inject(PostRepository) private readonly postRepo: PostRepository,
     @Inject(CommentRepository) private readonly commentRepo: CommentRepository,
     @Inject(CommentLikeRepository)
     private readonly likeRepo: CommentLikeRepository,
@@ -17,9 +16,11 @@ export class CommentQueryService {
   async getComments({
     pid,
     skip,
+    client,
   }: {
     pid: string;
     skip: number;
+    client: BigInt | undefined;
   }): Promise<CommentDto[]> {
     try {
       const comments: Comment[] = await this.commentRepo.getComments(
@@ -31,10 +32,16 @@ export class CommentQueryService {
           const rps = await Promise.all(
             c.getReplies().map(async (rp) => {
               const ln = await this.likeRepo.getLikesNum(rp.getID());
-              return new CommentDto(rp, ln);
+              const clientLiked = client
+                ? (await this.likeRepo.getLike(client, rp.getID())).isLiked()
+                : false;
+              return new CommentDto(rp, ln, clientLiked);
             }),
           );
-          return new CommentDto(c, ln, rps);
+          const clientLiked = client
+            ? (await this.likeRepo.getLike(client, c.getID())).isLiked()
+            : false;
+          return new CommentDto(c, ln, clientLiked, rps);
         }),
       );
       return commentDtos;

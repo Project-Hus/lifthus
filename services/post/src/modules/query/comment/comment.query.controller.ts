@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { CommentQueryService } from 'src/modules/query/comment/comment.query.service';
 import { CommentDto } from 'src/dto/outbound/comment.dto';
+import { Uid } from 'src/common/decorators/authParam.decorator';
 
 @Controller('/post/query/comment')
 export class CommentQueryController {
@@ -19,8 +20,9 @@ export class CommentQueryController {
   getComments(
     @Query('pid') pidStr: string,
     @Query('skip') skipStr: string,
+    @Uid() client: BigInt | undefined,
   ): Promise<CommentDto[]> {
     const skip = Number(skipStr) || 0;
-    return this.commentQueryService.getComments({ pid: pidStr, skip });
+    return this.commentQueryService.getComments({ pid: pidStr, skip, client });
   }
 }

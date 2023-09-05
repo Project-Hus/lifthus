@@ -18,16 +18,15 @@ export class PostQueryService {
     @Inject(PostLikeRepository)
     private readonly likeRepo: PostLikeRepository,
   ) {}
-  getHello(): string {
-    return 'Hello World!';
-  }
 
   async getUsersPosts({
     users,
     skip,
+    client,
   }: {
     users: string[];
     skip: number;
+    client: BigInt | undefined;
   }): Promise<PostSummaryDto[]> {
     try {
       const targetUsers: User[] = [];
@@ -43,7 +42,10 @@ export class PostQueryService {
           const ps = pse.getSumm();
           const ln = await this.likeRepo.getLikesNum(ps.id);
           const cn = await this.commentRepo.getCommentsNum(ps.id);
-          return new PostSummaryDto(pse, ln, cn);
+          const clientLiked = client
+            ? (await this.likeRepo.getLike(client, ps.id)).isLiked()
+            : false;
+          return new PostSummaryDto(pse, ln, cn, clientLiked);
         }),
       );
       return postSummDtos;
@@ -52,7 +54,10 @@ export class PostQueryService {
     }
   }
 
-  async getAllPosts(skip: number): Promise<PostSummaryDto[]> {
+  async getAllPosts(
+    skip: number,
+    client: BigInt | undefined,
+  ): Promise<PostSummaryDto[]> {
     try {
       const PostSummEnts: PostSummary[] = await this.postRepo.getAllPostSumms(
         skip,
@@ -62,7 +67,10 @@ export class PostQueryService {
           const ps = pse.getSumm();
           const ln = await this.likeRepo.getLikesNum(ps.id);
           const cn = await this.commentRepo.getCommentsNum(ps.id);
-          return new PostSummaryDto(pse, ln, cn);
+          const clientLiked = client
+            ? (await this.likeRepo.getLike(client, ps.id)).isLiked()
+            : false;
+          return new PostSummaryDto(pse, ln, cn, clientLiked);
         }),
       );
       return postSummDtos;
@@ -76,23 +84,32 @@ export class PostQueryService {
    * @param slug
    * @returns
    */
-  async getPostBySlug(slug: string): Promise<PostDto> {
+  async getPostBySlug(
+    slug: string,
+    client: BigInt | undefined,
+  ): Promise<PostDto> {
     try {
       const post = await this.postRepo.getPostBySlug(slug);
       const ln = await this.likeRepo.getLikesNum(post.getID());
       const cn = await this.commentRepo.getCommentsNum(post.getID());
-      return new PostDto(post, ln, cn);
+      const clientLiked = client
+        ? (await this.likeRepo.getLike(client, post.getID())).isLiked()
+        : false;
+      return new PostDto(post, ln, cn, clientLiked);
     } catch (err) {
       return Promise.reject(err);
     }
   }
 
-  async getPostById(id: string): Promise<PostDto> {
+  async getPostById(id: string, client: BigInt | undefined): Promise<PostDto> {
     try {
       const post = await this.postRepo.getPostByID(BigInt(id));
       const ln = await this.likeRepo.getLikesNum(post.getID());
       const cn = await this.commentRepo.getCommentsNum(post.getID());
-      return new PostDto(post, ln, cn);
+      const clientLiked = client
+        ? (await this.likeRepo.getLike(client, post.getID())).isLiked()
+        : false;
+      return new PostDto(post, ln, cn, clientLiked);
     } catch (err) {
       return Promise.reject(err);
     }

@@ -10,7 +10,13 @@ export class PostSummaryDto {
   abstract: string;
   likesNum: number;
   commentsNum: number;
-  constructor(pse: PostSummary, likesNum: number, commentsNum: number) {
+  clientLiked: boolean;
+  constructor(
+    pse: PostSummary,
+    likesNum: number,
+    commentsNum: number,
+    clientLiked: boolean,
+  ) {
     const ps = pse.getSumm();
     this.id = ps.id.toString();
     this.author = ps.author.toString();
@@ -21,6 +27,7 @@ export class PostSummaryDto {
     this.likesNum = likesNum;
     this.commentsNum = commentsNum;
     this.abstract = PostSummaryDto.getAbstractFromSlug(ps.slug);
+    this.clientLiked = clientLiked;
   }
 
   static getAbstractFromSlug(slug: string) {
