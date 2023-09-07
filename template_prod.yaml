@@ -33,9 +33,6 @@ Globals:
         LIFTHUS_ROUTINE_DB_HOST: "{{resolve:ssm:LIFTHUS_ROUTINE_DB_HOST:1}}"
         LIFTHUS_ROUTINE_DB_PORT: "{{resolve:ssm:LIFTHUS_ROUTINE_DB_PORT:1}}"
 
-        LIFTHUS_ACCESS_KEY_ID: "{{resolve:ssm:LIFTHUS_ACCESS_KEY_ID:1}}"
-        LIFTHUS_SECRET_ACCESS_KEY: "{{resolve:ssm:LIFTHUS_SECRET_ACCESS_KEY:1}}"
-
         HUS_SECRET_KEY: "{{resolve:ssm:HUS_SECRET_KEY:1}}"
         HUS_ENV: "{{resolve:ssm:HUS_ENV:1}}"
   Api:
@@ -104,12 +101,12 @@ Resources:
   LifthusPostService:
     Type: AWS::Serverless::Function
     Properties:
-      MemorySize: 384
+      MemorySize: 256
       # !! SAM esbuild (not working properly)
       #CodeUri: services/post/
       #Handler: src/lambda.handler
       # SAM tsc esbuild bundle
-      CodeUri: services/post/
+      CodeUri: services/post/dist-bundle/
       Handler: lambda.handler
       Runtime: nodejs18.x
       Architectures:
@@ -130,38 +127,25 @@ Resources:
             Path: /post/{proxy+}
             Method: ANY
     # SAM esbuild (not working properly)
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        EntryPoints:
-          - src/lambda.ts
-        Format: "cjs"
-        Minify: false
-        # OutExtension:
-        #   - .js=.mjs
-        Target: "es2017"
-        External:
-          - "@nestjs/microservices"
-          - "@nestjs/websockets"
-          - "cache-manager"
-          - "class-transformer"
-          - "class-validator"
+    # Metadata:
+    #   BuildMethod: esbuild
+    #   BuildProperties:
+    #     EntryPoints:
+    #       - src/lambda.ts
+    #     Format: "cjs"
+    #     Minify: false
+    #     # OutExtension:
+    #     #   - .js=.mjs
+    #     Target: "es2017"
+    #     Sourcemap: false
+    #     External:
+    #       - "@nestjs/microservices"
+    #       - "@nestjs/websockets"
+    #       - "cache-manager"
+    #       - "class-transformer"
+    #       - "class-validator"
   # lifthus routine service
-  # S3Bucket:
-  #   Type: "AWS::S3::Bucket"
-  #   DeletionPolicy: Retain
-  #   Properties:
-  #     BucketName: lifthus-post-bucket
-  #     PublicAccessBlockConfiguration:
-  #       BlockPublicAcls: false
-  #       BlockPublicPolicy: false
-  #       IgnorePublicAcls: false
-  #       RestrictPublicBuckets: false
-  #     OwnershipControls:
-  #       Rules:
-  #         - ObjectOwnership: BucketOwnerPreferred
-  #     AccessControl: AwsExecRead
-  DevLifthusRoutineService:
+  LifthusRoutineService:
     Type: AWS::Serverless::Function
     Properties:
       MemorySize: 128
