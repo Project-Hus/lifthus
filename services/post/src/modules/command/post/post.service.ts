@@ -3,6 +3,7 @@ import { Post, PostLike, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePostDto, UpdatePostDto } from './post.dto';
 import { slugify } from 'src/common/utils/utils';
+import { SLUG_MAX_LENGTH } from 'src/common/constraints';
 
 @Injectable()
 export class PostService {
@@ -18,8 +19,8 @@ export class PostService {
     // first, set the range of slug and get it.
     let slug: string;
     const slugEnd: number = post.content.indexOf('\n');
-    if (slugEnd == -1 || slugEnd > 30) {
-      slug = post.content.slice(0, 30);
+    if (slugEnd == -1 || slugEnd > SLUG_MAX_LENGTH) {
+      slug = post.content.slice(0, SLUG_MAX_LENGTH);
     } else {
       slug = post.content.slice(0, slugEnd);
     }

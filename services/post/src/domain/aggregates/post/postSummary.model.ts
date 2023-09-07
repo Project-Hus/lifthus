@@ -5,7 +5,7 @@ export type PostSumm = {
   author: bigint;
   createdAt: Date;
   updatedAt: Date;
-  images: string[];
+  imageSrcs: string[];
   slug: string;
 };
 
@@ -15,7 +15,7 @@ export class PostSummary {
   private author: bigint;
   private createdAt: Date;
   private updatedAt: Date;
-  private images: string[];
+  private imageSrcs: string[];
   private slug: string;
 
   static create(p: PostSumm): PostSummary {
@@ -27,7 +27,7 @@ export class PostSummary {
     this.author = p.author;
     this.createdAt = p.createdAt;
     this.updatedAt = p.updatedAt;
-    this.images = p.images;
+    this.imageSrcs = p.imageSrcs;
     this.slug = p.slug;
     return this;
   }
@@ -38,7 +38,7 @@ export class PostSummary {
       author: this.author,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
-      images: this.images,
+      imageSrcs: this.imageSrcs,
       slug: this.slug,
     };
   }

@@ -6,7 +6,7 @@ export class PostDto {
 
   author: string;
 
-  images: string[];
+  imageSrcs: string[];
   content: string;
 
   createdAt: Date;
@@ -26,7 +26,7 @@ export class PostDto {
     this.author = post.getAuthor().toString();
     this.createdAt = post.getCreatedAt();
     this.updatedAt = post.getUpdatedAt();
-    this.images = post.getImageSrcs();
+    this.imageSrcs = post.getImageSrcs();
     this.slug = post.getSlug();
     this.content = post.getContent();
     this.likesNum = likesNum;

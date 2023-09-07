@@ -5,7 +5,7 @@ export class PostSummaryDto {
   author: string;
   createdAt: Date;
   updatedAt: Date;
-  images: string[];
+  imageSrcs: string[];
   slug: string;
   abstract: string;
   likesNum: number;
@@ -22,7 +22,7 @@ export class PostSummaryDto {
     this.author = ps.author.toString();
     this.createdAt = ps.createdAt;
     this.updatedAt = ps.updatedAt;
-    this.images = ps.images;
+    this.imageSrcs = ps.imageSrcs;
     this.slug = ps.slug;
     this.likesNum = likesNum;
     this.commentsNum = commentsNum;

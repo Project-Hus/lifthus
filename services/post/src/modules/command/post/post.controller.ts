@@ -17,68 +17,39 @@ import { UserGuard } from 'src/common/guards/post.guard';
 import { Request } from 'express';
 import { PostService } from './post.service';
 import { Post2Service } from 'src/modules/command/post/post2.service';
-import { Post as PPost, Prisma } from '@prisma/client';
-import { CreatePostDto, UpdatePostDto } from './post.dto';
+import { Prisma } from '@prisma/client';
+import { UpdatePostDto } from './post.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import crypto from 'crypto';
 import aws from 'aws-sdk';
-
-import multerS3 from 'multer-s3';
-import { S3Service } from './s3.service';
-import { Post as DPost } from 'src/domain/aggregates/post/post.model';
+import { PostDto } from 'src/dto/outbound/post.dto';
+import { Uid } from 'src/common/decorators/authParam.decorator';
+import { getMulterS3Option } from 'src/common/multerS3/multerS3';
+import {
+  CreatePostRequestDto,
+  CreatePostServiceDto,
+} from 'src/dto/inbound/post.dto';
 
 const s3 = new aws.S3();
 
-/**
- * Mutation Controller
- * @description this controller is responsible for handling all mutation requests for posts.
- * @class MutationController
- */
 @Controller('/post/post')
 export class PostController {
   constructor(
     @Inject(PostService) private readonly postService: PostService,
     @Inject(Post2Service) private readonly post2Service: Post2Service,
-    @Inject(S3Service) private readonly s3Service: S3Service,
   ) {}
 
-  /**
-   * generates new post by the form data if the user is signed.
-   * @param req
-   * @returns
-   */
   @UseGuards(UserGuard)
   @Post()
-  @UseInterceptors(
-    FilesInterceptor('images', 5, {
-      storage: multerS3({
-        s3: s3,
-        bucket: 'lifthus-post-bucket',
-        acl: 'public-read',
-        contentType: multerS3.AUTO_CONTENT_TYPE,
-        key: function (req, file, cb) {
-          cb(
-            null,
-            `post/images/${Date.now()}_${crypto
-              .randomBytes(4)
-              .toString('hex')}_${file.originalname}`,
-          );
-        },
-      }),
-    }),
-  )
+  @UseInterceptors(FilesInterceptor('images', 5, getMulterS3Option()))
   createPost(
-    @Req() req: Request,
-    @Body() post: CreatePostDto,
+    @Uid() clientId: bigint,
+    @Body() postForm: CreatePostRequestDto,
     @UploadedFiles() images: Array<Express.Multer.File>,
-  ): Promise<DPost> {
-    this.s3Service.uploadImages(images);
-    const uid: bigint = req.uid;
-    const author: number = parseInt(post.author);
-    if (BigInt(author) !== uid) throw new ForbiddenException();
+  ): Promise<PostDto> {
+    const post = new CreatePostServiceDto(postForm, images);
     return this.post2Service.createPost({
+      clientId,
       post,
-      imageSrcs: images.map((image) => image.location),
     });
   }
 

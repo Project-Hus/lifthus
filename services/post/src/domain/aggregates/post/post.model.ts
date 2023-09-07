@@ -3,6 +3,8 @@ import { Injectable } from '@nestjs/common';
 import { UserUpdatePostInput } from '../user/user.model';
 
 import crypto from 'crypto';
+import { SLUG_MAX_LENGTH } from 'src/common/constraints';
+import { CreatePostServiceDto } from 'src/dto/inbound/post.dto';
 
 export type CreatePrePostInput = {
   author: bigint;
@@ -29,21 +31,21 @@ export type UpdatePostInput = {
 export class Post {
   private slug: string;
   private author: bigint;
-  private images: string[];
+  private imageSrcs: string[];
   private content: string;
 
   private id?: bigint;
   private createdAt?: Date;
   private updatedAt?: Date;
 
-  static create(p: CreatePrePostInput): Post {
+  static create(p: CreatePostServiceDto): Post {
     return new Post().setNewPost(p);
   }
 
-  private setNewPost(p: CreatePrePostInput): Post {
+  private setNewPost(p: CreatePostServiceDto): Post {
     this.slug = Post.generateSlug(p.content);
     this.author = p.author;
-    this.images = p.images;
+    this.imageSrcs = p.imageSrcs;
     this.content = p.content;
     return this;
   }
@@ -59,7 +61,7 @@ export class Post {
   private setQuery(p: CreatePostInput): Post {
     this.slug = p.slug;
     this.author = p.author;
-    this.images = p.images;
+    this.imageSrcs = p.images;
     this.content = p.content;
     this.id = p.id;
     this.createdAt = p.createdAt;
@@ -92,7 +94,7 @@ export class Post {
   }
 
   getImageSrcs(): string[] {
-    return this.images;
+    return this.imageSrcs;
   }
 
   queryPost(): any {
@@ -100,7 +102,7 @@ export class Post {
       id: this.id,
       slug: this.slug,
       author: this.author,
-      images: [...this.images],
+      images: [...this.imageSrcs],
       content: this.content,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
@@ -125,8 +127,8 @@ export class Post {
   private static generateSlug(content: string): string {
     let slug: string;
     const slugEnd: number = content.indexOf('\n');
-    if (slugEnd == -1 || slugEnd > 30) {
-      slug = content.slice(0, 30);
+    if (slugEnd == -1 || slugEnd > SLUG_MAX_LENGTH) {
+      slug = content.slice(0, SLUG_MAX_LENGTH);
     } else {
       slug = content.slice(0, slugEnd);
     }

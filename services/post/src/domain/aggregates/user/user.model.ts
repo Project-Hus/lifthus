@@ -1,14 +1,14 @@
 // task.service.ts
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { Post } from '../post/post.model';
 
 import { Comment, CreatePreCommentInput } from '../comment/comment.model';
 import { Like } from '../like/like.model';
-
-export type UserCreatePostInput = {
-  images: string[];
-  content: string;
-};
+import { CreatePostServiceDto } from 'src/dto/inbound/post.dto';
 
 export type UserUpdatePostInput = {
   content: string;
@@ -40,8 +40,9 @@ export class User {
     return this.id;
   }
 
-  createPost({ images, content }: UserCreatePostInput): Post {
-    return Post.create({ author: this.id, images, content });
+  createPost(np: CreatePostServiceDto): Post {
+    if (np.author !== this.id) throw ForbiddenException;
+    return Post.create(np);
   }
 
   updatePost(post: Post, changes: UserUpdatePostInput): Post {
