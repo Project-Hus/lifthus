@@ -19,8 +19,8 @@ export class CommentDto {
   replies?: CommentDto[];
   constructor(
     c: Comment,
-    likesNum: number,
-    clientLiked: boolean,
+    likesNum?: number,
+    clientLiked?: boolean,
     replies?: CommentDto[],
   ) {
     this.id = c.getID().toString();
