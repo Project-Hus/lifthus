@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Like } from '../../../domain/aggregates/like/like.model';
 import { Post } from '../../../domain/aggregates/post/post.model';
-import { User } from '../../../domain/aggregates/user/user.model';
-import { stringifyAny } from 'src/common/utils/utils';
 
 @Injectable()
 export abstract class LikeRepository<T> {

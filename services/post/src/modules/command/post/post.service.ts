@@ -2,53 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Post, PostLike, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePostDto, UpdatePostDto } from './post.dto';
-import { slugify } from 'src/common/utils/utils';
-import { SLUG_MAX_LENGTH } from 'src/common/constraints';
 
 @Injectable()
 export class PostService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
-
-  createPost({
-    post,
-    imageSrcs,
-  }: {
-    post: CreatePostDto;
-    imageSrcs: string[];
-  }): Promise<Post> {
-    // first, set the range of slug and get it.
-    let slug: string;
-    const slugEnd: number = post.content.indexOf('\n');
-    if (slugEnd == -1 || slugEnd > SLUG_MAX_LENGTH) {
-      slug = post.content.slice(0, SLUG_MAX_LENGTH);
-    } else {
-      slug = post.content.slice(0, slugEnd);
-    }
-    // get slug
-    slug = slugify(slug);
-
-    let images: Prisma.PostImageCreateWithoutPostInput[] = [];
-    imageSrcs.forEach((location, idx) => {
-      images.push({
-        src: location,
-        order: idx,
-      });
-    });
-
-    // Post create form
-    let data: Prisma.PostCreateInput = {
-      author: BigInt(post.author),
-      slug,
-      content: post.content,
-      images: {
-        create: images,
-      },
-    };
-
-    return this.prisma.post.create({
-      data,
-    });
-  }
 
   /**
    * @param aid
