@@ -162,7 +162,7 @@ Resources:
   #       Rules:
   #         - ObjectOwnership: BucketOwnerPreferred
   #     AccessControl: AwsExecRead
-  DevLifthusRoutineService:
+  LifthusRoutineService:
     Type: AWS::Serverless::Function
     Properties:
       MemorySize: 128
