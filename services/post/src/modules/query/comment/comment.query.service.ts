@@ -1,42 +1,51 @@
-import { Injectable } from '@nestjs/common';
-import { Comment } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Comment } from 'src/domain/aggregates/comment/comment.model';
+import { CommentRepository } from 'src/modules/repositories/abstract/comment.repository';
+import { CommentDto } from 'src/dto/outbound/comment.dto';
+import { CommentLikeRepository } from 'src/modules/repositories/abstract/like.repository';
 
 @Injectable()
 export class CommentQueryService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    @Inject(CommentRepository) private readonly commentRepo: CommentRepository,
+    @Inject(CommentLikeRepository)
+    private readonly likeRepo: CommentLikeRepository,
+  ) {}
 
-  /**
-   * Get comments of specified post.
-   * @param param0
-   * @returns
-   */
-  getComments({
+  async getComments({
     pid,
     skip,
+    client,
   }: {
-    pid: number;
+    pid: string;
     skip: number;
-  }): Promise<Comment[]> {
+    client: BigInt | undefined;
+  }): Promise<CommentDto[]> {
     try {
-      const comments = this.prismaService.comment.findMany({
-        where: {
-          postId: pid,
-        },
-        skip: skip,
-        include: {
-          replies: true,
-          mentions: {
-            select: {
-              mentionee: true,
-            },
-          },
-        },
-      });
-
-      return comments;
+      const comments: Comment[] = await this.commentRepo.getComments(
+        BigInt(pid),
+      );
+      const commentDtos: CommentDto[] = await Promise.all(
+        comments.map(async (c) => {
+          const ln = await this.likeRepo.getLikesNum(c.getID());
+          const rps = await Promise.all(
+            c.getReplies().map(async (rp) => {
+              const ln = await this.likeRepo.getLikesNum(rp.getID());
+              const clientLiked = !!client
+                ? (await this.likeRepo.getLike(client, rp.getID())).isLiked()
+                : false;
+              return new CommentDto(rp, ln, clientLiked);
+            }),
+          );
+          const clientLiked = !!client
+            ? (await this.likeRepo.getLike(client, c.getID())).isLiked()
+            : false;
+          return new CommentDto(c, ln, clientLiked, rps);
+        }),
+      );
+      return commentDtos;
     } catch (error) {
-      throw new Error('Failed to get comments');
+      return Promise.reject(error);
     }
   }
 }

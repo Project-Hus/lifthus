@@ -3,7 +3,7 @@ export {};
 
 declare global {
   namespace Express {
-    type Uid = number;
+    type Uid = bigint;
     type Exp = boolean;
     interface Request {
       uid?: Uid;

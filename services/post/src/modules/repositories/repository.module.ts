@@ -1,12 +1,16 @@
 import { Module } from '@nestjs/common';
 
-import { Post } from 'src/modules/domain/aggregates/post/post.model';
-import { Comment } from 'src/modules/domain/aggregates/comment/comment.model';
+import { Post } from 'src/domain/aggregates/post/post.model';
+import { Comment } from 'src/domain/aggregates/comment/comment.model';
 
-import { UserRepository } from 'src/modules/domain/repositories/user.repository';
-import { PostRepository } from 'src/modules/domain/repositories/post.repository';
-import { CommentRepository } from 'src/modules/domain/repositories/comment.repository';
-import { LikeRepository } from 'src/modules/domain/repositories/like.repository';
+import { UserRepository } from 'src/modules/repositories/abstract/user.repository';
+import { PostRepository } from 'src/modules/repositories/abstract/post.repository';
+import { CommentRepository } from 'src/modules/repositories/abstract/comment.repository';
+import {
+  CommentLikeRepository,
+  LikeRepository,
+  PostLikeRepository,
+} from 'src/modules/repositories/abstract/like.repository';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ConcreteUserRepository } from 'src/modules/repositories/user.repository';
@@ -23,16 +27,19 @@ import {
     { provide: UserRepository, useClass: ConcreteUserRepository },
     { provide: PostRepository, useClass: PrismaPostRepository },
     { provide: CommentRepository, useClass: PrismaCommentRepository },
-    { provide: LikeRepository<Post>, useClass: PrismaPostLikeRepository },
-    { provide: LikeRepository<Comment>, useClass: PrismaCommentLikeRepository },
+    { provide: PostLikeRepository, useClass: PrismaPostLikeRepository },
+    {
+      provide: CommentLikeRepository,
+      useClass: PrismaCommentLikeRepository,
+    },
   ],
   exports: [
     PrismaService,
     UserRepository,
     PostRepository,
     CommentRepository,
-    LikeRepository<Post>,
-    LikeRepository<Comment>,
+    PostLikeRepository,
+    CommentLikeRepository,
   ],
 })
 export class RepositoryModule {}

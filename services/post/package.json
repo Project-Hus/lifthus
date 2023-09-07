@@ -31,7 +31,6 @@
     "aws-sdk": "^2.1450.0",
     "cookie-parser": "^1.4.6",
     "envbyjson": "^1.0.1",
-    "esbuild": "0.19.2",
     "multer-s3": "^2.10.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",

@@ -1,68 +1,33 @@
-import { Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import {
   Comment,
   CreateReplyInput,
-} from '../domain/aggregates/comment/comment.model';
+  UpdateCommentInput,
+} from '../../domain/aggregates/comment/comment.model';
 
-import { Post } from '../domain/aggregates/post/post.model';
+import { Post } from '../../domain/aggregates/post/post.model';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CommentRepository } from '../domain/repositories/comment.repository';
+import { CommentRepository } from './abstract/comment.repository';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PrismaCommentRepository extends CommentRepository {
-  constructor(private readonly prismaService: PrismaService) {
+  constructor(
+    @Inject(PrismaService) private readonly prismaService: PrismaService,
+  ) {
     super();
   }
 
-  async _getCommentByID(cid: bigint): Promise<Comment | null> {
-    try {
-      const comm = await this.prismaService.comment.findUnique({
-        where: {
-          id: cid,
-        },
-        include: {
-          replies: {
-            select: {
-              id: true,
-              author: true,
-              createdAt: true,
-              updatedAt: true,
-              content: true,
-            },
-          },
-        },
-      });
-      if (!comm) return null;
-      return Comment.queryComment({
-        id: comm.id,
-        author: comm.author,
-        content: comm.content,
-        postId: comm.postId,
-        createdAt: comm.createdAt,
-        updatedAt: comm.updatedAt,
-        replies: comm.replies.map((r) => {
-          return Comment.queryReply({
-            id: r.id,
-            postId: comm.postId,
-            parentId: comm.id,
-            author: r.author,
-            content: r.content,
-            createdAt: r.createdAt,
-            updatedAt: r.updatedAt,
-          });
-        }),
-      });
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  }
-
-  async _getComments(post: Post): Promise<Comment[]> {
+  async _getComments(pid: bigint): Promise<Comment[]> {
     try {
       const comms = await this.prismaService.comment.findMany({
         where: {
-          postId: post.getID(),
+          postId: pid,
           parentId: null,
         },
         include: {
@@ -102,6 +67,18 @@ export class PrismaCommentRepository extends CommentRepository {
       return comments;
     } catch (e) {
       return Promise.reject(e);
+    }
+  }
+
+  async _getCommentsNum(pid: bigint): Promise<number> {
+    try {
+      return this.prismaService.comment.count({
+        where: {
+          postId: pid,
+        },
+      });
+    } catch (err) {
+      throw new InternalServerErrorException();
     }
   }
 
@@ -153,23 +130,16 @@ export class PrismaCommentRepository extends CommentRepository {
     }
   }
 
-  async _save(changes: Set<Comment>): Promise<void> {
+  async _save(cid: bigint, updates: UpdateCommentInput): Promise<void> {
     try {
-      const changeList = Array.from(changes);
-      // start prisma transaction
-      await this.prismaService.$transaction([
-        ...changeList.map((change) => {
-          return this.prismaService.comment.update({
-            where: {
-              id: change.getID(),
-            },
-            data: {
-              content: change.getContent(),
-            },
-          });
-        }),
-      ]);
-      return;
+      await this.prismaService.comment.update({
+        where: {
+          id: cid,
+        },
+        data: {
+          content: updates.content,
+        },
+      });
     } catch (e) {
       return Promise.reject(e);
     }

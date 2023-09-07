@@ -1,82 +1,71 @@
-import { Injectable } from '@nestjs/common';
-import { Post, PostLike, Prisma } from '@prisma/client';
+import { Inject, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreatePostDto, UpdatePostDto } from './post.dto';
-import { slugify } from 'src/common/utils/utils';
+import { UserRepository } from 'src/modules/repositories/abstract/user.repository';
+import { PostRepository } from 'src/modules/repositories/abstract/post.repository';
+import { Post } from 'src/domain/aggregates/post/post.model';
+import { PostDto } from 'src/dto/outbound/post.dto';
+import {
+  CreatePostServiceDto,
+  UpdatePostServiceDto,
+} from 'src/dto/inbound/post.dto';
+import { PostLikeRepository } from 'src/modules/repositories/abstract/like.repository';
+import { CommentRepository } from 'src/modules/repositories/abstract/comment.repository';
 
 @Injectable()
 export class PostService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(UserRepository) private readonly userRepo: UserRepository,
+    @Inject(PostRepository) private readonly postRepo: PostRepository,
+    @Inject(PostLikeRepository)
+    private readonly postLikeRepo: PostLikeRepository,
+    @Inject(CommentRepository) private readonly commentRepo: CommentRepository,
+  ) {}
 
-  createPost({
+  async createPost({
+    clientId,
     post,
-    imageSrcs,
   }: {
-    post: CreatePostDto;
-    imageSrcs: string[];
-  }): Promise<Post> {
-    // first, set the range of slug and get it.
-    let slug: string;
-    const slugEnd: number = post.content.indexOf('\n');
-    if (slugEnd == -1 || slugEnd > 30) {
-      slug = post.content.slice(0, 30);
-    } else {
-      slug = post.content.slice(0, slugEnd);
+    clientId: bigint;
+    post: CreatePostServiceDto;
+  }): Promise<PostDto> {
+    try {
+      const author = this.userRepo.getUser(clientId);
+      const userPost = author.createPost(post);
+      const newPost: Post = await this.postRepo.createPost(userPost);
+      return new PostDto(newPost, 0, false, 0);
+    } catch (err) {
+      throw err;
     }
-    // get slug
-    slug = slugify(slug);
-
-    let images: Prisma.PostImageCreateWithoutPostInput[] = [];
-    imageSrcs.forEach((location, idx) => {
-      images.push({
-        src: location,
-        order: idx,
-      });
-    });
-
-    // Post create form
-    let data: Prisma.PostCreateInput = {
-      author: BigInt(post.author),
-      slug,
-      content: post.content,
-      images: {
-        create: images,
-      },
-    };
-
-    return this.prisma.post.create({
-      data,
-    });
   }
 
-  /**
-   * @param aid
-   * @param pid
-   * @returns {count:number} only expected 0 or 1
-   */
-  updatePost(data: UpdatePostDto): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    return this.prisma.post.updateMany({
-      data,
-      where: { id: data.id },
-    });
+  async updatePost({
+    clientId,
+    postUpdates,
+  }: {
+    clientId: bigint;
+    postUpdates: UpdatePostServiceDto;
+  }): Promise<PostDto> {
+    const author = this.userRepo.getUser(clientId);
+    const originalPost = await this.postRepo.getPostByID(postUpdates.id);
+    const updatedPost = author.updatePost(originalPost, postUpdates);
+    const savedPost = await this.postRepo.save(updatedPost);
+    return new PostDto(savedPost);
   }
 
-  /**
-   *
-   * @param aid
-   * @param pid
-   * @returns {count:number} only expected 0 or 1
-   */
-  deletePost({
-    aid,
+  async deletePost({
+    clientId,
     pid,
   }: {
-    aid: number;
-    pid: number;
-  }): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    return this.prisma.post.deleteMany({
-      where: { id: pid, author: aid },
-    });
+    clientId: bigint;
+    pid: bigint;
+  }): Promise<PostDto> {
+    const author = this.userRepo.getUser(clientId);
+    const targetPost = await this.postRepo.getPostByID(pid);
+    const deletionVerifiedPost = author.deletePost(targetPost);
+    const deletedPost = await this.postRepo.deletePost(deletionVerifiedPost);
+    return new PostDto(deletedPost);
   }
 
   likePost({ uid, pid }: { uid: number; pid: number }): Promise<number> {

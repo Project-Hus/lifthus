@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   ForbiddenException,
+  Inject,
   Logger,
   Param,
   Post,
@@ -19,7 +20,9 @@ import { Request } from 'express';
 
 @Controller('/post/comment')
 export class CommentController {
-  constructor(private readonly commentService: CommentService) {}
+  constructor(
+    @Inject(CommentService) private readonly commentService: CommentService,
+  ) {}
 
   /**
    * generates new post by the form data if the user is signed.
@@ -32,8 +35,8 @@ export class CommentController {
     @Req() req: Request,
     @Body() comment: CreateCommentDto,
   ): Promise<Comment> {
-    const uid: number = req.uid; // embedded user id
-    if (comment.author !== uid) throw new ForbiddenException();
+    const uid: bigint = req.uid; // embedded user id
+    if (BigInt(comment.author) !== uid) throw new ForbiddenException();
     return this.commentService.createComment(comment);
   }
 
@@ -49,7 +52,7 @@ export class CommentController {
     @Req() req: Request,
     @Body() comment: UpdateCommentDto,
   ): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    if (req.uid !== comment.author) throw new ForbiddenException();
+    if (req.uid !== BigInt(comment.author)) throw new ForbiddenException();
     return this.commentService.updateComment(comment);
   }
 
@@ -67,7 +70,7 @@ export class CommentController {
   ): Prisma.PrismaPromise<Prisma.BatchPayload> {
     return this.commentService.deleteComment({
       cid: Number(cid),
-      aid: req.uid,
+      aid: Number(req.uid),
     });
   }
 
@@ -80,7 +83,10 @@ export class CommentController {
   @UseGuards(UserGuard)
   @Post('/like/:cid')
   likeComment(@Req() req: Request, @Param('cid') cid: any): Promise<number> {
-    return this.commentService.likeComment({ uid: req.uid, cid: Number(cid) });
+    return this.commentService.likeComment({
+      uid: Number(req.uid),
+      cid: Number(cid),
+    });
   }
 
   // /**

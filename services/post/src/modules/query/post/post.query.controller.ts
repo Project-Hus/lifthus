@@ -1,31 +1,31 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Query,
-  BadRequestException,
-} from '@nestjs/common';
-import { PostQueryService } from './post.query.service';
-import { Post as PrismaPost } from '@prisma/client';
-import { Post } from 'src/modules/domain/aggregates/post/post.model';
-import { PostSummary } from 'src/modules/domain/aggregates/post/postSummary.model';
+import { Controller, Get, Param, Query, Inject } from '@nestjs/common';
+import { PostQueryService } from 'src/modules/query/post/post.query.service';
+
+import { PostSummaryDto } from 'src/dto/outbound/postSummary.dto';
+import { PostDto } from 'src/dto/outbound/post.dto';
+import { Uid } from 'src/common/decorators/authParam.decorator';
 
 @Controller('/post/query/post')
 export class PostQueryController {
-  constructor(private readonly postQueryService: PostQueryService) {}
+  constructor(
+    @Inject(PostQueryService)
+    private readonly postQueryService: PostQueryService,
+  ) {}
 
   @Get('/slug/:slug')
-  getPostBySlug(@Param('slug') slug: string): Promise<Post> {
-    return this.postQueryService.getPostBySlug(slug);
+  getPostBySlug(
+    @Param('slug') slug: string,
+    @Uid() client: BigInt | undefined,
+  ): Promise<PostDto> {
+    return this.postQueryService.getPostBySlug(slug, client);
   }
 
   @Get('/id/:id')
-  getPostById(@Param('id') idStr: string): Promise<Post> {
-    const id = Number(idStr);
-    if (isNaN(id)) {
-      throw new BadRequestException();
-    }
-    return this.postQueryService.getPostById(id);
+  getPostById(
+    @Param('id') idStr: string,
+    @Uid() client: BigInt | undefined,
+  ): Promise<PostDto> {
+    return this.postQueryService.getPostById(idStr, client);
   }
 
   /**
@@ -35,9 +35,12 @@ export class PostQueryController {
    * @example /post/query/post/all/0
    */
   @Get('/all')
-  getAllPosts(@Query('skip') skipStr: string): Promise<PostSummary[]> {
+  getAllPosts(
+    @Query('skip') skipStr: string,
+    @Uid() client: BigInt | undefined,
+  ): Promise<PostSummaryDto[]> {
     const skip = Number(skipStr) || 0;
-    return this.postQueryService.getAllPosts(Number(skip));
+    return this.postQueryService.getAllPosts(skip, client);
   }
 
   /**
@@ -50,14 +53,10 @@ export class PostQueryController {
   getUsersPosts(
     @Query('users') usersStr: string,
     @Query('skip') skipStr: string,
-  ): Promise<PostSummary[]> {
-    const users: number[] = usersStr
-      .split(',')
-      .map((userStr) => Number(userStr));
-    if (users.some((user) => isNaN(user))) {
-      throw new BadRequestException();
-    }
+    @Uid() client: BigInt | undefined,
+  ): Promise<PostSummaryDto[]> {
+    const users: string[] = usersStr.split(',').map((userStr) => userStr);
     const skip = Number(skipStr) || 0;
-    return this.postQueryService.getUsersPosts({ users, skip });
+    return this.postQueryService.getUsersPosts({ users, skip, client });
   }
 }

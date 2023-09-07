@@ -1,15 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { PostRepository } from 'src/modules/domain/repositories/post.repository';
+import { PostRepository } from 'src/modules/repositories/abstract/post.repository';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 
-import { User } from 'src/modules/domain/aggregates/user/user.model';
-import {
-  Post,
-  UpdatePostInput,
-} from 'src/modules/domain/aggregates/post/post.model';
-import { PostSummary } from 'src/modules/domain/aggregates/post/postSummary.model';
+import { User } from 'src/domain/aggregates/user/user.model';
+import { Post, PostUpdates } from 'src/domain/aggregates/post/post.model';
+import { PostSummary } from 'src/domain/aggregates/post/postSummary.model';
 
 import { Prisma } from '@prisma/client';
 
@@ -77,7 +74,8 @@ export class PrismaPostRepository extends PostRepository {
           id: post.id,
           author: post.author,
           createdAt: post.createdAt,
-          images: post.images.map((image) => image.src),
+          updatedAt: post.updatedAt,
+          imageSrcs: post.images.map((image) => image.src),
           slug: post.slug,
         });
       });
@@ -121,7 +119,8 @@ export class PrismaPostRepository extends PostRepository {
           id: post.id,
           author: post.author,
           createdAt: post.createdAt,
-          images: post.images.map((image) => image.src),
+          updatedAt: post.updatedAt,
+          imageSrcs: post.images.map((image) => image.src),
           slug: post.slug,
         });
       });
@@ -168,7 +167,7 @@ export class PrismaPostRepository extends PostRepository {
     try {
       const post: PostWithImages = await this.prismaService.post.findUnique({
         where: {
-          slug: encodeURIComponent(slug),
+          slug: slug,
         },
         include: {
           images: {
@@ -251,15 +250,22 @@ export class PrismaPostRepository extends PostRepository {
         where: {
           id: target.getID(),
         },
-        include: {},
       });
-      return target;
+      return Post.query({
+        slug: deletedPost.slug,
+        author: deletedPost.author,
+        images: [],
+        content: deletedPost.content,
+        id: deletedPost.id,
+        createdAt: deletedPost.createdAt,
+        updatedAt: deletedPost.updatedAt,
+      });
     } catch (e) {
       return Promise.reject(e);
     }
   }
 
-  async _save(pid: bigint, updates: UpdatePostInput): Promise<Post> {
+  async _save(pid: bigint, updates: PostUpdates): Promise<Post> {
     try {
       const updatedPost = await this.prismaService.post.update({
         where: {
