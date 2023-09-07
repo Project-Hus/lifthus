@@ -13,10 +13,16 @@ import {
 } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { UserGuard } from 'src/common/guards/post.guard';
-import { CreateCommentDto, UpdateCommentDto } from './comment.dto';
-import { Comment, CommentLike, Prisma } from '@prisma/client';
+import { UpdateCommentDto } from './comment.dto';
+import { Prisma } from '@prisma/client';
 
 import { Request } from 'express';
+import {
+  CreateCommentRequestDto,
+  CreateCommentServiceDto,
+} from 'src/dto/inbound/comment.dto';
+import { Uid } from 'src/common/decorators/authParam.decorator';
+import { CommentDto } from 'src/dto/outbound/comment.dto';
 
 @Controller('/post/comment')
 export class CommentController {
@@ -32,12 +38,11 @@ export class CommentController {
   @UseGuards(UserGuard)
   @Post()
   createComment(
-    @Req() req: Request,
-    @Body() comment: CreateCommentDto,
-  ): Promise<Comment> {
-    const uid: bigint = req.uid; // embedded user id
-    if (BigInt(comment.author) !== uid) throw new ForbiddenException();
-    return this.commentService.createComment(comment);
+    @Uid() clientId: bigint,
+    @Body() commentForm: CreateCommentRequestDto,
+  ): Promise<CommentDto> {
+    const comment = new CreateCommentServiceDto(commentForm);
+    return this.commentService.createComment({ clientId, comment });
   }
 
   /**
