@@ -60,14 +60,13 @@ export class User {
   }
 
   likePost(like: Like<Post>): Like<Post> {
-    if (like.getLiker() !== this.id || like.isLiked())
-      throw BadRequestException;
+    if (like.getLiker() !== this.id || like.isLiked()) throw ForbiddenException;
     return like.like(this);
   }
 
   unlikePost(like: Like<Post>): Like<Post> {
     if (like.getLiker() !== this.id || !like.isLiked())
-      throw BadRequestException;
+      throw ForbiddenException;
     return like.unlike(this);
   }
 
@@ -86,14 +85,13 @@ export class User {
   }
 
   likeComment(like: Like<Comment>): Like<Comment> {
-    if (like.getLiker() !== this.id || like.isLiked())
-      throw BadRequestException;
+    if (like.getLiker() !== this.id || like.isLiked()) throw ForbiddenException;
     return like.like(this);
   }
 
   unlikeComment(like: Like<Comment>): Like<Comment> {
     if (like.getLiker() !== this.id || !like.isLiked())
-      throw BadRequestException;
+      throw ForbiddenException;
     return like.unlike(this);
   }
 }

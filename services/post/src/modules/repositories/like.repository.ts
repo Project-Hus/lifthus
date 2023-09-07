@@ -36,32 +36,39 @@ export class PrismaPostLikeRepository extends LikeRepository<Post> {
     return n;
   }
 
-  async _save(like: Like<Post>): Promise<void> {
+  async _save(like: Like<Post>): Promise<Like<Post>> {
     try {
+      const liker = like.getLiker();
+      const target = like.getTarget();
+      const liked = like.isLiked();
       const postLike = await this.prismaService.postLike.findUnique({
         where: {
           postId_user: {
-            postId: like.getTarget(),
-            user: like.getLiker(),
+            postId: target,
+            user: liker,
           },
         },
       });
-      if (postLike === null)
+      if ((!!postLike && liked) || (!postLike && !liked)) {
+        // same state, do nothing
+      } else if (postLike === null && liked) {
         await this.prismaService.postLike.create({
           data: {
-            postId: like.getTarget(),
-            user: like.getLiker(),
+            postId: target,
+            user: liker,
           },
         });
-      else
+      } else if (!!postLike && !liked) {
         await this.prismaService.postLike.delete({
           where: {
             postId_user: {
-              postId: like.getTarget(),
-              user: like.getLiker(),
+              postId: target,
+              user: liker,
             },
           },
         });
+      }
+      return like;
     } catch (e) {
       return Promise.reject(e);
     }
@@ -96,32 +103,39 @@ export class PrismaCommentLikeRepository extends LikeRepository<Comment> {
     });
   }
 
-  async _save(like: Like<Comment>): Promise<void> {
+  async _save(like: Like<Comment>): Promise<Like<Comment>> {
     try {
-      const commentLike = await this.prismaService.commentLike.findUnique({
+      const liker = like.getLiker();
+      const target = like.getTarget();
+      const liked = like.isLiked();
+      const postLike = await this.prismaService.commentLike.findUnique({
         where: {
           commentId_user: {
-            commentId: like.getTarget(),
-            user: like.getLiker(),
+            commentId: target,
+            user: liker,
           },
         },
       });
-      if (commentLike === null)
+      if ((!!postLike && liked) || (!postLike && !liked)) {
+        // same state, do nothing
+      } else if (postLike === null && liked) {
         await this.prismaService.commentLike.create({
           data: {
-            commentId: like.getTarget(),
-            user: like.getLiker(),
+            commentId: target,
+            user: liker,
           },
         });
-      else
+      } else if (!!postLike && !liked) {
         await this.prismaService.commentLike.delete({
           where: {
             commentId_user: {
-              commentId: like.getTarget(),
-              user: like.getLiker(),
+              commentId: target,
+              user: liker,
             },
           },
         });
+      }
+      return like;
     } catch (e) {
       return Promise.reject(e);
     }

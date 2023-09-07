@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { User } from '../user/user.model';
 
 @Injectable()
@@ -39,13 +39,13 @@ export class Like<T> {
   }
 
   like(u: User): Like<T> | undefined {
-    if (u.getID() !== this.liker || this.liked) return undefined;
+    if (u.getID() !== this.liker || this.liked) throw ForbiddenException;
     this.liked = true;
     return this;
   }
 
   unlike(u: User): Like<T> | undefined {
-    if (u.getID() !== this.liker || !this.liked) return undefined;
+    if (u.getID() !== this.liker || !this.liked) throw ForbiddenException;
     this.liked = false;
     return this;
   }

@@ -13,8 +13,8 @@ export abstract class LikeRepository<T> {
     return this._getLikesNum(tid);
   }
 
-  async save(like: Like<T>): Promise<void> {
-    this._save(like);
+  async save(like: Like<T>): Promise<Like<T>> {
+    return this._save(like);
   }
 
   // Abstract methods to be implemented by the actual repository
@@ -23,7 +23,7 @@ export abstract class LikeRepository<T> {
 
   abstract _getLikesNum(tid: bigint): Promise<number>;
 
-  abstract _save(like: Like<T>): Promise<void>;
+  abstract _save(like: Like<T>): Promise<Like<T>>;
 }
 
 @Injectable()
