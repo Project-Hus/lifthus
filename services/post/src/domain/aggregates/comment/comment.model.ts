@@ -1,5 +1,6 @@
 // task.service.ts
 import { Injectable } from '@nestjs/common';
+import { CreateCommentServiceDto } from 'src/dto/inbound/comment.dto';
 
 export type CreatePreCommentInput = {
   author: bigint;
@@ -53,14 +54,15 @@ export class Comment {
 
   private replies?: Comment[];
 
-  static createComment(c: CreatePreCommentInput): Comment {
+  static createComment(c: CreateCommentServiceDto): Comment {
     return new Comment().setNewComment(c);
   }
 
-  private setNewComment(c: CreatePreCommentInput): Comment {
+  private setNewComment(c: CreateCommentServiceDto): Comment {
     this.author = c.author;
     this.content = c.content;
     this.postId = c.postId;
+    this.parentId = c.parentId;
     return this;
   }
 

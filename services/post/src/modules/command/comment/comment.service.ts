@@ -2,25 +2,30 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Comment, CommentLike, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCommentDto, UpdateCommentDto } from './comment.dto';
+import { CreateCommentServiceDto } from 'src/dto/inbound/comment.dto';
+import { CommentDto } from 'src/dto/outbound/comment.dto';
+import { UserRepository } from 'src/modules/repositories/abstract/user.repository';
+import { CommentRepository } from 'src/modules/repositories/abstract/comment.repository';
 
 @Injectable()
 export class CommentService {
-  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(UserRepository) private readonly userRepo: UserRepository,
+    @Inject(CommentRepository) private readonly commentRepo: CommentRepository,
+  ) {}
 
-  createComment(comment: CreateCommentDto): Promise<Comment> {
-    const newComment: Prisma.CommentCreateInput = {
-      author: comment.author, // whatever the author is signed user.
-      content: comment.content,
-    };
-    if (comment.postId) {
-      newComment.post = { connect: { id: comment.postId } };
-    } else if (comment.parentId) {
-      newComment.parent = { connect: { id: comment.parentId } };
-    }
-
-    return this.prisma.comment.create({
-      data: newComment,
-    });
+  async createComment({
+    clientId,
+    comment,
+  }: {
+    clientId: bigint;
+    comment: CreateCommentServiceDto;
+  }): Promise<CommentDto> {
+    const author = this.userRepo.getUser(clientId);
+    const newComment = author.createComment(comment);
+    const createdComment = await this.commentRepo.createComment(newComment);
+    return new CommentDto(createdComment);
   }
   adfsafds;
   /**

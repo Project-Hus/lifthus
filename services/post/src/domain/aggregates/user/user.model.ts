@@ -12,6 +12,7 @@ import {
   CreatePostServiceDto,
   UpdatePostServiceDto,
 } from 'src/dto/inbound/post.dto';
+import { CreateCommentServiceDto } from 'src/dto/inbound/comment.dto';
 
 export type UserUpdatePostInput = {
   content: string;
@@ -70,8 +71,9 @@ export class User {
     return like.unlike(this);
   }
 
-  createComment(c: UserCreatePreCommentInput): Comment {
-    return Comment.createComment({ author: this.id, ...c });
+  createComment(c: CreateCommentServiceDto): Comment {
+    if (this.id !== c.author) throw ForbiddenException;
+    return Comment.createComment(c);
   }
 
   updateComment(comment: Comment, changes: UserUpdateCommentInput): Comment {
