@@ -55,7 +55,7 @@ export class User {
   }
 
   deletePost(post: Post): Post {
-    if (this.id !== post.getAuthor()) throw BadRequestException;
+    if (this.id !== post.getAuthor()) throw ForbiddenException;
     return post;
   }
 

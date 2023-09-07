@@ -54,22 +54,18 @@ export class Post2Service {
     return new PostDto(savedPost);
   }
 
-  /**
-   *
-   * @param aid
-   * @param pid
-   * @returns {count:number} only expected 0 or 1
-   */
-  deletePost({
-    aid,
+  async deletePost({
+    clientId,
     pid,
   }: {
-    aid: number;
-    pid: number;
-  }): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    return this.prisma.post.deleteMany({
-      where: { id: pid, author: aid },
-    });
+    clientId: bigint;
+    pid: bigint;
+  }): Promise<PostDto> {
+    const author = this.userRepo.getUser(clientId);
+    const targetPost = await this.postRepo.getPostByID(pid);
+    const deletionVerifiedPost = author.deletePost(targetPost);
+    const deletedPost = await this.postRepo.deletePost(deletionVerifiedPost);
+    return new PostDto(deletedPost);
   }
 
   likePost({ uid, pid }: { uid: number; pid: number }): Promise<number> {

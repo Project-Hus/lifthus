@@ -6,24 +6,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class PostService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
-  /**
-   *
-   * @param aid
-   * @param pid
-   * @returns {count:number} only expected 0 or 1
-   */
-  deletePost({
-    aid,
-    pid,
-  }: {
-    aid: number;
-    pid: number;
-  }): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    return this.prisma.post.deleteMany({
-      where: { id: pid, author: aid },
-    });
-  }
-
   likePost({ uid, pid }: { uid: number; pid: number }): Promise<number> {
     const likePost = this.prisma.postLike.create({
       data: { user: uid, post: { connect: { id: pid } } },

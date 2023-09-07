@@ -69,14 +69,8 @@ export class PostController {
    */
   @UseGuards(UserGuard)
   @Delete('/:pid')
-  deletePost(
-    @Req() req: Request,
-    @Param('pid') pid: any,
-  ): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    return this.postService.deletePost({
-      aid: Number(req.uid),
-      pid: Number(pid),
-    });
+  deletePost(@Uid() clientId, @Param('pid') pid: string): Promise<PostDto> {
+    return this.post2Service.deletePost({ clientId, pid: BigInt(pid) });
   }
 
   /**

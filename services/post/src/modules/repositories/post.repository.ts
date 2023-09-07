@@ -250,9 +250,16 @@ export class PrismaPostRepository extends PostRepository {
         where: {
           id: target.getID(),
         },
-        include: {},
       });
-      return target;
+      return Post.query({
+        slug: deletedPost.slug,
+        author: deletedPost.author,
+        images: [],
+        content: deletedPost.content,
+        id: deletedPost.id,
+        createdAt: deletedPost.createdAt,
+        updatedAt: deletedPost.updatedAt,
+      });
     } catch (e) {
       return Promise.reject(e);
     }
