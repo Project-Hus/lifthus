@@ -8,14 +8,14 @@ export class PostSummaryDto {
   imageSrcs: string[];
   slug: string;
   abstract: string;
-  likesNum: number;
-  commentsNum: number;
-  clientLiked: boolean;
+  likesNum?: number;
+  clientLiked?: boolean;
+  commentsNum?: number;
   constructor(
     pse: PostSummary,
-    likesNum: number,
-    commentsNum: number,
-    clientLiked: boolean,
+    likesNum?: number,
+    clientLiked?: boolean,
+    commentsNum?: number,
   ) {
     const ps = pse.getSumm();
     this.id = ps.id.toString();

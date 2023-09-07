@@ -21,11 +21,21 @@ export class CreatePostServiceDto {
   }
 }
 
-export class UpdatePostDto {
+export class UpdatePostRequestDto {
+  constructor(
+    public id: string,
+    public author: string,
+    public content: string,
+  ) {}
+}
+
+export class UpdatePostServiceDto {
   id: bigint;
+  author: bigint;
   content: string;
-  constructor(id: string, content: string) {
-    this.id = BigInt(id);
-    this.content = content;
+  constructor(up: UpdatePostRequestDto) {
+    this.id = BigInt(up.id);
+    this.author = BigInt(up.author);
+    this.content = up.content;
   }
 }

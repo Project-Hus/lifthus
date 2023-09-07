@@ -8,7 +8,10 @@ import { Post } from '../post/post.model';
 
 import { Comment, CreatePreCommentInput } from '../comment/comment.model';
 import { Like } from '../like/like.model';
-import { CreatePostServiceDto } from 'src/dto/inbound/post.dto';
+import {
+  CreatePostServiceDto,
+  UpdatePostServiceDto,
+} from 'src/dto/inbound/post.dto';
 
 export type UserUpdatePostInput = {
   content: string;
@@ -45,9 +48,10 @@ export class User {
     return Post.create(np);
   }
 
-  updatePost(post: Post, changes: UserUpdatePostInput): Post {
-    if (this.id !== post.getAuthor()) throw BadRequestException;
-    return post.update(changes);
+  updatePost(postOriginal: Post, updates: UpdatePostServiceDto): Post {
+    if (this.id !== postOriginal.getAuthor()) throw ForbiddenException;
+    if (postOriginal.getID() !== updates.id) throw BadRequestException;
+    return postOriginal.update(updates);
   }
 
   deletePost(post: Post): Post {

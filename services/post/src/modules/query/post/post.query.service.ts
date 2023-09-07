@@ -45,7 +45,7 @@ export class PostQueryService {
           const clientLiked = !!client
             ? (await this.likeRepo.getLike(client, ps.id)).isLiked()
             : false;
-          return new PostSummaryDto(pse, ln, cn, clientLiked);
+          return new PostSummaryDto(pse, ln, clientLiked, cn);
         }),
       );
       return postSummDtos;
@@ -70,7 +70,7 @@ export class PostQueryService {
           const clientLiked = !!client
             ? (await this.likeRepo.getLike(client, ps.id)).isLiked()
             : false;
-          return new PostSummaryDto(pse, ln, cn, clientLiked);
+          return new PostSummaryDto(pse, ln, clientLiked, cn);
         }),
       );
       return postSummDtos;
@@ -95,7 +95,7 @@ export class PostQueryService {
       const clientLiked = !!client
         ? (await this.likeRepo.getLike(client, post.getID())).isLiked()
         : false;
-      return new PostDto(post, ln, cn, clientLiked);
+      return new PostDto(post, ln, clientLiked, cn);
     } catch (err) {
       return Promise.reject(err);
     }
@@ -109,7 +109,7 @@ export class PostQueryService {
       const clientLiked = !!client
         ? (await this.likeRepo.getLike(client, post.getID())).isLiked()
         : false;
-      return new PostDto(post, ln, cn, clientLiked);
+      return new PostDto(post, ln, clientLiked, cn);
     } catch (err) {
       return Promise.reject(err);
     }

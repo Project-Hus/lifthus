@@ -18,18 +18,16 @@ import { Request } from 'express';
 import { PostService } from './post.service';
 import { Post2Service } from 'src/modules/command/post/post2.service';
 import { Prisma } from '@prisma/client';
-import { UpdatePostDto } from './post.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import aws from 'aws-sdk';
 import { PostDto } from 'src/dto/outbound/post.dto';
 import { Uid } from 'src/common/decorators/authParam.decorator';
 import { getMulterS3Option } from 'src/common/multerS3/multerS3';
 import {
   CreatePostRequestDto,
   CreatePostServiceDto,
+  UpdatePostRequestDto,
+  UpdatePostServiceDto,
 } from 'src/dto/inbound/post.dto';
-
-const s3 = new aws.S3();
 
 @Controller('/post/post')
 export class PostController {
@@ -53,23 +51,14 @@ export class PostController {
     });
   }
 
-  /**
-   * updates the post by the form data if the user is signed.
-   * @param req
-   * @param post
-   * @returns
-   */
   @UseGuards(UserGuard)
   @Put()
   updatePost(
-    @Req() req: Request,
-    @Body() post: UpdatePostDto,
-  ): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    const uid: bigint = req.uid;
-    const aid: number = post.author;
-    // if the author is not signed user, return 403 Forbidden.
-    if (uid !== BigInt(aid)) throw new ForbiddenException();
-    return this.postService.updatePost(post);
+    @Uid() clientId: bigint,
+    @Body() postForm: UpdatePostRequestDto,
+  ): Promise<PostDto> {
+    const postUpdates = new UpdatePostServiceDto(postForm);
+    return this.post2Service.updatePost({ clientId, postUpdates });
   }
 
   /**

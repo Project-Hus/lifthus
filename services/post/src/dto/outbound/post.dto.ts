@@ -12,15 +12,15 @@ export class PostDto {
   createdAt: Date;
   updatedAt: Date;
 
-  likesNum: number;
-  commentsNum: number;
+  likesNum?: number;
+  commentsNum?: number;
 
-  clientLiked: boolean;
+  clientLiked?: boolean;
   constructor(
     post: Post,
-    likesNum: number,
-    commentsNum: number,
-    clientLiked: boolean,
+    likesNum?: number,
+    clientLiked?: boolean,
+    commentsNum?: number,
   ) {
     this.id = post.getID().toString();
     this.author = post.getAuthor().toString();

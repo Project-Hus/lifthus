@@ -1,16 +1,12 @@
 // task.service.ts
 import { Injectable } from '@nestjs/common';
-import { UserUpdatePostInput } from '../user/user.model';
 
 import crypto from 'crypto';
 import { SLUG_MAX_LENGTH } from 'src/common/constraints';
-import { CreatePostServiceDto } from 'src/dto/inbound/post.dto';
-
-export type CreatePrePostInput = {
-  author: bigint;
-  images: string[];
-  content: string;
-};
+import {
+  CreatePostServiceDto,
+  UpdatePostServiceDto,
+} from 'src/dto/inbound/post.dto';
 
 export type CreatePostInput = {
   slug: string;
@@ -23,10 +19,9 @@ export type CreatePostInput = {
   updatedAt: Date;
 };
 
-export type UpdatePostInput = {
+export type PostUpdates = {
   content: string;
 };
-
 @Injectable()
 export class Post {
   private slug: string;
@@ -109,12 +104,12 @@ export class Post {
     };
   }
 
-  update(changes: UserUpdatePostInput): Post {
-    this.content = changes.content;
+  update(updates: UpdatePostServiceDto): Post {
+    this.content = updates.content;
     return this;
   }
 
-  getUpdates(): UpdatePostInput {
+  getUpdates(): PostUpdates {
     return {
       content: this.content,
     };

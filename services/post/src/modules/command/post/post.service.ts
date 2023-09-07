@@ -1,23 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Post, PostLike, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreatePostDto, UpdatePostDto } from './post.dto';
 
 @Injectable()
 export class PostService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
-
-  /**
-   * @param aid
-   * @param pid
-   * @returns {count:number} only expected 0 or 1
-   */
-  updatePost(data: UpdatePostDto): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    return this.prisma.post.updateMany({
-      data,
-      where: { id: data.id },
-    });
-  }
 
   /**
    *

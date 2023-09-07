@@ -5,7 +5,7 @@ import { PostRepository } from 'src/modules/repositories/abstract/post.repositor
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { User } from 'src/domain/aggregates/user/user.model';
-import { Post, UpdatePostInput } from 'src/domain/aggregates/post/post.model';
+import { Post, PostUpdates } from 'src/domain/aggregates/post/post.model';
 import { PostSummary } from 'src/domain/aggregates/post/postSummary.model';
 
 import { Prisma } from '@prisma/client';
@@ -258,7 +258,7 @@ export class PrismaPostRepository extends PostRepository {
     }
   }
 
-  async _save(pid: bigint, updates: UpdatePostInput): Promise<Post> {
+  async _save(pid: bigint, updates: PostUpdates): Promise<Post> {
     try {
       const updatedPost = await this.prismaService.post.update({
         where: {
