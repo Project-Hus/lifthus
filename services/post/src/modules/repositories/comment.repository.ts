@@ -12,7 +12,7 @@ import {
 } from '../../domain/aggregates/comment/comment.model';
 
 import { Post } from '../../domain/aggregates/post/post.model';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from 'src/modules/repositories/prisma/prisma.service';
 import { CommentRepository } from './abstract/comment.repository';
 import { Comment as PComment } from '@prisma/client';
 

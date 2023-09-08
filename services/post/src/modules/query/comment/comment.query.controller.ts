@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { CommentQueryService } from 'src/modules/query/comment/comment.query.service';
 import { CommentDto } from 'src/dto/outbound/comment.dto';
-import { Uid } from 'src/common/decorators/authParam.decorator';
+import { Uid } from 'src/shared/decorators/authParam.decorator';
 
 @Controller('/post/query/comment')
 export class CommentQueryController {

@@ -2,7 +2,7 @@
 import { Injectable } from '@nestjs/common';
 
 import crypto from 'crypto';
-import { SLUG_MAX_LENGTH } from 'src/common/constraints';
+import { SLUG_MAX_LENGTH } from 'src/shared/constraints';
 import {
   CreatePostServiceDto,
   UpdatePostServiceDto,

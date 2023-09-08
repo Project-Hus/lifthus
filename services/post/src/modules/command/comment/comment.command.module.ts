@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 
 import { CommentController } from 'src/modules/command/comment/comment.controller';
 
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from 'src/modules/repositories/prisma/prisma.service';
 import { CommentService } from 'src/modules/command/comment/comment.service';
 
 import { RepositoryModule } from 'src/modules/repositories/repository.module';

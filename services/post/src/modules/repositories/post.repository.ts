@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import { PostRepository } from 'src/modules/repositories/abstract/post.repository';
 
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from 'src/modules/repositories/prisma/prisma.service';
 
 import { User } from 'src/domain/aggregates/user/user.model';
 import { Post, PostUpdates } from 'src/domain/aggregates/post/post.model';
