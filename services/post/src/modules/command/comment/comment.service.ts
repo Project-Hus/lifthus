@@ -1,8 +1,10 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Comment, CommentLike, Prisma } from '@prisma/client';
+import { Inject, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateCommentDto, UpdateCommentDto } from './comment.dto';
-import { CreateCommentServiceDto } from 'src/dto/inbound/comment.dto';
+import {
+  CreateCommentServiceDto,
+  UpdateCommentServiceDto,
+} from 'src/dto/inbound/comment.dto';
 import { CommentDto } from 'src/dto/outbound/comment.dto';
 import { UserRepository } from 'src/modules/repositories/abstract/user.repository';
 import { CommentRepository } from 'src/modules/repositories/abstract/comment.repository';
@@ -27,71 +29,34 @@ export class CommentService {
     const createdComment = await this.commentRepo.createComment(newComment);
     return new CommentDto(createdComment);
   }
-  adfsafds;
-  /**
-   * @param aid
-   * @param cid
-   * @returns {count:number} only expected 0 or 1
-   */
-  updateComment(
-    data: UpdateCommentDto,
-  ): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    return this.prisma.comment.updateMany({
-      data,
-      where: { id: data.id, author: data.author },
-    });
-  }
 
-  /**
-   *
-   * @param aid
-   * @param cid
-   * @returns {count:number} only expected 0 or 1
-   */
-  deleteComment({
-    cid,
-    aid,
+  async updateComment({
+    clientId,
+    updates,
   }: {
-    cid: number;
-    aid: number;
-  }): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    return this.prisma.comment.deleteMany({
-      where: { id: cid, author: aid },
-    });
+    clientId: bigint;
+    updates: UpdateCommentServiceDto;
+  }): Promise<CommentDto> {
+    const author = this.userRepo.getUser(clientId);
+    const target = await this.commentRepo.getComment(updates.id);
+    const updatedTarget = author.updateComment(target, updates);
+    const savedTarget = await this.commentRepo.save(updatedTarget);
+    return new CommentDto(savedTarget);
   }
 
-  likeComment({ uid, cid }: { uid: number; cid: number }): Promise<number> {
-    const likeComment = this.prisma.commentLike.create({
-      data: { user: uid, comment: { connect: { id: cid } } },
-    });
-    const increaseCommentLikeNum = this.prisma.comment.update({
-      data: { likenum: { increment: 1 } },
-      where: { id: cid },
-    });
-    return this.prisma
-      .$transaction([likeComment, increaseCommentLikeNum])
-      .then((res) => {
-        // if liking is successful, return the new likenum
-        return res[1].likenum;
-      })
-      .catch((err) => {
-        // if failed try unliking
-        const unlikeComment = this.prisma.commentLike.delete({
-          where: { commentId_user: { user: uid, commentId: cid } },
-        });
-        const decreaseCommnetLikeNum = this.prisma.comment.update({
-          data: { likenum: { decrement: 1 } },
-          where: { id: cid },
-        });
-        return this.prisma
-          .$transaction([unlikeComment, decreaseCommnetLikeNum])
-          .then((res) => {
-            // if unliking is successful, return the new likenum
-            return res[1].likenum;
-          })
-          .catch((err) => {
-            return err;
-          });
-      });
+  async deleteComment({
+    clientId,
+    cid,
+  }: {
+    clientId: bigint;
+    cid: bigint;
+  }): Promise<CommentDto> {
+    const author = this.userRepo.getUser(clientId);
+    const target = await this.commentRepo.getComment(cid);
+    const deletionVerifiedTarget = author.deleteComment(target);
+    const deletedTarget = await this.commentRepo.deleteComment(
+      deletionVerifiedTarget,
+    );
+    return new CommentDto(deletedTarget);
   }
 }

@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import {
   Comment,
+  CreateCommentInput,
   CreateReplyInput,
   UpdateCommentInput,
 } from '../../domain/aggregates/comment/comment.model';
@@ -13,7 +14,7 @@ import {
 import { Post } from '../../domain/aggregates/post/post.model';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CommentRepository } from './abstract/comment.repository';
-import { Prisma } from '@prisma/client';
+import { Comment as PComment } from '@prisma/client';
 
 @Injectable()
 export class PrismaCommentRepository extends CommentRepository {
@@ -21,6 +22,19 @@ export class PrismaCommentRepository extends CommentRepository {
     @Inject(PrismaService) private readonly prismaService: PrismaService,
   ) {
     super();
+  }
+
+  async _getComment(cid: bigint): Promise<Comment> {
+    try {
+      const comm = await this.prismaService.comment.findUnique({
+        where: {
+          id: cid,
+        },
+      });
+      return this.createModel(comm);
+    } catch (e) {
+      return Promise.reject(e);
+    }
   }
 
   async _getComments(pid: bigint): Promise<Comment[]> {
@@ -124,15 +138,15 @@ export class PrismaCommentRepository extends CommentRepository {
           id: target.getID(),
         },
       });
-      return target;
+      return this.createModel(deletedComment);
     } catch (e) {
       return Promise.reject(e);
     }
   }
 
-  async _save(cid: bigint, updates: UpdateCommentInput): Promise<void> {
+  async _save(cid: bigint, updates: UpdateCommentInput): Promise<Comment> {
     try {
-      await this.prismaService.comment.update({
+      const target = await this.prismaService.comment.update({
         where: {
           id: cid,
         },
@@ -140,8 +154,34 @@ export class PrismaCommentRepository extends CommentRepository {
           content: updates.content,
         },
       });
+      return this.createModel(target);
     } catch (e) {
       return Promise.reject(e);
+    }
+  }
+
+  private createModel(comm: PComment): Comment {
+    if (!comm) return null;
+    else if (!comm.parentId) {
+      return Comment.queryComment({
+        id: comm.id,
+        author: comm.author,
+        content: comm.content,
+        postId: comm.postId,
+        replies: undefined,
+        createdAt: comm.createdAt,
+        updatedAt: comm.updatedAt,
+      });
+    } else {
+      return Comment.queryReply({
+        id: comm.id,
+        author: comm.author,
+        postId: comm.postId,
+        parentId: comm.id,
+        content: comm.content,
+        createdAt: comm.createdAt,
+        updatedAt: comm.updatedAt,
+      });
     }
   }
 }

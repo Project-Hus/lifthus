@@ -6,6 +6,10 @@ import {
 
 @Injectable()
 export abstract class CommentRepository {
+  async getComment(cid: bigint): Promise<Comment> {
+    return await this._getComment(cid);
+  }
+
   async getComments(pid: bigint): Promise<Comment[]> {
     return await this._getComments(pid);
   }
@@ -23,11 +27,13 @@ export abstract class CommentRepository {
     return await this._deleteComment(comment);
   }
 
-  async save(comment: Comment): Promise<void> {
+  async save(comment: Comment): Promise<Comment> {
     return this._save(comment.getID(), comment.getUpdates());
   }
 
   // Abstract methods to be implemented by the actual repository
+
+  abstract _getComment(cid: bigint): Promise<Comment>;
 
   abstract _getComments(pid: bigint): Promise<Comment[]>;
   abstract _getCommentsNum(pid: bigint): Promise<number>;
@@ -35,5 +41,5 @@ export abstract class CommentRepository {
   abstract _createComment(comment: Comment): Promise<Comment>;
   abstract _deleteComment(traget: Comment): Promise<Comment>;
 
-  abstract _save(cid: bigint, updates: UpdateCommentInput): Promise<void>;
+  abstract _save(cid: bigint, updates: UpdateCommentInput): Promise<Comment>;
 }
