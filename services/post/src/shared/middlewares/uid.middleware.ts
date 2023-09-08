@@ -1,5 +1,5 @@
 import { JwtService } from '@nestjs/jwt';
-import { LifthusSessionJWTPayload } from 'src/common/types/session';
+import { LifthusSessionJWTPayload } from 'src/shared/types/session';
 import { Inject, Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 

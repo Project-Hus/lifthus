@@ -9,14 +9,14 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CommentService } from './comment.service';
-import { UserGuard } from 'src/common/guards/post.guard';
+import { UserGuard } from 'src/shared/guards/post.guard';
 import {
   CreateCommentRequestDto,
   CreateCommentServiceDto,
   UpdateCommentRequestDto,
   UpdateCommentServiceDto,
 } from 'src/dto/inbound/comment.dto';
-import { Uid } from 'src/common/decorators/authParam.decorator';
+import { Uid } from 'src/shared/decorators/authParam.decorator';
 import { CommentDto } from 'src/dto/outbound/comment.dto';
 
 @Controller('/post/comment')

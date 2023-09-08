@@ -1,6 +1,6 @@
 import { Controller, Inject, Param, Post, UseGuards } from '@nestjs/common';
-import { Uid } from 'src/common/decorators/authParam.decorator';
-import { UserGuard } from 'src/common/guards/post.guard';
+import { Uid } from 'src/shared/decorators/authParam.decorator';
+import { UserGuard } from 'src/shared/guards/post.guard';
 import { LikeDto } from 'src/dto/outbound/like.dto';
 import { LikeService } from 'src/modules/command/like/like.service';
 

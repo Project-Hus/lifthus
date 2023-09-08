@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Like } from '../../domain/aggregates/like/like.model';
 import { User } from '../../domain/aggregates/user/user.model';
 import { LikeRepository } from './abstract/like.repository';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from 'src/modules/repositories/prisma/prisma.service';
 
 import { Post } from '../../domain/aggregates/post/post.model';
 import { Comment } from '../../domain/aggregates/comment/comment.model';

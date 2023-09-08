@@ -2,7 +2,7 @@ import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { OpenapiController } from 'src/openapi/openapi.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { OpenapiService } from 'src/openapi/openapi.service';
-import { UidMiddleware } from 'src/common/middlewares/uid.middleware';
+import { UidMiddleware } from 'src/shared/middlewares/uid.middleware';
 import { QueryModule } from 'src/modules/query/query.module';
 import { CommandModule } from 'src/modules/command/command.module';
 

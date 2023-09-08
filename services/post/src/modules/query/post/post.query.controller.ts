@@ -3,7 +3,7 @@ import { PostQueryService } from 'src/modules/query/post/post.query.service';
 
 import { PostSummaryDto } from 'src/dto/outbound/postSummary.dto';
 import { PostDto } from 'src/dto/outbound/post.dto';
-import { Uid } from 'src/common/decorators/authParam.decorator';
+import { Uid } from 'src/shared/decorators/authParam.decorator';
 
 @Controller('/post/query/post')
 export class PostQueryController {

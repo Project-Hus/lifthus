@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
-import { HttpExceptionFilter } from 'src/common/filters/http-exception.filter';
+import { HttpExceptionFilter } from 'src/shared/filters/http-exception.filter';
 import { PostQueryModule } from 'src/modules/query/post/post.query.module';
 import { CommentQueryModule } from 'src/modules/query/comment/comment.query.module';
 

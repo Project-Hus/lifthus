@@ -13,13 +13,13 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { UserGuard } from 'src/common/guards/post.guard';
+import { UserGuard } from 'src/shared/guards/post.guard';
 import { Request } from 'express';
 import { PostService } from 'src/modules/command/post/post.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { PostDto } from 'src/dto/outbound/post.dto';
-import { Uid } from 'src/common/decorators/authParam.decorator';
-import { getMulterS3Option } from 'src/common/multerS3/multerS3';
+import { Uid } from 'src/shared/decorators/authParam.decorator';
+import { getMulterS3Option } from 'src/shared/multerS3/multerS3';
 import {
   CreatePostRequestDto,
   CreatePostServiceDto,
