@@ -80,12 +80,12 @@ export class User {
   }
 
   updateComment(comment: Comment, changes: UpdateCommentServiceDto): Comment {
-    if (this.id !== comment.getAuthor()) return;
+    if (this.id !== comment.getAuthor()) throw ForbiddenException;
     return comment.update(changes);
   }
 
   deleteComment(comment: Comment): Comment {
-    if (this.id !== comment.getAuthor()) return;
+    if (this.id !== comment.getAuthor()) throw ForbiddenException;
     return comment;
   }
 

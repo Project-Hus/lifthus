@@ -1,7 +1,6 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Comment, CommentLike, Prisma } from '@prisma/client';
+import { Inject, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateCommentDto, UpdateCommentDto } from './comment.dto';
 import {
   CreateCommentServiceDto,
   UpdateCommentServiceDto,
@@ -45,56 +44,19 @@ export class CommentService {
     return new CommentDto(savedTarget);
   }
 
-  /**
-   *
-   * @param aid
-   * @param cid
-   * @returns {count:number} only expected 0 or 1
-   */
-  deleteComment({
+  async deleteComment({
+    clientId,
     cid,
-    aid,
   }: {
-    cid: number;
-    aid: number;
-  }): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    return this.prisma.comment.deleteMany({
-      where: { id: cid, author: aid },
-    });
-  }
-
-  likeComment({ uid, cid }: { uid: number; cid: number }): Promise<number> {
-    const likeComment = this.prisma.commentLike.create({
-      data: { user: uid, comment: { connect: { id: cid } } },
-    });
-    const increaseCommentLikeNum = this.prisma.comment.update({
-      data: { likenum: { increment: 1 } },
-      where: { id: cid },
-    });
-    return this.prisma
-      .$transaction([likeComment, increaseCommentLikeNum])
-      .then((res) => {
-        // if liking is successful, return the new likenum
-        return res[1].likenum;
-      })
-      .catch((err) => {
-        // if failed try unliking
-        const unlikeComment = this.prisma.commentLike.delete({
-          where: { commentId_user: { user: uid, commentId: cid } },
-        });
-        const decreaseCommnetLikeNum = this.prisma.comment.update({
-          data: { likenum: { decrement: 1 } },
-          where: { id: cid },
-        });
-        return this.prisma
-          .$transaction([unlikeComment, decreaseCommnetLikeNum])
-          .then((res) => {
-            // if unliking is successful, return the new likenum
-            return res[1].likenum;
-          })
-          .catch((err) => {
-            return err;
-          });
-      });
+    clientId: bigint;
+    cid: bigint;
+  }): Promise<CommentDto> {
+    const author = this.userRepo.getUser(clientId);
+    const target = await this.commentRepo.getComment(cid);
+    const deletionVerifiedTarget = author.deleteComment(target);
+    const deletedTarget = await this.commentRepo.deleteComment(
+      deletionVerifiedTarget,
+    );
+    return new CommentDto(deletedTarget);
   }
 }

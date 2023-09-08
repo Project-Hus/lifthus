@@ -2,21 +2,14 @@ import {
   Body,
   Controller,
   Delete,
-  ForbiddenException,
   Inject,
-  Logger,
   Param,
   Post,
   Put,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { UserGuard } from 'src/common/guards/post.guard';
-import { UpdateCommentDto } from './comment.dto';
-import { Prisma } from '@prisma/client';
-
-import { Request } from 'express';
 import {
   CreateCommentRequestDto,
   CreateCommentServiceDto,
@@ -72,42 +65,9 @@ export class CommentController {
   @UseGuards(UserGuard)
   @Delete('/:cid')
   deleteComment(
-    @Req() req: Request,
-    @Param('cid') cid: any,
-  ): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    return this.commentService.deleteComment({
-      cid: Number(cid),
-      aid: Number(req.uid),
-    });
+    @Uid() clientId: bigint,
+    @Param('cid') cid: string,
+  ): Promise<CommentDto> {
+    return this.commentService.deleteComment({ clientId, cid: BigInt(cid) });
   }
-
-  /**
-   * likes the post by the pid in the body if the user is signed.
-   * @param req
-   * @param post
-   * @returns
-   */
-  @UseGuards(UserGuard)
-  @Post('/like/:cid')
-  likeComment(@Req() req: Request, @Param('cid') cid: any): Promise<number> {
-    return this.commentService.likeComment({
-      uid: Number(req.uid),
-      cid: Number(cid),
-    });
-  }
-
-  // /**
-  //  * unlikes the post by the pid in the body if the user is signed.
-  //  * @param req
-  //  * @param post
-  //  * @returns
-  //  */
-  // @UseGuards(UserGuard)
-  // @Post('/unlike/:cid')
-  // unlikeComment(
-  //   @Req() req: Request,
-  //   @Param('cid') cid: number,
-  // ): Promise<[CommentLike, Comment]> {
-  //   return this.commentService.unlikeComment(req.uid, { id: cid });
-  // }
 }

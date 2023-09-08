@@ -138,7 +138,7 @@ export class PrismaCommentRepository extends CommentRepository {
           id: target.getID(),
         },
       });
-      return target;
+      return this.createModel(deletedComment);
     } catch (e) {
       return Promise.reject(e);
     }
