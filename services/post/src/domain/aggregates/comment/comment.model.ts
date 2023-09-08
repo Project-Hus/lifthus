@@ -5,12 +5,6 @@ import {
   UpdateCommentServiceDto,
 } from 'src/dto/inbound/comment.dto';
 
-export type CreatePreCommentInput = {
-  author: bigint;
-  postId: bigint;
-  content: string;
-};
-
 export type CreateCommentInput = {
   id: bigint;
   author: bigint;
@@ -19,13 +13,6 @@ export type CreateCommentInput = {
   replies: Comment[];
   createdAt: Date;
   updatedAt: Date;
-};
-
-export type CreatePreReplyCommentInput = {
-  author: bigint;
-  postId: bigint;
-  parentId: bigint;
-  content: string;
 };
 
 export type CreateReplyInput = {
@@ -81,18 +68,6 @@ export class Comment {
     this.createdAt = p.createdAt;
     this.updatedAt = p.updatedAt;
     this.replies = p.replies;
-    return this;
-  }
-
-  static createReply(c: CreatePreReplyCommentInput): Comment {
-    return new Comment().setNewReply(c);
-  }
-
-  private setNewReply(c: CreatePreReplyCommentInput): Comment {
-    this.author = c.author;
-    this.content = c.content;
-    this.postId = c.postId;
-    this.parentId = c.parentId;
     return this;
   }
 
