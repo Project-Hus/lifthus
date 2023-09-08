@@ -20,6 +20,8 @@ import { Request } from 'express';
 import {
   CreateCommentRequestDto,
   CreateCommentServiceDto,
+  UpdateCommentRequestDto,
+  UpdateCommentServiceDto,
 } from 'src/dto/inbound/comment.dto';
 import { Uid } from 'src/common/decorators/authParam.decorator';
 import { CommentDto } from 'src/dto/outbound/comment.dto';
@@ -54,11 +56,11 @@ export class CommentController {
   @UseGuards(UserGuard)
   @Put()
   updateComment(
-    @Req() req: Request,
-    @Body() comment: UpdateCommentDto,
-  ): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    if (req.uid !== BigInt(comment.author)) throw new ForbiddenException();
-    return this.commentService.updateComment(comment);
+    @Uid() clientId,
+    @Body() updatesForm: UpdateCommentRequestDto,
+  ): Promise<CommentDto> {
+    const updates = new UpdateCommentServiceDto(updatesForm);
+    return this.commentService.updateComment({ clientId, updates });
   }
 
   /**

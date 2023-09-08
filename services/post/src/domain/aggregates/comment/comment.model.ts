@@ -1,6 +1,9 @@
 // task.service.ts
 import { Injectable } from '@nestjs/common';
-import { CreateCommentServiceDto } from 'src/dto/inbound/comment.dto';
+import {
+  CreateCommentServiceDto,
+  UpdateCommentServiceDto,
+} from 'src/dto/inbound/comment.dto';
 
 export type CreatePreCommentInput = {
   author: bigint;
@@ -157,7 +160,7 @@ export class Comment {
     return this.replies;
   }
 
-  update(changes: UpdateCommentInput): Comment {
+  update(changes: UpdateCommentServiceDto): Comment {
     this.content = changes.content;
     return this;
   }

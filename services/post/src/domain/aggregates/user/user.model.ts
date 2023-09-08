@@ -12,7 +12,10 @@ import {
   CreatePostServiceDto,
   UpdatePostServiceDto,
 } from 'src/dto/inbound/post.dto';
-import { CreateCommentServiceDto } from 'src/dto/inbound/comment.dto';
+import {
+  CreateCommentServiceDto,
+  UpdateCommentServiceDto,
+} from 'src/dto/inbound/comment.dto';
 
 export type UserUpdatePostInput = {
   content: string;
@@ -76,7 +79,7 @@ export class User {
     return Comment.createComment(c);
   }
 
-  updateComment(comment: Comment, changes: UserUpdateCommentInput): Comment {
+  updateComment(comment: Comment, changes: UpdateCommentServiceDto): Comment {
     if (this.id !== comment.getAuthor()) return;
     return comment.update(changes);
   }

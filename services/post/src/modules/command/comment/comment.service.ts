@@ -2,7 +2,10 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Comment, CommentLike, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCommentDto, UpdateCommentDto } from './comment.dto';
-import { CreateCommentServiceDto } from 'src/dto/inbound/comment.dto';
+import {
+  CreateCommentServiceDto,
+  UpdateCommentServiceDto,
+} from 'src/dto/inbound/comment.dto';
 import { CommentDto } from 'src/dto/outbound/comment.dto';
 import { UserRepository } from 'src/modules/repositories/abstract/user.repository';
 import { CommentRepository } from 'src/modules/repositories/abstract/comment.repository';
@@ -27,19 +30,19 @@ export class CommentService {
     const createdComment = await this.commentRepo.createComment(newComment);
     return new CommentDto(createdComment);
   }
-  adfsafds;
-  /**
-   * @param aid
-   * @param cid
-   * @returns {count:number} only expected 0 or 1
-   */
-  updateComment(
-    data: UpdateCommentDto,
-  ): Prisma.PrismaPromise<Prisma.BatchPayload> {
-    return this.prisma.comment.updateMany({
-      data,
-      where: { id: data.id, author: data.author },
-    });
+
+  async updateComment({
+    clientId,
+    updates,
+  }: {
+    clientId: bigint;
+    updates: UpdateCommentServiceDto;
+  }): Promise<CommentDto> {
+    const author = this.userRepo.getUser(clientId);
+    const target = await this.commentRepo.getComment(updates.id);
+    const updatedTarget = author.updateComment(target, updates);
+    const savedTarget = await this.commentRepo.save(updatedTarget);
+    return new CommentDto(savedTarget);
   }
 
   /**
