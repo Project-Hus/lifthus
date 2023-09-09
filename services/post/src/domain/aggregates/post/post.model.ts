@@ -1,12 +1,11 @@
-// task.service.ts
-import { Injectable } from '@nestjs/common';
-
 import crypto from 'crypto';
-import { SLUG_MAX_LENGTH } from 'src/shared/constraints';
+import { UpdatePostServiceDto } from 'src/dto/inbound/post.dto';
 import {
-  CreatePostServiceDto,
-  UpdatePostServiceDto,
-} from 'src/dto/inbound/post.dto';
+  PostContents,
+  PostIds,
+  PostUpdates,
+} from 'src/domain/aggregates/post/post.vo';
+import { Timestamps } from 'src/domain/vo';
 
 export type CreatePostInput = {
   slug: string;
@@ -19,49 +18,58 @@ export type CreatePostInput = {
   updatedAt: Date;
 };
 
-export type PostUpdates = {
-  content: string;
-};
-@Injectable()
 export class Post {
+  private id?: bigint;
+  private createdAt?: Date;
+  private updatedAt?: Date;
   private slug: string;
   private author: bigint;
   private imageSrcs: string[];
   private content: string;
 
-  private id?: bigint;
-  private createdAt?: Date;
-  private updatedAt?: Date;
+  public static readonly SLUG_MAX_LENGTH: number = 100;
 
-  static create(p: CreatePostServiceDto): Post {
-    return new Post().setNewPost(p);
+  private constructor() {}
+
+  static create(author: bigint, contents: PostContents): Post {
+    return new Post().create(author, contents);
   }
 
-  private setNewPost(p: CreatePostServiceDto): Post {
-    this.slug = Post.generateSlug(p.content);
-    this.author = p.author;
-    this.imageSrcs = p.imageSrcs;
-    this.content = p.content;
+  private create(author: bigint, contents: PostContents): Post {
+    this.slug = Post.generateSlug(contents.content);
+    this.author = author;
+    this.imageSrcs = contents.imageSrcs;
+    this.content = contents.content;
     return this;
   }
 
-  isPre(): boolean {
-    return !this.id;
+  static from(
+    author: bigint,
+    postIds: PostIds,
+    postContents: PostContents,
+    timestamps: Timestamps,
+  ): Post {
+    return new Post().from(author, postIds, postContents, timestamps);
   }
 
-  static query(postInput: CreatePostInput): Post {
-    return new Post().setQuery(postInput);
-  }
-
-  private setQuery(p: CreatePostInput): Post {
-    this.slug = p.slug;
-    this.author = p.author;
-    this.imageSrcs = p.images;
-    this.content = p.content;
-    this.id = p.id;
-    this.createdAt = p.createdAt;
-    this.updatedAt = p.updatedAt;
+  private from(
+    author: bigint,
+    postIds: PostIds,
+    postContents: PostContents,
+    timestamps: Timestamps,
+  ): Post {
+    this.id = postIds.id;
+    this.slug = postIds.slug;
+    this.author = author;
+    this.imageSrcs = postContents.imageSrcs;
+    this.content = postContents.content;
+    this.createdAt = timestamps.createdAt;
+    this.updatedAt = timestamps.updatedAt;
     return this;
+  }
+
+  isPersisted(): boolean {
+    return !!this.id;
   }
 
   getID(): bigint {
@@ -122,8 +130,8 @@ export class Post {
   private static generateSlug(content: string): string {
     let slug: string;
     const slugEnd: number = content.indexOf('\n');
-    if (slugEnd == -1 || slugEnd > SLUG_MAX_LENGTH) {
-      slug = content.slice(0, SLUG_MAX_LENGTH);
+    if (slugEnd == -1 || slugEnd > Post.SLUG_MAX_LENGTH) {
+      slug = content.slice(0, Post.SLUG_MAX_LENGTH);
     } else {
       slug = content.slice(0, slugEnd);
     }
