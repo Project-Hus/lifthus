@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Post } from '../post/post.model';
 
-import { Comment, CreatePreCommentInput } from '../comment/comment.model';
+import { Comment } from '../comment/comment.model';
 import { Like } from '../like/like.model';
 import {
   CreatePostServiceDto,
@@ -16,19 +16,6 @@ import {
   CreateCommentServiceDto,
   UpdateCommentServiceDto,
 } from 'src/dto/inbound/comment.dto';
-
-export type UserUpdatePostInput = {
-  content: string;
-};
-
-export type UserCreatePreCommentInput = {
-  postId: bigint;
-  content: string;
-};
-
-export type UserUpdateCommentInput = {
-  content: string;
-};
 
 @Injectable()
 export class User {
