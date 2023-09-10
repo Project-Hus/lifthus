@@ -6,6 +6,7 @@ import {
   Inject,
   Logger,
   Param,
+  ParseFilePipeBuilder,
   Post,
   Put,
   Req,
@@ -26,6 +27,7 @@ import {
   UpdatePostRequestDto,
   UpdatePostServiceDto,
 } from 'src/dto/inbound/post.dto';
+import { POST_IMAGE_MAX_SIZE } from 'src/shared/constraints';
 
 @Controller('/post/post')
 export class PostController {
@@ -39,7 +41,15 @@ export class PostController {
   createPost(
     @Uid() clientId: bigint,
     @Body() postForm: CreatePostRequestDto,
-    @UploadedFiles() images: Array<Express.Multer.File>,
+    @UploadedFiles(
+      new ParseFilePipeBuilder()
+        .addMaxSizeValidator({ maxSize: POST_IMAGE_MAX_SIZE })
+        .addFileTypeValidator({
+          fileType: 'image',
+        })
+        .build(),
+    )
+    images: Array<Express.Multer.File>,
   ): Promise<PostDto> {
     const post = new CreatePostServiceDto(postForm, images);
     return this.post2Service.createPost({
