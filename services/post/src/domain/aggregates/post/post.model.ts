@@ -6,17 +6,7 @@ import {
   PostUpdates,
 } from 'src/domain/aggregates/post/post.vo';
 import { Timestamps } from 'src/domain/vo';
-
-export type CreatePostInput = {
-  slug: string;
-  author: bigint;
-  images: string[];
-  content: string;
-
-  id: bigint;
-  createdAt: Date;
-  updatedAt: Date;
-};
+import { ForbiddenException } from '@nestjs/common';
 
 export class Post {
   private id?: bigint;
@@ -100,19 +90,7 @@ export class Post {
     return this.imageSrcs;
   }
 
-  queryPost(): any {
-    return {
-      id: this.id,
-      slug: this.slug,
-      author: this.author,
-      images: [...this.imageSrcs],
-      content: this.content,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-    };
-  }
-
-  update(updates: UpdatePostServiceDto): Post {
+  update(updates: PostUpdates): Post {
     this.content = updates.content;
     return this;
   }
@@ -123,7 +101,8 @@ export class Post {
     };
   }
 
-  delete(): Post {
+  delete(deleter: bigint): Post {
+    if (this.author !== deleter) throw ForbiddenException;
     return this;
   }
 
