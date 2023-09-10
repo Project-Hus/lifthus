@@ -1,5 +1,10 @@
 // task.service.ts
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException } from '@nestjs/common';
+import {
+  CommentParents,
+  CommentUpdates,
+} from 'src/domain/aggregates/comment/comment.vo';
+import { Timestamps } from 'src/domain/vo';
 import {
   CreateCommentServiceDto,
   UpdateCommentServiceDto,
@@ -29,65 +34,79 @@ export type UpdateCommentInput = {
   content: string;
 };
 
-@Injectable()
 export class Comment {
-  private author: bigint;
-  private content: string;
-
-  private postId: bigint;
-
-  private parentId?: bigint;
-
   private id?: bigint;
   private createdAt?: Date;
   private updatedAt?: Date;
 
+  private author: bigint;
+  private postId: bigint;
+  private parentId?: bigint;
+
+  private content: string;
   private replies?: Comment[];
 
-  static createComment(c: CreateCommentServiceDto): Comment {
-    return new Comment().setNewComment(c);
+  constructor() {}
+
+  static create(author: bigint, parents: CommentParents, content: string) {
+    return new Comment().create(author, parents, content);
   }
 
-  private setNewComment(c: CreateCommentServiceDto): Comment {
-    this.author = c.author;
-    this.content = c.content;
-    this.postId = c.postId;
-    this.parentId = c.parentId;
+  private create(
+    author: bigint,
+    parents: CommentParents,
+    content: string,
+  ): Comment {
+    this.author = author;
+    this.postId = parents.postId;
+    this.parentId = parents.parentId;
+    this.content = content;
     return this;
   }
 
-  static queryComment(p: CreateCommentInput): Comment {
-    return new Comment().setQueryComment(p);
+  isPersisted(): boolean {
+    return !!this.id;
   }
 
-  private setQueryComment(p: CreateCommentInput): Comment {
-    this.author = p.author;
-    this.content = p.content;
-    this.postId = p.postId;
-    this.id = p.id;
-    this.createdAt = p.createdAt;
-    this.updatedAt = p.updatedAt;
-    this.replies = p.replies;
+  isReply(): boolean {
+    return !!this.parentId;
+  }
+
+  static from(
+    author: bigint,
+    id: bigint,
+    parents: CommentParents,
+    content: string,
+    timestamps: Timestamps,
+    replies?: Comment[],
+  ): Comment {
+    return new Comment().from(
+      author,
+      id,
+      parents,
+      content,
+      timestamps,
+      replies,
+    );
+  }
+
+  private from(
+    author: bigint,
+    id: bigint,
+    parents: CommentParents,
+    content: string,
+    timestamps: Timestamps,
+    replies?: Comment[],
+  ) {
+    this.id = id;
+    this.author = author;
+    this.postId = parents.postId;
+    this.parentId = parents.parentId;
+    this.content = content;
+    this.createdAt = timestamps.createdAt;
+    this.updatedAt = timestamps.updatedAt;
+    this.replies = replies;
     return this;
-  }
-
-  static queryReply(p: CreateReplyInput): Comment {
-    return new Comment().setQueryReply(p);
-  }
-
-  private setQueryReply(p: CreateReplyInput): Comment {
-    this.author = p.author;
-    this.content = p.content;
-    this.postId = p.postId;
-    this.parentId = p.parentId;
-    this.id = p.id;
-    this.createdAt = p.createdAt;
-    this.updatedAt = p.updatedAt;
-    return this;
-  }
-
-  isPre(): boolean {
-    return !this.id;
   }
 
   getID(): bigint {
@@ -118,35 +137,23 @@ export class Comment {
     return this.content;
   }
 
-  queryComment(): any {
-    return {
-      author: this.author,
-      content: this.content,
-      postId: this.postId,
-      parentId: this.parentId,
-      id: this.id,
-      replies: this.replies,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-    };
-  }
-
   getReplies(): Comment[] {
     return this.replies;
   }
 
-  update(changes: UpdateCommentServiceDto): Comment {
+  update(changes: CommentUpdates): Comment {
     this.content = changes.content;
     return this;
   }
 
-  getUpdates(): UpdateCommentInput {
+  getUpdates(): CommentUpdates {
     return {
       content: this.content,
     };
   }
 
-  delete(): Comment {
+  delete(deleter: bigint): Comment {
+    if (this.author !== deleter) throw ForbiddenException;
     return this;
   }
 }

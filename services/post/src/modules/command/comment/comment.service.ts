@@ -8,6 +8,10 @@ import {
 import { CommentDto } from 'src/dto/outbound/comment.dto';
 import { UserRepository } from 'src/modules/repositories/abstract/user.repository';
 import { CommentRepository } from 'src/modules/repositories/abstract/comment.repository';
+import {
+  CommentParents,
+  CommentUpdates,
+} from 'src/domain/aggregates/comment/comment.vo';
 
 @Injectable()
 export class CommentService {
@@ -25,7 +29,12 @@ export class CommentService {
     comment: CreateCommentServiceDto;
   }): Promise<CommentDto> {
     const author = this.userRepo.getUser(clientId);
-    const newComment = author.createComment(comment);
+    const parents = new CommentParents(comment.postId, comment.parentId);
+    const newComment = author.createComment(
+      comment.author,
+      parents,
+      comment.content,
+    );
     const createdComment = await this.commentRepo.createComment(newComment);
     return new CommentDto(createdComment);
   }
@@ -39,7 +48,8 @@ export class CommentService {
   }): Promise<CommentDto> {
     const author = this.userRepo.getUser(clientId);
     const target = await this.commentRepo.getComment(updates.id);
-    const updatedTarget = author.updateComment(target, updates);
+    const commentUpdates = new CommentUpdates(updates.content);
+    const updatedTarget = author.updateComment(target, commentUpdates);
     const savedTarget = await this.commentRepo.save(updatedTarget);
     return new CommentDto(savedTarget);
   }

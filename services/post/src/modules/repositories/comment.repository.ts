@@ -15,6 +15,8 @@ import { Post } from '../../domain/aggregates/post/post.model';
 import { PrismaService } from 'src/modules/repositories/prisma/prisma.service';
 import { CommentRepository } from './abstract/comment.repository';
 import { Comment as PComment } from '@prisma/client';
+import { CommentParents } from 'src/domain/aggregates/comment/comment.vo';
+import { Timestamps } from 'src/domain/vo';
 
 @Injectable()
 export class PrismaCommentRepository extends CommentRepository {
@@ -58,25 +60,20 @@ export class PrismaCommentRepository extends CommentRepository {
       });
       const comments: Comment[] = comms.map((comm) => {
         const replies: Comment[] = comm.replies.map((r) => {
-          return Comment.queryReply({
-            id: r.id,
-            author: r.author,
-            postId: comm.postId,
-            parentId: comm.id,
-            content: r.content,
-            createdAt: r.createdAt,
-            updatedAt: r.updatedAt,
-          });
+          const parents = new CommentParents(pid, comm.id);
+          const timestamps = new Timestamps(r.createdAt, r.updatedAt);
+          return Comment.from(r.author, r.id, parents, r.content, timestamps);
         });
-        return Comment.queryComment({
-          id: comm.id,
-          author: comm.author,
-          postId: comm.postId,
-          content: comm.content,
-          createdAt: comm.createdAt,
-          updatedAt: comm.updatedAt,
-          replies: replies,
-        });
+        const parents = new CommentParents(pid, null);
+        const timestamps = new Timestamps(comm.createdAt, comm.updatedAt);
+        return Comment.from(
+          comm.author,
+          comm.id,
+          parents,
+          comm.content,
+          timestamps,
+          replies,
+        );
       });
       return comments;
     } catch (e) {
@@ -97,7 +94,7 @@ export class PrismaCommentRepository extends CommentRepository {
   }
 
   async _createComment(comment: Comment): Promise<Comment> {
-    if (!comment.isPre()) return Promise.reject('Comment already created');
+    if (comment.isPersisted()) return Promise.reject('Comment already created');
     try {
       const newComm = await this.prismaService.comment.create({
         data: {
@@ -108,25 +105,26 @@ export class PrismaCommentRepository extends CommentRepository {
         },
       });
       if (!newComm.parentId) {
-        return Comment.queryComment({
-          id: newComm.id,
-          author: newComm.author,
-          postId: newComm.postId,
-          content: newComm.content,
-          createdAt: newComm.createdAt,
-          updatedAt: newComm.updatedAt,
-          replies: [],
-        });
+        const parents = new CommentParents(newComm.postId, null);
+        const timestamps = new Timestamps(newComm.createdAt, newComm.updatedAt);
+        return Comment.from(
+          newComm.author,
+          newComm.id,
+          parents,
+          newComm.content,
+          timestamps,
+          [],
+        );
       }
-      return Comment.queryReply({
-        id: newComm.id,
-        author: newComm.author,
-        postId: newComm.postId,
-        parentId: newComm.parentId,
-        content: newComm.content,
-        createdAt: newComm.createdAt,
-        updatedAt: newComm.updatedAt,
-      });
+      const parents = new CommentParents(newComm.postId, newComm.parentId);
+      const timestamps = new Timestamps(newComm.createdAt, newComm.updatedAt);
+      return Comment.from(
+        newComm.author,
+        newComm.id,
+        parents,
+        newComm.content,
+        timestamps,
+      );
     } catch (e) {
       return Promise.reject(e);
     }
@@ -162,26 +160,14 @@ export class PrismaCommentRepository extends CommentRepository {
 
   private createModel(comm: PComment): Comment {
     if (!comm) return null;
-    else if (!comm.parentId) {
-      return Comment.queryComment({
-        id: comm.id,
-        author: comm.author,
-        content: comm.content,
-        postId: comm.postId,
-        replies: undefined,
-        createdAt: comm.createdAt,
-        updatedAt: comm.updatedAt,
-      });
-    } else {
-      return Comment.queryReply({
-        id: comm.id,
-        author: comm.author,
-        postId: comm.postId,
-        parentId: comm.id,
-        content: comm.content,
-        createdAt: comm.createdAt,
-        updatedAt: comm.updatedAt,
-      });
-    }
+    const parents = new CommentParents(comm.postId, comm.parentId);
+    const timestamps = new Timestamps(comm.createdAt, comm.updatedAt);
+    return Comment.from(
+      comm.author,
+      comm.id,
+      parents,
+      comm.content,
+      timestamps,
+    );
   }
 }

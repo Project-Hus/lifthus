@@ -5,10 +5,16 @@ import { PostRepository } from 'src/modules/repositories/abstract/post.repositor
 import { PrismaService } from 'src/modules/repositories/prisma/prisma.service';
 
 import { User } from 'src/domain/aggregates/user/user.model';
-import { Post, PostUpdates } from 'src/domain/aggregates/post/post.model';
+import { Post } from 'src/domain/aggregates/post/post.model';
 import { PostSummary } from 'src/domain/aggregates/post/postSummary.model';
 
 import { Prisma } from '@prisma/client';
+import {
+  PostContents,
+  PostIds,
+  PostUpdates,
+} from 'src/domain/aggregates/post/post.vo';
+import { Timestamps } from 'src/domain/vo';
 
 type PostSummWithImage = {
   id: bigint;
@@ -70,14 +76,14 @@ export class PrismaPostRepository extends PostRepository {
         });
 
       return allPosts.map((post: PostSummWithImage) => {
-        return PostSummary.create({
-          id: post.id,
-          author: post.author,
-          createdAt: post.createdAt,
-          updatedAt: post.updatedAt,
-          imageSrcs: post.images.map((image) => image.src),
-          slug: post.slug,
-        });
+        return new PostSummary(
+          post.author,
+          post.id,
+          post.slug,
+          post.images.map((image) => image.src),
+          post.createdAt,
+          post.updatedAt,
+        );
       });
     } catch (e) {
       return Promise.reject(e);
@@ -115,14 +121,14 @@ export class PrismaPostRepository extends PostRepository {
         skip: skip,
       });
       return usersPosts.map((post: PostSummWithImage) => {
-        return PostSummary.create({
-          id: post.id,
-          author: post.author,
-          createdAt: post.createdAt,
-          updatedAt: post.updatedAt,
-          imageSrcs: post.images.map((image) => image.src),
-          slug: post.slug,
-        });
+        return new PostSummary(
+          post.author,
+          post.id,
+          post.slug,
+          post.images.map((image) => image.src),
+          post.createdAt,
+          post.updatedAt,
+        );
       });
     } catch (e) {
       return Promise.reject(e);
@@ -149,15 +155,13 @@ export class PrismaPostRepository extends PostRepository {
         },
       });
       if (!post) return null;
-      return Post.query({
-        slug: post.slug,
-        author: post.author,
-        images: post.images.map((image) => image.src),
-        content: post.content,
-        id: post.id,
-        createdAt: post.createdAt,
-        updatedAt: post.updatedAt,
-      });
+      const ids = new PostIds(post.id, post.slug);
+      const contents = new PostContents(
+        post.images.map((image) => image.src),
+        post.content,
+      );
+      const timestamps = new Timestamps(post.createdAt, post.updatedAt);
+      return Post.from(post.author, ids, contents, timestamps);
     } catch (e) {
       return Promise.reject(e);
     }
@@ -183,22 +187,20 @@ export class PrismaPostRepository extends PostRepository {
         },
       });
       if (!post) return null;
-      return Post.query({
-        slug: post.slug,
-        author: post.author,
-        images: post.images.map((image) => image.src),
-        content: post.content,
-        id: post.id,
-        createdAt: post.createdAt,
-        updatedAt: post.updatedAt,
-      });
+      const ids = new PostIds(post.id, post.slug);
+      const contents = new PostContents(
+        post.images.map((image) => image.src),
+        post.content,
+      );
+      const timestamps = new Timestamps(post.createdAt, post.updatedAt);
+      return Post.from(post.author, ids, contents, timestamps);
     } catch (e) {
       return Promise.reject(e);
     }
   }
 
   async _createPost(post: Post): Promise<Post> {
-    if (!post.isPre()) return undefined;
+    if (post.isPersisted()) return undefined;
     try {
       let createInput: Prisma.PostCreateInput = {
         author: post.getAuthor(),
@@ -230,15 +232,13 @@ export class PrismaPostRepository extends PostRepository {
         },
       });
 
-      return Post.query({
-        slug: newPost.slug,
-        author: newPost.author,
-        images: newPost.images.map((image) => image.src),
-        content: newPost.content,
-        id: newPost.id,
-        createdAt: newPost.createdAt,
-        updatedAt: newPost.updatedAt,
-      });
+      const ids = new PostIds(newPost.id, newPost.slug);
+      const contents = new PostContents(
+        newPost.images.map((image) => image.src),
+        newPost.content,
+      );
+      const timestamps = new Timestamps(newPost.createdAt, newPost.updatedAt);
+      return Post.from(newPost.author, ids, contents, timestamps);
     } catch (e) {
       return Promise.reject(e);
     }
@@ -251,15 +251,13 @@ export class PrismaPostRepository extends PostRepository {
           id: target.getID(),
         },
       });
-      return Post.query({
-        slug: deletedPost.slug,
-        author: deletedPost.author,
-        images: [],
-        content: deletedPost.content,
-        id: deletedPost.id,
-        createdAt: deletedPost.createdAt,
-        updatedAt: deletedPost.updatedAt,
-      });
+      const ids = new PostIds(deletedPost.id, deletedPost.slug);
+      const contents = new PostContents([], deletedPost.content);
+      const timestamps = new Timestamps(
+        deletedPost.createdAt,
+        deletedPost.updatedAt,
+      );
+      return Post.from(deletedPost.author, ids, contents, timestamps);
     } catch (e) {
       return Promise.reject(e);
     }
@@ -286,15 +284,16 @@ export class PrismaPostRepository extends PostRepository {
         data: updates,
       });
 
-      return Post.query({
-        slug: updatedPost.slug,
-        author: updatedPost.author,
-        images: updatedPost.images.map((image) => image.src),
-        content: updatedPost.content,
-        id: updatedPost.id,
-        createdAt: updatedPost.createdAt,
-        updatedAt: updatedPost.updatedAt,
-      });
+      const ids = new PostIds(updatedPost.id, updatedPost.slug);
+      const contents = new PostContents(
+        updatedPost.images.map((image) => image.src),
+        updatedPost.content,
+      );
+      const timestamps = new Timestamps(
+        updatedPost.createdAt,
+        updatedPost.updatedAt,
+      );
+      return Post.from(updatedPost.author, ids, contents, timestamps);
     } catch (e) {
       return Promise.reject(e);
     }

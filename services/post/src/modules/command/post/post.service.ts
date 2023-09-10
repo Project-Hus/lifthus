@@ -11,6 +11,7 @@ import {
 } from 'src/dto/inbound/post.dto';
 import { PostLikeRepository } from 'src/modules/repositories/abstract/like.repository';
 import { CommentRepository } from 'src/modules/repositories/abstract/comment.repository';
+import { PostContents, PostUpdates } from 'src/domain/aggregates/post/post.vo';
 
 @Injectable()
 export class PostService {
@@ -31,7 +32,8 @@ export class PostService {
   }): Promise<PostDto> {
     try {
       const author = this.userRepo.getUser(clientId);
-      const userPost = author.createPost(post);
+      const contents = new PostContents(post.imageSrcs, post.content);
+      const userPost = author.createPost(post.author, contents);
       const newPost: Post = await this.postRepo.createPost(userPost);
       return new PostDto(newPost, 0, false, 0);
     } catch (err) {
@@ -48,7 +50,8 @@ export class PostService {
   }): Promise<PostDto> {
     const author = this.userRepo.getUser(clientId);
     const originalPost = await this.postRepo.getPostByID(postUpdates.id);
-    const updatedPost = author.updatePost(originalPost, postUpdates);
+    const updates = new PostUpdates(postUpdates.content);
+    const updatedPost = author.updatePost(originalPost, updates);
     const savedPost = await this.postRepo.save(updatedPost);
     return new PostDto(savedPost);
   }

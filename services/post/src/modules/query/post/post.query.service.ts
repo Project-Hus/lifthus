@@ -39,11 +39,10 @@ export class PostQueryService {
       );
       const postSummDtos: PostSummaryDto[] = await Promise.all(
         PostSummEnts.map(async (pse: PostSummary) => {
-          const ps = pse.getSumm();
-          const ln = await this.likeRepo.getLikesNum(ps.id);
-          const cn = await this.commentRepo.getCommentsNum(ps.id);
+          const ln = await this.likeRepo.getLikesNum(pse.id);
+          const cn = await this.commentRepo.getCommentsNum(pse.id);
           const clientLiked = !!client
-            ? (await this.likeRepo.getLike(client, ps.id)).isLiked()
+            ? (await this.likeRepo.getLike(client, pse.id)).isLiked()
             : false;
           return new PostSummaryDto(pse, ln, clientLiked, cn);
         }),
@@ -64,11 +63,10 @@ export class PostQueryService {
       );
       const postSummDtos: PostSummaryDto[] = await Promise.all(
         PostSummEnts.map(async (pse: PostSummary) => {
-          const ps = pse.getSumm();
-          const ln = await this.likeRepo.getLikesNum(ps.id);
-          const cn = await this.commentRepo.getCommentsNum(ps.id);
+          const ln = await this.likeRepo.getLikesNum(pse.id);
+          const cn = await this.commentRepo.getCommentsNum(pse.id);
           const clientLiked = !!client
-            ? (await this.likeRepo.getLike(client, ps.id)).isLiked()
+            ? (await this.likeRepo.getLike(client, pse.id)).isLiked()
             : false;
           return new PostSummaryDto(pse, ln, clientLiked, cn);
         }),
