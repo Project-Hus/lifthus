@@ -17,16 +17,15 @@ export class PostSummaryDto {
     clientLiked?: boolean,
     commentsNum?: number,
   ) {
-    const ps = pse.getSumm();
-    this.id = ps.id.toString();
-    this.author = ps.author.toString();
-    this.createdAt = ps.createdAt;
-    this.updatedAt = ps.updatedAt;
-    this.imageSrcs = ps.imageSrcs;
-    this.slug = ps.slug;
+    this.id = pse.id.toString();
+    this.author = pse.author.toString();
+    this.createdAt = pse.createdAt;
+    this.updatedAt = pse.updatedAt;
+    this.imageSrcs = pse.imageSrcs;
+    this.slug = pse.slug;
     this.likesNum = likesNum;
     this.commentsNum = commentsNum;
-    this.abstract = PostSummaryDto.getAbstractFromSlug(ps.slug);
+    this.abstract = PostSummaryDto.getAbstractFromSlug(pse.slug);
     this.clientLiked = clientLiked;
   }
 

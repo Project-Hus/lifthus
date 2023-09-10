@@ -1,21 +1,14 @@
-// task.service.ts
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { Post } from '../post/post.model';
 
 import { Comment } from '../comment/comment.model';
 import { Like } from '../like/like.model';
+
+import { PostContents, PostUpdates } from 'src/domain/aggregates/post/post.vo';
 import {
-  CreatePostServiceDto,
-  UpdatePostServiceDto,
-} from 'src/dto/inbound/post.dto';
-import {
-  CreateCommentServiceDto,
-  UpdateCommentServiceDto,
-} from 'src/dto/inbound/comment.dto';
+  CommentParents,
+  CommentUpdates,
+} from 'src/domain/aggregates/comment/comment.vo';
 
 @Injectable()
 export class User {
@@ -34,20 +27,19 @@ export class User {
     return this.id;
   }
 
-  createPost(np: CreatePostServiceDto): Post {
-    if (np.author !== this.id) throw ForbiddenException;
-    return Post.create(np);
+  createPost(author: bigint, contents: PostContents): Post {
+    if (author !== this.id) throw ForbiddenException;
+    return Post.create(author, contents);
   }
 
-  updatePost(postOriginal: Post, updates: UpdatePostServiceDto): Post {
-    if (this.id !== postOriginal.getAuthor()) throw ForbiddenException;
-    if (postOriginal.getID() !== updates.id) throw BadRequestException;
-    return postOriginal.update(updates);
+  updatePost(originalPost: Post, updates: PostUpdates): Post {
+    if (this.id !== originalPost.getAuthor()) throw ForbiddenException;
+    return originalPost.update(updates);
   }
 
   deletePost(post: Post): Post {
     if (this.id !== post.getAuthor()) throw ForbiddenException;
-    return post;
+    return post.delete(this.id);
   }
 
   likePost(like: Like<Post>): Like<Post> {
@@ -61,19 +53,23 @@ export class User {
     return like.unlike(this);
   }
 
-  createComment(c: CreateCommentServiceDto): Comment {
-    if (this.id !== c.author) throw ForbiddenException;
-    return Comment.createComment(c);
+  createComment(
+    author: bigint,
+    parents: CommentParents,
+    content: string,
+  ): Comment {
+    if (this.id !== author) throw ForbiddenException;
+    return Comment.create(author, parents, content);
   }
 
-  updateComment(comment: Comment, changes: UpdateCommentServiceDto): Comment {
+  updateComment(comment: Comment, changes: CommentUpdates): Comment {
     if (this.id !== comment.getAuthor()) throw ForbiddenException;
     return comment.update(changes);
   }
 
   deleteComment(comment: Comment): Comment {
     if (this.id !== comment.getAuthor()) throw ForbiddenException;
-    return comment;
+    return comment.delete(this.id);
   }
 
   likeComment(like: Like<Comment>): Like<Comment> {
