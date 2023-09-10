@@ -1,6 +1,7 @@
 import aws from 'aws-sdk';
 import multerS3 from 'multer-s3';
 import crypto from 'crypto';
+import { POST_IMAGE_MAX_SIZE } from 'src/shared/constraints';
 
 if (process.env.NODE_ENV === 'native') {
   aws.config.loadFromPath('../../../config/s3.json');
@@ -30,5 +31,19 @@ export const getMulterS3Option = () => {
         );
       },
     }),
+    limits: {
+      fileSize: POST_IMAGE_MAX_SIZE,
+    },
+    fileFilter: fileFilter,
   };
+};
+
+const fileFilter = (req, file, cb) => {
+  const mtype = file.mimetype.split('/')[0];
+  if (mtype === 'image') {
+    cb(null, true);
+  } else {
+    cb(null, false);
+    cb(new Error('only image'));
+  }
 };
