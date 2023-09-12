@@ -173,7 +173,11 @@ func (uc userApiController) SetUserInfo(c echo.Context) error {
 	if err := c.Bind(userInfo); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-	if userInfo.Uid != uid {
+	updater, err := strconv.ParseUint(userInfo.Uid, 10, 64)
+	if err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+	if updater != uid {
 		return c.String(http.StatusBadRequest, "invalid uid")
 	}
 	user, err := db.UpdateUserInfo(c.Request().Context(), uc.dbClient, *userInfo)
