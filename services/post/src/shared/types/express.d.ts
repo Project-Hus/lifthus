@@ -9,5 +9,10 @@ declare global {
       uid?: Uid;
       exp?: Exp;
     }
+    namespace Multer {
+      interface File {
+        location: string;
+      }
+    }
   }
 }
