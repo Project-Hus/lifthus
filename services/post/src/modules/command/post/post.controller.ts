@@ -40,14 +40,7 @@ export class PostController {
   createPost(
     @Uid() clientId: bigint,
     @Body() postForm: CreatePostRequestDto,
-    @UploadedFiles(
-      new ParseFilePipeBuilder()
-        .addMaxSizeValidator({ maxSize: POST_IMAGE_MAX_SIZE })
-        .addFileTypeValidator({
-          fileType: 'image',
-        })
-        .build(),
-    )
+    @UploadedFiles()
     images: Array<Express.Multer.File>,
   ): Promise<PostDto> {
     const post = new CreatePostServiceDto(postForm, images);
