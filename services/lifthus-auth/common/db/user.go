@@ -123,7 +123,11 @@ func QueryUserByUsername(c context.Context, client *ent.Client, username string)
 // }
 
 func UpdateUserInfo(c context.Context, client *ent.Client, userInfo dto.UpdateUserInfoDto) (*ent.User, error) {
-	u, err := client.User.UpdateOneID(userInfo.Uid).
+	uid, err := strconv.ParseUint(userInfo.Uid, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	u, err := client.User.UpdateOneID(uid).
 		SetNillableUsername(userInfo.Username).
 		SetNillableBirthdate(userInfo.Birthdate).
 		SetNillableCompany(userInfo.Company).

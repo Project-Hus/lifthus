@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -24,10 +25,14 @@ func (uc userApiController) RegisterUser(c echo.Context) error {
 	if err := c.Bind(registerInfo); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-	if registerInfo.Uid != uid {
+	userRegistering, err := strconv.ParseUint(registerInfo.Uid, 10, 64)
+	if err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+	if userRegistering != uid {
 		return c.String(http.StatusBadRequest, "invalid uid")
 	}
-	_, err := uc.dbClient.User.UpdateOneID(uid).
+	_, err = uc.dbClient.User.UpdateOneID(uid).
 		SetRegistered(true).
 		SetRegisteredAt(time.Now()).
 		Save(context.Background())
@@ -43,7 +48,7 @@ func (uc userApiController) RegisterUser(c echo.Context) error {
 }
 
 type RegisterInfoDto struct {
-	Uid          uint64  `json:"uid,omitempty"`
+	Uid          string  `json:"uid,omitempty"`
 	TrainingType string  `json:"trainingType,omitempty"`
 	BodyWeight   float64 `json:"bodyWeight,omitempty"`
 	Height       float64 `json:"height,omitempty"`

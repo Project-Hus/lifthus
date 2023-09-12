@@ -44,7 +44,7 @@ type QueryUserDto struct {
 }
 
 type UpdateUserInfoDto struct {
-	Uid       uint64     `json:"uid,omitempty"`
+	Uid       string     `json:"uid,omitempty"`
 	Username  *string    `json:"username,omitempty"`
 	Birthdate *time.Time `json:"birthdate,omitempty"`
 
