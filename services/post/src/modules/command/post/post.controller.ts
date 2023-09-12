@@ -14,7 +14,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { UserGuard } from 'src/shared/guards/post.guard';
-import { Request } from 'express';
 import { PostService } from 'src/modules/command/post/post.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { PostDto } from 'src/dto/outbound/post.dto';
