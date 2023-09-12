@@ -15,7 +15,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { UserGuard } from 'src/shared/guards/post.guard';
-import { Request } from 'express';
 import { PostService } from 'src/modules/command/post/post.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { PostDto } from 'src/dto/outbound/post.dto';
@@ -41,14 +40,7 @@ export class PostController {
   createPost(
     @Uid() clientId: bigint,
     @Body() postForm: CreatePostRequestDto,
-    @UploadedFiles(
-      new ParseFilePipeBuilder()
-        .addMaxSizeValidator({ maxSize: POST_IMAGE_MAX_SIZE })
-        .addFileTypeValidator({
-          fileType: 'image',
-        })
-        .build(),
-    )
+    @UploadedFiles()
     images: Array<Express.Multer.File>,
   ): Promise<PostDto> {
     const post = new CreatePostServiceDto(postForm, images);
