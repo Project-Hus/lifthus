@@ -55,6 +55,7 @@ export async function bootstrap() {
   // app.use('/post/openapi', SwaggerUi.serve, SwaggerUi.setup(openapiDoc));
 
   await app.init();
+  await app.enableShutdownHooks();
 
   return app;
 }
