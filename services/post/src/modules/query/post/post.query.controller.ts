@@ -1,7 +1,6 @@
 import { Controller, Get, Param, Query, Inject } from '@nestjs/common';
 import { PostQueryService } from 'src/modules/query/post/post.query.service';
 
-import { PostSummaryDto } from 'src/dto/outbound/postSummary.dto';
 import { PostDto } from 'src/dto/outbound/post.dto';
 import { Uid } from 'src/shared/decorators/authParam.decorator';
 
@@ -38,7 +37,7 @@ export class PostQueryController {
   getAllPosts(
     @Query('skip') skipStr: string,
     @Uid() client: BigInt | undefined,
-  ): Promise<PostSummaryDto[]> {
+  ): Promise<PostDto[]> {
     const skip = Number(skipStr) || 0;
     return this.postQueryService.getAllPosts(skip, client);
   }
@@ -54,7 +53,7 @@ export class PostQueryController {
     @Query('users') usersStr: string,
     @Query('skip') skipStr: string,
     @Uid() client: BigInt | undefined,
-  ): Promise<PostSummaryDto[]> {
+  ): Promise<PostDto[]> {
     const users: string[] = usersStr.split(',').map((userStr) => userStr);
     const skip = Number(skipStr) || 0;
     return this.postQueryService.getUsersPosts({ users, skip, client });

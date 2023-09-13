@@ -1,17 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { Post } from '../../../domain/aggregates/post/post.model';
 import { User } from '../../../domain/aggregates/user/user.model';
-import { PostSummary } from '../../../domain/aggregates/post/postSummary.model';
 import { PostUpdates } from 'src/domain/aggregates/post/post.vo';
 
 @Injectable()
 export abstract class PostRepository {
-  async getAllPostSumms(skip: number): Promise<PostSummary[]> {
-    return await this._getAllPostSumms(skip);
+  async getAllPosts(skip: number): Promise<Post[]> {
+    return await this._getAllPosts(skip);
   }
 
-  async getUsersPostSumms(users: User[], skip: number): Promise<PostSummary[]> {
-    return await this._getUsersPostSumms(users, skip);
+  async getUsersPosts(users: User[], skip: number): Promise<Post[]> {
+    return await this._getUsersPosts(users, skip);
   }
 
   async getPostByID(pid: bigint): Promise<Post | null> {
@@ -36,11 +35,8 @@ export abstract class PostRepository {
 
   // Abstract methods to be implemented by the actual repository
 
-  abstract _getAllPostSumms(skip: number): Promise<PostSummary[]>;
-  abstract _getUsersPostSumms(
-    users: User[],
-    skip: number,
-  ): Promise<PostSummary[]>;
+  abstract _getAllPosts(skip: number): Promise<Post[]>;
+  abstract _getUsersPosts(users: User[], skip: number): Promise<Post[]>;
 
   abstract _getPostByID(pid: bigint): Promise<Post | null>;
   abstract _getPostBySlug(slug: string): Promise<Post | null>;
