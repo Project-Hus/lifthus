@@ -6,7 +6,6 @@ import { PrismaService } from 'src/modules/repositories/prisma/prisma.service';
 
 import { User } from 'src/domain/aggregates/user/user.model';
 import { Post } from 'src/domain/aggregates/post/post.model';
-import { PostSummary } from 'src/domain/aggregates/post/postSummary.model';
 
 import { Prisma } from '@prisma/client';
 import {
@@ -15,16 +14,6 @@ import {
   PostUpdates,
 } from 'src/domain/aggregates/post/post.vo';
 import { Timestamps } from 'src/domain/vo';
-
-type PostSummWithImage = {
-  id: bigint;
-  userGroup: bigint | null;
-  author: bigint;
-  createdAt: Date;
-  updatedAt: Date;
-  slug: string;
-  images: PrismaPostImage[];
-};
 
 type PostWithImages = {
   id: bigint;
@@ -51,49 +40,43 @@ export class PrismaPostRepository extends PostRepository {
     super();
   }
 
-  async _getAllPostSumms(skip: number): Promise<PostSummary[]> {
+  async _getAllPosts(skip: number): Promise<Post[]> {
     try {
-      const allPosts: PostSummWithImage[] =
-        await this.prismaService.post.findMany({
-          include: {
-            images: {
-              select: {
-                order: true,
-                id: true,
-                src: true,
-              },
-              orderBy: {
-                order: 'asc',
-              },
-              take: 1,
+      const allPosts = await this.prismaService.post.findMany({
+        include: {
+          images: {
+            select: {
+              order: true,
+              id: true,
+              src: true,
+            },
+            orderBy: {
+              order: 'asc',
             },
           },
-          orderBy: {
-            createdAt: 'desc',
-          },
-          take: 10,
-          skip: skip,
-        });
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        take: 10,
+        skip: skip,
+      });
 
-      return allPosts.map((post: PostSummWithImage) => {
-        return new PostSummary(
-          post.author,
-          post.id,
-          post.slug,
+      return allPosts.map((post: PostWithImages) => {
+        const ids = new PostIds(post.id, post.slug);
+        const contents = new PostContents(
           post.images.map((image) => image.src),
-          post.createdAt,
-          post.updatedAt,
+          post.content,
         );
+        const timestamps = new Timestamps(post.createdAt, post.updatedAt);
+        return Post.from(post.author, ids, contents, timestamps);
       });
     } catch (e) {
       return Promise.reject(e);
     }
   }
 
-  async _getUsersPostSumms(
-    users: User[],
-    skip: number,
-  ): Promise<PostSummary[]> {
+  async _getUsersPosts(users: User[], skip: number): Promise<Post[]> {
     try {
       const usersPosts = await this.prismaService.post.findMany({
         where: {
@@ -111,7 +94,6 @@ export class PrismaPostRepository extends PostRepository {
             orderBy: {
               order: 'asc',
             },
-            take: 1,
           },
         },
         orderBy: {
@@ -120,15 +102,14 @@ export class PrismaPostRepository extends PostRepository {
         take: 10,
         skip: skip,
       });
-      return usersPosts.map((post: PostSummWithImage) => {
-        return new PostSummary(
-          post.author,
-          post.id,
-          post.slug,
+      return usersPosts.map((post: PostWithImages) => {
+        const ids = new PostIds(post.id, post.slug);
+        const contents = new PostContents(
           post.images.map((image) => image.src),
-          post.createdAt,
-          post.updatedAt,
+          post.content,
         );
+        const timestamps = new Timestamps(post.createdAt, post.updatedAt);
+        return Post.from(post.author, ids, contents, timestamps);
       });
     } catch (e) {
       return Promise.reject(e);

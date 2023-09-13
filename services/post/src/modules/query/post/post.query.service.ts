@@ -1,13 +1,11 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Post } from 'src/domain/aggregates/post/post.model';
-import { PostSummary } from 'src/domain/aggregates/post/postSummary.model';
 import { User } from 'src/domain/aggregates/user/user.model';
 import { CommentRepository } from 'src/modules/repositories/abstract/comment.repository';
 import { PostLikeRepository } from 'src/modules/repositories/abstract/like.repository';
 import { PostRepository } from 'src/modules/repositories/abstract/post.repository';
 import { UserRepository } from 'src/modules/repositories/abstract/user.repository';
 import { PostDto } from 'src/dto/outbound/post.dto';
-import { PostSummaryDto } from 'src/dto/outbound/postSummary.dto';
+import { Post } from 'src/domain/aggregates/post/post.model';
 
 @Injectable()
 export class PostQueryService {
@@ -27,27 +25,27 @@ export class PostQueryService {
     users: string[];
     skip: number;
     client: BigInt | undefined;
-  }): Promise<PostSummaryDto[]> {
+  }): Promise<PostDto[]> {
     try {
       const targetUsers: User[] = [];
       users.forEach((uid) =>
         targetUsers.push(this.userRepo.getUser(BigInt(uid))),
       );
-      const PostSummEnts: PostSummary[] = await this.postRepo.getUsersPostSumms(
+      const postEnts: Post[] = await this.postRepo.getUsersPosts(
         targetUsers,
         skip,
       );
-      const postSummDtos: PostSummaryDto[] = await Promise.all(
-        PostSummEnts.map(async (pse: PostSummary) => {
-          const ln = await this.likeRepo.getLikesNum(pse.id);
-          const cn = await this.commentRepo.getCommentsNum(pse.id);
+      const postDtos: PostDto[] = await Promise.all(
+        postEnts.map(async (p: Post) => {
+          const ln = await this.likeRepo.getLikesNum(p.getID());
+          const cn = await this.commentRepo.getCommentsNum(p.getID());
           const clientLiked = !!client
-            ? (await this.likeRepo.getLike(client, pse.id)).isLiked()
+            ? (await this.likeRepo.getLike(client, p.getID())).isLiked()
             : false;
-          return new PostSummaryDto(pse, ln, clientLiked, cn);
+          return new PostDto(p, ln, clientLiked, cn);
         }),
       );
-      return postSummDtos;
+      return postDtos;
     } catch (err) {
       throw err;
     }
@@ -56,22 +54,20 @@ export class PostQueryService {
   async getAllPosts(
     skip: number,
     client: BigInt | undefined,
-  ): Promise<PostSummaryDto[]> {
+  ): Promise<PostDto[]> {
     try {
-      const PostSummEnts: PostSummary[] = await this.postRepo.getAllPostSumms(
-        skip,
-      );
-      const postSummDtos: PostSummaryDto[] = await Promise.all(
-        PostSummEnts.map(async (pse: PostSummary) => {
-          const ln = await this.likeRepo.getLikesNum(pse.id);
-          const cn = await this.commentRepo.getCommentsNum(pse.id);
+      const postEnts: Post[] = await this.postRepo.getAllPosts(skip);
+      const postDtos: PostDto[] = await Promise.all(
+        postEnts.map(async (p: Post) => {
+          const ln = await this.likeRepo.getLikesNum(p.getID());
+          const cn = await this.commentRepo.getCommentsNum(p.getID());
           const clientLiked = !!client
-            ? (await this.likeRepo.getLike(client, pse.id)).isLiked()
+            ? (await this.likeRepo.getLike(client, p.getID())).isLiked()
             : false;
-          return new PostSummaryDto(pse, ln, clientLiked, cn);
+          return new PostDto(p, ln, clientLiked, cn);
         }),
       );
-      return postSummDtos;
+      return postDtos;
     } catch (err) {
       throw err;
     }
