@@ -1,12 +1,15 @@
 import crypto from 'crypto';
-import { UpdatePostServiceDto } from 'src/dto/inbound/post.dto';
 import {
   PostContents,
   PostIds,
   PostUpdates,
 } from 'src/domain/aggregates/post/post.vo';
 import { Timestamps } from 'src/domain/vo';
-import { ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  POST_MAX_CONTENT_LENGTH,
+  POST_SLUG_LENGTH,
+} from 'src/shared/constraints';
 
 export class Post {
   private id?: bigint;
@@ -17,7 +20,8 @@ export class Post {
   private imageSrcs: string[];
   private content: string;
 
-  public static readonly SLUG_MAX_LENGTH: number = 100;
+  private static readonly SLUG_LENGTH: number = POST_SLUG_LENGTH;
+  private static readonly MAX_CONTENT_LENGTH = POST_MAX_CONTENT_LENGTH;
 
   private constructor() {}
 
@@ -26,6 +30,9 @@ export class Post {
   }
 
   private create(author: bigint, contents: PostContents): Post {
+    if (contents.content.length > Post.MAX_CONTENT_LENGTH) {
+      throw BadRequestException;
+    }
     this.slug = Post.generateSlug(contents.content);
     this.author = author;
     this.imageSrcs = contents.imageSrcs;
@@ -91,6 +98,8 @@ export class Post {
   }
 
   update(updates: PostUpdates): Post {
+    if (updates.content.length > Post.MAX_CONTENT_LENGTH)
+      throw BadRequestException;
     this.content = updates.content;
     return this;
   }
@@ -109,8 +118,8 @@ export class Post {
   private static generateSlug(content: string): string {
     let slug: string;
     const slugEnd: number = content.indexOf('\n');
-    if (slugEnd == -1 || slugEnd > Post.SLUG_MAX_LENGTH) {
-      slug = content.slice(0, Post.SLUG_MAX_LENGTH);
+    if (slugEnd == -1 || slugEnd > Post.SLUG_LENGTH) {
+      slug = content.slice(0, Post.SLUG_LENGTH);
     } else {
       slug = content.slice(0, slugEnd);
     }
