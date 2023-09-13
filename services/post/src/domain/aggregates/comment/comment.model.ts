@@ -1,14 +1,11 @@
 // task.service.ts
-import { ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import {
   CommentParents,
   CommentUpdates,
 } from 'src/domain/aggregates/comment/comment.vo';
 import { Timestamps } from 'src/domain/vo';
-import {
-  CreateCommentServiceDto,
-  UpdateCommentServiceDto,
-} from 'src/dto/inbound/comment.dto';
+import { COMMENT_MAX_CONTENT_LENGTH } from 'src/shared/constraints';
 
 export type CreateCommentInput = {
   id: bigint;
@@ -46,6 +43,8 @@ export class Comment {
   private content: string;
   private replies?: Comment[];
 
+  private static readonly MAX_CONTENT_LENGTH = COMMENT_MAX_CONTENT_LENGTH;
+
   constructor() {}
 
   static create(author: bigint, parents: CommentParents, content: string) {
@@ -57,6 +56,7 @@ export class Comment {
     parents: CommentParents,
     content: string,
   ): Comment {
+    if (content.length > Comment.MAX_CONTENT_LENGTH) throw BadRequestException;
     this.author = author;
     this.postId = parents.postId;
     this.parentId = parents.parentId;
@@ -142,6 +142,8 @@ export class Comment {
   }
 
   update(changes: CommentUpdates): Comment {
+    if (changes.content.length > Comment.MAX_CONTENT_LENGTH)
+      throw BadRequestException;
     this.content = changes.content;
     return this;
   }
