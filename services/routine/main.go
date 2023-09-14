@@ -10,8 +10,8 @@ import (
 	"os"
 	"routine/api/program"
 	"routine/api/rec"
-	"routine/common/db"
 	"routine/ent"
+	"routine/shared/db"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -25,7 +25,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 
-	rmw "routine/common/middleware"
+	rmw "routine/shared/middleware"
 )
 
 var echoLambda *echoadapter.EchoLambdaV2

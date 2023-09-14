@@ -2,10 +2,10 @@ package rec
 
 import (
 	"net/http"
-	"routine/common/db"
-	"routine/common/dto"
 	"routine/ent"
 	"routine/ent/dailyroutinerec"
+	"routine/shared/db"
+	"routine/shared/dto"
 	"time"
 
 	"github.com/labstack/echo/v4"

@@ -2,9 +2,9 @@ package program
 
 import (
 	"net/http"
-	"routine/common/db"
-	"routine/common/dto"
 	"routine/ent/act"
+	"routine/shared/db"
+	"routine/shared/dto"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
