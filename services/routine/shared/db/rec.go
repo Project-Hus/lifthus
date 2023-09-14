@@ -2,9 +2,9 @@ package db
 
 import (
 	"context"
-	"routine/common/dto"
 	"routine/ent"
 	"routine/ent/routineactrec"
+	"routine/shared/dto"
 )
 
 func UpdateRoutineActRec(

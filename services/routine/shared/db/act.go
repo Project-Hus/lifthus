@@ -2,10 +2,10 @@ package db
 
 import (
 	"context"
-	"routine/common/dto"
-	"routine/common/helper"
 	"routine/ent"
 	"routine/ent/act"
+	"routine/shared/dto"
+	"routine/shared/helper"
 )
 
 // QueryActsByName queries acts by name and returns 5 acts skipping given number of acts

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"routine/common/helper"
+	"routine/shared/helper"
 
 	"github.com/labstack/echo/v4"
 )
