@@ -56,7 +56,7 @@ func main() {
 		envbyjson.LoadProp("../../env.json", "Parameters")
 	}
 
-	// initialize lIfthus common variables
+	// initialize lifthus common variables
 	lifthus.InitLifthusVars(husenv, nil)
 
 	// connect to lifthus_routine_db
