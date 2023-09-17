@@ -1,6 +1,10 @@
 package domain
 
-func UserFactory(id uint64) User {
+var UserFactory = userFactory{}
+
+type userFactory struct{}
+
+func (uf userFactory) From(id uint64) User {
 	return User{id: id}
 }
 
