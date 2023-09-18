@@ -1,4 +1,4 @@
-package domain
+package user
 
 var UserFactory = userFactory{}
 
@@ -12,6 +12,6 @@ type User struct {
 	id uint64
 }
 
-func (u User) GetId() uint64 {
+func (u User) Id() uint64 {
 	return u.id
 }

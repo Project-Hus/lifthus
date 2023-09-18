@@ -1,17 +1,13 @@
 package domain
 
-import domain "routine/domain/shared"
+import "routine/domain/aggregates/user"
 
 // CreateProgram creates a new Program entity if the form is valid, before it is persisted.
 func CreateProgram(md ProgramMetadata, ct ProgramContents, dsc ProgramDescription) *Program {
 	if descInvalid(dsc) {
 		return nil
 	}
-	return &Program{
-		metadata:    md,
-		contents:    ct,
-		description: dsc,
-	}
+	return &Program{}
 }
 
 func descInvalid(dsc ProgramDescription) bool {
@@ -19,31 +15,27 @@ func descInvalid(dsc ProgramDescription) bool {
 }
 
 // ProgramFrom reconstitutes a existing Program entity usually from its persisted state.
-func ProgramFrom(id uint64, md ProgramMetadata, ct ProgramContents, dsc ProgramDescription, ts domain.Timestamps) Program {
+func ProgramFrom(id uint64) Program {
 	return Program{
-		id:          &id,
-		metadata:    md,
-		contents:    ct,
-		description: dsc,
-		timestamps:  &ts,
+		id: &id,
 	}
 }
 
 // Program is the domain model entity that represents a training program.
 type Program struct {
-	id *uint64
+	id     *uint64
+	code   string
+	parent *Program
+	title  string
+	author user.User
 
-	metadata    ProgramMetadata
-	contents    ProgramContents
-	description ProgramDescription
+	programType ProgramType
+	iteration   int
 
-	timestamps *domain.Timestamps
+	imageSrcs   []string
+	description string
 }
 
-func (u Program) Id() *uint64 {
-	return u.id
-}
-
-func (u Program) Metadata() ProgramMetadata {
-	return u.metadata
+func (p Program) Id() *uint64 {
+	return p.id
 }
