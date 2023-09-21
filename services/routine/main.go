@@ -8,8 +8,8 @@ import (
 
 	"log"
 	"os"
-	"routine/api/program"
-	"routine/api/rec"
+	"routine/components/api/program"
+	"routine/components/api/rec"
 	"routine/ent"
 	"routine/shared/db"
 
