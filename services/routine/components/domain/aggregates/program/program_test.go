@@ -2,15 +2,34 @@ package program
 
 import (
 	"testing"
-
-	"github.com/google/go-cmp/cmp"
 )
 
-func TestSuccProgramFactoryFrom(t *testing.T) {
-	tmpId := uint64(42)
-	expected := Program{id: &tmpId}
-	result := Program{id: &tmpId}
-	if diff := cmp.Diff(expected, result, cmp.AllowUnexported(Program{})); diff != "" {
-		t.Error(diff)
+func TestCreateProgramFailByTitle(t *testing.T) {
+	title := GetOverflownTitle()
+	newProgInfo := NewProgramInfo{
+		Title: title,
+	}
+	if IsCreationSuccess(&newProgInfo) {
+		t.Errorf("expected error, but got nil")
+	}
+}
+
+func TestCreateProgramFailByImageSrcs(t *testing.T) {
+	imageSrcs := GetOverflownImageSrcs()
+	newProgInfo := NewProgramInfo{
+		ImageSrcs: imageSrcs,
+	}
+	if IsCreationSuccess(&newProgInfo) {
+		t.Errorf("expected error, but got nil")
+	}
+}
+
+func TestCreateProgramFailByDescription(t *testing.T) {
+	desc := GetOverflownDescription()
+	newProgInfo := NewProgramInfo{
+		Description: desc,
+	}
+	if IsCreationSuccess(&newProgInfo) {
+		t.Errorf("expected error, but got nil")
 	}
 }
