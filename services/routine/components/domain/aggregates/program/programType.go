@@ -1,9 +1,5 @@
 package program
 
-type ProgramType struct {
-	programType string
-}
-
 const (
 	WEEKLY = "weekly"
 	DAILY  = "daily"
@@ -11,6 +7,10 @@ const (
 
 var WeeklyType = ProgramType{WEEKLY}
 var DailyType = ProgramType{DAILY}
+
+type ProgramType struct {
+	programType string
+}
 
 func (pt ProgramType) Type() string {
 	return pt.programType

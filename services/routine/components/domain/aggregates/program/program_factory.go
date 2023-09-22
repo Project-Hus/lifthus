@@ -1,42 +1,42 @@
 package program
 
 import (
-	"fmt"
+	"routine/components/domain"
+	"routine/components/domain/aggregates/user"
+	"time"
 )
 
-func Create(info *NewProgramInfo) (*Program, error) {
-	switch {
-	case len(info.Title) > TITLE_MAX_LENGTH:
-		fallthrough
-	case len(info.ImageSrcs) > IMAGES_MAX_COUNT:
-		fallthrough
-	case len(info.Description) > DESCRIPTION_MAX_LENGTH:
-		return nil, fmt.Errorf("invalid program info")
+func Create(
+	author user.User,
+	parent *Program,
+	contents ProgramContents,
+) (*Program, error) {
+	code, err := domain.RandomHex(domain.CODE_LENGTH)
+	if err != nil {
+		return nil, err
 	}
+
+	newMetadata := MetadataFrom(nil, code, author, domain.TimestampsFrom(time.Now(), nil))
+
+	if !contents.IsValid() {
+		return nil, ErrInvalidContents
+	}
+
 	return &Program{
-		parent:      info.Parent,
-		title:       info.Title,
-		author:      info.Author,
-		programType: info.ProgramType,
-		iteration:   info.Iteration,
-		imageSrcs:   info.ImageSrcs,
-		description: info.Description,
+		metadata:    newMetadata,
+		derivedFrom: parent,
+		contents:    contents,
 	}, nil
 }
 
-func From(info *ProgramInfo) *Program {
+func From(
+	md ProgramMetadata,
+	derivedFrom *Program,
+	contents ProgramContents,
+) *Program {
 	return &Program{
-		id:          info.Id,
-		slug:        info.Slug,
-		code:        info.Code,
-		parent:      info.Parent,
-		title:       info.Title,
-		author:      info.Author,
-		programType: info.ProgramType,
-		iteration:   info.Iteration,
-		imageSrcs:   info.ImageSrcs,
-		description: info.Description,
-		createdAt:   info.createdAt,
-		updatedAt:   info.updatedAt,
+		metadata:    md,
+		derivedFrom: derivedFrom,
+		contents:    contents,
 	}
 }
