@@ -25,10 +25,3 @@ func TestCreateProgramFailByDescription(t *testing.T) {
 		t.Errorf("description longer than max length should fail, but succeeded")
 	}
 }
-
-func TestUpdateProgramFailByUnauthorized(t *testing.T) {
-}
-
-func TestUpdateProgramTitleFail(t *testing.T) {}
-
-func TestUpdateProgramDescFail(t *testing.T) {}

@@ -18,6 +18,44 @@ type Program struct {
 	descriptions ProgramDescriptions
 }
 
+type ProgramUpdates struct {
+	Iteration *uint
+
+	Title       *string
+	ImageSrcs   *[]string
+	Description *string
+}
+
+func (p *Program) UpdateProgramType(updates ProgramUpdates) *Program {
+	switch {
+	case updates.Iteration != nil:
+		p.programType.iteration = *updates.Iteration
+	case updates.Title != nil:
+		p.descriptions.title = *updates.Title
+	case updates.ImageSrcs != nil:
+		p.descriptions.imageSrcs = *updates.ImageSrcs
+	case updates.Description != nil:
+		p.descriptions.description = *updates.Description
+	}
+	return p
+}
+
+type ProgramUpdateTargets struct {
+	Iteration   uint
+	Title       string
+	ImageSrcs   []string
+	Description string
+}
+
+func (p *Program) GetUpdateTargets() ProgramUpdateTargets {
+	return ProgramUpdateTargets{
+		Iteration:   p.programType.iteration,
+		Title:       p.descriptions.title,
+		ImageSrcs:   p.descriptions.imageSrcs,
+		Description: p.descriptions.description,
+	}
+}
+
 func (p Program) IdAndCode() (*uint64, string) {
 	return p.metadata.id, p.metadata.code
 }
