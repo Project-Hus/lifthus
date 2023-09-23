@@ -8,4 +8,4 @@ func (e ProgramError) Error() string {
 	return e.message
 }
 
-var ErrInvalidContents = ProgramError{"invalid contents"}
+var ErrInvalidDescriptions = ProgramError{"invalid program descriptions"}

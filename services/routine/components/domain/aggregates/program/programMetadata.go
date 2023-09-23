@@ -20,15 +20,3 @@ type ProgramMetadata struct {
 	author     user.User
 	timestamps domain.Timestamps
 }
-
-func (m ProgramMetadata) Ids() (*uint64, string) {
-	return m.id, m.code
-}
-
-func (m ProgramMetadata) Author() user.User {
-	return m.author
-}
-
-func (m ProgramMetadata) Timestamps() domain.Timestamps {
-	return m.timestamps
-}

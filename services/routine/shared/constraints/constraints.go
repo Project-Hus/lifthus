@@ -1,7 +1,0 @@
-package constraints
-
-const (
-	PROGRAM_TITLE_MAX_LENGTH       = 50
-	PROGRAM_IMAGES_MAX_COUNT       = 1
-	PROGRAM_DESCRIPTION_MAX_LENGTH = 5000
-)

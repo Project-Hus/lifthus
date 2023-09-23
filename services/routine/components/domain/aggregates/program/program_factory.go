@@ -6,37 +6,39 @@ import (
 	"time"
 )
 
-func Create(
+func CreateProgram(
 	author user.User,
-	parent *Program,
-	contents ProgramContents,
+	derivedFrom *ProgramDerivedFrom,
+	programType ProgramType,
+	descriptions ProgramDescriptions,
 ) (*Program, error) {
-	code, err := domain.RandomHex(domain.CODE_LENGTH)
+	if !descriptions.ValidateCreation() {
+		return nil, ErrInvalidDescriptions
+	}
+	code, err := domain.RandomHexCode()
 	if err != nil {
 		return nil, err
 	}
-
-	newMetadata := MetadataFrom(nil, code, author, domain.TimestampsFrom(time.Now(), nil))
-
-	if !contents.IsValid() {
-		return nil, ErrInvalidContents
+	md := MetadataFrom(nil, code, author, domain.TimestampsFrom(time.Now(), nil))
+	newProgram := Program{
+		metadata:     md,
+		derivedFrom:  derivedFrom,
+		programType:  programType,
+		descriptions: descriptions,
 	}
-
-	return &Program{
-		metadata:    newMetadata,
-		derivedFrom: parent,
-		contents:    contents,
-	}, nil
+	return &newProgram, nil
 }
 
-func From(
+func ProgramFrom(
 	md ProgramMetadata,
-	derivedFrom *Program,
-	contents ProgramContents,
-) *Program {
-	return &Program{
-		metadata:    md,
-		derivedFrom: derivedFrom,
-		contents:    contents,
+	df ProgramDerivedFrom,
+	programType ProgramType,
+	descriptions ProgramDescriptions,
+) Program {
+	return Program{
+		metadata:     md,
+		derivedFrom:  &df,
+		programType:  programType,
+		descriptions: descriptions,
 	}
 }

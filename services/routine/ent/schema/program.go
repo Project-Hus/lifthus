@@ -29,7 +29,7 @@ func (Program) Fields() []ent.Field {
 		field.String("description").Nillable().Optional().Annotations(entsql.Annotation{Size: 5000}),
 
 		field.Time("created_at").Default(time.Now).Immutable(),
-		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
+		field.Time("updated_at").Default(nil).UpdateDefault(time.Now).Nillable(),
 	}
 }
 

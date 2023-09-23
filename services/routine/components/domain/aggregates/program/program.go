@@ -11,51 +11,40 @@ const (
 	DESCRIPTION_MAX_LENGTH = domain.PROGRAM_DESCRIPTION_MAX_LENGTH
 )
 
-// Program is the domain model entity that represents a training program.
 type Program struct {
-	metadata    ProgramMetadata
-	derivedFrom *Program
-	contents    ProgramContents
+	metadata     ProgramMetadata
+	derivedFrom  *ProgramDerivedFrom
+	programType  ProgramType
+	descriptions ProgramDescriptions
 }
 
-func (p *Program) Metadata() ProgramMetadata {
-	return p.metadata
+func (p Program) IdAndCode() (*uint64, string) {
+	return p.metadata.id, p.metadata.code
 }
 
-func (p *Program) DerivedFrom() *Program {
-	return p.derivedFrom
-}
-
-func (p *Program) Contents() ProgramContents {
-	return p.contents
-}
-
-func (p *Program) Author() user.User {
+func (p Program) Author() user.User {
 	return p.metadata.author
 }
 
-func (p *Program) IsAuthor(u user.User) bool {
-	return p.Author().Id() == u.Id()
+func (p Program) Timestamps() domain.Timestamps {
+	return p.metadata.timestamps
 }
 
-type ProgramContentsUpdates struct {
-	Title       *string
-	Description *string
-}
-
-func (p *Program) UpdateContents(updater user.User, updates ProgramContentsUpdates) (*Program, error) {
-	prev := p.Contents()
-	updated := ContentsFrom(prev.programType, prev.iteration, prev.title, prev.imageSrcs, prev.description)
-	if !p.IsAuthor(updater) {
-		return nil, domain.ErrUnauthorized
+func (p Program) DerivedFrom() (program *Program, version uint) {
+	if p.derivedFrom == nil {
+		return nil, 0
 	}
-	p.contents = updated
-	return p, nil
+	return p.derivedFrom.program, p.derivedFrom.version
 }
 
-func (p *Program) Delete(deleter user.User) (*Program, error) {
-	if !p.IsAuthor(deleter) {
-		return nil, domain.ErrUnauthorized
-	}
-	return p, nil
+func (p Program) Type() (ptype string, iteration uint) {
+	return p.programType.ptype, p.programType.iteration
+}
+
+func (p Program) ImageSrcs() []string {
+	return p.descriptions.imageSrcs
+}
+
+func (p Program) TitleAndDescription() (title string, description string) {
+	return p.descriptions.title, p.descriptions.description
 }
