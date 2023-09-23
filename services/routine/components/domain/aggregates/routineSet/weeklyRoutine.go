@@ -1,4 +1,4 @@
-package programContents
+package routineSet
 
 import "routine/components/domain/aggregates/program"
 
