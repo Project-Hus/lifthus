@@ -13,14 +13,12 @@ const (
 
 type Program struct {
 	metadata     ProgramMetadata
-	derivedFrom  *ProgramDerivedFrom
+	derivedFrom  ProgramDerivedFrom
 	programType  ProgramType
 	descriptions ProgramDescriptions
 }
 
 type ProgramUpdates struct {
-	Iteration *uint
-
 	Title       *string
 	ImageSrcs   *[]string
 	Description *string
@@ -28,8 +26,6 @@ type ProgramUpdates struct {
 
 func (p *Program) UpdateProgramType(updates ProgramUpdates) *Program {
 	switch {
-	case updates.Iteration != nil:
-		p.programType.iteration = *updates.Iteration
 	case updates.Title != nil:
 		p.descriptions.title = *updates.Title
 	case updates.ImageSrcs != nil:
@@ -41,23 +37,25 @@ func (p *Program) UpdateProgramType(updates ProgramUpdates) *Program {
 }
 
 type ProgramUpdateTargets struct {
-	Iteration   uint
 	Title       string
 	ImageSrcs   []string
 	Description string
+}
+
+func (p *Program) GetUpdateTargets() ProgramUpdateTargets {
+	return ProgramUpdateTargets{
+		Title:       p.descriptions.title,
+		ImageSrcs:   p.descriptions.imageSrcs,
+		Description: p.descriptions.description,
+	}
 }
 
 func (p *Program) Delete() *Program {
 	return p
 }
 
-func (p *Program) GetUpdateTargets() ProgramUpdateTargets {
-	return ProgramUpdateTargets{
-		Iteration:   p.programType.iteration,
-		Title:       p.descriptions.title,
-		ImageSrcs:   p.descriptions.imageSrcs,
-		Description: p.descriptions.description,
-	}
+func (p Program) IsPersisted() bool {
+	return p.metadata.id != nil
 }
 
 func (p Program) IdAndCode() (*uint64, string) {
@@ -73,14 +71,11 @@ func (p Program) Timestamps() domain.Timestamps {
 }
 
 func (p Program) DerivedFrom() (program *Program, version uint) {
-	if p.derivedFrom == nil {
-		return nil, 0
-	}
 	return p.derivedFrom.program, p.derivedFrom.version
 }
 
-func (p Program) Type() (ptype string, iteration uint) {
-	return p.programType.ptype, p.programType.iteration
+func (p Program) Type() ProgramType {
+	return p.programType
 }
 
 func (p Program) ImageSrcs() []string {

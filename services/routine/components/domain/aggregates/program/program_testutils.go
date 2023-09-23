@@ -4,7 +4,7 @@ import "routine/components/domain/aggregates/user"
 
 func isCreationSuccess(
 	author user.User,
-	df *ProgramDerivedFrom,
+	df ProgramDerivedFrom,
 	pt ProgramType,
 	ds ProgramDescriptions,
 ) bool {

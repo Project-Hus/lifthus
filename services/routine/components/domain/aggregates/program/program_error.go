@@ -9,3 +9,5 @@ func (e ProgramError) Error() string {
 }
 
 var ErrInvalidDescriptions = ProgramError{"invalid program descriptions"}
+
+var ErrTooLongDescription = ProgramError{"too long description"}

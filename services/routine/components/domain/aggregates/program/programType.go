@@ -1,25 +1,17 @@
 package program
 
-func TypeFrom(programType programType, iteration uint) ProgramType {
-	return ProgramType{
-		ptype:     programType.ptype,
-		iteration: iteration,
-	}
-}
-
 const (
 	WEEKLY = "weekly"
 	DAILY  = "daily"
 )
 
-var WeeklyType = programType{WEEKLY}
-var DailyType = programType{DAILY}
+var WeeklyType = ProgramType{WEEKLY}
+var DailyType = ProgramType{DAILY}
 
-type programType struct {
+type ProgramType struct {
 	ptype string
 }
 
-type ProgramType struct {
-	ptype     string
-	iteration uint
+func (pt ProgramType) Type() string {
+	return pt.ptype
 }
