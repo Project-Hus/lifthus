@@ -47,6 +47,10 @@ type ProgramUpdateTargets struct {
 	Description string
 }
 
+func (p *Program) Delete() *Program {
+	return p
+}
+
 func (p *Program) GetUpdateTargets() ProgramUpdateTargets {
 	return ProgramUpdateTargets{
 		Iteration:   p.programType.iteration,
