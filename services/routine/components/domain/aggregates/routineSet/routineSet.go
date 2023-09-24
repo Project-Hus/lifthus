@@ -46,6 +46,7 @@ func RoutineSetFrom(
 
 type RoutineSet struct {
 	id          *uint64
+	derivedFrom *uint64
 	programId   uint64
 	version     uint
 	description string

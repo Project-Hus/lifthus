@@ -13,7 +13,6 @@ const (
 
 type Program struct {
 	metadata     ProgramMetadata
-	derivedFrom  ProgramDerivedFrom
 	programType  ProgramType
 	descriptions ProgramDescriptions
 }
@@ -68,10 +67,6 @@ func (p Program) Author() user.User {
 
 func (p Program) Timestamps() domain.Timestamps {
 	return p.metadata.timestamps
-}
-
-func (p Program) DerivedFrom() (program *Program, version uint) {
-	return p.derivedFrom.program, p.derivedFrom.version
 }
 
 func (p Program) Type() ProgramType {

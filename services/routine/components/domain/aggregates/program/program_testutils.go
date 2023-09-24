@@ -4,11 +4,10 @@ import "routine/components/domain/aggregates/user"
 
 func isCreationSuccess(
 	author user.User,
-	df ProgramDerivedFrom,
 	pt ProgramType,
 	ds ProgramDescriptions,
 ) bool {
-	_, err := CreateProgram(author, df, pt, ds)
+	_, err := CreateProgram(author, pt, ds)
 	return err == nil
 }
 

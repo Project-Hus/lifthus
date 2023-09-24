@@ -8,7 +8,6 @@ import (
 
 func CreateProgram(
 	author user.User,
-	derivedFrom ProgramDerivedFrom,
 	programType ProgramType,
 	descriptions ProgramDescriptions,
 ) (*Program, error) {
@@ -20,19 +19,17 @@ func CreateProgram(
 		return nil, err
 	}
 	md := MetadataFrom(nil, code, author, domain.TimestampsFrom(time.Now(), nil))
-	newProgram := ProgramFrom(md, derivedFrom, programType, descriptions)
+	newProgram := ProgramFrom(md, programType, descriptions)
 	return &newProgram, nil
 }
 
 func ProgramFrom(
 	md ProgramMetadata,
-	df ProgramDerivedFrom,
 	programType ProgramType,
 	descriptions ProgramDescriptions,
 ) Program {
 	return Program{
 		metadata:     md,
-		derivedFrom:  df,
 		programType:  programType,
 		descriptions: descriptions,
 	}
