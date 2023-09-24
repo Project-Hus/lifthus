@@ -8,10 +8,10 @@ import (
 
 	"log"
 	"os"
-	"routine/api/program"
-	"routine/api/rec"
-	"routine/common/db"
+	"routine/components/api/program"
+	"routine/components/api/rec"
 	"routine/ent"
+	"routine/shared/db"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -25,7 +25,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 
-	rmw "routine/common/middleware"
+	rmw "routine/shared/middleware"
 )
 
 var echoLambda *echoadapter.EchoLambdaV2
@@ -56,7 +56,7 @@ func main() {
 		envbyjson.LoadProp("../../env.json", "Parameters")
 	}
 
-	// initialize lIfthus common variables
+	// initialize lifthus common variables
 	lifthus.InitLifthusVars(husenv, nil)
 
 	// connect to lifthus_routine_db
@@ -91,7 +91,7 @@ func main() {
 	}))
 
 	// set uid to context if the user is signed
-	e.Pre(rmw.UidSetterV2())
+	e.Pre(rmw.UidSetter())
 
 	// REQUEST LOGGER
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {

@@ -110,7 +110,7 @@ Resources:
       #CodeUri: services/post/
       #Handler: src/lambda.handler
       # SAM tsc esbuild bundle
-      CodeUri: services/post/dist-bundle/
+      CodeUri: services/post/
       Handler: lambda.handler
       Runtime: nodejs18.x
       Architectures:
@@ -131,39 +131,38 @@ Resources:
             Path: /post/{proxy+}
             Method: ANY
     # SAM esbuild (not working properly)
-    # Metadata:
-    #   BuildMethod: esbuild
-    #   BuildProperties:
-    #     EntryPoints:
-    #       - src/lambda.ts
-    #     Format: "cjs"
-    #     Minify: false
-    #     # OutExtension:
-    #     #   - .js=.mjs
-    #     Target: "es2017"
-    #     Sourcemap: false
-    #     External:
-    #       - "@nestjs/microservices"
-    #       - "@nestjs/websockets"
-    #       - "cache-manager"
-    #       - "class-transformer"
-    #       - "class-validator"
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - src/lambda.ts
+        Format: "cjs"
+        Minify: false
+        # OutExtension:
+        #   - .js=.mjs
+        Target: "es2017"
+        External:
+          - "@nestjs/microservices"
+          - "@nestjs/websockets"
+          - "cache-manager"
+          - "class-transformer"
+          - "class-validator"
   # lifthus routine service
-  S3Bucket:
-    Type: "AWS::S3::Bucket"
-    DeletionPolicy: Retain
-    Properties:
-      BucketName: lifthus-post-bucket
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: false
-        BlockPublicPolicy: false
-        IgnorePublicAcls: false
-        RestrictPublicBuckets: false
-      OwnershipControls:
-        Rules:
-          - ObjectOwnership: BucketOwnerPreferred
-      AccessControl: AwsExecRead
-  DevLifthusRoutineService:
+  # S3Bucket:
+  #   Type: "AWS::S3::Bucket"
+  #   DeletionPolicy: Retain
+  #   Properties:
+  #     BucketName: lifthus-post-bucket
+  #     PublicAccessBlockConfiguration:
+  #       BlockPublicAcls: false
+  #       BlockPublicPolicy: false
+  #       IgnorePublicAcls: false
+  #       RestrictPublicBuckets: false
+  #     OwnershipControls:
+  #       Rules:
+  #         - ObjectOwnership: BucketOwnerPreferred
+  #     AccessControl: AwsExecRead
+  LifthusRoutineService:
     Type: AWS::Serverless::Function
     Properties:
       MemorySize: 128

@@ -3,10 +3,10 @@ package db
 import (
 	"context"
 	"fmt"
-	"routine/common/dto"
-	"routine/common/helper"
 	"routine/ent"
 	"routine/ent/program"
+	"routine/shared/dto"
+	"routine/shared/helper"
 	"sync"
 )
 
