@@ -2,24 +2,24 @@ package programset
 
 import "time"
 
-func CreateRoutinesetMetadata(
+func CreateEditionMetadata(
 	programId uint64,
 	version uint,
-) *RoutinesetMetadata {
-	return &RoutinesetMetadata{
+) *EditionMetadata {
+	return &EditionMetadata{
 		programId: programId,
 		version:   version,
 		createdAt: time.Now(),
 	}
 }
 
-func RoutinesetMetadataFrom(
+func EditionMetadataFrom(
 	id uint64,
 	programId uint64,
 	version uint,
 	createdAt time.Time,
-) *RoutinesetMetadata {
-	return &RoutinesetMetadata{
+) *EditionMetadata {
+	return &EditionMetadata{
 		id:        &id,
 		programId: programId,
 		version:   version,
@@ -27,7 +27,7 @@ func RoutinesetMetadataFrom(
 	}
 }
 
-type RoutinesetMetadata struct {
+type EditionMetadata struct {
 	id        *uint64
 	programId uint64
 	version   uint
