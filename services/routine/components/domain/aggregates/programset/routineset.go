@@ -10,15 +10,15 @@ const (
 	DESCRIPTION_MAX_LENGTH = domain.ROUTINESET_DESCRIPTION_MAX_LENGTH
 )
 
-func CreateRoutineset(
-	metadata RoutinesetMetadata,
+func CreateEdition(
+	metadata EditionMetadata,
 	description string,
-) (*Routineset, error) {
+) (*Edition, error) {
 	if !isDescValid(description) {
 		return nil, program.ErrTooLongDescription
 	}
-	md := CreateRoutinesetMetadata(metadata.programId, metadata.version)
-	return &Routineset{
+	md := CreateEditionMetadata(metadata.programId, metadata.version)
+	return &Edition{
 		metadata:    *md,
 		description: description,
 	}, nil
@@ -28,44 +28,44 @@ func isDescValid(desc string) bool {
 	return len(desc) <= DESCRIPTION_MAX_LENGTH
 }
 
-func RoutinesetFrom(
-	metadata RoutinesetMetadata,
+func EditionFrom(
+	metadata EditionMetadata,
 	derivedFrom *uint64,
 	description string,
-) *Routineset {
-	return &Routineset{
+) *Edition {
+	return &Edition{
 		metadata:    metadata,
 		derivedFrom: derivedFrom,
 		description: description,
 	}
 }
 
-type Routineset struct {
-	metadata    RoutinesetMetadata
+type Edition struct {
+	metadata    EditionMetadata
 	derivedFrom *uint64
 	description string
 }
 
-func (rs *Routineset) IsPersisted() bool {
+func (rs *Edition) IsPersisted() bool {
 	return rs.metadata.id != nil
 }
 
-func (rs *Routineset) Id() *uint64 {
+func (rs *Edition) Id() *uint64 {
 	return rs.metadata.id
 }
 
-func (rs *Routineset) ProgramId() uint64 {
+func (rs *Edition) ProgramId() uint64 {
 	return rs.metadata.programId
 }
 
-func (rs *Routineset) Version() uint {
+func (rs *Edition) Version() uint {
 	return rs.metadata.version
 }
 
-func (rs *Routineset) Description() string {
+func (rs *Edition) Description() string {
 	return rs.description
 }
 
-func (rs *Routineset) CreatedAt() time.Time {
+func (rs *Edition) CreatedAt() time.Time {
 	return rs.metadata.createdAt
 }
