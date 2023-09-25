@@ -2,7 +2,6 @@ package programset
 
 import (
 	"routine/components/domain"
-	"routine/components/domain/aggregates/program"
 	"time"
 )
 
@@ -15,7 +14,7 @@ func CreateEdition(
 	description string,
 ) (*Edition, error) {
 	if !isDescValid(description) {
-		return nil, program.ErrTooLongDescription
+		return nil, nil
 	}
 	md := CreateEditionMetadata(metadata.programId, metadata.version)
 	return &Edition{

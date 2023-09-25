@@ -8,6 +8,6 @@ func (e ProgramError) Error() string {
 	return e.message
 }
 
-var ErrInvalidDescriptions = ProgramError{"invalid program descriptions"}
+var ErrInvalidProgramInfo = ProgramError{"invalid program information"}
 
-var ErrTooLongDescription = ProgramError{"too long description"}
+var ErrAuthorNotGiven = ProgramError{"author is not given"}

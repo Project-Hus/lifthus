@@ -1,15 +1,15 @@
 package user
 
-func From(id uint64) User {
+func UserFrom(id UserId) User {
 	return User{id: id}
 }
 
+type UserId uint64
+
 type User struct {
-	id uint64
+	id UserId
 }
 
-func (u User) CreateProgram() {}
-
-func (u User) Id() uint64 {
+func (u User) Id() UserId {
 	return u.id
 }
