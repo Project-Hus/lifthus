@@ -1,4 +1,4 @@
-package routineset
+package programset
 
 import (
 	"routine/components/domain"
