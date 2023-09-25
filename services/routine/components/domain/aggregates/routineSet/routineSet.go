@@ -1,4 +1,4 @@
-package routineSet
+package routineset
 
 import (
 	"routine/components/domain"
@@ -10,17 +10,17 @@ const (
 	DESCRIPTION_MAX_LENGTH = domain.ROUTINESET_DESCRIPTION_MAX_LENGTH
 )
 
-func CreateRoutineSet(
-	programId uint64,
+func CreateRoutineset(
+	metadata RoutinesetMetadata,
 	description string,
-) (*RoutineSet, error) {
+) (*Routineset, error) {
 	if !isDescValid(description) {
 		return nil, program.ErrTooLongDescription
 	}
-	return &RoutineSet{
-		programId:   programId,
+	md := CreateRoutinesetMetadata(metadata.programId, metadata.version)
+	return &Routineset{
+		metadata:    *md,
 		description: description,
-		timestamps:  domain.TimestampsFrom(time.Now(), nil),
 	}, nil
 }
 
@@ -28,51 +28,44 @@ func isDescValid(desc string) bool {
 	return len(desc) <= DESCRIPTION_MAX_LENGTH
 }
 
-func RoutineSetFrom(
-	id uint64,
-	programId uint64,
-	version uint,
+func RoutinesetFrom(
+	metadata RoutinesetMetadata,
+	derivedFrom *uint64,
 	description string,
-	timestamps domain.Timestamps,
-) *RoutineSet {
-	return &RoutineSet{
-		id:          &id,
-		programId:   programId,
-		version:     version,
+) *Routineset {
+	return &Routineset{
+		metadata:    metadata,
+		derivedFrom: derivedFrom,
 		description: description,
-		timestamps:  timestamps,
 	}
 }
 
-type RoutineSet struct {
-	id          *uint64
+type Routineset struct {
+	metadata    RoutinesetMetadata
 	derivedFrom *uint64
-	programId   uint64
-	version     uint
 	description string
-	timestamps  domain.Timestamps
 }
 
-func (rs *RoutineSet) IsPersisted() bool {
-	return rs.id != nil
+func (rs *Routineset) IsPersisted() bool {
+	return rs.metadata.id != nil
 }
 
-func (rs *RoutineSet) Id() *uint64 {
-	return rs.id
+func (rs *Routineset) Id() *uint64 {
+	return rs.metadata.id
 }
 
-func (rs *RoutineSet) ProgramId() uint64 {
-	return rs.programId
+func (rs *Routineset) ProgramId() uint64 {
+	return rs.metadata.programId
 }
 
-func (rs *RoutineSet) Version() uint {
-	return rs.version
+func (rs *Routineset) Version() uint {
+	return rs.metadata.version
 }
 
-func (rs *RoutineSet) Description() string {
+func (rs *Routineset) Description() string {
 	return rs.description
 }
 
-func (rs *RoutineSet) CreatedAt() time.Time {
-	return rs.timestamps.CreatedAt()
+func (rs *Routineset) CreatedAt() time.Time {
+	return rs.metadata.createdAt
 }

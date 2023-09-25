@@ -1,3 +1,3 @@
-package routineSet
+package routineset
 
 type RoutineAct struct{}
