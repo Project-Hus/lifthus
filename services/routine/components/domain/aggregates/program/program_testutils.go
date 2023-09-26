@@ -75,3 +75,10 @@ func getProgramWithAuthor(authorId user.UserId) *Program {
 	testProgramId++
 	return newProgram
 }
+
+func getProgramWithDerivingProgramsAndAuthor() (*Program, *user.User) {
+	author := user.UserFrom(42)
+	newProgram := getProgramWithAuthor(author.Id())
+	newProgram.deriving = []ProgramId{43, 44}
+	return newProgram, author
+}

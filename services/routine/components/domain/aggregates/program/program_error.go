@@ -10,4 +10,4 @@ func (e ProgramError) Error() string {
 
 var ErrInvalidProgramInfo = ProgramError{"invalid program information"}
 
-var ErrAuthorNotGiven = ProgramError{"author is not given"}
+var ErrExistingDerivingProgram = ProgramError{"existing deriving program"}

@@ -1,7 +1,7 @@
 package user
 
-func UserFrom(id UserId) User {
-	return User{id: id}
+func UserFrom(id UserId) *User {
+	return &User{id: id}
 }
 
 type UserId uint64

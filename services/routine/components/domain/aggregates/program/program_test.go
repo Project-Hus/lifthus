@@ -72,3 +72,11 @@ func TestDeleteProgramFailByUnauthorizedDeleter(t *testing.T) {
 		t.Errorf("should fail by unauthorized deleter, but not")
 	}
 }
+
+func TestDeleteProgramFailByDerivingPrograms(t *testing.T) {
+	program, author := getProgramWithDerivingProgramsAndAuthor()
+	_, err := program.Delete(author)
+	if err != ErrExistingDerivingProgram {
+		t.Errorf("should fail by existing deriving programs, but not")
+	}
+}

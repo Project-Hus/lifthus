@@ -47,7 +47,7 @@ type Program struct {
 	description ProgramDescription
 }
 
-func (p *Program) Update(updater user.User, updates ProgramUpdates) (*Program, error) {
+func (p *Program) Update(updater *user.User, updates ProgramUpdates) (*Program, error) {
 	if p.author != updater.Id() {
 		return nil, domain.ErrUnauthorized
 	}
@@ -82,9 +82,12 @@ type ProgramUpdateTargets struct {
 	Description ProgramDescription
 }
 
-func (p *Program) Delete(deleter user.User) (*Program, error) {
+func (p *Program) Delete(deleter *user.User) (*Program, error) {
 	if p.author != deleter.Id() {
 		return nil, domain.ErrUnauthorized
+	}
+	if len(p.deriving) > 0 {
+		return nil, ErrExistingDerivingProgram
 	}
 	return p, nil
 }
