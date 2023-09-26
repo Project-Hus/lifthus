@@ -2,7 +2,7 @@ package program
 
 import "routine/components/domain"
 
-func CreateProgram(md programMetadata, drv programDerivations, inf programInfo) (*Program, error) {
+func CreateProgram(md programMetadata, drv programDerivations, inf programInfo, firstVersion Version) (*Program, error) {
 	if !IsProgramInfoValid(inf) {
 		return nil, ErrInvalidProgramInfo
 	}
@@ -22,6 +22,7 @@ func CreateProgram(md programMetadata, drv programDerivations, inf programInfo) 
 		title:       inf.Title,
 		imageSrcs:   inf.ImageSrcs,
 		description: inf.Description,
+		versions:    []*Version{&firstVersion},
 	}, nil
 }
 
@@ -31,7 +32,7 @@ func IsProgramInfoValid(info programInfo) bool {
 		IsDescriptionValid(info.Description)
 }
 
-func ProgramFrom(id ProgramId, code ProgramCode, md programMetadata, drv programDerivations, inf programInfo) *Program {
+func ProgramFrom(id ProgramId, code ProgramCode, md programMetadata, drv programDerivations, inf programInfo, versions []*Version) *Program {
 	return &Program{
 		id:          &id,
 		code:        code,
@@ -44,5 +45,6 @@ func ProgramFrom(id ProgramId, code ProgramCode, md programMetadata, drv program
 		title:       inf.Title,
 		imageSrcs:   inf.ImageSrcs,
 		description: inf.Description,
+		versions:    versions,
 	}
 }

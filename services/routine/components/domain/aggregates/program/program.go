@@ -13,9 +13,9 @@ type ProgramImageSrcs []string
 type ProgramDescription string
 
 const (
-	TITLE_MAX_LENGTH       = domain.PROGRAM_TITLE_MAX_LENGTH
-	IMAGES_MAX_COUNT       = domain.PROGRAM_IMAGES_MAX_COUNT
-	DESCRIPTION_MAX_LENGTH = domain.PROGRAM_DESCRIPTION_MAX_LENGTH
+	TITLE_MAX_LENGTH               = domain.PROGRAM_TITLE_MAX_LENGTH
+	IMAGES_MAX_COUNT               = domain.PROGRAM_IMAGES_MAX_COUNT
+	PROGRAM_DESCRIPTION_MAX_LENGTH = domain.PROGRAM_DESCRIPTION_MAX_LENGTH
 )
 
 func IsTitleValid(title ProgramTitle) bool {
@@ -27,7 +27,18 @@ func IsImageSrcsValid(imageSrcs ProgramImageSrcs) bool {
 }
 
 func IsDescriptionValid(description ProgramDescription) bool {
-	return len(description) <= DESCRIPTION_MAX_LENGTH
+	return len(description) <= PROGRAM_DESCRIPTION_MAX_LENGTH
+}
+
+func IsVersionSequenceValid(versions []*Version) bool {
+	vCount := 1
+	for _, v := range versions {
+		if v.version != ProgramVersionNumber(vCount) {
+			return false
+		}
+		vCount++
+	}
+	return true
 }
 
 type Program struct {
@@ -45,6 +56,8 @@ type Program struct {
 	title       ProgramTitle
 	imageSrcs   ProgramImageSrcs
 	description ProgramDescription
+
+	versions []*Version
 }
 
 func (p *Program) Update(updater *user.User, updates ProgramUpdates) (*Program, error) {

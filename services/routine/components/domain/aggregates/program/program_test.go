@@ -80,3 +80,10 @@ func TestDeleteProgramFailByDerivingPrograms(t *testing.T) {
 		t.Errorf("should fail by existing deriving programs, but not")
 	}
 }
+
+func TestCreateProgramFailByInvalidFirstVersion(t *testing.T) {
+}
+
+func TestCreateProgramFailByInvalidRoutineStructure(t *testing.T) {}
+
+func TestReconstitueProgramFailByInvalidRoutineStructure(t *testing.T) {}

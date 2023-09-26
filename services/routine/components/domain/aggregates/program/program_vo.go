@@ -33,3 +33,36 @@ type programMetadata struct {
 	CreatedAt   domain.CreatedAt
 	UpdatedAt   *domain.UpdatedAt
 }
+
+func ProgramDerivationsFrom(
+	derivedFrom *ProgramId,
+	deriving []ProgramId,
+) programDerivations {
+	return programDerivations{
+		DerivedFrom: derivedFrom,
+		Deriving:    deriving,
+	}
+}
+
+type programDerivations struct {
+	DerivedFrom *ProgramId
+	Deriving    []ProgramId
+}
+
+func ProgramInfoFrom(
+	title ProgramTitle,
+	imageSrcs ProgramImageSrcs,
+	description ProgramDescription,
+) programInfo {
+	return programInfo{
+		Title:       title,
+		ImageSrcs:   imageSrcs,
+		Description: description,
+	}
+}
+
+type programInfo struct {
+	Title       ProgramTitle
+	ImageSrcs   ProgramImageSrcs
+	Description ProgramDescription
+}

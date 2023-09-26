@@ -12,7 +12,7 @@ func isCreationSuccessWith(
 	drv programDerivations,
 	inf programInfo,
 ) bool {
-	_, err := CreateProgram(md, drv, inf)
+	_, err := CreateProgram(md, drv, inf, Version{})
 	return err == nil
 }
 
@@ -46,7 +46,7 @@ func getNormalDescription() ProgramDescription {
 
 func getOverflownDescription() ProgramDescription {
 	description := ""
-	for i := 0; i < DESCRIPTION_MAX_LENGTH+1; i++ {
+	for i := 0; i < PROGRAM_DESCRIPTION_MAX_LENGTH+1; i++ {
 		description += "*"
 	}
 	return ProgramDescription(description)
@@ -71,6 +71,7 @@ func getProgramWithAuthor(authorId user.UserId) *Program {
 		ProgramMetadataFrom(authorId, WeeklyType, domain.CreatedAt(time.Now()), nil),
 		ProgramDerivationsFrom(nil, []ProgramId{}),
 		ProgramInfoFrom(getNormalTitle(), getNormalImageSrcs(), getNormalDescription()),
+		[]*Version{},
 	)
 	testProgramId++
 	return newProgram
