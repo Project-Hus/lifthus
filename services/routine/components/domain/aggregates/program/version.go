@@ -1,38 +1,27 @@
 package program
 
-import (
-	"routine/components/domain"
-)
+import "routine/components/domain"
 
-const (
-	PROGRAM_VERSION_DESCRIPTION_MAX_LENGTH = domain.PROGRAM_VERSION_DESCRIPTION_MAX_LENGTH
-)
-
-func isProgramVersionDescValid(desc string) bool {
-	return len(desc) <= PROGRAM_VERSION_DESCRIPTION_MAX_LENGTH
-}
-
-func DailyVersionFrom(
-	description string,
-) *Version {
-	return &Version{
-		descriptiion: description,
-	}
-}
-
-func WeeklyVersionFrom(
-	description string,
-) *Version {
-	return &Version{
-		descriptiion: description,
-	}
-}
-
-type ProgramVersionNumber int
+type VersionNumber int
+type VersionDescription string
 
 type Version struct {
-	version       ProgramVersionNumber
-	descriptiion  string
-	weeklyRoutine *[]WeeklyRoutine
-	dailyRoutine  *[]DailyRoutine
+	version     VersionNumber
+	description VersionDescription
+	createdAt   domain.CreatedAt
+
+	weeklyRoutines *[]WeeklyRoutine
+	dailyRoutines  *[]DailyRoutine
+}
+
+func (v Version) VersionNumber() VersionNumber {
+	return v.version
+}
+
+func (v Version) Description() VersionDescription {
+	return v.description
+}
+
+func (v Version) CreatedAt() domain.CreatedAt {
+	return v.createdAt
 }

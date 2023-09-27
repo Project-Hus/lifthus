@@ -5,41 +5,12 @@ import (
 	"routine/components/domain/aggregates/user"
 )
 
-type ProgramId uint64
+type ProgramId domain.Id
 type ProgramCode string
 
 type ProgramTitle string
 type ProgramImageSrcs []string
-type ProgramDescription string
-
-const (
-	TITLE_MAX_LENGTH               = domain.PROGRAM_TITLE_MAX_LENGTH
-	IMAGES_MAX_COUNT               = domain.PROGRAM_IMAGES_MAX_COUNT
-	PROGRAM_DESCRIPTION_MAX_LENGTH = domain.PROGRAM_DESCRIPTION_MAX_LENGTH
-)
-
-func IsTitleValid(title ProgramTitle) bool {
-	return len(title) <= TITLE_MAX_LENGTH
-}
-
-func IsImageSrcsValid(imageSrcs ProgramImageSrcs) bool {
-	return len(imageSrcs) <= IMAGES_MAX_COUNT
-}
-
-func IsDescriptionValid(description ProgramDescription) bool {
-	return len(description) <= PROGRAM_DESCRIPTION_MAX_LENGTH
-}
-
-func IsVersionSequenceValid(versions []*Version) bool {
-	vCount := 1
-	for _, v := range versions {
-		if v.version != ProgramVersionNumber(vCount) {
-			return false
-		}
-		vCount++
-	}
-	return true
-}
+type ProgramText string
 
 type Program struct {
 	id   *ProgramId
@@ -53,9 +24,9 @@ type Program struct {
 	derivedFrom *ProgramId
 	deriving    []ProgramId
 
-	title       ProgramTitle
-	imageSrcs   ProgramImageSrcs
-	description ProgramDescription
+	title     ProgramTitle
+	imageSrcs ProgramImageSrcs
+	text      ProgramText
 
 	versions []*Version
 }
@@ -69,30 +40,18 @@ func (p *Program) Update(updater *user.User, updates ProgramUpdates) (*Program, 
 		p.title = *updates.Title
 	case updates.ImageSrcs != nil:
 		p.imageSrcs = *updates.ImageSrcs
-	case updates.Description != nil:
-		p.description = *updates.Description
+	case updates.Text != nil:
+		p.text = *updates.Text
 	}
 	return p, nil
 }
 
-type ProgramUpdates struct {
-	Title       *ProgramTitle
-	ImageSrcs   *ProgramImageSrcs
-	Description *ProgramDescription
-}
-
 func (p *Program) GetUpdateTargets() ProgramUpdateTargets {
 	return ProgramUpdateTargets{
-		Title:       p.title,
-		ImageSrcs:   p.imageSrcs,
-		Description: p.description,
+		Title:     p.title,
+		ImageSrcs: p.imageSrcs,
+		Text:      p.text,
 	}
-}
-
-type ProgramUpdateTargets struct {
-	Title       ProgramTitle
-	ImageSrcs   ProgramImageSrcs
-	Description ProgramDescription
 }
 
 func (p *Program) Delete(deleter *user.User) (*Program, error) {
@@ -119,6 +78,7 @@ func (p Program) Code() ProgramCode {
 
 func (p Program) Metadata() programMetadata {
 	return programMetadata{
+		Title:       p.title,
 		Author:      p.author,
 		ProgramType: p.programType,
 		CreatedAt:   p.createdAt,
@@ -133,10 +93,13 @@ func (p Program) Derivations() programDerivations {
 	}
 }
 
-func (p Program) Info() programInfo {
-	return programInfo{
-		Title:       p.title,
-		ImageSrcs:   p.imageSrcs,
-		Description: p.description,
+func (p Program) Description() programDescription {
+	return programDescription{
+		ImageSrcs: p.imageSrcs,
+		Text:      p.text,
 	}
+}
+
+func (p Program) Versions() []*Version {
+	return p.versions
 }

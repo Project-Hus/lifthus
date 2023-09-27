@@ -6,14 +6,16 @@ import (
 )
 
 func NewProgramMetadata(
+	title ProgramTitle,
 	author user.UserId,
 	programType ProgramType,
 	createdAt domain.CreatedAt,
 ) programMetadata {
-	return ProgramMetadataFrom(author, programType, createdAt, nil)
+	return ProgramMetadataFrom(title, author, programType, createdAt, nil)
 }
 
 func ProgramMetadataFrom(
+	title ProgramTitle,
 	author user.UserId,
 	programType ProgramType,
 	createdAt domain.CreatedAt,
@@ -28,6 +30,7 @@ func ProgramMetadataFrom(
 }
 
 type programMetadata struct {
+	Title       ProgramTitle
 	Author      user.UserId
 	ProgramType ProgramType
 	CreatedAt   domain.CreatedAt
@@ -49,20 +52,29 @@ type programDerivations struct {
 	Deriving    []ProgramId
 }
 
-func ProgramInfoFrom(
-	title ProgramTitle,
+func ProgramDescriptionFrom(
 	imageSrcs ProgramImageSrcs,
-	description ProgramDescription,
-) programInfo {
-	return programInfo{
-		Title:       title,
-		ImageSrcs:   imageSrcs,
-		Description: description,
+	text ProgramText,
+) programDescription {
+	return programDescription{
+		ImageSrcs: imageSrcs,
+		Text:      text,
 	}
 }
 
-type programInfo struct {
-	Title       ProgramTitle
-	ImageSrcs   ProgramImageSrcs
-	Description ProgramDescription
+type programDescription struct {
+	ImageSrcs ProgramImageSrcs
+	Text      ProgramText
+}
+
+type ProgramUpdates struct {
+	Title     *ProgramTitle
+	ImageSrcs *ProgramImageSrcs
+	Text      *ProgramText
+}
+
+type ProgramUpdateTargets struct {
+	Title     ProgramTitle
+	ImageSrcs ProgramImageSrcs
+	Text      ProgramText
 }
