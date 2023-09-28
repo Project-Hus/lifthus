@@ -6,8 +6,12 @@ import (
 )
 
 // RandomHexCode generates random hex code that is expected to be unique in some part of the system.
-func RandomHexCode() (string, error) {
-	return RandomHex(CODE_LENGTH)
+func RandomHexCode() (Code, error) {
+	hexcode, err := RandomHex(CODE_LENGTH)
+	if err != nil {
+		return "ABCDEF12", err
+	}
+	return Code(hexcode), nil
 }
 
 // RandomHex generates random hex string with given length.

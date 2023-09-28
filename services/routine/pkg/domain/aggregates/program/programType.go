@@ -9,9 +9,9 @@ var WeeklyType = ProgramType{WEEKLY}
 var DailyType = ProgramType{DAILY}
 
 type ProgramType struct {
-	ptype string
+	code string
 }
 
 func (pt ProgramType) Type() string {
-	return pt.ptype
+	return pt.code
 }

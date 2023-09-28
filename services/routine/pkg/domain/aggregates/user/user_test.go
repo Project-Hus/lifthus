@@ -8,16 +8,16 @@ import (
 
 func TestSuccUserFactoryFrom(t *testing.T) {
 	expected := User{42}
-	result := From(42)
-	if diff := cmp.Diff(expected, result, cmp.AllowUnexported(User{})); diff != "" {
+	result := UserFrom(42)
+	if diff := cmp.Diff(expected, *result, cmp.AllowUnexported(User{})); diff != "" {
 		t.Error(diff)
 	}
 }
 
 func TestFailUserFactoryFrom(t *testing.T) {
 	expected := User{42}
-	result := From(43)
-	if diff := cmp.Diff(expected, result, cmp.AllowUnexported(User{})); diff == "" {
+	result := UserFrom(43)
+	if diff := cmp.Diff(expected, *result, cmp.AllowUnexported(User{})); diff == "" {
 		t.Error(diff)
 	}
 }
