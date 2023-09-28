@@ -4,14 +4,14 @@ import "routine/components/domain"
 
 type VersionNumber int
 type VersionDescription string
+type RoutineDescription string
 
 type Version struct {
 	version     VersionNumber
 	description VersionDescription
 	createdAt   domain.CreatedAt
-
-	weeklyRoutines *[]WeeklyRoutine
-	dailyRoutines  *[]DailyRoutine
+	routineDescription map[RoutineDescription
+	dailyRoutines  *[]*DailyRoutine
 }
 
 func (v Version) VersionNumber() VersionNumber {
