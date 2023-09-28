@@ -5,10 +5,13 @@ import (
 	"testing"
 )
 
-func TestCreateActFailByTooLongName(t *testing.T) {
+func TestCreateActFailByInvalidName(t *testing.T) {
 	author := user.UserFrom(42)
-	_, err := CreateWeightAct("", *author, ActDescriptionFrom(nil, "", nil))
-	_, err := CreateAct()
+	desc := getValidActDescription()
+	_, err := CreateWeightAct(getTooLongActName(), *author, desc)
+	if err != ErrInvalidActInfo {
+		t.Errorf("too long act name is expected to cause ErrInvalidActInfo, but got %v", err)
+	}
 }
 
 func TestCreateActFailByImages(t *testing.T) {
