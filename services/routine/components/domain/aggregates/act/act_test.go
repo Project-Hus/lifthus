@@ -4,6 +4,7 @@ import (
 	"routine/components/domain"
 	"routine/components/domain/aggregates/user"
 	"testing"
+	"time"
 )
 
 func TestCreateActFailByInvalidName(t *testing.T) {
@@ -110,5 +111,28 @@ func TestDeleteActFailByUnauthorized(t *testing.T) {
 	_, err := act.Delete(*abuser)
 	if err != domain.ErrUnauthorized {
 		t.Errorf("delete by unauthorized user is expected to cause ErrUnauthorized but got %v", err)
+	}
+}
+
+func TestActFrom(t *testing.T) {
+	v1 := &ActVersion{version: 1}
+	v3 := &ActVersion{version: 3}
+	v4 := &ActVersion{version: 4}
+	v6 := &ActVersion{version: 6}
+	v11 := &ActVersion{version: 11}
+	versions := ActVersions{v1, v3, v4, v6, v11}
+	_, err := ActFrom("code", SimpleType, getValidActName(), *user.UserFrom(42), domain.CreatedAt(time.Now()), versions)
+	if err != nil {
+		t.Errorf("sorted versions should be valid but got unexpected error:%v", err)
+	}
+	versions = ActVersions{v1, v4, v3, v6, v11}
+	_, err = ActFrom("code", SimpleType, getValidActName(), *user.UserFrom(42), domain.CreatedAt(time.Now()), versions)
+	if err != ErrInvalidActVersions {
+		t.Errorf("unsorted versions should cause ErrInvalidActVersions but got %v", err)
+	}
+	versions = ActVersions{v1, v3, v3, v6, v11}
+	_, err = ActFrom("code", SimpleType, getValidActName(), *user.UserFrom(42), domain.CreatedAt(time.Now()), versions)
+	if err != ErrInvalidActVersions {
+		t.Errorf("versions with duplicated version number should cause ErrInvalidActVersions but got %v", err)
 	}
 }

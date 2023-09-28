@@ -23,11 +23,12 @@ func (ut ActUpgradeTargets) IsValid() bool {
 }
 
 func (versions ActVersions) IsValid() bool {
-	vCnt := 0
+	vCnt := ActVersionNumber(0)
 	for _, version := range versions {
 		if version.Version() <= ActVersionNumber(vCnt) {
 			return false
 		}
+		vCnt = version.Version()
 	}
 	return len(versions) > 0
 }

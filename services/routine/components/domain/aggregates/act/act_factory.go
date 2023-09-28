@@ -51,7 +51,7 @@ func ActFrom(
 	versions ActVersions,
 ) (*Act, error) {
 	if !versions.IsValid() {
-		return nil, ErrUnsortedActVersions
+		return nil, ErrInvalidActVersions
 	}
 	return &Act{
 		code: code,
