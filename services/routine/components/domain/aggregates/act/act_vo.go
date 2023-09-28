@@ -12,18 +12,18 @@ func ActBaseFrom(
 	author user.UserId,
 ) ActBase {
 	return ActBase{
-		ActType:    actType,
-		ActName:    actName,
-		ActVersion: actVersion,
-		Author:     author,
+		ActType: actType,
+		Name:    actName,
+		Version: actVersion,
+		Author:  author,
 	}
 }
 
 type ActBase struct {
-	ActType    ActType
-	ActName    ActName
-	ActVersion ActVersion
-	Author     user.UserId
+	ActType ActType
+	Name    ActName
+	Version ActVersion
+	Author  user.UserId
 }
 
 func ActMetadataFrom(
@@ -69,4 +69,5 @@ type ActUpdateTargets struct {
 	ImageSrcs       []ActImageSrc
 	Text            ActText
 	Characteristics ActCharacteristics
+	Version         ActVersion
 }

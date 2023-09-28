@@ -49,6 +49,7 @@ func TestCreateActFailByText(t *testing.T) {
 func TestUpdateActSucc(t *testing.T) {
 	author := user.UserFrom(42)
 	act := getValidActWithAuthor(*author)
+	originalActVer := act.Base().Version
 	newText := ActText(getValidActText() + "Hello!")
 	newImageSrcs := []ActImageSrc{ActImageSrc("https://example.com/updated_image.png")}
 	updates := ActUpdates{ImageSrcs: &newImageSrcs, Text: &newText}
@@ -61,6 +62,9 @@ func TestUpdateActSucc(t *testing.T) {
 	}
 	if act.Description().ImageSrcs[0] != newImageSrcs[0] || updatedActRef.Description().ImageSrcs[0] != newImageSrcs[0] {
 		t.Errorf("act images are not updated")
+	}
+	if act.UpdateTargets().Version == originalActVer {
+		t.Errorf("act version is not updated")
 	}
 }
 

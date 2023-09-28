@@ -54,6 +54,7 @@ func (a *Act) Update(updater user.User, updates ActUpdates) (*Act, error) {
 	if updates.Characteristics != nil {
 		a.characteristics = *updates.Characteristics
 	}
+	a.version += 1
 	return a, nil
 }
 
@@ -62,6 +63,7 @@ func (a *Act) UpdateTargets() ActUpdateTargets {
 		ImageSrcs:       a.imageSrcs,
 		Text:            a.text,
 		Characteristics: a.characteristics,
+		Version:         a.version,
 	}
 }
 
@@ -86,10 +88,10 @@ func (a *Act) Code() ActCode {
 
 func (a *Act) Base() ActBase {
 	return ActBase{
-		ActType:    a.actType,
-		ActName:    a.name,
-		ActVersion: a.version,
-		Author:     a.author,
+		ActType: a.actType,
+		Name:    a.name,
+		Version: a.version,
+		Author:  a.author,
 	}
 }
 
