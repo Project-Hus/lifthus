@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-func CreateAct(base ActBase, author user.UserId, desc ActDescription) (*Act, error) {
-	if !IsNewActValid(base, desc) {
+func CreateWeightAct(name ActName, author user.User, desc ActDescription) (*Act, error) {
+	if !IsActNameValid(name) || !IsActImagesValid(desc.ImageSrcs) || !IsActTextValid(desc.Text) {
 		return nil, ErrInvalidActInfo
 	}
 	code, err := domain.RandomHexCode()
@@ -17,10 +17,56 @@ func CreateAct(base ActBase, author user.UserId, desc ActDescription) (*Act, err
 	return &Act{
 		id:              nil,
 		code:            ActCode(code),
-		actType:         base.ActType,
-		name:            base.ActName,
+		actType:         WeightType,
+		name:            name,
 		version:         1,
-		author:          author,
+		author:          author.Id(),
+		createdAt:       domain.CreatedAt(time.Now()),
+		updatedAt:       nil,
+		imageSrcs:       desc.ImageSrcs,
+		text:            desc.Text,
+		characteristics: desc.Characteristics,
+	}, nil
+}
+
+func CreatTimeAct(name ActName, author user.User, desc ActDescription) (*Act, error) {
+	if !IsActNameValid(name) || !IsActImagesValid(desc.ImageSrcs) || !IsActTextValid(desc.Text) {
+		return nil, ErrInvalidActInfo
+	}
+	code, err := domain.RandomHexCode()
+	if err != nil {
+		return nil, err
+	}
+	return &Act{
+		id:              nil,
+		code:            ActCode(code),
+		actType:         TimeType,
+		name:            name,
+		version:         1,
+		author:          author.Id(),
+		createdAt:       domain.CreatedAt(time.Now()),
+		updatedAt:       nil,
+		imageSrcs:       desc.ImageSrcs,
+		text:            desc.Text,
+		characteristics: desc.Characteristics,
+	}, nil
+}
+
+func CreateSimpleAct(name ActName, author user.User, desc ActDescription) (*Act, error) {
+	if !IsActNameValid(name) || !IsActImagesValid(desc.ImageSrcs) || !IsActTextValid(desc.Text) {
+		return nil, ErrInvalidActInfo
+	}
+	code, err := domain.RandomHexCode()
+	if err != nil {
+		return nil, err
+	}
+	return &Act{
+		id:              nil,
+		code:            ActCode(code),
+		actType:         SimpleType,
+		name:            name,
+		version:         1,
+		author:          author.Id(),
 		createdAt:       domain.CreatedAt(time.Now()),
 		updatedAt:       nil,
 		imageSrcs:       desc.ImageSrcs,

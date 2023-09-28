@@ -16,7 +16,7 @@ type ActCode string
 type ActName string
 type ActVersion uint
 
-type ActImageSrcs []string
+type ActImageSrc string
 type ActText string
 
 type Act struct {
@@ -31,7 +31,7 @@ type Act struct {
 	createdAt domain.CreatedAt
 	updatedAt *domain.UpdatedAt
 
-	imageSrcs       ActImageSrcs
+	imageSrcs       []ActImageSrc
 	text            ActText
 	characteristics ActCharacteristics
 }

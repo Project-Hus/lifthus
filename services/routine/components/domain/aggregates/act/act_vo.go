@@ -42,7 +42,7 @@ type ActMetadata struct {
 }
 
 func ActDescriptionFrom(
-	imageSrcs ActImageSrcs,
+	imageSrcs []ActImageSrc,
 	text ActText,
 	characteristics ActCharacteristics,
 ) ActDescription {
@@ -54,19 +54,19 @@ func ActDescriptionFrom(
 }
 
 type ActDescription struct {
-	ImageSrcs       ActImageSrcs
+	ImageSrcs       []ActImageSrc
 	Text            ActText
 	Characteristics ActCharacteristics
 }
 
 type ActUpdates struct {
-	ImageSrcs       *ActImageSrcs
+	ImageSrcs       *[]ActImageSrc
 	Text            *ActText
 	Characteristics *ActCharacteristics
 }
 
 type ActUpdateTargets struct {
-	ImageSrcs       ActImageSrcs
+	ImageSrcs       []ActImageSrc
 	Text            ActText
 	Characteristics ActCharacteristics
 }

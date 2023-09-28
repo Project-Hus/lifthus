@@ -1,16 +1,10 @@
 package act
 
-func IsNewActValid(base ActBase, desc ActDescription) bool {
-	return IsActNameValid(base.ActName) &&
-		IsActImagesValid(desc.ImageSrcs) &&
-		IsActTextValid(desc.Text)
-}
-
 func IsActNameValid(name ActName) bool {
 	return len(name) <= NAME_MAX_LENGTH
 }
 
-func IsActImagesValid(images ActImageSrcs) bool {
+func IsActImagesValid(images []ActImageSrc) bool {
 	return len(images) <= IMAGES_MAX_NUMBER
 }
 

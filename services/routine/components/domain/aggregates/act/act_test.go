@@ -1,9 +1,14 @@
 package act
 
-import "testing"
+import (
+	"routine/components/domain/aggregates/user"
+	"testing"
+)
 
-func TestCreateActFailByName(t *testing.T) {
-
+func TestCreateActFailByTooLongName(t *testing.T) {
+	author := user.UserFrom(42)
+	_, err := CreateWeightAct("", *author, ActDescriptionFrom(nil, "", nil))
+	_, err := CreateAct()
 }
 
 func TestCreateActFailByImages(t *testing.T) {
