@@ -36,11 +36,11 @@ type Act struct {
 	characteristics ActCharacteristics
 }
 
-func (a *Act) Update(updater user.User, updates ActUpdates) error {
+func (a *Act) Update(updater user.User, updates ActUpdates) (*Act, error) {
 	if a.Base().Author != updater.Id() {
-		return domain.ErrUnauthorized
+		return nil, domain.ErrUnauthorized
 	}
-	return nil
+	return a, nil
 }
 
 func (a *Act) UpdateTargets() ActUpdateTargets {
@@ -49,6 +49,10 @@ func (a *Act) UpdateTargets() ActUpdateTargets {
 		Text:            a.text,
 		Characteristics: a.characteristics,
 	}
+}
+
+func (a *Act) Delete(deleter user.User) (*Act, error) {
+	return a, nil
 }
 
 func (a *Act) IsPersisted() bool {
