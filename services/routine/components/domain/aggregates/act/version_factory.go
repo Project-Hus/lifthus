@@ -4,12 +4,12 @@ import (
 	"routine/components/domain"
 )
 
-func ActVersionFrom(version ActVersionNumber, imageSrcs ActImageSrcs, text ActText, characteristics ActCharacteristics, createdAt domain.CreatedAt) *ActVersion {
+func ActVersionFrom(code ActVersionCode, version ActVersionNumber, imageSrcs ActImageSrcs, text ActText, createdAt domain.CreatedAt) *ActVersion {
 	return &ActVersion{
-		version:         version,
-		imageSrcs:       imageSrcs,
-		text:            text,
-		characteristics: characteristics,
-		createdAt:       createdAt,
+		code:      code,
+		version:   version,
+		imageSrcs: imageSrcs,
+		text:      text,
+		createdAt: createdAt,
 	}
 }

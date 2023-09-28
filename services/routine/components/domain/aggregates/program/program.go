@@ -6,11 +6,9 @@ import (
 )
 
 type ProgramId domain.Id
-type ProgramCode string
+type ProgramCode domain.Code
 
 type ProgramTitle string
-type ProgramImageSrcs []string
-type ProgramText string
 
 type Program struct {
 	id   *ProgramId

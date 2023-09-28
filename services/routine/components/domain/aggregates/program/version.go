@@ -2,26 +2,21 @@ package program
 
 import "routine/components/domain"
 
-type VersionNumber int
-type VersionDescription string
-type RoutineDescription string
+type ProgramVersionCode domain.Code
+type ProgramVersionNumber uint
+type ProgramImageSrcs []string
+type ProgramText string
 
-type Version struct {
-	version     VersionNumber
-	description VersionDescription
-	createdAt   domain.CreatedAt
-	routineDescription map[RoutineDescription
-	dailyRoutines  *[]*DailyRoutine
-}
+type DailyRoutines []*DailyRoutine
 
-func (v Version) VersionNumber() VersionNumber {
-	return v.version
-}
+type ProgramVersion struct {
+	code      ProgramVersionCode
+	program   ProgramCode
+	version   ProgramVersionNumber
+	createdAt domain.CreatedAt
 
-func (v Version) Description() VersionDescription {
-	return v.description
-}
+	imageSrcs ProgramImageSrcs
+	text      ProgramText
 
-func (v Version) CreatedAt() domain.CreatedAt {
-	return v.createdAt
+	dailyRoutines DailyRoutines
 }

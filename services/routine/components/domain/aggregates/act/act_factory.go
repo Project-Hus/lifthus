@@ -12,7 +12,6 @@ func CreateAct(
 	author user.User,
 	imageSrcs ActImageSrcs,
 	text ActText,
-	characteristics ActCharacteristics,
 ) (*Act, error) {
 	if !name.IsValid() || !imageSrcs.IsValid() || !text.IsValid() {
 		return nil, ErrInvalidActInfo
@@ -21,14 +20,18 @@ func CreateAct(
 	if err != nil {
 		return nil, err
 	}
+	vCode, err := domain.RandomHexCode()
+	if err != nil {
+		return nil, err
+	}
 
 	currentTime := domain.CreatedAt(time.Now())
 
 	newVersion := ActVersionFrom(
+		ActVersionCode(vCode),
 		1,
 		imageSrcs,
 		text,
-		characteristics,
 		currentTime,
 	)
 

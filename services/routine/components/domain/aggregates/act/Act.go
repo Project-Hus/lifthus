@@ -22,9 +22,8 @@ type Act struct {
 }
 
 type ActUpgradeTargets struct {
-	ImageSrcs       *ActImageSrcs
-	Text            *ActText
-	Characteristics *ActCharacteristics
+	ImageSrcs *ActImageSrcs
+	Text      *ActText
 }
 
 func (a *Act) Upgrade(author user.User, targets ActUpgradeTargets) (*Act, error) {
@@ -35,28 +34,33 @@ func (a *Act) Upgrade(author user.User, targets ActUpgradeTargets) (*Act, error)
 		return nil, ErrInvalidActInfo
 	}
 
-	newVer := upgradeActVersion(a, targets)
+	newVer, err := upgradeActVersion(a, targets)
+	if err != nil {
+		return nil, err
+	}
 
 	a.versions = append(a.versions, newVer)
 	return a, nil
 }
 
-func upgradeActVersion(a *Act, targets ActUpgradeTargets) *ActVersion {
+func upgradeActVersion(a *Act, targets ActUpgradeTargets) (*ActVersion, error) {
 	prevVer := a.LatestVersion()
 	newImageSrcs := prevVer.ImageSrcs()
 	newText := prevVer.Text()
-	newCharacteristics := prevVer.Characteristics()
 	if targets.ImageSrcs != nil {
 		newImageSrcs = *targets.ImageSrcs
 	}
 	if targets.Text != nil {
 		newText = *targets.Text
 	}
-	if targets.Characteristics != nil {
-		newCharacteristics = *targets.Characteristics
+
+	code, err := domain.RandomHexCode()
+	if err != nil {
+		return nil, err
 	}
-	newVer := ActVersionFrom(prevVer.Version()+1, newImageSrcs, newText, newCharacteristics, domain.CreatedAt(time.Now()))
-	return newVer
+
+	newVer := ActVersionFrom(ActVersionCode(code), prevVer.Version()+1, newImageSrcs, newText, domain.CreatedAt(time.Now()))
+	return newVer, nil
 }
 
 func (a *Act) Delete(deleter user.User) (*Act, error) {

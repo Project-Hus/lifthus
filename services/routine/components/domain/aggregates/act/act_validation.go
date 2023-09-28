@@ -1,5 +1,15 @@
 package act
 
+import "routine/components/domain"
+
+const (
+	NAME_MIN_LENGTH   = domain.ACT_NAME_MIN_LENGTH
+	NAME_MAX_LENGTH   = domain.ACT_NAME_MAX_LENGTH
+	IMAGES_MAX_NUMBER = domain.ACT_IMAGES_MAX_NUMBER
+	TEXT_MIN_LENGTH   = domain.ACT_TEXT_MIN_LENGTH
+	TEXT_MAX_LENGTH   = domain.ACT_TEXT_MAX_LENGTH
+)
+
 func (name ActName) IsValid() bool {
 	return len(name) <= NAME_MAX_LENGTH && len(name) >= NAME_MIN_LENGTH
 }
