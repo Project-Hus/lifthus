@@ -22,7 +22,6 @@ type ActImageSrc string
 type ActText string
 
 type Act struct {
-	id   *ActId
 	code ActCode
 
 	actType ActType
@@ -72,14 +71,6 @@ func (a *Act) Delete(deleter user.User) (*Act, error) {
 		return nil, domain.ErrUnauthorized
 	}
 	return a, nil
-}
-
-func (a *Act) IsPersisted() bool {
-	return a.Id() != nil
-}
-
-func (a *Act) Id() *ActId {
-	return a.id
 }
 
 func (a *Act) Code() ActCode {

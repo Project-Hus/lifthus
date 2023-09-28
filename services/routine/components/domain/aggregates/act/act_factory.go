@@ -15,7 +15,6 @@ func CreateWeightAct(name ActName, author user.User, desc ActDescription) (*Act,
 		return nil, err
 	}
 	return &Act{
-		id:              nil,
 		code:            ActCode(code),
 		actType:         WeightType,
 		name:            name,
@@ -38,7 +37,6 @@ func CreatTimeAct(name ActName, author user.User, desc ActDescription) (*Act, er
 		return nil, err
 	}
 	return &Act{
-		id:              nil,
 		code:            ActCode(code),
 		actType:         TimeType,
 		name:            name,
@@ -61,7 +59,6 @@ func CreateSimpleAct(name ActName, author user.User, desc ActDescription) (*Act,
 		return nil, err
 	}
 	return &Act{
-		id:              nil,
 		code:            ActCode(code),
 		actType:         SimpleType,
 		name:            name,
@@ -75,9 +72,8 @@ func CreateSimpleAct(name ActName, author user.User, desc ActDescription) (*Act,
 	}, nil
 }
 
-func ActFrom(id ActId, code ActCode, base ActBase, md ActMetadata, desc ActDescription) *Act {
+func ActFrom(code ActCode, base ActBase, md ActMetadata, desc ActDescription) *Act {
 	return &Act{
-		id:              &id,
 		code:            code,
 		actType:         base.ActType,
 		name:            base.Name,

@@ -64,7 +64,7 @@ func getTooLongActText() ActText {
 
 func getValidActWithAuthor(author user.User) *Act {
 	code, _ := domain.RandomHexCode()
-	return ActFrom(42, ActCode(code), getValidActBaseWithAuthor(author), getValidActMetadata(), getValidActDescription())
+	return ActFrom(ActCode(code), getValidActBaseWithAuthor(author), getValidActMetadata(), getValidActDescription())
 }
 
 func getValidActBaseWithAuthor(author user.User) ActBase {
