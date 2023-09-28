@@ -1,13 +1,21 @@
 package act
 
-import "routine/components/domain"
+import (
+	"routine/components/domain"
+	"routine/components/domain/aggregates/user"
+	"time"
+)
 
 func getValidActDescription() ActDescription {
 	return ActDescriptionFrom(getValidActImages(), getValidActText(), getValidCharacteristics())
 }
 
 func getValidActName() ActName {
-	return "High Bar Squat"
+	an := ""
+	for i := 0; i < domain.ACT_NAME_MIN_LENGTH; i++ {
+		an += "a"
+	}
+	return ActName(an)
 }
 
 func getTooLongActName() ActName {
@@ -19,11 +27,19 @@ func getTooLongActName() ActName {
 }
 
 func getValidActImages() []ActImageSrc {
-	return []ActImageSrc{"https://example.com/image.png"}
+	ai := []ActImageSrc{}
+	for i := 0; i < domain.ACT_IMAGES_MIN_NUMBER+1; i++ {
+		ai = append(ai, ActImageSrc("https://example.com/image.png"))
+	}
+	return ai
 }
 
 func getValidActText() ActText {
-	return "This act is very useful to enhance your hip joints mobility."
+	at := ""
+	for i := 0; i < domain.ACT_TEXT_MIN_LENGTH; i++ {
+		at += "a"
+	}
+	return ActText(at)
 }
 
 func getValidCharacteristics() ActCharacteristics {
@@ -44,4 +60,17 @@ func getTooLongActText() ActText {
 		ln += "a"
 	}
 	return ActText(ln)
+}
+
+func getValidActWithAuthor(author user.User) *Act {
+	code, _ := domain.RandomHexCode()
+	return ActFrom(42, ActCode(code), getValidActBaseWithAuthor(author), getValidActMetadata(), getValidActDescription())
+}
+
+func getValidActBaseWithAuthor(author user.User) ActBase {
+	return ActBaseFrom(WeightType, getValidActName(), 42, author.Id())
+}
+
+func getValidActMetadata() ActMetadata {
+	return ActMetadataFrom(domain.CreatedAt(time.Now()), nil)
 }

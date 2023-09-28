@@ -1,7 +1,7 @@
 package act
 
 func IsActNameValid(name ActName) bool {
-	return len(name) <= NAME_MAX_LENGTH
+	return len(name) <= NAME_MAX_LENGTH && len(name) >= NAME_MIN_LENGTH
 }
 
 func IsActImagesValid(images []ActImageSrc) bool {
@@ -9,7 +9,7 @@ func IsActImagesValid(images []ActImageSrc) bool {
 }
 
 func IsActTextValid(text ActText) bool {
-	return len(text) <= TEXT_MAX_LENGTH
+	return len(text) <= TEXT_MAX_LENGTH && len(text) >= TEXT_MIN_LENGTH
 }
 
 func IsActUpdatesValid(updates ActUpdates) bool {

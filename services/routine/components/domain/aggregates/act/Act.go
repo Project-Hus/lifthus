@@ -6,8 +6,10 @@ import (
 )
 
 const (
+	NAME_MIN_LENGTH   = domain.ACT_NAME_MIN_LENGTH
 	NAME_MAX_LENGTH   = domain.ACT_NAME_MAX_LENGTH
 	IMAGES_MAX_NUMBER = domain.ACT_IMAGES_MAX_NUMBER
+	TEXT_MIN_LENGTH   = domain.ACT_TEXT_MIN_LENGTH
 	TEXT_MAX_LENGTH   = domain.ACT_TEXT_MAX_LENGTH
 )
 
@@ -40,6 +42,18 @@ func (a *Act) Update(updater user.User, updates ActUpdates) (*Act, error) {
 	if a.Base().Author != updater.Id() {
 		return nil, domain.ErrUnauthorized
 	}
+	if !IsActUpdatesValid(updates) {
+		return nil, ErrInvalidActInfo
+	}
+	if updates.ImageSrcs != nil {
+		a.imageSrcs = *updates.ImageSrcs
+	}
+	if updates.Text != nil {
+		a.text = *updates.Text
+	}
+	if updates.Characteristics != nil {
+		a.characteristics = *updates.Characteristics
+	}
 	return a, nil
 }
 
@@ -52,6 +66,9 @@ func (a *Act) UpdateTargets() ActUpdateTargets {
 }
 
 func (a *Act) Delete(deleter user.User) (*Act, error) {
+	if a.Base().Author != deleter.Id() {
+		return nil, domain.ErrUnauthorized
+	}
 	return a, nil
 }
 
@@ -76,14 +93,14 @@ func (a *Act) Base() ActBase {
 	}
 }
 
-func (a *Act) ActMetadata() ActMetadata {
+func (a *Act) Metadata() ActMetadata {
 	return ActMetadata{
 		CreatedAt: a.createdAt,
 		UpdatedAt: a.updatedAt,
 	}
 }
 
-func (a *Act) ActDescription() ActDescription {
+func (a *Act) Description() ActDescription {
 	return ActDescription{
 		ImageSrcs:       a.imageSrcs,
 		Text:            a.text,

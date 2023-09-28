@@ -14,7 +14,7 @@ func RandomHexCode() (string, error) {
 func RandomHex(n int) (string, error) {
 	bytes := make([]byte, n)
 	if _, err := rand.Read(bytes); err != nil {
-		return "", err
+		return "ABCDEF12", err
 	}
 	return hex.EncodeToString(bytes), nil
 }
