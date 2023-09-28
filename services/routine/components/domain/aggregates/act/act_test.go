@@ -9,7 +9,14 @@ import (
 
 func TestCreateActFailByInvalidName(t *testing.T) {
 	author := user.UserFrom(42)
-	_, err := CreateAct(WeightType, getTooLongActName(), *author, getValidActImages(), getValidActText(), getValidCharacteristics())
+	_, err := CreateAct(
+		WeightType,
+		getTooLongActName(),
+		*author,
+		getValidActImages(),
+		getValidActText(),
+		getValidCharacteristics(),
+	)
 	if err != ErrInvalidActInfo {
 		t.Errorf("too long act name is expected to cause ErrInvalidActInfo, but got %v", err)
 	}
@@ -21,7 +28,13 @@ func TestCreateActFailByInvalidName(t *testing.T) {
 
 func TestCreateActFailByImages(t *testing.T) {
 	author := user.UserFrom(42)
-	_, err := CreateAct(SimpleType, getValidActName(), *author, getTooManyActImages(), getValidActText(), getValidCharacteristics())
+	_, err := CreateAct(SimpleType,
+		getValidActName(),
+		*author,
+		getTooManyActImages(),
+		getValidActText(),
+		getValidCharacteristics(),
+	)
 	if err != ErrInvalidActInfo {
 		t.Errorf("too many act images are expected to cause ErrInvalidActInfo but got %v", err)
 	}
@@ -29,7 +42,13 @@ func TestCreateActFailByImages(t *testing.T) {
 
 func TestCreateActFailByText(t *testing.T) {
 	author := user.UserFrom(42)
-	_, err := CreateAct(WeightType, getValidActName(), *author, getValidActImages(), getTooLongActText(), getValidCharacteristics())
+	_, err := CreateAct(WeightType,
+		getValidActName(),
+		*author,
+		getValidActImages(),
+		getTooLongActText(),
+		getValidCharacteristics(),
+	)
 	if err != ErrInvalidActInfo {
 		t.Errorf("too long act text is expected to cause ErrInvalidActInfo but got %v", err)
 	}
