@@ -36,6 +36,21 @@ type Act struct {
 	characteristics ActCharacteristics
 }
 
+func (a *Act) Update(updater user.User, updates ActUpdates) error {
+	if a.Base().Author != updater.Id() {
+		return domain.ErrUnauthorized
+	}
+	return nil
+}
+
+func (a *Act) UpdateTargets() ActUpdateTargets {
+	return ActUpdateTargets{
+		ImageSrcs:       a.imageSrcs,
+		Text:            a.text,
+		Characteristics: a.characteristics,
+	}
+}
+
 func (a *Act) IsPersisted() bool {
 	return a.Id() != nil
 }
@@ -48,7 +63,7 @@ func (a *Act) Code() ActCode {
 	return a.code
 }
 
-func (a *Act) ActBase() ActBase {
+func (a *Act) Base() ActBase {
 	return ActBase{
 		ActType:    a.actType,
 		ActName:    a.name,

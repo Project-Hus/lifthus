@@ -17,3 +17,13 @@ func IsActImagesValid(images ActImageSrcs) bool {
 func IsActTextValid(text ActText) bool {
 	return len(text) <= TEXT_MAX_LENGTH
 }
+
+func IsActUpdatesValid(updates ActUpdates) bool {
+	switch {
+	case updates.ImageSrcs != nil && !IsActImagesValid(*updates.ImageSrcs):
+		fallthrough
+	case updates.Text != nil && !IsActTextValid(*updates.Text):
+		return false
+	}
+	return true
+}

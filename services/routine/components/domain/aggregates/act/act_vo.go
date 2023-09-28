@@ -58,3 +58,15 @@ type ActDescription struct {
 	Text            ActText
 	Characteristics ActCharacteristics
 }
+
+type ActUpdates struct {
+	ImageSrcs       *ActImageSrcs
+	Text            *ActText
+	Characteristics *ActCharacteristics
+}
+
+type ActUpdateTargets struct {
+	ImageSrcs       ActImageSrcs
+	Text            ActText
+	Characteristics ActCharacteristics
+}
