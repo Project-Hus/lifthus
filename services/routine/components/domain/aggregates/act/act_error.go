@@ -9,3 +9,4 @@ func (e ActError) Error() string {
 }
 
 var ErrInvalidActInfo = ActError{"invalid act info"}
+var ErrUnsortedActVersions = ActError{"unsorted act versions"}

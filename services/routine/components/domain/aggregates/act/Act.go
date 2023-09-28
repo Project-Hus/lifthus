@@ -3,100 +3,99 @@ package act
 import (
 	"routine/components/domain"
 	"routine/components/domain/aggregates/user"
-)
-
-const (
-	NAME_MIN_LENGTH   = domain.ACT_NAME_MIN_LENGTH
-	NAME_MAX_LENGTH   = domain.ACT_NAME_MAX_LENGTH
-	IMAGES_MAX_NUMBER = domain.ACT_IMAGES_MAX_NUMBER
-	TEXT_MIN_LENGTH   = domain.ACT_TEXT_MIN_LENGTH
-	TEXT_MAX_LENGTH   = domain.ACT_TEXT_MAX_LENGTH
+	"time"
 )
 
 type ActId domain.Id
 type ActCode string
 type ActName string
-type ActVersion uint
-
-type ActImageSrc string
-type ActText string
+type ActVersions []*ActVersion
 
 type Act struct {
 	code ActCode
 
-	actType ActType
-	name    ActName
-	version ActVersion
-	author  user.UserId
-
+	actType   ActType
+	name      ActName
+	author    user.UserId
 	createdAt domain.CreatedAt
-	updatedAt *domain.UpdatedAt
 
-	imageSrcs       []ActImageSrc
-	text            ActText
-	characteristics ActCharacteristics
+	versions ActVersions
 }
 
-func (a *Act) Update(updater user.User, updates ActUpdates) (*Act, error) {
-	if a.Base().Author != updater.Id() {
+type ActUpgradeTargets struct {
+	ImageSrcs       *ActImageSrcs
+	Text            *ActText
+	Characteristics *ActCharacteristics
+}
+
+func (a *Act) Upgrade(author user.User, targets ActUpgradeTargets) (*Act, error) {
+	if a.Author() != author.Id() {
 		return nil, domain.ErrUnauthorized
 	}
-	if !IsActUpdatesValid(updates) {
+	if !targets.IsValid() {
 		return nil, ErrInvalidActInfo
 	}
-	if updates.ImageSrcs != nil {
-		a.imageSrcs = *updates.ImageSrcs
-	}
-	if updates.Text != nil {
-		a.text = *updates.Text
-	}
-	if updates.Characteristics != nil {
-		a.characteristics = *updates.Characteristics
-	}
-	a.version += 1
+
+	newVer := upgradeActVersion(a, targets)
+
+	a.versions = append(a.versions, newVer)
 	return a, nil
 }
 
-func (a *Act) UpdateTargets() ActUpdateTargets {
-	return ActUpdateTargets{
-		ImageSrcs:       a.imageSrcs,
-		Text:            a.text,
-		Characteristics: a.characteristics,
-		Version:         a.version,
+func upgradeActVersion(a *Act, targets ActUpgradeTargets) *ActVersion {
+	prevVer := a.LatestVersion()
+	newImageSrcs := prevVer.ImageSrcs()
+	newText := prevVer.Text()
+	newCharacteristics := prevVer.Characteristics()
+	if targets.ImageSrcs != nil {
+		newImageSrcs = *targets.ImageSrcs
 	}
+	if targets.Text != nil {
+		newText = *targets.Text
+	}
+	if targets.Characteristics != nil {
+		newCharacteristics = *targets.Characteristics
+	}
+	newVer := ActVersionFrom(prevVer.Version()+1, newImageSrcs, newText, newCharacteristics, domain.CreatedAt(time.Now()))
+	return newVer
 }
 
 func (a *Act) Delete(deleter user.User) (*Act, error) {
-	if a.Base().Author != deleter.Id() {
+	if a.Author() != deleter.Id() {
 		return nil, domain.ErrUnauthorized
 	}
 	return a, nil
 }
 
-func (a *Act) Code() ActCode {
+func (a *Act) LatestVersion() *ActVersion {
+	versions := a.Versions()
+	vlen := len(versions)
+	if vlen == 0 {
+		return nil
+	}
+	return versions[vlen-1]
+}
+
+func (a Act) Code() ActCode {
 	return a.code
 }
 
-func (a *Act) Base() ActBase {
-	return ActBase{
-		ActType: a.actType,
-		Name:    a.name,
-		Version: a.version,
-		Author:  a.author,
-	}
+func (a Act) Type() ActType {
+	return a.actType
 }
 
-func (a *Act) Metadata() ActMetadata {
-	return ActMetadata{
-		CreatedAt: a.createdAt,
-		UpdatedAt: a.updatedAt,
-	}
+func (a Act) Name() ActName {
+	return a.name
 }
 
-func (a *Act) Description() ActDescription {
-	return ActDescription{
-		ImageSrcs:       a.imageSrcs,
-		Text:            a.text,
-		Characteristics: a.characteristics,
-	}
+func (a Act) Author() user.UserId {
+	return a.author
+}
+
+func (a Act) CreatedAt() domain.CreatedAt {
+	return a.createdAt
+}
+
+func (a Act) Versions() []*ActVersion {
+	return a.versions
 }

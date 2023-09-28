@@ -8,13 +8,11 @@ import (
 
 func TestCreateActFailByInvalidName(t *testing.T) {
 	author := user.UserFrom(42)
-	desc := getValidActDescription()
-	_, err := CreateWeightAct(getTooLongActName(), *author, desc)
+	_, err := CreateAct(WeightType, getTooLongActName(), *author, getValidActImages(), getValidActText(), getValidCharacteristics())
 	if err != ErrInvalidActInfo {
 		t.Errorf("too long act name is expected to cause ErrInvalidActInfo, but got %v", err)
 	}
-	desc = getValidActDescription()
-	_, err = CreateWeightAct("ts", *author, desc)
+	_, err = CreateAct(TimeType, "ts", *author, getValidActImages(), getValidActText(), getValidCharacteristics())
 	if err != ErrInvalidActInfo {
 		t.Errorf("too short act name is expected to cause ErrInvalidActInfo, but got %v", err)
 	}
@@ -22,9 +20,7 @@ func TestCreateActFailByInvalidName(t *testing.T) {
 
 func TestCreateActFailByImages(t *testing.T) {
 	author := user.UserFrom(42)
-	desc := getValidActDescription()
-	desc.ImageSrcs = getTooManyActImages()
-	_, err := CreateWeightAct(getValidActName(), *author, desc)
+	_, err := CreateAct(SimpleType, getValidActName(), *author, getTooManyActImages(), getValidActText(), getValidCharacteristics())
 	if err != ErrInvalidActInfo {
 		t.Errorf("too many act images are expected to cause ErrInvalidActInfo but got %v", err)
 	}
@@ -32,79 +28,77 @@ func TestCreateActFailByImages(t *testing.T) {
 
 func TestCreateActFailByText(t *testing.T) {
 	author := user.UserFrom(42)
-	desc := getValidActDescription()
-	desc.Text = getTooLongActText()
-	_, err := CreateWeightAct(getValidActName(), *author, desc)
+	_, err := CreateAct(WeightType, getValidActName(), *author, getValidActImages(), getTooLongActText(), getValidCharacteristics())
 	if err != ErrInvalidActInfo {
 		t.Errorf("too long act text is expected to cause ErrInvalidActInfo but got %v", err)
 	}
-	desc = getValidActDescription()
-	desc.Text = "ts"
-	_, err = CreateWeightAct(getValidActName(), *author, desc)
+	_, err = CreateAct(WeightType, getValidActName(), *author, getValidActImages(), "ts", getValidCharacteristics())
 	if err != ErrInvalidActInfo {
 		t.Errorf("too short act text is expected to cause ErrInvalidActInfo but got %v", err)
 	}
 }
 
-func TestUpdateActSucc(t *testing.T) {
+func TestUpgradeActSucc(t *testing.T) {
 	author := user.UserFrom(42)
 	act := getValidActWithAuthor(*author)
-	originalActVer := act.Base().Version
+	originalLatestVerNum := act.LatestVersion().Version()
 	newText := ActText(getValidActText() + "Hello!")
-	newImageSrcs := []ActImageSrc{ActImageSrc("https://example.com/updated_image.png")}
-	updates := ActUpdates{ImageSrcs: &newImageSrcs, Text: &newText}
-	updatedActRef, err := act.Update(*author, updates)
+	newImageSrcs := ActImageSrcs{"https://example.com/updated_image.png"}
+	upgrades := ActUpgradeTargets{ImageSrcs: &newImageSrcs, Text: &newText}
+	upgradedActRef, err := act.Upgrade(*author, upgrades)
 	if err != nil {
 		t.Errorf("updating act failed with error:%v", err)
 	}
-	if act.Description().Text != newText || updatedActRef.Description().Text != newText {
+	if act.LatestVersion().Text() != newText || upgradedActRef.LatestVersion().Text() != newText {
 		t.Errorf("act text is not updated")
 	}
-	if act.Description().ImageSrcs[0] != newImageSrcs[0] || updatedActRef.Description().ImageSrcs[0] != newImageSrcs[0] {
+	if act.LatestVersion().ImageSrcs()[0] != newImageSrcs[0] || upgradedActRef.LatestVersion().ImageSrcs()[0] != newImageSrcs[0] {
 		t.Errorf("act images are not updated")
 	}
-	if act.UpdateTargets().Version == originalActVer {
+	if act.LatestVersion().Version() != originalLatestVerNum+1 {
 		t.Errorf("act version is not updated")
 	}
 }
 
-func TestUpdateActFailByUnauthorized(t *testing.T) {
+func TestUpgradeActFailByUnauthorized(t *testing.T) {
 	author := user.UserFrom(42)
 	act := getValidActWithAuthor(*author)
 	abuser := user.UserFrom(43)
-	newText := ActText(getValidActText())
-	updates := ActUpdates{Text: &newText}
-	_, err := act.Update(*abuser, updates)
+	newText := ActText(getValidActText() + "Hello!")
+	upgrades := ActUpgradeTargets{Text: &newText}
+	_, err := act.Upgrade(*abuser, upgrades)
 	if err != domain.ErrUnauthorized {
-		t.Errorf("update by unauthorized user is expected to cause ErrUnauthorized but got %v", err)
+		t.Errorf("upgrade by unauthorized user is expected to cause ErrUnauthorized but got %v", err)
+	}
+	if act.LatestVersion().Text() == newText {
+		t.Errorf("act text should not be updated")
 	}
 }
 
-func TestUpdateActFailByImages(t *testing.T) {
+func TestUpgradeActFailByImages(t *testing.T) {
 	author := user.UserFrom(42)
 	act := getValidActWithAuthor(*author)
-	newText := ActText(getValidActText() + "Hello!")
 	newImageSrcs := getTooManyActImages()
-	updates := ActUpdates{ImageSrcs: &newImageSrcs, Text: &newText}
-	_, err := act.Update(*author, updates)
+	upgrades := ActUpgradeTargets{ImageSrcs: &newImageSrcs}
+	_, err := act.Upgrade(*author, upgrades)
 	if err != ErrInvalidActInfo {
-		t.Errorf("updating act failed with error:%v", err)
+		t.Errorf("update with too many images is expected to cause ErrInvalidActInfo but got %v", err)
 	}
-	if len(act.Description().ImageSrcs) == len(newImageSrcs) {
+	if len(act.LatestVersion().ImageSrcs()) == len(newImageSrcs) {
 		t.Errorf("act images should not be updated")
 	}
 }
 
-func TestUpdateActFailByText(t *testing.T) {
+func TestUpgradeActFailByText(t *testing.T) {
 	author := user.UserFrom(42)
 	act := getValidActWithAuthor(*author)
 	newText := ActText(getTooLongActText())
-	updates := ActUpdates{Text: &newText}
-	_, err := act.Update(*author, updates)
+	upgrades := ActUpgradeTargets{Text: &newText}
+	_, err := act.Upgrade(*author, upgrades)
 	if err != ErrInvalidActInfo {
-		t.Errorf("updating act failed with error:%v", err)
+		t.Errorf("update with too long text is expected to cause ErrInvalidActInfo but got %v", err)
 	}
-	if act.Description().Text == newText {
+	if act.LatestVersion().Text() == newText {
 		t.Errorf("act text should not be updated")
 	}
 }

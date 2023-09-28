@@ -6,10 +6,6 @@ import (
 	"time"
 )
 
-func getValidActDescription() ActDescription {
-	return ActDescriptionFrom(getValidActImages(), getValidActText(), getValidCharacteristics())
-}
-
 func getValidActName() ActName {
 	an := ""
 	for i := 0; i < domain.ACT_NAME_MIN_LENGTH; i++ {
@@ -26,10 +22,18 @@ func getTooLongActName() ActName {
 	return ActName(ln)
 }
 
-func getValidActImages() []ActImageSrc {
-	ai := []ActImageSrc{}
+func getValidActImages() ActImageSrcs {
+	ai := ActImageSrcs{}
 	for i := 0; i < domain.ACT_IMAGES_MIN_NUMBER+1; i++ {
-		ai = append(ai, ActImageSrc("https://example.com/image.png"))
+		ai = append(ai, "https://example.com/image.png")
+	}
+	return ai
+}
+
+func getTooManyActImages() ActImageSrcs {
+	ai := ActImageSrcs{}
+	for i := 0; i < domain.ACT_IMAGES_MAX_NUMBER+1; i++ {
+		ai = append(ai, "https://example.com/image.png")
 	}
 	return ai
 }
@@ -42,18 +46,6 @@ func getValidActText() ActText {
 	return ActText(at)
 }
 
-func getValidCharacteristics() ActCharacteristics {
-	return ActCharacteristics{}
-}
-
-func getTooManyActImages() []ActImageSrc {
-	images := []ActImageSrc{}
-	for i := 0; i < domain.ACT_IMAGES_MAX_NUMBER+1; i++ {
-		images = append(images, ActImageSrc("https://example.com/image.png"))
-	}
-	return images
-}
-
 func getTooLongActText() ActText {
 	ln := ""
 	for i := 0; i < domain.ACT_TEXT_MAX_LENGTH+1; i++ {
@@ -62,15 +54,13 @@ func getTooLongActText() ActText {
 	return ActText(ln)
 }
 
+func getValidCharacteristics() ActCharacteristics {
+	return ActCharacteristics{}
+}
+
 func getValidActWithAuthor(author user.User) *Act {
 	code, _ := domain.RandomHexCode()
-	return ActFrom(ActCode(code), getValidActBaseWithAuthor(author), getValidActMetadata(), getValidActDescription())
-}
-
-func getValidActBaseWithAuthor(author user.User) ActBase {
-	return ActBaseFrom(WeightType, getValidActName(), 42, author.Id())
-}
-
-func getValidActMetadata() ActMetadata {
-	return ActMetadataFrom(domain.CreatedAt(time.Now()), nil)
+	av := ActVersionFrom(1, getValidActImages(), getValidActText(), getValidCharacteristics(), domain.CreatedAt(time.Now()))
+	act, _ := ActFrom(ActCode(code), WeightType, getValidActName(), author, domain.CreatedAt(time.Now()), ActVersions{av})
+	return act
 }
