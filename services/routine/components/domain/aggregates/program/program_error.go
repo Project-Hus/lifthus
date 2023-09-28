@@ -9,7 +9,4 @@ func (e ProgramError) Error() string {
 }
 
 var ErrInvalidProgramInfo = ProgramError{"invalid program information"}
-
-var ErrExistingDerivingProgram = ProgramError{"existing deriving program"}
-
-var ErrInvalidDescription = ProgramError{"invalid description"}
+var ErrInvalidProgramVersions = ProgramError{"invalid program versions"}
