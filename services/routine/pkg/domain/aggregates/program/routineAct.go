@@ -1,6 +1,6 @@
 package program
 
-import "routine/components/domain/aggregates/act"
+import "routine/pkg/domain/aggregates/act"
 
 type RoutineActOrder uint
 type RepsOrMeters uint

@@ -1,6 +1,6 @@
 package program
 
-import "routine/components/domain"
+import "routine/pkg/domain"
 
 const (
 	IMAGES_MIN_NUMBER = domain.PROGRAM_IMAGES_MIN_NUMBER

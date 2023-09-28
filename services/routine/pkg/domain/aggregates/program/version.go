@@ -1,6 +1,6 @@
 package program
 
-import "routine/components/domain"
+import "routine/pkg/domain"
 
 type ProgramVersionCode domain.Code
 type ProgramVersionNumber uint

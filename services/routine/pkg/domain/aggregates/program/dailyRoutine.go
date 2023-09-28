@@ -1,6 +1,6 @@
 package program
 
-import "routine/components/domain"
+import "routine/pkg/domain"
 
 type DailyRoutineCode domain.Code
 type DailyRoutineDay uint
