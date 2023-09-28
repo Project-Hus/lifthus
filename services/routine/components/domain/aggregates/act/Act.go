@@ -6,8 +6,7 @@ import (
 	"time"
 )
 
-type ActId domain.Id
-type ActCode string
+type ActCode domain.Code
 type ActName string
 type ActVersions []*ActVersion
 

@@ -1,12 +1,17 @@
 package program
 
-import "routine/components/domain"
+import "routine/components/domain/aggregates/act"
 
-type RoutineActId domain.Id
 type RoutineActOrder uint
+type RepsOrMeters uint
+type RatioOrSecs float64
 
 type RoutineAct struct {
-	id    *RoutineActId
-	order RoutineActOrder
-	//actId ActId
+	dailyRoutine DailyRoutineCode
+	order        RoutineActOrder
+	act          act.ActCode
+	actVersion   act.ActVersionNumber
+	stage        RoutineActStage
+	repsOrMeters RepsOrMeters
+	ratioOrSecs  RatioOrSecs
 }
