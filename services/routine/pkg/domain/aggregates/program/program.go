@@ -24,3 +24,7 @@ type Program struct {
 
 	versions ProgramVersions
 }
+
+func (p *Program) Upgrade(author user.User, imageSrcs ProgramImageSrcs, text ProgramText, dailyRoutines DailyRoutines) (*Program, error) {
+	return nil, nil
+}
