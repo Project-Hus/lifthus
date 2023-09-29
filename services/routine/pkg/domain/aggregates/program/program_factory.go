@@ -28,14 +28,13 @@ func CreateWeeklyProgram(
 	if err != nil {
 		return nil, err
 	}
-	versions := ProgramVersions{v1}
 	return WeeklyProgramFrom(
 		ProgramCode(pcode),
 		title,
 		author,
 		domain.CreatedAt(time.Now()),
 		derivedFrom,
-		versions,
+		ProgramVersions{v1},
 	)
 }
 
