@@ -1,6 +1,6 @@
 package act
 
-import "routine/components/domain"
+import "routine/pkg/domain"
 
 type ActVersionCode domain.Code
 type ActVersionNumber uint

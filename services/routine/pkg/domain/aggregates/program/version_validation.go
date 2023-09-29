@@ -8,3 +8,14 @@ const (
 	TEXT_MIN_LENGTH   = domain.PROGRAM_TEXT_MIN_LENGTH
 	TEXT_MAX_LENGTH   = domain.PROGRAM_TEXT_MAX_LENGTH
 )
+
+func (drs DailyRoutines) IsValid() bool {
+	dCnt := DailyRoutineDay(0)
+	for _, dr := range drs {
+		if dCnt >= dr.day {
+			return false
+		}
+		dCnt = dr.day
+	}
+	return true
+}

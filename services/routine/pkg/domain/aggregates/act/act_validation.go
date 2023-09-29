@@ -1,6 +1,6 @@
 package act
 
-import "routine/components/domain"
+import "routine/pkg/domain"
 
 const (
 	NAME_MIN_LENGTH   = domain.ACT_NAME_MIN_LENGTH
