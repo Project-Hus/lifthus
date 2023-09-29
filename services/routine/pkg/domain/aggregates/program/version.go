@@ -7,7 +7,7 @@ type ProgramVersionNumber uint
 type ProgramImageSrcs []string
 type ProgramText string
 
-type DailyRoutines []*DailyRoutine
+type ProgramVersions []*ProgramVersion
 
 type ProgramVersion struct {
 	code      ProgramVersionCode

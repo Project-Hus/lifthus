@@ -40,6 +40,20 @@ type RoutineActOrder uint
 type RepsOrMeters uint
 type RatioOrSecs float64
 
+type RoutineActs []*RoutineAct
+
+func (ras RoutineActs) IsValid() bool {
+	if len(ras) == 0 {
+		return false
+	}
+	for i, ra := range ras {
+		if i != int(ra.order)-1 {
+			return false
+		}
+	}
+	return true
+}
+
 type RoutineAct struct {
 	dailyRoutine DailyRoutineCode
 	order        RoutineActOrder

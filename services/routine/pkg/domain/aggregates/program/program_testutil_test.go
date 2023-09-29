@@ -1,7 +1,6 @@
 package program
 
 import (
-	"log"
 	"routine/pkg/domain"
 	"routine/pkg/domain/aggregates/user"
 )
@@ -16,7 +15,7 @@ func getValidWeeklyProgramWithAuthor(author user.User) *Program {
 		getValidDailyRoutines(),
 	)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	return newProgram
 }
@@ -43,20 +42,4 @@ func getValidProgramText() ProgramText {
 		text += "a"
 	}
 	return text
-}
-
-func getValidDailyRoutines() DailyRoutines {
-	drs := DailyRoutines{}
-	days := []DailyRoutineDay{3, 4, 11, 19, 21}
-	for _, d := range days {
-		dr, err := CreateDailyRoutineWithoutProgramVersion(
-			d,
-			getValidRoutineActs(),
-		)
-		if err != nil {
-			log.Fatal(err)
-		}
-		drs = append(drs, dr)
-	}
-	return drs
 }

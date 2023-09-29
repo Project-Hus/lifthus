@@ -18,9 +18,9 @@ func getValidRoutineActs() RoutineActs {
 func getInvalidRoutineActsSets() []RoutineActs {
 	rass := []RoutineActs{}
 	invalidOrderSet := [][]RoutineActOrder{
-		[]RoutineActOrder{2, 3, 4},
-		[]RoutineActOrder{1, 2, 4},
-		[]RoutineActOrder{1, 2, 3, 3, 4},
+		{2, 3, 4},
+		{1, 2, 4},
+		{1, 2, 3, 3, 4},
 	}
 	for _, orders := range invalidOrderSet {
 		ras := getRoutineActsWithOrders(orders)
@@ -29,20 +29,16 @@ func getInvalidRoutineActsSets() []RoutineActs {
 	return rass
 }
 
-func getRoutineActWithOrder(order RoutineActOrder) *RoutineAct {
-	return CreateRoutineActWithoutDailyRoutine(
-		order,
-		"ABCDEF12",
-		MainStage,
-		10,
-		0.7,
-	)
-}
-
 func getRoutineActsWithOrders(orders []RoutineActOrder) RoutineActs {
 	ras := RoutineActs{}
 	for _, ord := range orders {
-		ra := getRoutineActWithOrder(ord)
+		ra := CreateRoutineActWithoutDailyRoutine(
+			ord,
+			"ABCDEF12",
+			MainStage,
+			10,
+			0.7,
+		)
 		ras = append(ras, ra)
 	}
 	return ras

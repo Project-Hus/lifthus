@@ -9,8 +9,6 @@ type ProgramCode domain.Code
 
 type ProgramTitle string
 
-type ProgramVersions []*ProgramVersion
-
 type Program struct {
 	code ProgramCode
 

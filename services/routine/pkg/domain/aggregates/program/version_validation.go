@@ -9,13 +9,13 @@ const (
 	TEXT_MAX_LENGTH   = domain.PROGRAM_TEXT_MAX_LENGTH
 )
 
-func (drs DailyRoutines) IsValid() bool {
-	dCnt := DailyRoutineDay(0)
-	for _, dr := range drs {
-		if dr.Day() <= dCnt {
+func (pvs ProgramVersions) IsValid() bool {
+	vCnt := ProgramVersionNumber(0)
+	for _, pv := range pvs {
+		if pv.Version() <= vCnt {
 			return false
 		}
-		dCnt = dr.day
+		vCnt = pv.Version()
 	}
 	return true
 }

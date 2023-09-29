@@ -39,16 +39,16 @@ func DailyRoutineFrom(
 
 type DailyRoutineCode domain.Code
 type DailyRoutineDay uint
-type RoutineActs []*RoutineAct
 
-func (ras RoutineActs) IsValid() bool {
-	if len(ras) == 0 {
-		return false
-	}
-	for i, ra := range ras {
-		if i != int(ra.order)-1 {
+type DailyRoutines []*DailyRoutine
+
+func (drs DailyRoutines) IsValid() bool {
+	dCnt := DailyRoutineDay(0)
+	for _, dr := range drs {
+		if dr.Day() <= dCnt {
 			return false
 		}
+		dCnt = dr.day
 	}
 	return true
 }
