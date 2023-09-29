@@ -52,3 +52,7 @@ type DailyRoutine struct {
 
 	routineActs RoutineActs
 }
+
+func (dr DailyRoutine) Day() DailyRoutineDay {
+	return dr.day
+}

@@ -12,7 +12,7 @@ const (
 func (drs DailyRoutines) IsValid() bool {
 	dCnt := DailyRoutineDay(0)
 	for _, dr := range drs {
-		if dCnt >= dr.day {
+		if dr.Day() <= dCnt {
 			return false
 		}
 		dCnt = dr.day
