@@ -25,6 +25,10 @@ func (pv ProgramVersion) Code() ProgramVersionCode {
 	return pv.code
 }
 
+func (pv ProgramVersion) Program() ProgramCode {
+	return pv.program
+}
+
 func (pv ProgramVersion) Version() ProgramVersionNumber {
 	return pv.version
 }

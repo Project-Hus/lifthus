@@ -18,3 +18,11 @@ func TestCreateWeeklyProgram(t *testing.T) {
 		t.Error("expected newProgram to be created but got nil and err:", err)
 	}
 }
+
+func TestCreateWeeklyProgramFailByTitleConstraints(t *testing.T) {
+	t.Errorf("not implemented")
+}
+
+func TestUpgradeWeeklyProgram(t *testing.T) {
+	t.Errorf("not implemented")
+}

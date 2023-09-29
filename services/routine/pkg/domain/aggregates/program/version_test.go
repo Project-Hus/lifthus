@@ -24,6 +24,22 @@ func TestProgramVersionCausingErrWithInvalidDailyRoutinesOrder(t *testing.T) {
 	}
 }
 
+func TestCreateProgramVersionSettingProgramCodeRef(t *testing.T) {
+	npv, err := CreateProgramVersion(
+		"ABCDEF12",
+		2,
+		getValidProgramImageSrcs(),
+		getValidProgramText(),
+		getValidDailyRoutines(),
+	)
+	if err != nil || npv == nil {
+		t.Errorf("program version is expected to be created but isn't and got err: %v", err)
+	}
+	if npv.Program() != "ABCDEF12" {
+		t.Errorf("program version is expected to set program code reference to itself but the reference is %v", npv.Program())
+	}
+}
+
 func TestCreateProgramVersionSettingDailyRoutinesRefs(t *testing.T) {
 	drs := getValidDailyRoutines()
 	v1, err := CreateProgramVersion(
@@ -41,4 +57,12 @@ func TestCreateProgramVersionSettingDailyRoutinesRefs(t *testing.T) {
 			t.Errorf("program version is expected to set daily routines' reference to itself but the reference is %v", dr.Version())
 		}
 	}
+}
+
+func TestCreateProgramVersionFailByImageSrcsConstraints(t *testing.T) {
+	t.Error("not implemented")
+}
+
+func TestCreateProgramVersionFailByProgramTextConstraints(t *testing.T) {
+	t.Error("not implemented")
 }
