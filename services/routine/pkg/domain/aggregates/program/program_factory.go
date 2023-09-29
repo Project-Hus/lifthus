@@ -14,15 +14,13 @@ func CreateWeeklyProgram(
 	text ProgramText,
 	dailyRoutines DailyRoutines,
 ) (*Program, error) {
-	pcode, vcode, err := getProgramCodeAndVersionCode()
+	pcode, err := domain.RandomHexCode()
 	if err != nil {
 		return nil, err
 	}
-	v1, err := ProgramVersionFrom(
-		ProgramVersionCode(vcode),
+	v1, err := CreateProgramVersion(
 		ProgramCode(pcode),
-		ProgramVersionNumber(1),
-		domain.CreatedAt(time.Now()),
+		1,
 		imageSrcs,
 		text,
 		dailyRoutines,
@@ -39,18 +37,6 @@ func CreateWeeklyProgram(
 		derivedFrom,
 		versions,
 	)
-}
-
-func getProgramCodeAndVersionCode() (ProgramCode, ProgramVersionCode, error) {
-	pCode, err := domain.RandomHexCode()
-	if err != nil {
-		return "", "", err
-	}
-	vCode, err := domain.RandomHexCode()
-	if err != nil {
-		return "", "", err
-	}
-	return ProgramCode(pCode), ProgramVersionCode(vCode), nil
 }
 
 func WeeklyProgramFrom(

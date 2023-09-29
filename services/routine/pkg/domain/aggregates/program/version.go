@@ -21,6 +21,14 @@ type ProgramVersion struct {
 	dailyRoutines DailyRoutines
 }
 
+func (pv ProgramVersion) Code() ProgramVersionCode {
+	return pv.code
+}
+
 func (pv ProgramVersion) Version() ProgramVersionNumber {
 	return pv.version
+}
+
+func (pv ProgramVersion) DailyRoutines() DailyRoutines {
+	return pv.dailyRoutines
 }

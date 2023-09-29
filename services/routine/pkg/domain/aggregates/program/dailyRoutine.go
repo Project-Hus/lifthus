@@ -66,10 +66,18 @@ func (dr DailyRoutine) Code() DailyRoutineCode {
 	return dr.code
 }
 
+func (dr DailyRoutine) Version() ProgramVersionCode {
+	return dr.version
+}
+
 func (dr DailyRoutine) Day() DailyRoutineDay {
 	return dr.day
 }
 
 func (dr DailyRoutine) RoutineActs() RoutineActs {
 	return dr.routineActs
+}
+
+func (d *DailyRoutine) setVersion(version ProgramVersionCode) {
+	d.version = version
 }
