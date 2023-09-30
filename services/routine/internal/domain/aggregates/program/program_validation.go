@@ -1,6 +1,6 @@
 package program
 
-import "routine/pkg/domain"
+import "routine/internal/domain"
 
 const (
 	TITLE_MIN_LENGTH = domain.PROGRAM_TITLE_MIN_LENGTH

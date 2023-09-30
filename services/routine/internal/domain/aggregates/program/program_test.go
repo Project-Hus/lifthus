@@ -1,7 +1,7 @@
 package program
 
 import (
-	"routine/pkg/domain/aggregates/user"
+	"routine/internal/domain/aggregates/user"
 	"testing"
 )
 

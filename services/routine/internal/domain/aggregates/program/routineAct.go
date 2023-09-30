@@ -1,6 +1,6 @@
 package program
 
-import "routine/pkg/domain/aggregates/act"
+import "routine/internal/domain/aggregates/act"
 
 func CreateRoutineActWithoutDailyRoutine(
 	order RoutineActOrder,

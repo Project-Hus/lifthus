@@ -1,8 +1,8 @@
 package program
 
 import (
-	"routine/pkg/domain"
-	"routine/pkg/domain/aggregates/user"
+	"routine/internal/domain"
+	"routine/internal/domain/aggregates/user"
 )
 
 type ProgramCode domain.Code

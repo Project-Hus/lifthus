@@ -1,7 +1,7 @@
 package act
 
 import (
-	"routine/pkg/domain"
+	"routine/internal/domain"
 )
 
 func ActVersionFrom(code ActVersionCode, version ActVersionNumber, imageSrcs ActImageSrcs, text ActText, createdAt domain.CreatedAt) *ActVersion {

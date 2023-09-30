@@ -1,6 +1,6 @@
 package program
 
-import "routine/pkg/domain"
+import "routine/internal/domain"
 
 func CreateDailyRoutineWithoutProgramVersion(
 	day DailyRoutineDay,

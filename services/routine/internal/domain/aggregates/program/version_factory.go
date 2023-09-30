@@ -1,7 +1,7 @@
 package program
 
 import (
-	"routine/pkg/domain"
+	"routine/internal/domain"
 	"time"
 )
 
