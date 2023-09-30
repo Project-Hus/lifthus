@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := build
 
 go: # run the app with nodemon for hot reload
-	HUS_ENV=native nodemon --watch './**/*.go' --signal SIGTERM --exec 'go' run ./main.go
+	HUS_ENV=native nodemon --watch './**/*.go' --signal SIGTERM --exec 'go' run ./cmd/routine/main.go
 .PHONY:go
 
 fmt:
@@ -18,6 +18,6 @@ vet: fmt
 .PHONY:vet
 
 build: vet
-	go generate ./ent
-	go build
+	GOWORK=off go generate ./ent
+	go build ./cmd/routine/...
 .PHONY:build

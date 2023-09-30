@@ -106,10 +106,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       MemorySize: 384
-      # !! SAM esbuild (not working properly)
-      #CodeUri: services/post/
-      #Handler: src/lambda.handler
-      # SAM tsc esbuild bundle
       CodeUri: services/post/
       Handler: lambda.handler
       Runtime: nodejs18.x
@@ -130,7 +126,6 @@ Resources:
               Ref: DevLifthusApi
             Path: /post/{proxy+}
             Method: ANY
-    # SAM esbuild (not working properly)
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -138,6 +133,7 @@ Resources:
           - src/lambda.ts
         Format: "cjs"
         Minify: false
+        ## not working with the following prop
         # OutExtension:
         #   - .js=.mjs
         Target: "es2017"
@@ -147,7 +143,6 @@ Resources:
           - "cache-manager"
           - "class-transformer"
           - "class-validator"
-  # lifthus routine service
   # S3Bucket:
   #   Type: "AWS::S3::Bucket"
   #   DeletionPolicy: Retain
@@ -162,15 +157,11 @@ Resources:
   #       Rules:
   #         - ObjectOwnership: BucketOwnerPreferred
   #     AccessControl: AwsExecRead
-  LifthusRoutineService:
+  DevLifthusRoutineService:
     Type: AWS::Serverless::Function
     Properties:
       MemorySize: 128
-      # !! SAM esbuild (not working properly)
-      #CodeUri: services/post/
-      #Handler: src/lambda.handler
-      # SAM tsc esbuild bundle
-      CodeUri: services/routine
+      CodeUri: services/routine/cmd/routine
       Handler: routine
       Runtime: go1.x
       Architectures:

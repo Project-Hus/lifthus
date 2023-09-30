@@ -165,11 +165,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       MemorySize: 128
-      # !! SAM esbuild (not working properly)
-      #CodeUri: services/post/
-      #Handler: src/lambda.handler
-      # SAM tsc esbuild bundle
-      CodeUri: services/routine
+      CodeUri: services/routine/cmd/routine
       Handler: routine
       Runtime: go1.x
       Architectures:
