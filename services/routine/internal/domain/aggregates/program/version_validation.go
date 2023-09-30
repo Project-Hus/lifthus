@@ -10,6 +10,9 @@ const (
 )
 
 func (pvs ProgramVersions) IsValid() bool {
+	if len(pvs) == 0 {
+		return false
+	}
 	vCnt := ProgramVersionNumber(0)
 	for _, pv := range pvs {
 		if pv.Version() <= vCnt {

@@ -33,6 +33,18 @@ func (pv ProgramVersion) Version() ProgramVersionNumber {
 	return pv.version
 }
 
+func (pv ProgramVersion) CreatedAt() domain.CreatedAt {
+	return pv.createdAt
+}
+
+func (pv ProgramVersion) ImageSrcs() ProgramImageSrcs {
+	return pv.imageSrcs
+}
+
+func (pv ProgramVersion) Text() ProgramText {
+	return pv.text
+}
+
 func (pv ProgramVersion) DailyRoutines() DailyRoutines {
 	return pv.dailyRoutines
 }

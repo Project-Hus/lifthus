@@ -9,6 +9,7 @@ func (e ProgramError) Error() string {
 }
 
 var ErrInvalidProgramInfo = ProgramError{"invalid program information"}
+var ErrInvalidProgramTitle = ProgramError{"invalid program title"}
 var ErrInvalidProgramImageSrcs = ProgramError{"invalid program image sources"}
 var ErrInvalidProgramText = ProgramError{"invalid program text"}
 

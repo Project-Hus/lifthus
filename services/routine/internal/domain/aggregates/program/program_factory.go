@@ -14,6 +14,9 @@ func CreateWeeklyProgram(
 	text ProgramText,
 	dailyRoutines DailyRoutines,
 ) (*Program, error) {
+	if !title.IsValid() {
+		return nil, ErrInvalidProgramTitle
+	}
 	pcode, err := domain.RandomHexCode()
 	if err != nil {
 		return nil, err

@@ -43,6 +43,9 @@ type DailyRoutineDay uint
 type DailyRoutines []*DailyRoutine
 
 func (drs DailyRoutines) IsValid() bool {
+	if len(drs) == 0 {
+		return false
+	}
 	dCnt := DailyRoutineDay(0)
 	for _, dr := range drs {
 		if dr.Day() <= dCnt {

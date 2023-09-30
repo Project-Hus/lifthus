@@ -29,6 +29,29 @@ func getValidProgramTitle() ProgramTitle {
 	return title
 }
 
+func getInvalidProgramTitleSet() []ProgramTitle {
+	return []ProgramTitle{
+		getTooShortProgramTitle(),
+		getTooLongProgramTitle(),
+	}
+}
+
+func getTooShortProgramTitle() ProgramTitle {
+	title := ProgramTitle("")
+	for i := 0; i < domain.PROGRAM_TITLE_MIN_LENGTH-1; i++ {
+		title += "a"
+	}
+	return title
+}
+
+func getTooLongProgramTitle() ProgramTitle {
+	title := ProgramTitle("")
+	for i := 0; i < domain.PROGRAM_TITLE_MAX_LENGTH+1; i++ {
+		title += "a"
+	}
+	return title
+}
+
 func getValidProgramImageSrcs() ProgramImageSrcs {
 	imageSrcs := ProgramImageSrcs{}
 	for i := 0; i < domain.PROGRAM_IMAGES_MIN_NUMBER; i++ {

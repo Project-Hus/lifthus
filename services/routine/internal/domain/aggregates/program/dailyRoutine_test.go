@@ -53,6 +53,7 @@ func getInvalidDailyRoutinesSets() []DailyRoutines {
 		{1, 2, 2, 3, 7},
 		{2, 4, 3, 5, 9},
 		{0, 1, 2, 3, 4},
+		{},
 	}
 	for _, days := range invalidDaySet {
 		drs := DailyRoutines{}
