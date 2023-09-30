@@ -4,8 +4,8 @@ import (
 	"context"
 	"routine/ent"
 	"routine/ent/act"
-	"routine/shared/dto"
-	"routine/shared/helper"
+	"routine/pkg/dto"
+	"routine/pkg/helper"
 )
 
 // QueryActsByName queries acts by name and returns 5 acts skipping given number of acts

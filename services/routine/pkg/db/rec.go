@@ -4,7 +4,7 @@ import (
 	"context"
 	"routine/ent"
 	"routine/ent/routineactrec"
-	"routine/shared/dto"
+	"routine/pkg/dto"
 )
 
 func UpdateRoutineActRec(

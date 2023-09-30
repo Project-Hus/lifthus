@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"routine/ent"
 	"routine/ent/dailyroutinerec"
-	"routine/shared/db"
-	"routine/shared/dto"
+	"routine/pkg/db"
+	"routine/pkg/dto"
 	"time"
 
 	"github.com/labstack/echo/v4"

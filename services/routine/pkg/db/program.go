@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"routine/ent"
 	"routine/ent/program"
-	"routine/shared/dto"
-	"routine/shared/helper"
+	"routine/pkg/dto"
+	"routine/pkg/helper"
 	"sync"
 )
 

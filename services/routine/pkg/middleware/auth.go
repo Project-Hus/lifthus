@@ -4,7 +4,7 @@ import (
 	"lifthus-auth/common/service/session"
 	"net/http"
 
-	"routine/shared/helper"
+	"routine/pkg/helper"
 
 	"github.com/labstack/echo/v4"
 )

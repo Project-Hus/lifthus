@@ -3,8 +3,8 @@ package program
 import (
 	"net/http"
 	"routine/ent"
-	"routine/shared/db"
-	"routine/shared/dto"
+	"routine/pkg/db"
+	"routine/pkg/dto"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
