@@ -96,14 +96,6 @@ func (pc *ProgramCreate) SetUpdatedAt(t time.Time) *ProgramCreate {
 	return pc
 }
 
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (pc *ProgramCreate) SetNillableUpdatedAt(t *time.Time) *ProgramCreate {
-	if t != nil {
-		pc.SetUpdatedAt(*t)
-	}
-	return pc
-}
-
 // SetID sets the "id" field.
 func (pc *ProgramCreate) SetID(u uint64) *ProgramCreate {
 	pc.mutation.SetID(u)
@@ -209,10 +201,6 @@ func (pc *ProgramCreate) defaults() {
 		v := program.DefaultCreatedAt()
 		pc.mutation.SetCreatedAt(v)
 	}
-	if _, ok := pc.mutation.UpdatedAt(); !ok {
-		v := program.DefaultUpdatedAt()
-		pc.mutation.SetUpdatedAt(v)
-	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -307,7 +295,7 @@ func (pc *ProgramCreate) createSpec() (*Program, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := pc.mutation.UpdatedAt(); ok {
 		_spec.SetField(program.FieldUpdatedAt, field.TypeTime, value)
-		_node.UpdatedAt = value
+		_node.UpdatedAt = &value
 	}
 	if nodes := pc.mutation.TagsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

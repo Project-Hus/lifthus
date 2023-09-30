@@ -159,8 +159,6 @@ func init() {
 	program.DefaultCreatedAt = programDescCreatedAt.Default.(func() time.Time)
 	// programDescUpdatedAt is the schema descriptor for updated_at field.
 	programDescUpdatedAt := programFields[8].Descriptor()
-	// program.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	program.DefaultUpdatedAt = programDescUpdatedAt.Default.(func() time.Time)
 	// program.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	program.UpdateDefaultUpdatedAt = programDescUpdatedAt.UpdateDefault.(func() time.Time)
 	programrecFields := schema.ProgramRec{}.Fields()
