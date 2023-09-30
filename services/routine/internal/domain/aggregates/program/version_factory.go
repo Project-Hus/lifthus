@@ -16,6 +16,14 @@ func CreateProgramVersion(
 		return nil, ErrInvalidDailyRoutines
 	}
 
+	if !imageSrcs.IsValid() {
+		return nil, ErrInvalidProgramImageSrcs
+	}
+
+	if !text.IsValid() {
+		return nil, ErrInvalidProgramText
+	}
+
 	code, err := domain.RandomHexCode()
 	if err != nil {
 		return nil, err

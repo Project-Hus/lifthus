@@ -60,9 +60,37 @@ func TestCreateProgramVersionSettingDailyRoutinesRefs(t *testing.T) {
 }
 
 func TestCreateProgramVersionFailByImageSrcsConstraints(t *testing.T) {
-	t.Error("not implemented")
+	_, err := CreateProgramVersion(
+		"ABCDEF12",
+		42,
+		getTooManyProgramImageSrcs(),
+		getValidProgramText(),
+		getValidDailyRoutines(),
+	)
+	if err != ErrInvalidProgramImageSrcs {
+		t.Errorf("creating program version with invalid image srcs is expected to fail by constraints but got err: %v", err)
+	}
 }
 
 func TestCreateProgramVersionFailByProgramTextConstraints(t *testing.T) {
-	t.Error("not implemented")
+	_, err := CreateProgramVersion(
+		"ABCDEF12",
+		42,
+		getValidProgramImageSrcs(),
+		getTooShortProgramText(),
+		getValidDailyRoutines(),
+	)
+	if err != ErrInvalidProgramText {
+		t.Errorf("creating program version with too short text is expected to fail by constraints but got err: %v", err)
+	}
+	_, err = CreateProgramVersion(
+		"ABCDEF12",
+		42,
+		getValidProgramImageSrcs(),
+		getTooLongProgramText(),
+		getValidDailyRoutines(),
+	)
+	if err != ErrInvalidProgramText {
+		t.Errorf("creating program version with too long text is expected to fail by constraints but got err: %v", err)
+	}
 }

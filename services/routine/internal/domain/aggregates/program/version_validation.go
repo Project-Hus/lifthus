@@ -19,3 +19,17 @@ func (pvs ProgramVersions) IsValid() bool {
 	}
 	return true
 }
+
+func (imgs ProgramImageSrcs) IsValid() bool {
+	if len(imgs) > IMAGES_MAX_NUMBER || len(imgs) < IMAGES_MIN_NUMBER {
+		return false
+	}
+	return true
+}
+
+func (text ProgramText) IsValid() bool {
+	if len(text) > TEXT_MAX_LENGTH || len(text) < TEXT_MIN_LENGTH {
+		return false
+	}
+	return true
+}
