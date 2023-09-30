@@ -9,8 +9,8 @@ import (
 	"log"
 	"os"
 	"routine/ent"
-	"routine/pkg/web/program"
-	"routine/pkg/web/rec"
+	"routine/internal/web/program"
+	"routine/internal/web/rec"
 	"routine/shared/db"
 
 	"github.com/aws/aws-lambda-go/events"
