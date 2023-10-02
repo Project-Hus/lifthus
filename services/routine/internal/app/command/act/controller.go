@@ -3,7 +3,6 @@ package act
 import (
 	"lifthus-auth/common/guard"
 	"net/http"
-	"routine/internal/app/aws"
 
 	"log"
 
@@ -11,7 +10,7 @@ import (
 )
 
 func SetActCommandControllerTo(e *echo.Echo) *echo.Echo {
-	ac := &actController{svc: &actService{}, rb: aws.GetRoutineBucket()}
+	ac := &actController{svc: newActService()}
 	e.POST("/routine/act", ac.createAct, guard.UserGuard)
 	e.PUT("/routine/act", ac.upgradeAct, guard.UserGuard)
 	return e
@@ -19,7 +18,6 @@ func SetActCommandControllerTo(e *echo.Echo) *echo.Echo {
 
 type actController struct {
 	svc *actService
-	rb  *aws.RoutineBucket
 }
 
 // createAct godoc
@@ -33,7 +31,7 @@ type actController struct {
 // Failure 403 "forbidden"
 // Failure 500 "failed to create Act"
 func (ac *actController) createAct(c echo.Context) error {
-	locations, err := getMultipartFormAndUploadActImagesToRoutineS3(c, ac)
+	locations, err := getMultipartFormAndUploadActImagesToRoutineS3(c)
 	if err != nil {
 		log.Printf("failed to upload images to routine s3: %v", err)
 		return c.String(http.StatusInternalServerError, "failed to upload images to routine s3")

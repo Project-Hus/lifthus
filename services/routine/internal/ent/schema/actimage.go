@@ -19,6 +19,7 @@ func (ActImage) Indexes() []ent.Index {
 func (ActImage) Fields() []ent.Field {
 	return []ent.Field{
 		IdField(),
+		CodeRef("act_version_code"),
 		field.Uint("order"),
 		field.Text("src").NotEmpty(),
 	}

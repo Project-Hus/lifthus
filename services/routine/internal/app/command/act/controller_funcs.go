@@ -1,18 +1,20 @@
 package act
 
 import (
+	"routine/internal/app/aws"
 	"routine/internal/app/dto"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
 
-func getMultipartFormAndUploadActImagesToRoutineS3(c echo.Context, ac *actController) (locations []string, err error) {
+func getMultipartFormAndUploadActImagesToRoutineS3(c echo.Context) (locations []string, err error) {
 	form, err := c.MultipartForm()
 	if err != nil {
 		return nil, err
 	}
-	locations, err = ac.rb.UploadActImagesToRoutineS3(form.File["images"])
+	rb := aws.GetRoutineBucket()
+	locations, err = rb.UploadActImagesToRoutineS3(form.File["images"])
 	if err != nil {
 		return nil, err
 	}

@@ -54,6 +54,11 @@ func IDLTE(id uint64) predicate.ActImage {
 	return predicate.ActImage(sql.FieldLTE(FieldID, id))
 }
 
+// ActVersionCode applies equality check predicate on the "act_version_code" field. It's identical to ActVersionCodeEQ.
+func ActVersionCode(v string) predicate.ActImage {
+	return predicate.ActImage(sql.FieldEQ(FieldActVersionCode, v))
+}
+
 // Order applies equality check predicate on the "order" field. It's identical to OrderEQ.
 func Order(v uint) predicate.ActImage {
 	return predicate.ActImage(sql.FieldEQ(FieldOrder, v))
@@ -62,6 +67,71 @@ func Order(v uint) predicate.ActImage {
 // Src applies equality check predicate on the "src" field. It's identical to SrcEQ.
 func Src(v string) predicate.ActImage {
 	return predicate.ActImage(sql.FieldEQ(FieldSrc, v))
+}
+
+// ActVersionCodeEQ applies the EQ predicate on the "act_version_code" field.
+func ActVersionCodeEQ(v string) predicate.ActImage {
+	return predicate.ActImage(sql.FieldEQ(FieldActVersionCode, v))
+}
+
+// ActVersionCodeNEQ applies the NEQ predicate on the "act_version_code" field.
+func ActVersionCodeNEQ(v string) predicate.ActImage {
+	return predicate.ActImage(sql.FieldNEQ(FieldActVersionCode, v))
+}
+
+// ActVersionCodeIn applies the In predicate on the "act_version_code" field.
+func ActVersionCodeIn(vs ...string) predicate.ActImage {
+	return predicate.ActImage(sql.FieldIn(FieldActVersionCode, vs...))
+}
+
+// ActVersionCodeNotIn applies the NotIn predicate on the "act_version_code" field.
+func ActVersionCodeNotIn(vs ...string) predicate.ActImage {
+	return predicate.ActImage(sql.FieldNotIn(FieldActVersionCode, vs...))
+}
+
+// ActVersionCodeGT applies the GT predicate on the "act_version_code" field.
+func ActVersionCodeGT(v string) predicate.ActImage {
+	return predicate.ActImage(sql.FieldGT(FieldActVersionCode, v))
+}
+
+// ActVersionCodeGTE applies the GTE predicate on the "act_version_code" field.
+func ActVersionCodeGTE(v string) predicate.ActImage {
+	return predicate.ActImage(sql.FieldGTE(FieldActVersionCode, v))
+}
+
+// ActVersionCodeLT applies the LT predicate on the "act_version_code" field.
+func ActVersionCodeLT(v string) predicate.ActImage {
+	return predicate.ActImage(sql.FieldLT(FieldActVersionCode, v))
+}
+
+// ActVersionCodeLTE applies the LTE predicate on the "act_version_code" field.
+func ActVersionCodeLTE(v string) predicate.ActImage {
+	return predicate.ActImage(sql.FieldLTE(FieldActVersionCode, v))
+}
+
+// ActVersionCodeContains applies the Contains predicate on the "act_version_code" field.
+func ActVersionCodeContains(v string) predicate.ActImage {
+	return predicate.ActImage(sql.FieldContains(FieldActVersionCode, v))
+}
+
+// ActVersionCodeHasPrefix applies the HasPrefix predicate on the "act_version_code" field.
+func ActVersionCodeHasPrefix(v string) predicate.ActImage {
+	return predicate.ActImage(sql.FieldHasPrefix(FieldActVersionCode, v))
+}
+
+// ActVersionCodeHasSuffix applies the HasSuffix predicate on the "act_version_code" field.
+func ActVersionCodeHasSuffix(v string) predicate.ActImage {
+	return predicate.ActImage(sql.FieldHasSuffix(FieldActVersionCode, v))
+}
+
+// ActVersionCodeEqualFold applies the EqualFold predicate on the "act_version_code" field.
+func ActVersionCodeEqualFold(v string) predicate.ActImage {
+	return predicate.ActImage(sql.FieldEqualFold(FieldActVersionCode, v))
+}
+
+// ActVersionCodeContainsFold applies the ContainsFold predicate on the "act_version_code" field.
+func ActVersionCodeContainsFold(v string) predicate.ActImage {
+	return predicate.ActImage(sql.FieldContainsFold(FieldActVersionCode, v))
 }
 
 // OrderEQ applies the EQ predicate on the "order" field.

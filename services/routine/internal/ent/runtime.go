@@ -25,8 +25,12 @@ func init() {
 	act.NameValidator = actDescName.Validators[0].(func(string) error)
 	actimageFields := schema.ActImage{}.Fields()
 	_ = actimageFields
+	// actimageDescActVersionCode is the schema descriptor for act_version_code field.
+	actimageDescActVersionCode := actimageFields[1].Descriptor()
+	// actimage.ActVersionCodeValidator is a validator for the "act_version_code" field. It is called by the builders before save.
+	actimage.ActVersionCodeValidator = actimageDescActVersionCode.Validators[0].(func(string) error)
 	// actimageDescSrc is the schema descriptor for src field.
-	actimageDescSrc := actimageFields[2].Descriptor()
+	actimageDescSrc := actimageFields[3].Descriptor()
 	// actimage.SrcValidator is a validator for the "src" field. It is called by the builders before save.
 	actimage.SrcValidator = actimageDescSrc.Validators[0].(func(string) error)
 	actversionFields := schema.ActVersion{}.Fields()
@@ -39,4 +43,8 @@ func init() {
 	actversionDescActCode := actversionFields[2].Descriptor()
 	// actversion.ActCodeValidator is a validator for the "act_code" field. It is called by the builders before save.
 	actversion.ActCodeValidator = actversionDescActCode.Validators[0].(func(string) error)
+	// actversionDescText is the schema descriptor for text field.
+	actversionDescText := actversionFields[5].Descriptor()
+	// actversion.TextValidator is a validator for the "text" field. It is called by the builders before save.
+	actversion.TextValidator = actversionDescText.Validators[0].(func(string) error)
 }

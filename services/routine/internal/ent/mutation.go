@@ -714,6 +714,7 @@ type ActImageMutation struct {
 	op                 Op
 	typ                string
 	id                 *uint64
+	act_version_code   *string
 	_order             *uint
 	add_order          *int
 	src                *string
@@ -827,6 +828,42 @@ func (m *ActImageMutation) IDs(ctx context.Context) ([]uint64, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetActVersionCode sets the "act_version_code" field.
+func (m *ActImageMutation) SetActVersionCode(s string) {
+	m.act_version_code = &s
+}
+
+// ActVersionCode returns the value of the "act_version_code" field in the mutation.
+func (m *ActImageMutation) ActVersionCode() (r string, exists bool) {
+	v := m.act_version_code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldActVersionCode returns the old "act_version_code" field's value of the ActImage entity.
+// If the ActImage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActImageMutation) OldActVersionCode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldActVersionCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldActVersionCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldActVersionCode: %w", err)
+	}
+	return oldValue.ActVersionCode, nil
+}
+
+// ResetActVersionCode resets all changes to the "act_version_code" field.
+func (m *ActImageMutation) ResetActVersionCode() {
+	m.act_version_code = nil
 }
 
 // SetOrder sets the "order" field.
@@ -994,7 +1031,10 @@ func (m *ActImageMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ActImageMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
+	if m.act_version_code != nil {
+		fields = append(fields, actimage.FieldActVersionCode)
+	}
 	if m._order != nil {
 		fields = append(fields, actimage.FieldOrder)
 	}
@@ -1009,6 +1049,8 @@ func (m *ActImageMutation) Fields() []string {
 // schema.
 func (m *ActImageMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case actimage.FieldActVersionCode:
+		return m.ActVersionCode()
 	case actimage.FieldOrder:
 		return m.Order()
 	case actimage.FieldSrc:
@@ -1022,6 +1064,8 @@ func (m *ActImageMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *ActImageMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case actimage.FieldActVersionCode:
+		return m.OldActVersionCode(ctx)
 	case actimage.FieldOrder:
 		return m.OldOrder(ctx)
 	case actimage.FieldSrc:
@@ -1035,6 +1079,13 @@ func (m *ActImageMutation) OldField(ctx context.Context, name string) (ent.Value
 // type.
 func (m *ActImageMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case actimage.FieldActVersionCode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetActVersionCode(v)
+		return nil
 	case actimage.FieldOrder:
 		v, ok := value.(uint)
 		if !ok {
@@ -1113,6 +1164,9 @@ func (m *ActImageMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *ActImageMutation) ResetField(name string) error {
 	switch name {
+	case actimage.FieldActVersionCode:
+		m.ResetActVersionCode()
+		return nil
 	case actimage.FieldOrder:
 		m.ResetOrder()
 		return nil
@@ -1207,12 +1261,14 @@ type ActVersionMutation struct {
 	act_code          *string
 	version           *uint
 	addversion        *int
+	created_at        *time.Time
+	text              *string
 	clearedFields     map[string]struct{}
+	act               *uint64
+	clearedact        bool
 	act_images        map[uint64]struct{}
 	removedact_images map[uint64]struct{}
 	clearedact_images bool
-	act               *uint64
-	clearedact        bool
 	done              bool
 	oldValue          func(context.Context) (*ActVersion, error)
 	predicates        []predicate.ActVersion
@@ -1450,6 +1506,117 @@ func (m *ActVersionMutation) ResetVersion() {
 	m.addversion = nil
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (m *ActVersionMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *ActVersionMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the ActVersion entity.
+// If the ActVersion object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActVersionMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *ActVersionMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetText sets the "text" field.
+func (m *ActVersionMutation) SetText(s string) {
+	m.text = &s
+}
+
+// Text returns the value of the "text" field in the mutation.
+func (m *ActVersionMutation) Text() (r string, exists bool) {
+	v := m.text
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldText returns the old "text" field's value of the ActVersion entity.
+// If the ActVersion object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActVersionMutation) OldText(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldText is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldText requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldText: %w", err)
+	}
+	return oldValue.Text, nil
+}
+
+// ResetText resets all changes to the "text" field.
+func (m *ActVersionMutation) ResetText() {
+	m.text = nil
+}
+
+// SetActID sets the "act" edge to the Act entity by id.
+func (m *ActVersionMutation) SetActID(id uint64) {
+	m.act = &id
+}
+
+// ClearAct clears the "act" edge to the Act entity.
+func (m *ActVersionMutation) ClearAct() {
+	m.clearedact = true
+}
+
+// ActCleared reports if the "act" edge to the Act entity was cleared.
+func (m *ActVersionMutation) ActCleared() bool {
+	return m.clearedact
+}
+
+// ActID returns the "act" edge ID in the mutation.
+func (m *ActVersionMutation) ActID() (id uint64, exists bool) {
+	if m.act != nil {
+		return *m.act, true
+	}
+	return
+}
+
+// ActIDs returns the "act" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ActID instead. It exists only for internal usage by the builders.
+func (m *ActVersionMutation) ActIDs() (ids []uint64) {
+	if id := m.act; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAct resets all changes to the "act" edge.
+func (m *ActVersionMutation) ResetAct() {
+	m.act = nil
+	m.clearedact = false
+}
+
 // AddActImageIDs adds the "act_images" edge to the ActImage entity by ids.
 func (m *ActVersionMutation) AddActImageIDs(ids ...uint64) {
 	if m.act_images == nil {
@@ -1504,45 +1671,6 @@ func (m *ActVersionMutation) ResetActImages() {
 	m.removedact_images = nil
 }
 
-// SetActID sets the "act" edge to the Act entity by id.
-func (m *ActVersionMutation) SetActID(id uint64) {
-	m.act = &id
-}
-
-// ClearAct clears the "act" edge to the Act entity.
-func (m *ActVersionMutation) ClearAct() {
-	m.clearedact = true
-}
-
-// ActCleared reports if the "act" edge to the Act entity was cleared.
-func (m *ActVersionMutation) ActCleared() bool {
-	return m.clearedact
-}
-
-// ActID returns the "act" edge ID in the mutation.
-func (m *ActVersionMutation) ActID() (id uint64, exists bool) {
-	if m.act != nil {
-		return *m.act, true
-	}
-	return
-}
-
-// ActIDs returns the "act" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ActID instead. It exists only for internal usage by the builders.
-func (m *ActVersionMutation) ActIDs() (ids []uint64) {
-	if id := m.act; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetAct resets all changes to the "act" edge.
-func (m *ActVersionMutation) ResetAct() {
-	m.act = nil
-	m.clearedact = false
-}
-
 // Where appends a list predicates to the ActVersionMutation builder.
 func (m *ActVersionMutation) Where(ps ...predicate.ActVersion) {
 	m.predicates = append(m.predicates, ps...)
@@ -1577,7 +1705,7 @@ func (m *ActVersionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ActVersionMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 5)
 	if m.code != nil {
 		fields = append(fields, actversion.FieldCode)
 	}
@@ -1586,6 +1714,12 @@ func (m *ActVersionMutation) Fields() []string {
 	}
 	if m.version != nil {
 		fields = append(fields, actversion.FieldVersion)
+	}
+	if m.created_at != nil {
+		fields = append(fields, actversion.FieldCreatedAt)
+	}
+	if m.text != nil {
+		fields = append(fields, actversion.FieldText)
 	}
 	return fields
 }
@@ -1601,6 +1735,10 @@ func (m *ActVersionMutation) Field(name string) (ent.Value, bool) {
 		return m.ActCode()
 	case actversion.FieldVersion:
 		return m.Version()
+	case actversion.FieldCreatedAt:
+		return m.CreatedAt()
+	case actversion.FieldText:
+		return m.Text()
 	}
 	return nil, false
 }
@@ -1616,6 +1754,10 @@ func (m *ActVersionMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldActCode(ctx)
 	case actversion.FieldVersion:
 		return m.OldVersion(ctx)
+	case actversion.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case actversion.FieldText:
+		return m.OldText(ctx)
 	}
 	return nil, fmt.Errorf("unknown ActVersion field %s", name)
 }
@@ -1645,6 +1787,20 @@ func (m *ActVersionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetVersion(v)
+		return nil
+	case actversion.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case actversion.FieldText:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetText(v)
 		return nil
 	}
 	return fmt.Errorf("unknown ActVersion field %s", name)
@@ -1719,6 +1875,12 @@ func (m *ActVersionMutation) ResetField(name string) error {
 	case actversion.FieldVersion:
 		m.ResetVersion()
 		return nil
+	case actversion.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case actversion.FieldText:
+		m.ResetText()
+		return nil
 	}
 	return fmt.Errorf("unknown ActVersion field %s", name)
 }
@@ -1726,11 +1888,11 @@ func (m *ActVersionMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ActVersionMutation) AddedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.act_images != nil {
-		edges = append(edges, actversion.EdgeActImages)
-	}
 	if m.act != nil {
 		edges = append(edges, actversion.EdgeAct)
+	}
+	if m.act_images != nil {
+		edges = append(edges, actversion.EdgeActImages)
 	}
 	return edges
 }
@@ -1739,16 +1901,16 @@ func (m *ActVersionMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *ActVersionMutation) AddedIDs(name string) []ent.Value {
 	switch name {
+	case actversion.EdgeAct:
+		if id := m.act; id != nil {
+			return []ent.Value{*id}
+		}
 	case actversion.EdgeActImages:
 		ids := make([]ent.Value, 0, len(m.act_images))
 		for id := range m.act_images {
 			ids = append(ids, id)
 		}
 		return ids
-	case actversion.EdgeAct:
-		if id := m.act; id != nil {
-			return []ent.Value{*id}
-		}
 	}
 	return nil
 }
@@ -1779,11 +1941,11 @@ func (m *ActVersionMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ActVersionMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.clearedact_images {
-		edges = append(edges, actversion.EdgeActImages)
-	}
 	if m.clearedact {
 		edges = append(edges, actversion.EdgeAct)
+	}
+	if m.clearedact_images {
+		edges = append(edges, actversion.EdgeActImages)
 	}
 	return edges
 }
@@ -1792,10 +1954,10 @@ func (m *ActVersionMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *ActVersionMutation) EdgeCleared(name string) bool {
 	switch name {
-	case actversion.EdgeActImages:
-		return m.clearedact_images
 	case actversion.EdgeAct:
 		return m.clearedact
+	case actversion.EdgeActImages:
+		return m.clearedact_images
 	}
 	return false
 }
@@ -1815,11 +1977,11 @@ func (m *ActVersionMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ActVersionMutation) ResetEdge(name string) error {
 	switch name {
-	case actversion.EdgeActImages:
-		m.ResetActImages()
-		return nil
 	case actversion.EdgeAct:
 		m.ResetAct()
+		return nil
+	case actversion.EdgeActImages:
+		m.ResetActImages()
 		return nil
 	}
 	return fmt.Errorf("unknown ActVersion edge %s", name)

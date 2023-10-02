@@ -9,6 +9,7 @@ import (
 	"routine/internal/ent/act"
 	"routine/internal/ent/actimage"
 	"routine/internal/ent/actversion"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -39,10 +40,33 @@ func (avc *ActVersionCreate) SetVersion(u uint) *ActVersionCreate {
 	return avc
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (avc *ActVersionCreate) SetCreatedAt(t time.Time) *ActVersionCreate {
+	avc.mutation.SetCreatedAt(t)
+	return avc
+}
+
+// SetText sets the "text" field.
+func (avc *ActVersionCreate) SetText(s string) *ActVersionCreate {
+	avc.mutation.SetText(s)
+	return avc
+}
+
 // SetID sets the "id" field.
 func (avc *ActVersionCreate) SetID(u uint64) *ActVersionCreate {
 	avc.mutation.SetID(u)
 	return avc
+}
+
+// SetActID sets the "act" edge to the Act entity by ID.
+func (avc *ActVersionCreate) SetActID(id uint64) *ActVersionCreate {
+	avc.mutation.SetActID(id)
+	return avc
+}
+
+// SetAct sets the "act" edge to the Act entity.
+func (avc *ActVersionCreate) SetAct(a *Act) *ActVersionCreate {
+	return avc.SetActID(a.ID)
 }
 
 // AddActImageIDs adds the "act_images" edge to the ActImage entity by IDs.
@@ -58,17 +82,6 @@ func (avc *ActVersionCreate) AddActImages(a ...*ActImage) *ActVersionCreate {
 		ids[i] = a[i].ID
 	}
 	return avc.AddActImageIDs(ids...)
-}
-
-// SetActID sets the "act" edge to the Act entity by ID.
-func (avc *ActVersionCreate) SetActID(id uint64) *ActVersionCreate {
-	avc.mutation.SetActID(id)
-	return avc
-}
-
-// SetAct sets the "act" edge to the Act entity.
-func (avc *ActVersionCreate) SetAct(a *Act) *ActVersionCreate {
-	return avc.SetActID(a.ID)
 }
 
 // Mutation returns the ActVersionMutation object of the builder.
@@ -124,6 +137,17 @@ func (avc *ActVersionCreate) check() error {
 	if _, ok := avc.mutation.Version(); !ok {
 		return &ValidationError{Name: "version", err: errors.New(`ent: missing required field "ActVersion.version"`)}
 	}
+	if _, ok := avc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "ActVersion.created_at"`)}
+	}
+	if _, ok := avc.mutation.Text(); !ok {
+		return &ValidationError{Name: "text", err: errors.New(`ent: missing required field "ActVersion.text"`)}
+	}
+	if v, ok := avc.mutation.Text(); ok {
+		if err := actversion.TextValidator(v); err != nil {
+			return &ValidationError{Name: "text", err: fmt.Errorf(`ent: validator failed for field "ActVersion.text": %w`, err)}
+		}
+	}
 	if _, ok := avc.mutation.ActID(); !ok {
 		return &ValidationError{Name: "act", err: errors.New(`ent: missing required edge "ActVersion.act"`)}
 	}
@@ -171,21 +195,13 @@ func (avc *ActVersionCreate) createSpec() (*ActVersion, *sqlgraph.CreateSpec) {
 		_spec.SetField(actversion.FieldVersion, field.TypeUint, value)
 		_node.Version = value
 	}
-	if nodes := avc.mutation.ActImagesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   actversion.ActImagesTable,
-			Columns: []string{actversion.ActImagesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(actimage.FieldID, field.TypeUint64),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
+	if value, ok := avc.mutation.CreatedAt(); ok {
+		_spec.SetField(actversion.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := avc.mutation.Text(); ok {
+		_spec.SetField(actversion.FieldText, field.TypeString, value)
+		_node.Text = value
 	}
 	if nodes := avc.mutation.ActIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -202,6 +218,22 @@ func (avc *ActVersionCreate) createSpec() (*ActVersion, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.act_act_versions = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := avc.mutation.ActImagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   actversion.ActImagesTable,
+			Columns: []string{actversion.ActImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(actimage.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

@@ -1,4 +1,4 @@
-package repostiroy
+package repository
 
 import "routine/internal/domain/aggregates/act"
 
@@ -7,8 +7,8 @@ func NewActRepository(actRepo actRepository) *ActRepository {
 }
 
 type actRepository interface {
-	save(act *act.Act) (*act.Act, error)
-	findByCode(code act.ActCode) (*act.Act, error)
+	Save(act *act.Act) (*act.Act, error)
+	FindByCode(code act.ActCode) (*act.Act, error)
 }
 
 type ActRepository struct {
@@ -16,9 +16,9 @@ type ActRepository struct {
 }
 
 func (ar *ActRepository) Save(act *act.Act) (*act.Act, error) {
-	return ar.actRepository.save(act)
+	return ar.actRepository.Save(act)
 }
 
 func (ar *ActRepository) FindByCode(code act.ActCode) (*act.Act, error) {
-	return ar.actRepository.findByCode(code)
+	return ar.actRepository.FindByCode(code)
 }

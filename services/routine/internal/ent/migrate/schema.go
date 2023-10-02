@@ -38,6 +38,7 @@ var (
 	// ActImagesColumns holds the columns for the "act_images" table.
 	ActImagesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "act_version_code", Type: field.TypeString, Size: 20},
 		{Name: "order", Type: field.TypeUint},
 		{Name: "src", Type: field.TypeString, Size: 2147483647},
 		{Name: "act_version_act_images", Type: field.TypeUint64},
@@ -50,7 +51,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "act_images_act_versions_act_images",
-				Columns:    []*schema.Column{ActImagesColumns[3]},
+				Columns:    []*schema.Column{ActImagesColumns[4]},
 				RefColumns: []*schema.Column{ActVersionsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -62,6 +63,8 @@ var (
 		{Name: "code", Type: field.TypeString, Unique: true, Size: 20},
 		{Name: "act_code", Type: field.TypeString, Size: 20},
 		{Name: "version", Type: field.TypeUint},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "text", Type: field.TypeString, Size: 2147483647},
 		{Name: "act_act_versions", Type: field.TypeUint64},
 	}
 	// ActVersionsTable holds the schema information for the "act_versions" table.
@@ -72,7 +75,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "act_versions_acts_act_versions",
-				Columns:    []*schema.Column{ActVersionsColumns[4]},
+				Columns:    []*schema.Column{ActVersionsColumns[6]},
 				RefColumns: []*schema.Column{ActsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

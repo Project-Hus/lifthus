@@ -18,13 +18,15 @@ func (ActVersion) Fields() []ent.Field {
 		CodeField(),
 		CodeRef("act_code"),
 		field.Uint("version").Immutable(),
+		CreatedAtField(),
+		field.Text("text").NotEmpty(),
 	}
 }
 
 // Edges of the ActVersion.
 func (ActVersion) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("act_images", ActImage.Type),
 		edge.From("act", Act.Type).Ref("act_versions").Unique().Required(),
+		edge.To("act_images", ActImage.Type),
 	}
 }

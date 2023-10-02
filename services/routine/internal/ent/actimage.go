@@ -17,6 +17,8 @@ type ActImage struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uint64 `json:"id,omitempty"`
+	// ActVersionCode holds the value of the "act_version_code" field.
+	ActVersionCode string `json:"act_version_code,omitempty"`
 	// Order holds the value of the "order" field.
 	Order uint `json:"order,omitempty"`
 	// Src holds the value of the "src" field.
@@ -57,7 +59,7 @@ func (*ActImage) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case actimage.FieldID, actimage.FieldOrder:
 			values[i] = new(sql.NullInt64)
-		case actimage.FieldSrc:
+		case actimage.FieldActVersionCode, actimage.FieldSrc:
 			values[i] = new(sql.NullString)
 		case actimage.ForeignKeys[0]: // act_version_act_images
 			values[i] = new(sql.NullInt64)
@@ -82,6 +84,12 @@ func (ai *ActImage) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			ai.ID = uint64(value.Int64)
+		case actimage.FieldActVersionCode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field act_version_code", values[i])
+			} else if value.Valid {
+				ai.ActVersionCode = value.String
+			}
 		case actimage.FieldOrder:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field order", values[i])
@@ -142,6 +150,9 @@ func (ai *ActImage) String() string {
 	var builder strings.Builder
 	builder.WriteString("ActImage(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", ai.ID))
+	builder.WriteString("act_version_code=")
+	builder.WriteString(ai.ActVersionCode)
+	builder.WriteString(", ")
 	builder.WriteString("order=")
 	builder.WriteString(fmt.Sprintf("%v", ai.Order))
 	builder.WriteString(", ")

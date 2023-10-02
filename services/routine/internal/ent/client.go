@@ -570,22 +570,6 @@ func (c *ActVersionClient) GetX(ctx context.Context, id uint64) *ActVersion {
 	return obj
 }
 
-// QueryActImages queries the act_images edge of a ActVersion.
-func (c *ActVersionClient) QueryActImages(av *ActVersion) *ActImageQuery {
-	query := (&ActImageClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := av.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(actversion.Table, actversion.FieldID, id),
-			sqlgraph.To(actimage.Table, actimage.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, actversion.ActImagesTable, actversion.ActImagesColumn),
-		)
-		fromV = sqlgraph.Neighbors(av.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryAct queries the act edge of a ActVersion.
 func (c *ActVersionClient) QueryAct(av *ActVersion) *ActQuery {
 	query := (&ActClient{config: c.config}).Query()
@@ -595,6 +579,22 @@ func (c *ActVersionClient) QueryAct(av *ActVersion) *ActQuery {
 			sqlgraph.From(actversion.Table, actversion.FieldID, id),
 			sqlgraph.To(act.Table, act.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, actversion.ActTable, actversion.ActColumn),
+		)
+		fromV = sqlgraph.Neighbors(av.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryActImages queries the act_images edge of a ActVersion.
+func (c *ActVersionClient) QueryActImages(av *ActVersion) *ActImageQuery {
+	query := (&ActImageClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := av.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(actversion.Table, actversion.FieldID, id),
+			sqlgraph.To(actimage.Table, actimage.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, actversion.ActImagesTable, actversion.ActImagesColumn),
 		)
 		fromV = sqlgraph.Neighbors(av.driver.Dialect(), step)
 		return fromV, nil

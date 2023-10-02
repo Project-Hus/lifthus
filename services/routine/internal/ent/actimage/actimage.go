@@ -12,6 +12,8 @@ const (
 	Label = "act_image"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldActVersionCode holds the string denoting the act_version_code field in the database.
+	FieldActVersionCode = "act_version_code"
 	// FieldOrder holds the string denoting the order field in the database.
 	FieldOrder = "order"
 	// FieldSrc holds the string denoting the src field in the database.
@@ -32,6 +34,7 @@ const (
 // Columns holds all SQL columns for actimage fields.
 var Columns = []string{
 	FieldID,
+	FieldActVersionCode,
 	FieldOrder,
 	FieldSrc,
 }
@@ -58,6 +61,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// ActVersionCodeValidator is a validator for the "act_version_code" field. It is called by the builders before save.
+	ActVersionCodeValidator func(string) error
 	// SrcValidator is a validator for the "src" field. It is called by the builders before save.
 	SrcValidator func(string) error
 )
@@ -68,6 +73,11 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByActVersionCode orders the results by the act_version_code field.
+func ByActVersionCode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldActVersionCode, opts...).ToFunc()
 }
 
 // ByOrder orders the results by the order field.

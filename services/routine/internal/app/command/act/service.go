@@ -3,11 +3,18 @@ package act
 import (
 	"fmt"
 	"routine/internal/app/dto"
+	"routine/internal/app/entrepo"
 	"routine/internal/domain/aggregates/act"
 	"routine/internal/domain/aggregates/user"
+	"routine/internal/repository"
 )
 
+func newActService() *actService {
+	return &actService{actRepo: repository.NewActRepository(entrepo.NewEntActRepository())}
+}
+
 type actService struct {
+	actRepo *repository.ActRepository
 }
 
 func (as *actService) createAct(dto dto.CreateActDto) (*dto.QueryActDto, error) {

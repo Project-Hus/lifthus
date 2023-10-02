@@ -18,19 +18,16 @@ const (
 	FieldActCode = "act_code"
 	// FieldVersion holds the string denoting the version field in the database.
 	FieldVersion = "version"
-	// EdgeActImages holds the string denoting the act_images edge name in mutations.
-	EdgeActImages = "act_images"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldText holds the string denoting the text field in the database.
+	FieldText = "text"
 	// EdgeAct holds the string denoting the act edge name in mutations.
 	EdgeAct = "act"
+	// EdgeActImages holds the string denoting the act_images edge name in mutations.
+	EdgeActImages = "act_images"
 	// Table holds the table name of the actversion in the database.
 	Table = "act_versions"
-	// ActImagesTable is the table that holds the act_images relation/edge.
-	ActImagesTable = "act_images"
-	// ActImagesInverseTable is the table name for the ActImage entity.
-	// It exists in this package in order to avoid circular dependency with the "actimage" package.
-	ActImagesInverseTable = "act_images"
-	// ActImagesColumn is the table column denoting the act_images relation/edge.
-	ActImagesColumn = "act_version_act_images"
 	// ActTable is the table that holds the act relation/edge.
 	ActTable = "act_versions"
 	// ActInverseTable is the table name for the Act entity.
@@ -38,6 +35,13 @@ const (
 	ActInverseTable = "acts"
 	// ActColumn is the table column denoting the act relation/edge.
 	ActColumn = "act_act_versions"
+	// ActImagesTable is the table that holds the act_images relation/edge.
+	ActImagesTable = "act_images"
+	// ActImagesInverseTable is the table name for the ActImage entity.
+	// It exists in this package in order to avoid circular dependency with the "actimage" package.
+	ActImagesInverseTable = "act_images"
+	// ActImagesColumn is the table column denoting the act_images relation/edge.
+	ActImagesColumn = "act_version_act_images"
 )
 
 // Columns holds all SQL columns for actversion fields.
@@ -46,6 +50,8 @@ var Columns = []string{
 	FieldCode,
 	FieldActCode,
 	FieldVersion,
+	FieldCreatedAt,
+	FieldText,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "act_versions"
@@ -74,6 +80,8 @@ var (
 	CodeValidator func(string) error
 	// ActCodeValidator is a validator for the "act_code" field. It is called by the builders before save.
 	ActCodeValidator func(string) error
+	// TextValidator is a validator for the "text" field. It is called by the builders before save.
+	TextValidator func(string) error
 )
 
 // OrderOption defines the ordering options for the ActVersion queries.
@@ -99,6 +107,23 @@ func ByVersion(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldVersion, opts...).ToFunc()
 }
 
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByText orders the results by the text field.
+func ByText(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldText, opts...).ToFunc()
+}
+
+// ByActField orders the results by act field.
+func ByActField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newActStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByActImagesCount orders the results by act_images count.
 func ByActImagesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -112,24 +137,17 @@ func ByActImages(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newActImagesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-
-// ByActField orders the results by act field.
-func ByActField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newActStep(), sql.OrderByField(field, opts...))
-	}
+func newActStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ActInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, ActTable, ActColumn),
+	)
 }
 func newActImagesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ActImagesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ActImagesTable, ActImagesColumn),
-	)
-}
-func newActStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ActInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, ActTable, ActColumn),
 	)
 }

@@ -4,6 +4,7 @@ package actversion
 
 import (
 	"routine/internal/ent/predicate"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -67,6 +68,16 @@ func ActCode(v string) predicate.ActVersion {
 // Version applies equality check predicate on the "version" field. It's identical to VersionEQ.
 func Version(v uint) predicate.ActVersion {
 	return predicate.ActVersion(sql.FieldEQ(FieldVersion, v))
+}
+
+// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
+func CreatedAt(v time.Time) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// Text applies equality check predicate on the "text" field. It's identical to TextEQ.
+func Text(v string) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldEQ(FieldText, v))
 }
 
 // CodeEQ applies the EQ predicate on the "code" field.
@@ -239,27 +250,109 @@ func VersionLTE(v uint) predicate.ActVersion {
 	return predicate.ActVersion(sql.FieldLTE(FieldVersion, v))
 }
 
-// HasActImages applies the HasEdge predicate on the "act_images" edge.
-func HasActImages() predicate.ActVersion {
-	return predicate.ActVersion(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ActImagesTable, ActImagesColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
+// CreatedAtEQ applies the EQ predicate on the "created_at" field.
+func CreatedAtEQ(v time.Time) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldEQ(FieldCreatedAt, v))
 }
 
-// HasActImagesWith applies the HasEdge predicate on the "act_images" edge with a given conditions (other predicates).
-func HasActImagesWith(preds ...predicate.ActImage) predicate.ActVersion {
-	return predicate.ActVersion(func(s *sql.Selector) {
-		step := newActImagesStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
+// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
+func CreatedAtNEQ(v time.Time) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldNEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtIn applies the In predicate on the "created_at" field.
+func CreatedAtIn(vs ...time.Time) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
+func CreatedAtNotIn(vs ...time.Time) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldNotIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtGT applies the GT predicate on the "created_at" field.
+func CreatedAtGT(v time.Time) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldGT(FieldCreatedAt, v))
+}
+
+// CreatedAtGTE applies the GTE predicate on the "created_at" field.
+func CreatedAtGTE(v time.Time) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldGTE(FieldCreatedAt, v))
+}
+
+// CreatedAtLT applies the LT predicate on the "created_at" field.
+func CreatedAtLT(v time.Time) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldLT(FieldCreatedAt, v))
+}
+
+// CreatedAtLTE applies the LTE predicate on the "created_at" field.
+func CreatedAtLTE(v time.Time) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// TextEQ applies the EQ predicate on the "text" field.
+func TextEQ(v string) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldEQ(FieldText, v))
+}
+
+// TextNEQ applies the NEQ predicate on the "text" field.
+func TextNEQ(v string) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldNEQ(FieldText, v))
+}
+
+// TextIn applies the In predicate on the "text" field.
+func TextIn(vs ...string) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldIn(FieldText, vs...))
+}
+
+// TextNotIn applies the NotIn predicate on the "text" field.
+func TextNotIn(vs ...string) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldNotIn(FieldText, vs...))
+}
+
+// TextGT applies the GT predicate on the "text" field.
+func TextGT(v string) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldGT(FieldText, v))
+}
+
+// TextGTE applies the GTE predicate on the "text" field.
+func TextGTE(v string) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldGTE(FieldText, v))
+}
+
+// TextLT applies the LT predicate on the "text" field.
+func TextLT(v string) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldLT(FieldText, v))
+}
+
+// TextLTE applies the LTE predicate on the "text" field.
+func TextLTE(v string) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldLTE(FieldText, v))
+}
+
+// TextContains applies the Contains predicate on the "text" field.
+func TextContains(v string) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldContains(FieldText, v))
+}
+
+// TextHasPrefix applies the HasPrefix predicate on the "text" field.
+func TextHasPrefix(v string) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldHasPrefix(FieldText, v))
+}
+
+// TextHasSuffix applies the HasSuffix predicate on the "text" field.
+func TextHasSuffix(v string) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldHasSuffix(FieldText, v))
+}
+
+// TextEqualFold applies the EqualFold predicate on the "text" field.
+func TextEqualFold(v string) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldEqualFold(FieldText, v))
+}
+
+// TextContainsFold applies the ContainsFold predicate on the "text" field.
+func TextContainsFold(v string) predicate.ActVersion {
+	return predicate.ActVersion(sql.FieldContainsFold(FieldText, v))
 }
 
 // HasAct applies the HasEdge predicate on the "act" edge.
@@ -277,6 +370,29 @@ func HasAct() predicate.ActVersion {
 func HasActWith(preds ...predicate.Act) predicate.ActVersion {
 	return predicate.ActVersion(func(s *sql.Selector) {
 		step := newActStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasActImages applies the HasEdge predicate on the "act_images" edge.
+func HasActImages() predicate.ActVersion {
+	return predicate.ActVersion(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ActImagesTable, ActImagesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasActImagesWith applies the HasEdge predicate on the "act_images" edge with a given conditions (other predicates).
+func HasActImagesWith(preds ...predicate.ActImage) predicate.ActVersion {
+	return predicate.ActVersion(func(s *sql.Selector) {
+		step := newActImagesStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

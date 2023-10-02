@@ -7,6 +7,7 @@ import (
 	"routine/internal/ent/act"
 	"routine/internal/ent/actversion"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -23,6 +24,10 @@ type ActVersion struct {
 	ActCode string `json:"act_code,omitempty"`
 	// Version holds the value of the "version" field.
 	Version uint `json:"version,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// Text holds the value of the "text" field.
+	Text string `json:"text,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ActVersionQuery when eager-loading is set.
 	Edges            ActVersionEdges `json:"edges"`
@@ -32,28 +37,19 @@ type ActVersion struct {
 
 // ActVersionEdges holds the relations/edges for other nodes in the graph.
 type ActVersionEdges struct {
-	// ActImages holds the value of the act_images edge.
-	ActImages []*ActImage `json:"act_images,omitempty"`
 	// Act holds the value of the act edge.
 	Act *Act `json:"act,omitempty"`
+	// ActImages holds the value of the act_images edge.
+	ActImages []*ActImage `json:"act_images,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
 }
 
-// ActImagesOrErr returns the ActImages value or an error if the edge
-// was not loaded in eager-loading.
-func (e ActVersionEdges) ActImagesOrErr() ([]*ActImage, error) {
-	if e.loadedTypes[0] {
-		return e.ActImages, nil
-	}
-	return nil, &NotLoadedError{edge: "act_images"}
-}
-
 // ActOrErr returns the Act value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e ActVersionEdges) ActOrErr() (*Act, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		if e.Act == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: act.Label}
@@ -63,6 +59,15 @@ func (e ActVersionEdges) ActOrErr() (*Act, error) {
 	return nil, &NotLoadedError{edge: "act"}
 }
 
+// ActImagesOrErr returns the ActImages value or an error if the edge
+// was not loaded in eager-loading.
+func (e ActVersionEdges) ActImagesOrErr() ([]*ActImage, error) {
+	if e.loadedTypes[1] {
+		return e.ActImages, nil
+	}
+	return nil, &NotLoadedError{edge: "act_images"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*ActVersion) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -70,8 +75,10 @@ func (*ActVersion) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case actversion.FieldID, actversion.FieldVersion:
 			values[i] = new(sql.NullInt64)
-		case actversion.FieldCode, actversion.FieldActCode:
+		case actversion.FieldCode, actversion.FieldActCode, actversion.FieldText:
 			values[i] = new(sql.NullString)
+		case actversion.FieldCreatedAt:
+			values[i] = new(sql.NullTime)
 		case actversion.ForeignKeys[0]: // act_act_versions
 			values[i] = new(sql.NullInt64)
 		default:
@@ -113,6 +120,18 @@ func (av *ActVersion) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				av.Version = uint(value.Int64)
 			}
+		case actversion.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				av.CreatedAt = value.Time
+			}
+		case actversion.FieldText:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field text", values[i])
+			} else if value.Valid {
+				av.Text = value.String
+			}
 		case actversion.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field act_act_versions", value)
@@ -133,14 +152,14 @@ func (av *ActVersion) Value(name string) (ent.Value, error) {
 	return av.selectValues.Get(name)
 }
 
-// QueryActImages queries the "act_images" edge of the ActVersion entity.
-func (av *ActVersion) QueryActImages() *ActImageQuery {
-	return NewActVersionClient(av.config).QueryActImages(av)
-}
-
 // QueryAct queries the "act" edge of the ActVersion entity.
 func (av *ActVersion) QueryAct() *ActQuery {
 	return NewActVersionClient(av.config).QueryAct(av)
+}
+
+// QueryActImages queries the "act_images" edge of the ActVersion entity.
+func (av *ActVersion) QueryActImages() *ActImageQuery {
+	return NewActVersionClient(av.config).QueryActImages(av)
 }
 
 // Update returns a builder for updating this ActVersion.
@@ -174,6 +193,12 @@ func (av *ActVersion) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("version=")
 	builder.WriteString(fmt.Sprintf("%v", av.Version))
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(av.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("text=")
+	builder.WriteString(av.Text)
 	builder.WriteByte(')')
 	return builder.String()
 }

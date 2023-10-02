@@ -298,12 +298,12 @@ func (aiq *ActImageQuery) WithActVersion(opts ...func(*ActVersionQuery)) *ActIma
 // Example:
 //
 //	var v []struct {
-//		Order uint `json:"order,omitempty"`
+//		ActVersionCode string `json:"act_version_code,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.ActImage.Query().
-//		GroupBy(actimage.FieldOrder).
+//		GroupBy(actimage.FieldActVersionCode).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (aiq *ActImageQuery) GroupBy(field string, fields ...string) *ActImageGroupBy {
@@ -321,11 +321,11 @@ func (aiq *ActImageQuery) GroupBy(field string, fields ...string) *ActImageGroup
 // Example:
 //
 //	var v []struct {
-//		Order uint `json:"order,omitempty"`
+//		ActVersionCode string `json:"act_version_code,omitempty"`
 //	}
 //
 //	client.ActImage.Query().
-//		Select(actimage.FieldOrder).
+//		Select(actimage.FieldActVersionCode).
 //		Scan(ctx, &v)
 func (aiq *ActImageQuery) Select(fields ...string) *ActImageSelect {
 	aiq.ctx.Fields = append(aiq.ctx.Fields, fields...)

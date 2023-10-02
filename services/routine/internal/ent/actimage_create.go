@@ -20,6 +20,12 @@ type ActImageCreate struct {
 	hooks    []Hook
 }
 
+// SetActVersionCode sets the "act_version_code" field.
+func (aic *ActImageCreate) SetActVersionCode(s string) *ActImageCreate {
+	aic.mutation.SetActVersionCode(s)
+	return aic
+}
+
 // SetOrder sets the "order" field.
 func (aic *ActImageCreate) SetOrder(u uint) *ActImageCreate {
 	aic.mutation.SetOrder(u)
@@ -83,6 +89,14 @@ func (aic *ActImageCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (aic *ActImageCreate) check() error {
+	if _, ok := aic.mutation.ActVersionCode(); !ok {
+		return &ValidationError{Name: "act_version_code", err: errors.New(`ent: missing required field "ActImage.act_version_code"`)}
+	}
+	if v, ok := aic.mutation.ActVersionCode(); ok {
+		if err := actimage.ActVersionCodeValidator(v); err != nil {
+			return &ValidationError{Name: "act_version_code", err: fmt.Errorf(`ent: validator failed for field "ActImage.act_version_code": %w`, err)}
+		}
+	}
 	if _, ok := aic.mutation.Order(); !ok {
 		return &ValidationError{Name: "order", err: errors.New(`ent: missing required field "ActImage.order"`)}
 	}
@@ -128,6 +142,10 @@ func (aic *ActImageCreate) createSpec() (*ActImage, *sqlgraph.CreateSpec) {
 	if id, ok := aic.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
+	}
+	if value, ok := aic.mutation.ActVersionCode(); ok {
+		_spec.SetField(actimage.FieldActVersionCode, field.TypeString, value)
+		_node.ActVersionCode = value
 	}
 	if value, ok := aic.mutation.Order(); ok {
 		_spec.SetField(actimage.FieldOrder, field.TypeUint, value)
