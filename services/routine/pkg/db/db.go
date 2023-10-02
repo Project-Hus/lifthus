@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"routine/ent"
+	"routine/internal/ent"
 )
 
 // ConncectToLifthusRoutine returns lifthus_routine_db's ent client.
