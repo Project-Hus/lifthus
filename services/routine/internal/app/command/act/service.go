@@ -2,9 +2,9 @@ package act
 
 import (
 	"fmt"
+	"routine/internal/app/dto"
 	"routine/internal/domain/aggregates/act"
 	"routine/internal/domain/aggregates/user"
-	"routine/internal/web/dto"
 )
 
 type actService struct {

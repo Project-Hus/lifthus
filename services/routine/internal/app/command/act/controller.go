@@ -3,7 +3,7 @@ package act
 import (
 	"lifthus-auth/common/guard"
 	"net/http"
-	"routine/internal/web/aws"
+	"routine/internal/app/aws"
 
 	"log"
 

@@ -1,7 +1,7 @@
 package act
 
 import (
-	"routine/internal/web/dto"
+	"routine/internal/app/dto"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
