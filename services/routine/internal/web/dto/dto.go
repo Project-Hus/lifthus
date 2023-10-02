@@ -1,11 +1,11 @@
 package dto
 
 type CreateActDto struct {
-	ActType   string   `json:"actType"`
-	Name      string   `json:"name"`
-	Author    string   `json:"author"`
-	Text      string   `json:"text"`
-	ImageSrcs []string `json:"imageSrcs,omitempty"`
+	ActType   string
+	Name      string
+	Author    uint64
+	Text      string
+	ImageSrcs []string
 }
 
 type UpgradeActDto struct{}

@@ -20,8 +20,12 @@ type RoutineBucket struct {
 	S3Client *s3.Client
 }
 
+func (rb RoutineBucket) UploadActImagesToRoutineS3(files []*multipart.FileHeader) (locations []string, err error) {
+	return rb.UploadMultipartFilesToRoutineS3("act", files)
+}
+
 // UploadMultipartFilesToRoutineS3 uploads multipart files and returns the locations of the files
-func (rb RoutineBucket) UploadMultipartFilesToRoutineS3(files []*multipart.FileHeader) (locations []string, err error) {
+func (rb RoutineBucket) UploadMultipartFilesToRoutineS3(category string, files []*multipart.FileHeader) (locations []string, err error) {
 	locations = make([]string, len(files))
 
 	wg := helper.WaitGroupWaiting(len(files))
@@ -29,7 +33,7 @@ func (rb RoutineBucket) UploadMultipartFilesToRoutineS3(files []*multipart.FileH
 	for i, file := range files {
 		go func(i int, file *multipart.FileHeader) {
 			defer wg.Done()
-			location, err := rb.UploadMultipartFileToRoutineS3(file)
+			location, err := rb.UploadMultipartFileToRoutineS3(category, file)
 			if err != nil {
 				select {
 				case errChan <- err:
@@ -51,8 +55,8 @@ func (rb RoutineBucket) UploadMultipartFilesToRoutineS3(files []*multipart.FileH
 	}
 }
 
-func (rb RoutineBucket) UploadMultipartFileToRoutineS3(mfh *multipart.FileHeader) (location string, err error) {
-	okey, err := rb.generateObjKeyForFilename(mfh.Filename)
+func (rb RoutineBucket) UploadMultipartFileToRoutineS3(category string, mfh *multipart.FileHeader) (location string, err error) {
+	okey, err := rb.generateObjKeyForFilename(category, mfh.Filename)
 	if err != nil {
 		return "", err
 	}
@@ -73,8 +77,8 @@ func (rb RoutineBucket) UploadMultipartFileToRoutineS3(mfh *multipart.FileHeader
 	return location, nil
 }
 
-func (rb RoutineBucket) generateObjKeyForFilename(filename string) (string, error) {
-	return generateObjKeyForFilename("routine/images/act/", filename)
+func (rb RoutineBucket) generateObjKeyForFilename(category string, filename string) (string, error) {
+	return generateObjKeyForFilename("routine/images/"+category+"/", filename)
 }
 
 func generateObjKeyForFilename(basekey string, fn string) (okey string, err error) {
