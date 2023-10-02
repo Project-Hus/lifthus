@@ -9,6 +9,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
+const (
+	ROUTINE_BUCKET_NAME = "lifthus-routine-bucket"
+	ROUTINE_BUCKET_URL  = "https://lifthus-routine-bucket.s3.us-west-2.amazonaws.com/"
+)
+
 var s3Client *s3.Client
 
 func init() {

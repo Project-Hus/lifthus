@@ -34,3 +34,9 @@ func RandomHex(l int) string {
 	}
 	return hex.EncodeToString(bytes)
 }
+
+func TrimSlash(s string) string {
+	s = strings.TrimSuffix(s, "/")
+	s = strings.TrimPrefix(s, "/")
+	return s
+}

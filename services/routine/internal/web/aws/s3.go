@@ -2,11 +2,10 @@ package aws
 
 import (
 	"context"
-	"fmt"
 	"mime/multipart"
 	"routine/internal/domain"
+	"routine/pkg/helper"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -21,61 +20,70 @@ type RoutineBucket struct {
 	S3Client *s3.Client
 }
 
-// UploadFile reads from a file and puts the data into an object in a bucket.
-func (rb RoutineBucket) UploadMultipartFilesToRoutineS3(files []*multipart.FileHeader) ([]string, error) {
-	locations := make([]string, len(files))
-	wg := &sync.WaitGroup{}
-	wg.Add(len(files))
+// UploadMultipartFilesToRoutineS3 uploads multipart files and returns the locations of the files
+func (rb RoutineBucket) UploadMultipartFilesToRoutineS3(files []*multipart.FileHeader) (locations []string, err error) {
+	locations = make([]string, len(files))
+
+	wg := helper.WaitGroupWaiting(len(files))
+	errChan := make(chan error)
 	for i, file := range files {
 		go func(i int, file *multipart.FileHeader) {
 			defer wg.Done()
 			location, err := rb.UploadMultipartFileToRoutineS3(file)
 			if err != nil {
+				select {
+				case errChan <- err:
+					close(errChan)
+				default:
+				}
 				return
 			}
 			locations[i] = location
 		}(i, file)
 	}
 	wg.Wait()
-	for _, location := range locations {
-		if location == "" {
-			return nil, fmt.Errorf("failed to upload file to s3")
-		}
+	select {
+	case err := <-errChan:
+		// TODO: delete uploaded files
+		return nil, err
+	default:
+		return locations, nil
 	}
-	return locations, nil
 }
 
-func (rb RoutineBucket) UploadMultipartFileToRoutineS3(mfh *multipart.FileHeader) (string, error) {
-	okey, err := rb.generateObjKeyForFilename("routine/images/act/", mfh.Filename)
+func (rb RoutineBucket) UploadMultipartFileToRoutineS3(mfh *multipart.FileHeader) (location string, err error) {
+	okey, err := rb.generateObjKeyForFilename(mfh.Filename)
 	if err != nil {
 		return "", err
 	}
-	location := "https://lifthus-routine-bucket.s3.us-west-2.amazonaws.com/" + okey
 	file, err := mfh.Open()
 	if err != nil {
 		return "", err
 	}
 	defer file.Close()
 	_, err = rb.S3Client.PutObject(context.TODO(), &s3.PutObjectInput{
-		Bucket: aws.String("lifthus-routine-bucket"),
-		Key:    &okey,
+		Bucket: aws.String(ROUTINE_BUCKET_NAME),
+		Key:    aws.String(okey),
 		Body:   file,
 	})
 	if err != nil {
 		return "", err
 	}
-	// get the location of the s3 object
+	location = ROUTINE_BUCKET_URL + okey
 	return location, nil
 }
 
-func (rb RoutineBucket) generateObjKeyForFilename(basekey string, fn string) (string, error) {
+func (rb RoutineBucket) generateObjKeyForFilename(filename string) (string, error) {
+	return generateObjKeyForFilename("routine/images/act/", filename)
+}
+
+func generateObjKeyForFilename(basekey string, fn string) (okey string, err error) {
 	code, err := domain.RandomHex(4)
 	if err != nil {
 		return "", err
 	}
-	if basekey[len(basekey)-1] != '/' {
-		basekey = basekey + "/"
-	}
-	okey := basekey + strconv.FormatInt(time.Now().Unix(), 10) + "_" + code + "_" + fn
+	basekey = helper.TrimSlash(basekey)
+	basekey += "/"
+	okey = basekey + strconv.FormatInt(time.Now().Unix(), 10) + "_" + code + "_" + fn
 	return okey, nil
 }
