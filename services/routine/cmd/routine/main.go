@@ -4,13 +4,10 @@ import (
 	"context"
 	"lifthus-auth/common/lifthus"
 	"net/http"
-	"time"
 
 	"log"
 	"os"
-	"routine/ent"
-	"routine/internal/app/command/program"
-	"routine/internal/app/command/rec"
+	"routine/internal/ent"
 	"routine/pkg/db"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -66,10 +63,10 @@ func main() {
 	}
 	defer dbClient.Close()
 
-	// create new http.Client from routineApi
-	routineHttpClient := &http.Client{
-		Timeout: time.Second * 5,
-	}
+	// // create new http.Client from routineApi
+	// routineHttpClient := &http.Client{
+	// 	Timeout: time.Second * 5,
+	// }
 
 	// create echo web server instance an set CORS headers
 	e := echo.New()
@@ -105,15 +102,15 @@ func main() {
 		}
 	})
 
-	programApiControllerParams := program.ProgramApiControllerParams{
-		DbClient:   dbClient,
-		HttpClient: routineHttpClient,
-	}
+	// programApiControllerParams := program.ProgramApiControllerParams{
+	// 	DbClient:   dbClient,
+	// 	HttpClient: routineHttpClient,
+	// }
 
-	recApiControllerParams := rec.RecApiControllerParams(programApiControllerParams)
+	// recApiControllerParams := rec.RecApiControllerParams(programApiControllerParams)
 
-	e = program.NewProgramApiController(e, programApiControllerParams)
-	e = rec.NewRecApiController(e, recApiControllerParams)
+	// e = program.NewProgramApiController(e, programApiControllerParams)
+	// e = rec.NewRecApiController(e, recApiControllerParams)
 
 	// swagger
 	e.GET("/routine/openapi/*", echoSwagger.WrapHandler)
