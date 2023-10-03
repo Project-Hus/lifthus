@@ -49,7 +49,7 @@ func ActFrom(
 	code ActCode,
 	actType ActType,
 	name ActName,
-	author user.User,
+	authorId user.UserId,
 	createAt domain.CreatedAt,
 	versions ActVersions,
 ) (*Act, error) {
@@ -61,7 +61,7 @@ func ActFrom(
 
 		actType:   actType,
 		name:      name,
-		author:    author.Id(),
+		author:    authorId,
 		createdAt: createAt,
 
 		versions: versions,
