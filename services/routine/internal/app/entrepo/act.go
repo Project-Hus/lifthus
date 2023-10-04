@@ -87,9 +87,15 @@ func (repo *EntActRepository) insertNewAct(ctx context.Context, target *act.Act)
 			SetText(string(target.LatestVersion().Text())).SetCreatedAt(time.Time(target.LatestVersion().CreatedAt())).
 			SetAct(eact).SetActCode(eact.Code),
 	).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
 	imgs, err := repo.tx.ActImage.CreateBulk(
 		repo.imgsToEntCreateStates(vs[0].Code, target.LatestVersion().ImageSrcs())...,
 	).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
 	vs[0].Edges.ActImages = imgs
 	eact.Edges.ActVersions = vs
 	return repo.actFromEntAct(ctx, eact)
