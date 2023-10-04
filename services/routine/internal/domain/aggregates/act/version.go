@@ -15,6 +15,10 @@ type ActVersion struct {
 	createdAt domain.CreatedAt
 }
 
+func (v ActVersion) Code() ActVersionCode {
+	return v.code
+}
+
 func (v ActVersion) Version() ActVersionNumber {
 	return v.version
 }

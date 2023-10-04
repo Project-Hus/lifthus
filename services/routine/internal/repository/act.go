@@ -13,6 +13,7 @@ type actRepository interface {
 	Save(ctx context.Context, act *act.Act) (*act.Act, error)
 	FindByCode(ctx context.Context, code act.ActCode) (*act.Act, error)
 
+	BeginOrContinueTx(ctx context.Context) (func(), error)
 	Commit() error
 	Rollback(err error) error
 }

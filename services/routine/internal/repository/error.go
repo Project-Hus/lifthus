@@ -11,3 +11,5 @@ func (e RepositoryError) Error() string {
 var ErrNoTransaction = RepositoryError{"no transaction"}
 
 var ErrNotFound = RepositoryError{"not found"}
+
+var ErrInvalidActType = RepositoryError{"invalid act type"}

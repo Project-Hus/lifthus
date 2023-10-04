@@ -6,19 +6,9 @@ import (
 	"routine/internal/domain/aggregates/act"
 	"routine/internal/domain/aggregates/user"
 	"routine/internal/ent"
+	eact "routine/internal/ent/act"
+	"routine/internal/repository"
 )
-
-func (repo *EntActRepository) getOrBeginTx(ctx context.Context) (*ent.Tx, error) {
-	if repo.tx != nil {
-		return repo.tx, nil
-	}
-	tx, err := repo.c.Tx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	repo.tx = tx
-	return repo.tx, nil
-}
 
 func (repo *EntActRepository) actFromEntAct(ctx context.Context, ea *ent.Act) (*act.Act, error) {
 	actType, err := act.MapActType(string(ea.ActType))
@@ -53,4 +43,17 @@ func imgSrcsFromEntImgs(eis []*ent.ActImage) act.ActImageSrcs {
 		imgSrcs[i] = ei.Src
 	}
 	return imgSrcs
+}
+
+func entActTypeFromActType(at act.ActType) (eact.ActType, error) {
+	switch at {
+	case act.WeightType:
+		return eact.ActTypeWeight, nil
+	case act.TimeType:
+		return eact.ActTypeTime, nil
+	case act.SimpleType:
+		return eact.ActTypeSimple, nil
+	default:
+		return "", repository.ErrInvalidActType
+	}
 }
