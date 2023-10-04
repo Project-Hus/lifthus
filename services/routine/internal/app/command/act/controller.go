@@ -1,4 +1,4 @@
-package act
+package actCommand
 
 import (
 	"lifthus-auth/common/guard"
@@ -23,7 +23,12 @@ type actController struct {
 
 // createAct godoc
 // @Router /act [post]
-// @Param
+// @Param author formData string true "author of act"
+// @Param name formData string true "name of act"
+// @param actType formData string true "type of act"
+// @Param text formData string true "text of act"
+// @Param images formData file true "images of act"
+// @Param Authorization header string true "lifthus_st"
 // @Summary
 // @Tags
 // Success 201 "returns created Act"

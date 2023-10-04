@@ -1,16 +1,25 @@
 package dto
 
 import (
+	"os"
 	"routine/internal/domain/aggregates/act"
 	"strconv"
 	"time"
 )
 
+type CreateActRequestDto struct {
+	ActType string    `json:"actType"`
+	Name    string    `json:"name"`
+	Author  uint64    `json:"author"`
+	Text    string    `json:"text"`
+	Images  []os.File `json:"images"`
+}
+
 type CreateActDto struct {
-	ActType   string
-	Name      string
-	Author    uint64
-	Text      string
+	ActType   string `json:"actType"`
+	Name      string `json:"name"`
+	Author    uint64 `json:"author"`
+	Text      string `json:"text"`
 	ImageSrcs []string
 }
 

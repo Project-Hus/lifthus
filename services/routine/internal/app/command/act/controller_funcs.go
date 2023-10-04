@@ -1,4 +1,4 @@
-package act
+package actCommand
 
 import (
 	"routine/internal/app/aws"

@@ -7,6 +7,7 @@ import (
 
 	"log"
 	"os"
+	actCommand "routine/internal/app/command/act"
 	"routine/internal/ent"
 	"routine/pkg/db"
 
@@ -37,7 +38,7 @@ var dbClient *ent.Client
 // @contact.email lifthus531@gmail.com
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
-// @host api.lifthus.com
+// @host localhost:9100
 // @BasePath /routine
 func main() {
 	// HUS_ENV
@@ -111,6 +112,8 @@ func main() {
 
 	// e = program.NewProgramApiController(e, programApiControllerParams)
 	// e = rec.NewRecApiController(e, recApiControllerParams)
+
+	e = actCommand.SetActCommandControllerTo(e)
 
 	// swagger
 	e.GET("/routine/openapi/*", echoSwagger.WrapHandler)
