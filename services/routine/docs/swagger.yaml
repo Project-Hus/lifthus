@@ -39,7 +39,6 @@ paths:
       - description: images of act
         in: formData
         name: images
-        required: true
         type: file
       - description: lifthus_st
         in: header

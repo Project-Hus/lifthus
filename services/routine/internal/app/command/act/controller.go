@@ -27,7 +27,7 @@ type actController struct {
 // @Param name formData string true "name of act"
 // @param actType formData string true "type of act"
 // @Param text formData string true "text of act"
-// @Param images formData file true "images of act"
+// @Param images formData file false "images of act"
 // @Param Authorization header string true "lifthus_st"
 // @Summary
 // @Tags
