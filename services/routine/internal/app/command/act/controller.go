@@ -3,6 +3,7 @@ package act
 import (
 	"lifthus-auth/common/guard"
 	"net/http"
+	"routine/internal/app/dto"
 
 	"log"
 
@@ -48,7 +49,7 @@ func (ac *actController) createAct(c echo.Context) error {
 		return c.String(http.StatusForbidden, "illegal access")
 	}
 
-	act, err := ac.svc.createAct(*dto)
+	act, err := ac.svc.createAct(c.Request().Context(), *dto)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to create Act")
 	}
@@ -56,6 +57,6 @@ func (ac *actController) createAct(c echo.Context) error {
 }
 
 func (ac *actController) upgradeAct(c echo.Context) error {
-
+	ac.svc.upgradeAct(c.Request().Context(), dto.UpgradeActDto{})
 	return nil
 }

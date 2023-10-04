@@ -1,7 +1,7 @@
 package act
 
 import (
-	"fmt"
+	"context"
 	"routine/internal/app/dto"
 	"routine/internal/app/entrepo"
 	"routine/internal/domain/aggregates/act"
@@ -17,20 +17,25 @@ type actService struct {
 	actRepo *repository.ActRepository
 }
 
-func (as *actService) createAct(dto dto.CreateActDto) (*dto.QueryActDto, error) {
-	actType, err := act.MapActType(dto.ActType)
+func (as *actService) createAct(ctx context.Context, caDto dto.CreateActDto) (qaDto *dto.QueryActDto, err error) {
+	finally, err := as.actRepo.BeginOrContinueTx(ctx)
+	defer finally(&err)
+	actType, err := act.MapActType(caDto.ActType)
 	if err != nil {
 		return nil, err
 	}
-	author := user.UserFrom(user.UserId(dto.Author))
-	newAct, err := act.CreateAct(*actType, act.ActName(dto.Name), *author, dto.ImageSrcs, act.ActText(dto.Text))
+	author := user.UserFrom(user.UserId(caDto.Author))
+	newAct, err := act.CreateAct(*actType, act.ActName(caDto.Name), *author, caDto.ImageSrcs, act.ActText(caDto.Text))
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(newAct)
-	return nil, nil
+	act, err := as.actRepo.Save(ctx, newAct)
+	if err != nil {
+		return nil, err
+	}
+	return dto.QueryActDtoFrom(act), nil
 }
 
-func (as *actService) upgradeAct(dto dto.UpgradeActDto) (*dto.QueryActDto, error) {
+func (as *actService) upgradeAct(ctx context.Context, dto dto.UpgradeActDto) (*dto.QueryActDto, error) {
 	return nil, nil
 }

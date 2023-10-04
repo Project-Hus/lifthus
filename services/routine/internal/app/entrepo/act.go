@@ -19,9 +19,9 @@ type EntActRepository struct {
 	*EntRepository
 }
 
-func (repo *EntActRepository) FindByCode(ctx context.Context, code act.ActCode) (*act.Act, error) {
+func (repo *EntActRepository) FindByCode(ctx context.Context, code act.ActCode) (fAct *act.Act, err error) {
 	finally, err := repo.BeginOrContinueTx(ctx)
-	defer finally()
+	defer finally(&err)
 	if err != nil {
 		return nil, err
 	}
@@ -46,27 +46,22 @@ func (repo *EntActRepository) FindByCode(ctx context.Context, code act.ActCode) 
 	return repo.actFromEntAct(ctx, a)
 }
 
-func (repo *EntActRepository) Save(ctx context.Context, target *act.Act) (*act.Act, error) {
+func (repo *EntActRepository) Save(ctx context.Context, target *act.Act) (sAct *act.Act, err error) {
 	finally, err := repo.BeginOrContinueTx(ctx)
-	defer finally()
+	defer finally(&err)
 	if err != nil {
 		return nil, err
 	}
 	prev, err := repo.FindByCode(ctx, target.Code())
 	if ent.IsNotFound(err) {
-		return repo.insertNewAct(ctx, target)
+		return repo.insertNewAct(repo.tx, ctx, target)
 	} else if err != nil {
 		return nil, err
 	}
 	return repo.updateAct(ctx, prev, target)
 }
 
-func (repo *EntActRepository) insertNewAct(ctx context.Context, target *act.Act) (*act.Act, error) {
-	finally, err := repo.BeginOrContinueTx(ctx)
-	defer finally()
-	if err != nil {
-		return nil, err
-	}
+func (repo *EntActRepository) insertNewAct(tx *ent.Tx, ctx context.Context, target *act.Act) (*act.Act, error) {
 	eat, err := entActTypeFromActType(target.Type())
 	if err != nil {
 		return nil, err

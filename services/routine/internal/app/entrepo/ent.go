@@ -18,7 +18,7 @@ type EntRepository struct {
 	tx *ent.Tx
 }
 
-func (repo *EntRepository) BeginOrContinueTx(ctx context.Context) (finally func(), err error) {
+func (repo *EntRepository) BeginOrContinueTx(ctx context.Context) (finally func(*error), err error) {
 	if repo.tx != nil {
 		return repo.txFinallyContinue(), nil
 	}
@@ -27,7 +27,7 @@ func (repo *EntRepository) BeginOrContinueTx(ctx context.Context) (finally func(
 		return repo.txFinallyContinue(), err
 	}
 	repo.tx = tx
-	return repo.txFinallyRollback(), nil
+	return repo.txFinallyCommit(), nil
 }
 
 func (repo *EntRepository) Commit() error {
@@ -53,12 +53,18 @@ func (repo *EntRepository) Rollback(err error) error {
 	return err
 }
 
-func (repo *EntRepository) txFinallyRollback() func() {
-	return func() {
+func (repo *EntRepository) txFinallyCommit() func(*error) {
+	return func(txErr *error) {
 		if repo.tx == nil {
 			return
 		}
-		err := fmt.Errorf("tx is not committed")
+		var err error
+		if *txErr == nil {
+			err = repo.Commit()
+			if err != nil {
+				return
+			}
+		}
 		err = repo.Rollback(err)
 		if err != nil {
 			log.Printf("failed to rollback tx: %v", err)
@@ -66,7 +72,7 @@ func (repo *EntRepository) txFinallyRollback() func() {
 	}
 }
 
-func (repo *EntRepository) txFinallyContinue() func() {
-	return func() {
+func (repo *EntRepository) txFinallyContinue() func(*error) {
+	return func(non *error) {
 	}
 }
