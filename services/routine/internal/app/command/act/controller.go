@@ -51,11 +51,13 @@ func (ac *actController) createAct(c echo.Context) error {
 
 	clientId := c.Get("uid").(uint64)
 	if dto.Author != clientId {
+		log.Printf("illegal access: %v", err)
 		return c.String(http.StatusForbidden, "illegal access")
 	}
 
 	act, err := ac.svc.createAct(c.Request().Context(), *dto)
 	if err != nil {
+		log.Printf("failed to create Act: %v", err)
 		return c.String(http.StatusInternalServerError, "failed to create Act")
 	}
 	return c.JSON(http.StatusCreated, act)
