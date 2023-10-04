@@ -28,7 +28,7 @@ func parseFormAndGenerateCreateActDto(c echo.Context, locations []string) (*dto.
 	}
 	return &dto.CreateActDto{
 		ActType:   c.FormValue("actType"),
-		Name:      c.FormValue("name,"),
+		Name:      c.FormValue("name"),
 		Author:    authorId,
 		Text:      c.FormValue("text"),
 		ImageSrcs: locations,

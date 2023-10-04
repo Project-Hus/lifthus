@@ -53,7 +53,7 @@ func (repo *EntActRepository) Save(ctx context.Context, target *act.Act) (sAct *
 		return nil, err
 	}
 	prev, err := repo.FindByCode(ctx, target.Code())
-	if ent.IsNotFound(err) {
+	if repository.IsNotFound(err) {
 		return repo.insertNewAct(repo.tx, ctx, target)
 	} else if err != nil {
 		return nil, err
