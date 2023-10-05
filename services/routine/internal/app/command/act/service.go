@@ -17,7 +17,7 @@ type actCommandService struct {
 	actRepo *repository.ActRepository
 }
 
-func (as *actCommandService) createAct(ctx context.Context, caDto dto.CreateActDto) (qaDto *dto.QueryActDto, err error) {
+func (as *actCommandService) createAct(ctx context.Context, caDto dto.CreateActServiceDto) (qaDto *dto.QueryActDto, err error) {
 	finally, err := as.actRepo.BeginOrContinueTx(ctx)
 	defer finally(&err)
 	actType, err := act.MapActType(caDto.ActType)
@@ -36,6 +36,6 @@ func (as *actCommandService) createAct(ctx context.Context, caDto dto.CreateActD
 	return dto.QueryActDtoFrom(act), nil
 }
 
-func (as *actCommandService) upgradeAct(ctx context.Context, clientId uint64, dto dto.UpgradeActDto) (*dto.QueryActDto, error) {
+func (as *actCommandService) upgradeAct(ctx context.Context, clientId uint64, dto dto.UpgradeActServiceDto) (*dto.QueryActDto, error) {
 	return nil, nil
 }

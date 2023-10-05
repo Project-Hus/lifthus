@@ -1,22 +1,34 @@
 package image
 
 import (
-	"routine/internal/app/dto"
-	"strconv"
-
-	"github.com/labstack/echo/v4"
+	"mime/multipart"
+	"net/http"
+	"strings"
 )
 
-func parseFormAndGenerateCreateActDto(c echo.Context, locations []string) (*dto.CreateActDto, error) {
-	authorId, err := strconv.ParseUint(c.FormValue("author"), 10, 64)
-	if err != nil {
-		return nil, err
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024
+
+func IsImageFilesValid(fhs []*multipart.FileHeader) bool {
+	for _, fh := range fhs {
+		fb := make([]byte, MAX_IMAGE_SIZE)
+		if fh.Size > MAX_IMAGE_SIZE {
+			return false
+		}
+		f, err := fh.Open()
+		if err != nil {
+			return false
+		}
+		_, err = f.Read(fb)
+		if err != nil {
+			return false
+		}
+		if ctype := http.DetectContentType(fb); !IsTypeImage(ctype) {
+			return false
+		}
 	}
-	return &dto.CreateActDto{
-		ActType:   c.FormValue("actType"),
-		Name:      c.FormValue("name"),
-		Author:    authorId,
-		Text:      c.FormValue("text"),
-		ImageSrcs: locations,
-	}, nil
+	return true
+}
+
+func IsTypeImage(ctype string) bool {
+	return strings.HasPrefix(ctype, "image")
 }

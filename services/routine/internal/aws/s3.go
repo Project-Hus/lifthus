@@ -20,20 +20,22 @@ type RoutineBucket struct {
 	S3Client *s3.Client
 }
 
-func (rb RoutineBucket) UploadActImagesToRoutineS3(files []*multipart.FileHeader) (locations []string, err error) {
-	return rb.UploadMultipartFilesToRoutineS3("act", files)
+func (rb RoutineBucket) UploadImagesToRoutineS3(target ImgCategory, imgHds []*multipart.FileHeader) (keys []string, locations []string, err error) {
+	return rb.UploadMultipartFilesToRoutineS3(target.Category(), imgHds)
 }
 
 // UploadMultipartFilesToRoutineS3 uploads multipart files and returns the locations of the files
-func (rb RoutineBucket) UploadMultipartFilesToRoutineS3(category string, files []*multipart.FileHeader) (locations []string, err error) {
+func (rb RoutineBucket) UploadMultipartFilesToRoutineS3(category string, files []*multipart.FileHeader) (keys []string, locations []string, err error) {
+	keys = make([]string, len(files))
 	locations = make([]string, len(files))
 
 	wg := helper.WaitGroupWaiting(len(files))
 	errChan := make(chan error)
+
 	for i, file := range files {
 		go func(i int, file *multipart.FileHeader) {
 			defer wg.Done()
-			location, err := rb.UploadMultipartFileToRoutineS3(category, file)
+			key, location, err := rb.UploadMultipartFileToRoutineS3(category, file)
 			if err != nil {
 				select {
 				case errChan <- err:
@@ -42,43 +44,45 @@ func (rb RoutineBucket) UploadMultipartFilesToRoutineS3(category string, files [
 				}
 				return
 			}
+			keys[i] = key
 			locations[i] = location
 		}(i, file)
 	}
+
 	wg.Wait()
 	select {
 	case err := <-errChan:
 		// TODO: delete uploaded files
-		return nil, err
+		return nil, nil, err
 	default:
-		return locations, nil
+		return keys, locations, nil
 	}
 }
 
-func (rb RoutineBucket) UploadMultipartFileToRoutineS3(category string, mfh *multipart.FileHeader) (location string, err error) {
-	okey, err := rb.generateObjKeyForFilename(category, mfh.Filename)
+func (rb RoutineBucket) UploadMultipartFileToRoutineS3(category string, mfh *multipart.FileHeader) (key string, location string, err error) {
+	key, err = rb.generateObjKeyForFilename(category, mfh.Filename)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	file, err := mfh.Open()
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	defer file.Close()
 	_, err = rb.S3Client.PutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket: aws.String(ROUTINE_BUCKET_NAME),
-		Key:    aws.String(okey),
+		Key:    aws.String(key),
 		Body:   file,
 	})
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	location = ROUTINE_BUCKET_URL + okey
-	return location, nil
+	location = ROUTINE_BUCKET_URL + key
+	return key, location, nil
 }
 
 func (rb RoutineBucket) generateObjKeyForFilename(category string, filename string) (string, error) {
-	return generateObjKeyForFilename("routine/images/"+category+"/", filename)
+	return generateObjKeyForFilename("routine/image/"+category+"/", filename)
 }
 
 func generateObjKeyForFilename(basekey string, fn string) (okey string, err error) {

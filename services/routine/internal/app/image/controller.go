@@ -3,7 +3,7 @@ package image
 import (
 	"lifthus-auth/common/guard"
 	"net/http"
-	"routine/internal/app/aws"
+	"routine/internal/aws"
 
 	"log"
 
@@ -21,9 +21,9 @@ type imageController struct {
 }
 
 // uploadImages godoc
-// @Router /images/{for} [post]
-// @Param for path string true "images for"
-// @Param images formData file false "images of act"
+// @Router /images/{target} [post]
+// @Param target path string true "images for target"
+// @Param images formData file true "images of act"
 // @Param Authorization header string true "lifthus_st"
 // @Summary
 // @Tags
@@ -37,8 +37,21 @@ func (ac *imageController) uploadImages(c echo.Context) error {
 		log.Printf("failed to parse multipart form: %v", err)
 		return c.String(http.StatusBadRequest, "invalid request")
 	}
+
+	target, err := aws.MapImgCategory(c.Param("target"))
+	if err != nil {
+		log.Printf("invalid target: %v", err)
+		return c.String(http.StatusBadRequest, "invalid img target")
+	}
+
+	imgFiles := form.File["images"]
+	if v := IsImageFilesValid(imgFiles); !v {
+		log.Printf("invalid image files: %v", err)
+		return c.String(http.StatusBadRequest, "invalid request")
+	}
+
 	rb := aws.GetRoutineBucket()
-	locations, err := rb.UploadActImagesToRoutineS3(form.File["images"])
+	_, locations, err := rb.UploadImagesToRoutineS3(target, imgFiles)
 	if err != nil {
 		log.Printf("failed to upload images to routine s3: %v", err)
 		return c.String(http.StatusInternalServerError, "failed to upload images to routine s3")

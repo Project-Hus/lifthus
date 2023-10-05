@@ -1,4 +1,20 @@
 basePath: /routine
+definitions:
+  dto.CreateActRequestDto:
+    properties:
+      actType:
+        type: string
+      author:
+        type: string
+      imageSrcs:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      text:
+        type: string
+    type: object
 host: localhost:9100
 info:
   contact:
@@ -16,35 +32,17 @@ paths:
   /act:
     post:
       parameters:
-      - description: author of act
-        in: formData
-        name: author
-        required: true
-        type: string
-      - description: name of act
-        in: formData
-        name: name
-        required: true
-        type: string
-      - description: type of act
-        in: formData
-        name: actType
-        required: true
-        type: string
-      - description: text of act
-        in: formData
-        name: text
-        required: true
-        type: string
-      - description: images of act
-        in: formData
-        name: images
-        type: file
       - description: lifthus_st
         in: header
         name: Authorization
         required: true
         type: string
+      - description: create act dto
+        in: body
+        name: creatActDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateActRequestDto'
       responses: {}
       tags:
       - ""
@@ -68,4 +66,36 @@ paths:
       summary: get act by code
       tags:
       - act
+  /act/upgarde:
+    post:
+      parameters:
+      - description: author of act
+        in: formData
+        name: author
+        required: true
+        type: string
+      responses: {}
+      tags:
+      - ""
+  /images/{target}:
+    post:
+      parameters:
+      - description: images for target
+        in: path
+        name: target
+        required: true
+        type: string
+      - description: images of act
+        in: formData
+        name: images
+        required: true
+        type: file
+      - description: lifthus_st
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses: {}
+      tags:
+      - ""
 swagger: "2.0"
