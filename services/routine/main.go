@@ -7,8 +7,9 @@ import (
 
 	"log"
 	"os"
-	actCommand "routine/internal/app/command/act"
-	actQuery "routine/internal/app/query/act"
+	actCommand "routine/internal/app/service/command/act"
+	"routine/internal/app/service/image"
+	actQuery "routine/internal/app/service/query/act"
 	"routine/internal/ent"
 	"routine/pkg/db"
 
@@ -116,6 +117,7 @@ func main() {
 
 	e = actCommand.SetActCommandControllerTo(e)
 	e = actQuery.SetActQueryControllerTo(e)
+	e = image.SetImageControllerTo(e)
 
 	// swagger
 	e.GET("/routine/openapi/*", echoSwagger.WrapHandler)
