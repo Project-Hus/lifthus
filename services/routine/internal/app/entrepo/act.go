@@ -76,33 +76,45 @@ func (repo *EntActRepository) insertNewAct(tx *ent.Tx, ctx context.Context, targ
 	if err != nil {
 		return nil, err
 	}
-	vs, err := repo.tx.ActVersion.CreateBulk(
-		repo.tx.ActVersion.Create().
-			SetCode(string(target.LatestVersion().Code())).SetVersion(1).
-			SetText(string(target.LatestVersion().Text())).SetCreatedAt(time.Time(target.LatestVersion().CreatedAt())).
-			SetAct(eact).SetActCode(eact.Code),
-	).Save(ctx)
+	vs, err := repo.createVerBulk(ctx, eact, target.Versions())
 	if err != nil {
 		return nil, err
 	}
-	imgs, err := repo.tx.ActImage.CreateBulk(
-		repo.imgsToEntCreateStates(vs[0].Code, target.LatestVersion().ImageSrcs())...,
-	).Save(ctx)
-	if err != nil {
-		return nil, err
-	}
-	vs[0].Edges.ActImages = imgs
 	eact.Edges.ActVersions = vs
 	return repo.actFromEntAct(ctx, eact)
 }
 
-func (repo *EntActRepository) imgsToEntCreateStates(verCode string, imgs act.ActImageSrcs) []*ent.ActImageCreate {
+func (repo *EntActRepository) createVerBulk(ctx context.Context, eact *ent.Act, vers act.ActVersions) ([]*ent.ActVersion, error) {
+	states := make([]*ent.ActVersionCreate, len(vers))
+	eimgSrcss := make([][]*ent.ActImage, len(vers))
+	for i, v := range vers {
+		states[i] = repo.tx.ActVersion.Create().
+			SetCode(string(v.Code())).SetVersion(uint(v.Version())).
+			SetText(string(v.Text())).SetCreatedAt(time.Time(v.CreatedAt())).
+			SetAct(eact).SetActCode(eact.Code)
+		imgs, err := repo.createImgBulk(ctx, string(v.Code()), v.ImageSrcs())
+		if err == nil {
+			return nil, err
+		}
+		eimgSrcss[i] = imgs
+	}
+	eacts, err := repo.tx.ActVersion.CreateBulk(states...).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for i, eact := range eacts {
+		eact.Edges.ActImages = eimgSrcss[i]
+	}
+	return eacts, nil
+}
+
+func (repo *EntActRepository) createImgBulk(ctx context.Context, verCode string, imgs act.ActImageSrcs) ([]*ent.ActImage, error) {
 	states := make([]*ent.ActImageCreate, len(imgs))
 	for i, img := range imgs {
 		states[i] = repo.tx.ActImage.Create().
 			SetActVersionCode(verCode).SetOrder(uint(i) + 1).SetSrc(img)
 	}
-	return states
+	return repo.tx.ActImage.CreateBulk(states...).Save(ctx)
 }
 
 func (repo *EntActRepository) updateAct(ctx context.Context, prev *act.Act, target *act.Act) (*act.Act, error) {
