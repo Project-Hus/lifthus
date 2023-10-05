@@ -58,11 +58,13 @@ const docTemplate = `{
                 ],
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "author of act",
-                        "name": "author",
-                        "in": "formData",
-                        "required": true
+                        "description": "upgrade act dto",
+                        "name": "upgradeActDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpgradeActRequestDto"
+                        }
                     }
                 ],
                 "responses": {}
@@ -149,6 +151,23 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpgradeActRequestDto": {
+            "type": "object",
+            "properties": {
+                "actCode": {
+                    "type": "string"
+                },
+                "imageSrcs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "text": {
                     "type": "string"

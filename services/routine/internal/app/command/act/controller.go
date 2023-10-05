@@ -61,22 +61,21 @@ func (ac *actCommandController) createAct(c echo.Context) error {
 
 // upgradeAct godoc
 // @Router /act/upgarde [post]
-// @Param author formData string true "author of act"
+// @Param upgradeActDto body dto.UpgradeActRequestDto true "upgrade act dto"
 // @Summary
 // @Tags
-// Success 201 "returns created Act"
+// Success 201 "returns upgraded Act"
 // Failure 400 "invalid request"
 // Failure 401 "unauthorized"
 // Failure 403 "forbidden"
 // Failure 500 "failed to create Act"
 func (ac *actCommandController) upgradeAct(c echo.Context) error {
-	// uaDto := dto.UpgradeActDto{
-	// 	ActCode: c.FormValue("actCode"),
-	// 	Text:    c.FormValue("text"),
-	// }
-	// //err := c.Bind(&uaDto)
-	// //if err != nil
+	reqDto := dto.UpgradeActRequestDto{}
+	if err := c.Bind(&reqDto); err != nil {
+		log.Printf("failed to bind request: %v", err)
+		return c.String(http.StatusBadRequest, "invalid request")
+	}
 	clientId := c.Get("uid").(uint64)
-	ac.svc.upgradeAct(c.Request().Context(), clientId, dto.UpgradeActServiceDto{})
+	ac.svc.upgradeAct(c.Request().Context(), clientId, dto.UpgradeActServiceDto(reqDto))
 	return nil
 }
