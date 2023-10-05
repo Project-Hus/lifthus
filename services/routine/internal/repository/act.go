@@ -11,7 +11,7 @@ func NewActRepository(actRepo actRepository) *ActRepository {
 
 type actRepository interface {
 	Save(ctx context.Context, act *act.Act) (*act.Act, error)
-	FindByCode(ctx context.Context, code act.ActCode) (*act.Act, error)
+	FindActByCode(ctx context.Context, code act.ActCode) (*act.Act, error)
 
 	BeginOrContinueTx(ctx context.Context) (func(*error), error)
 	Commit() error
@@ -30,6 +30,6 @@ func (ar *ActRepository) Save(ctx context.Context, act *act.Act) (*act.Act, erro
 	return ar.repo.Save(ctx, act)
 }
 
-func (ar *ActRepository) FindByCode(ctx context.Context, code act.ActCode) (*act.Act, error) {
-	return ar.repo.FindByCode(ctx, code)
+func (ar *ActRepository) FindActByCode(ctx context.Context, code act.ActCode) (*act.Act, error) {
+	return ar.repo.FindActByCode(ctx, code)
 }

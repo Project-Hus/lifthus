@@ -11,14 +11,14 @@ import (
 )
 
 func SetActCommandControllerTo(e *echo.Echo) *echo.Echo {
-	ac := &actController{svc: newActService()}
+	ac := &actCommandController{svc: newActCommandService()}
 	e.POST("/routine/act", ac.createAct, guard.UserGuard)
 	e.PUT("/routine/act", ac.upgradeAct, guard.UserGuard)
 	return e
 }
 
-type actController struct {
-	svc *actService
+type actCommandController struct {
+	svc *actCommandService
 }
 
 // createAct godoc
@@ -36,7 +36,7 @@ type actController struct {
 // Failure 401 "unauthorized"
 // Failure 403 "forbidden"
 // Failure 500 "failed to create Act"
-func (ac *actController) createAct(c echo.Context) error {
+func (ac *actCommandController) createAct(c echo.Context) error {
 	locations, err := getMultipartFormAndUploadActImagesToRoutineS3(c)
 	if err != nil {
 		log.Printf("failed to upload images to routine s3: %v", err)
@@ -63,7 +63,7 @@ func (ac *actController) createAct(c echo.Context) error {
 	return c.JSON(http.StatusCreated, act)
 }
 
-func (ac *actController) upgradeAct(c echo.Context) error {
+func (ac *actCommandController) upgradeAct(c echo.Context) error {
 	ac.svc.upgradeAct(c.Request().Context(), dto.UpgradeActDto{})
 	return nil
 }

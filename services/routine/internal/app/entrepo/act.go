@@ -2,6 +2,7 @@ package entrepo
 
 import (
 	"context"
+	"log"
 	"routine/internal/domain/aggregates/act"
 	"routine/internal/ent"
 	eact "routine/internal/ent/act"
@@ -19,7 +20,7 @@ type EntActRepository struct {
 	*EntRepository
 }
 
-func (repo *EntActRepository) FindByCode(ctx context.Context, code act.ActCode) (fAct *act.Act, err error) {
+func (repo *EntActRepository) FindActByCode(ctx context.Context, code act.ActCode) (fAct *act.Act, err error) {
 	finally, err := repo.BeginOrContinueTx(ctx)
 	defer finally(&err)
 	if err != nil {
@@ -52,7 +53,7 @@ func (repo *EntActRepository) Save(ctx context.Context, target *act.Act) (sAct *
 	if err != nil {
 		return nil, err
 	}
-	prev, err := repo.FindByCode(ctx, target.Code())
+	prev, err := repo.FindActByCode(ctx, target.Code())
 	if repository.IsNotFound(err) {
 		return repo.insertNewAct(repo.tx, ctx, target)
 	} else if err != nil {
@@ -86,33 +87,32 @@ func (repo *EntActRepository) insertNewAct(tx *ent.Tx, ctx context.Context, targ
 
 func (repo *EntActRepository) createVerBulk(ctx context.Context, eact *ent.Act, vers act.ActVersions) ([]*ent.ActVersion, error) {
 	states := make([]*ent.ActVersionCreate, len(vers))
-	eimgSrcss := make([][]*ent.ActImage, len(vers))
 	for i, v := range vers {
 		states[i] = repo.tx.ActVersion.Create().
 			SetCode(string(v.Code())).SetVersion(uint(v.Version())).
 			SetText(string(v.Text())).SetCreatedAt(time.Time(v.CreatedAt())).
 			SetAct(eact).SetActCode(eact.Code)
-		imgs, err := repo.createImgBulk(ctx, string(v.Code()), v.ImageSrcs())
-		if err == nil {
-			return nil, err
-		}
-		eimgSrcss[i] = imgs
 	}
-	eacts, err := repo.tx.ActVersion.CreateBulk(states...).Save(ctx)
+	evs, err := repo.tx.ActVersion.CreateBulk(states...).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
-	for i, eact := range eacts {
-		eact.Edges.ActImages = eimgSrcss[i]
+	log.Println("evs", evs)
+	for i, ev := range evs {
+		imgs, err := repo.createImgBulk(ctx, ev, vers[i].ImageSrcs())
+		if err != nil {
+			return nil, err
+		}
+		ev.Edges.ActImages = imgs
 	}
-	return eacts, nil
+	return evs, nil
 }
 
-func (repo *EntActRepository) createImgBulk(ctx context.Context, verCode string, imgs act.ActImageSrcs) ([]*ent.ActImage, error) {
+func (repo *EntActRepository) createImgBulk(ctx context.Context, ver *ent.ActVersion, imgs act.ActImageSrcs) ([]*ent.ActImage, error) {
 	states := make([]*ent.ActImageCreate, len(imgs))
 	for i, img := range imgs {
 		states[i] = repo.tx.ActImage.Create().
-			SetActVersionCode(verCode).SetOrder(uint(i) + 1).SetSrc(img)
+			SetActVersionCode(ver.Code).SetOrder(uint(i) + 1).SetSrc(img)
 	}
 	return repo.tx.ActImage.CreateBulk(states...).Save(ctx)
 }

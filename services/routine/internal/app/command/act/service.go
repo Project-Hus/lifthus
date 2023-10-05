@@ -9,15 +9,15 @@ import (
 	"routine/internal/repository"
 )
 
-func newActService() *actService {
-	return &actService{actRepo: repository.NewActRepository(entrepo.NewEntActRepository())}
+func newActCommandService() *actCommandService {
+	return &actCommandService{actRepo: repository.NewActRepository(entrepo.NewEntActRepository())}
 }
 
-type actService struct {
+type actCommandService struct {
 	actRepo *repository.ActRepository
 }
 
-func (as *actService) createAct(ctx context.Context, caDto dto.CreateActDto) (qaDto *dto.QueryActDto, err error) {
+func (as *actCommandService) createAct(ctx context.Context, caDto dto.CreateActDto) (qaDto *dto.QueryActDto, err error) {
 	finally, err := as.actRepo.BeginOrContinueTx(ctx)
 	defer finally(&err)
 	actType, err := act.MapActType(caDto.ActType)
@@ -36,6 +36,6 @@ func (as *actService) createAct(ctx context.Context, caDto dto.CreateActDto) (qa
 	return dto.QueryActDtoFrom(act), nil
 }
 
-func (as *actService) upgradeAct(ctx context.Context, dto dto.UpgradeActDto) (*dto.QueryActDto, error) {
+func (as *actCommandService) upgradeAct(ctx context.Context, dto dto.UpgradeActDto) (*dto.QueryActDto, error) {
 	return nil, nil
 }
