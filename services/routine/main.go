@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	actCommand "routine/internal/app/command/act"
+	actQuery "routine/internal/app/query/act"
 	"routine/internal/ent"
 	"routine/pkg/db"
 
@@ -114,6 +115,7 @@ func main() {
 	// e = rec.NewRecApiController(e, recApiControllerParams)
 
 	e = actCommand.SetActCommandControllerTo(e)
+	e = actQuery.SetActQueryControllerTo(e)
 
 	// swagger
 	e.GET("/routine/openapi/*", echoSwagger.WrapHandler)

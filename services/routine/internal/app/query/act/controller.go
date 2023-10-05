@@ -10,7 +10,7 @@ import (
 
 func SetActQueryControllerTo(e *echo.Echo) *echo.Echo {
 	ac := &actQueryController{svc: newActQueryService()}
-	e.GET("/routine/act", ac.queryActByCode)
+	e.GET("/routine/act/:code", ac.queryActByCode)
 	return e
 }
 
@@ -37,5 +37,5 @@ func (ac *actQueryController) queryActByCode(c echo.Context) error {
 		log.Printf("failed to query act: %v", err)
 		return c.String(http.StatusInternalServerError, "failed to query act")
 	}
-	return c.JSON(http.StatusCreated, actDto)
+	return c.JSON(http.StatusCreated, qaDto)
 }

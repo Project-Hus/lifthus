@@ -48,4 +48,24 @@ paths:
       responses: {}
       tags:
       - ""
+  /act/{code}:
+    get:
+      parameters:
+      - description: act code
+        in: path
+        name: code
+        required: true
+        type: string
+      responses:
+        "200":
+          description: returns act info as json
+        "400":
+          description: invalid request
+        "404":
+          description: act not found
+        "500":
+          description: internal server error
+      summary: get act by code
+      tags:
+      - act
 swagger: "2.0"

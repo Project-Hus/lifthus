@@ -68,6 +68,37 @@
                 ],
                 "responses": {}
             }
+        },
+        "/act/{code}": {
+            "get": {
+                "tags": [
+                    "act"
+                ],
+                "summary": "get act by code",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "act code",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns act info as json"
+                    },
+                    "400": {
+                        "description": "invalid request"
+                    },
+                    "404": {
+                        "description": "act not found"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            }
         }
     }
 }
