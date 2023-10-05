@@ -1,4 +1,4 @@
-package actCommand
+package image
 
 import (
 	"context"
@@ -9,15 +9,15 @@ import (
 	"routine/internal/repository"
 )
 
-func newActCommandService() *actCommandService {
-	return &actCommandService{actRepo: repository.NewActRepository(entrepo.NewEntActRepository())}
+func newImageService() *imageService {
+	return &imageService{actRepo: repository.NewActRepository(entrepo.NewEntActRepository())}
 }
 
-type actCommandService struct {
+type imageService struct {
 	actRepo *repository.ActRepository
 }
 
-func (as *actCommandService) createAct(ctx context.Context, caDto dto.CreateActDto) (qaDto *dto.QueryActDto, err error) {
+func (as *imageService) createAct(ctx context.Context, caDto dto.CreateActDto) (qaDto *dto.QueryActDto, err error) {
 	finally, err := as.actRepo.BeginOrContinueTx(ctx)
 	defer finally(&err)
 	actType, err := act.MapActType(caDto.ActType)
@@ -34,8 +34,4 @@ func (as *actCommandService) createAct(ctx context.Context, caDto dto.CreateActD
 		return nil, err
 	}
 	return dto.QueryActDtoFrom(act), nil
-}
-
-func (as *actCommandService) upgradeAct(ctx context.Context, clientId uint64, dto dto.UpgradeActDto) (*dto.QueryActDto, error) {
-	return nil, nil
 }

@@ -1,19 +1,10 @@
 package dto
 
 import (
-	"os"
 	"routine/internal/domain/aggregates/act"
 	"strconv"
 	"time"
 )
-
-type CreateActRequestDto struct {
-	ActType string    `json:"actType"`
-	Name    string    `json:"name"`
-	Author  uint64    `json:"author"`
-	Text    string    `json:"text"`
-	Images  []os.File `json:"images"`
-}
 
 type CreateActDto struct {
 	ActType   string `json:"actType"`
@@ -23,7 +14,11 @@ type CreateActDto struct {
 	ImageSrcs []string
 }
 
-type UpgradeActDto struct{}
+type UpgradeActDto struct {
+	ActCode   string   `json:"actCode"`
+	Text      string   `json:"text"`
+	ImageSrcs []string `json:"imageSrcs"`
+}
 
 func QueryActDtoFrom(target *act.Act) *QueryActDto {
 	authorStr := strconv.FormatUint(uint64(target.Author()), 10)
