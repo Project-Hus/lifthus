@@ -7,9 +7,9 @@ import (
 
 	"log"
 	"os"
-	actCommand "routine/internal/app/service/command/act"
-	"routine/internal/app/service/image"
-	actQuery "routine/internal/app/service/query/act"
+	actCommand "routine/internal/app/command/act"
+	"routine/internal/app/image"
+	actQuery "routine/internal/app/query/act"
 	"routine/internal/ent"
 	"routine/pkg/db"
 

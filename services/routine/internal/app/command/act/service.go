@@ -3,9 +3,9 @@ package actCommand
 import (
 	"context"
 	"routine/internal/app/dto"
-	"routine/internal/app/entrepo"
 	"routine/internal/domain/aggregates/act"
 	"routine/internal/domain/aggregates/user"
+	"routine/internal/entrepo"
 	"routine/internal/repository"
 )
 
