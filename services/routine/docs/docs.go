@@ -51,12 +51,19 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/act/upgarde": {
+        "/act/upgrade": {
             "post": {
                 "tags": [
                     ""
                 ],
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "lifthus_st",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "description": "upgrade act dto",
                         "name": "upgradeActDto",

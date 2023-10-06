@@ -77,9 +77,14 @@ paths:
       summary: get act by code
       tags:
       - act
-  /act/upgarde:
+  /act/upgrade:
     post:
       parameters:
+      - description: lifthus_st
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: upgrade act dto
         in: body
         name: upgradeActDto

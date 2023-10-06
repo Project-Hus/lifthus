@@ -60,7 +60,8 @@ func (ac *actCommandController) createAct(c echo.Context) error {
 }
 
 // upgradeAct godoc
-// @Router /act/upgarde [post]
+// @Router /act/upgrade [post]
+// @Param Authorization header string true "lifthus_st"
 // @Param upgradeActDto body dto.UpgradeActRequestDto true "upgrade act dto"
 // @Summary
 // @Tags
@@ -76,6 +77,10 @@ func (ac *actCommandController) upgradeAct(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "invalid request")
 	}
 	clientId := c.Get("uid").(uint64)
-	ac.svc.upgradeAct(c.Request().Context(), clientId, dto.UpgradeActServiceDto(reqDto))
-	return nil
+	qaDto, err := ac.svc.upgradeAct(c.Request().Context(), clientId, dto.UpgradeActServiceDto(reqDto))
+	if err != nil {
+		log.Printf("failed to upgrade Act: %v", err)
+		return c.String(http.StatusInternalServerError, "failed to upgrade Act")
+	}
+	return c.JSON(http.StatusCreated, qaDto)
 }
