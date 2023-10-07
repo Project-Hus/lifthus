@@ -37,9 +37,9 @@ type CreateActServiceDto struct {
 }
 
 type UpgradeActRequestDto struct {
-	ActCode   string   `json:"actCode"`
-	Text      string   `json:"text"`
-	ImageSrcs []string `json:"imageSrcs"`
+	ActCode   string    `json:"actCode"`
+	Text      *string   `json:"text"`
+	ImageSrcs *[]string `json:"imageSrcs"`
 }
 
 func (ua UpgradeActRequestDto) ToServiceDto() *UpgradeActServiceDto {
@@ -52,8 +52,8 @@ func (ua UpgradeActRequestDto) ToServiceDto() *UpgradeActServiceDto {
 
 type UpgradeActServiceDto struct {
 	ActCode   string
-	Text      string
-	ImageSrcs []string
+	Text      *string
+	ImageSrcs *[]string
 }
 
 func QueryActDtoFrom(target *act.Act) *QueryActDto {

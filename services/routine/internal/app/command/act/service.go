@@ -51,8 +51,8 @@ func (as *actCommandService) upgradeAct(ctx context.Context, clientId uint64, ug
 	}
 	client := user.UserFrom(user.UserId(clientId))
 	ugTg := act.ActUpgradeTargets{
-		ImageSrcs: (*act.ActImageSrcs)(&ugDto.ImageSrcs),
-		Text:      (*act.ActText)(&ugDto.Text),
+		ImageSrcs: (*act.ActImageSrcs)(ugDto.ImageSrcs),
+		Text:      (*act.ActText)(ugDto.Text),
 	}
 	targetAct, err = targetAct.Upgrade(*client, ugTg)
 	if err != nil {
