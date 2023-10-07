@@ -59,7 +59,7 @@ func (repo *EntActRepository) Save(ctx context.Context, target *act.Act) (sAct *
 	} else if err != nil {
 		return nil, err
 	}
-	return repo.updateAct(ctx, prev, target)
+	return repo.updateVersions(ctx, prev, target)
 }
 
 func (repo *EntActRepository) insertNewAct(tx *ent.Tx, ctx context.Context, target *act.Act) (*act.Act, error) {
@@ -117,6 +117,6 @@ func (repo *EntActRepository) createImgBulk(ctx context.Context, ver *ent.ActVer
 	return repo.tx.ActImage.CreateBulk(states...).Save(ctx)
 }
 
-func (repo *EntActRepository) updateAct(ctx context.Context, prev *act.Act, target *act.Act) (*act.Act, error) {
+func (repo *EntActRepository) updateVersions(ctx context.Context, prev *act.Act, target *act.Act) (*act.Act, error) {
 	return nil, nil
 }
