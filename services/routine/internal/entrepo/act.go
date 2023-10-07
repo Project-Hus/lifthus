@@ -117,6 +117,61 @@ func (repo *EntActRepository) createImgBulk(ctx context.Context, ver *ent.ActVer
 	return repo.tx.ActImage.CreateBulk(states...).Save(ctx)
 }
 
-func (repo *EntActRepository) updateVersions(ctx context.Context, prev *act.Act, target *act.Act) (*act.Act, error) {
-	return nil, nil
+func (repo *EntActRepository) updateVersions(ctx context.Context, prev *act.Act, cur *act.Act) (*act.Act, error) {
+	versToDel := []*act.ActVersion{}
+	versToCreate := []*act.ActVersion{}
+
+	prevVersions := prev.VersionsMap()
+	curVersions := cur.VersionsMap()
+
+	for pvn, pv := range prevVersions {
+		if _, ok := curVersions[pvn]; !ok {
+			versToDel = append(versToDel, pv)
+		}
+	}
+
+	for cvn, cv := range curVersions {
+		if _, ok := prevVersions[cvn]; !ok {
+			versToCreate = append(versToCreate, cv)
+		}
+	}
+
+	err := repo.deleteVersions(ctx, versToDel)
+	if err != nil {
+		return nil, err
+	}
+	err = repo.createVersions(ctx, cur.Code(), versToCreate)
+	if err != nil {
+		return nil, err
+	}
+
+	return cur, nil
+}
+
+func (repo *EntActRepository) deleteVersions(ctx context.Context, vs []*act.ActVersion) error {
+	for _, v := range vs {
+		_, err := repo.tx.ActVersion.Delete().Where(eactv.Code(string(v.Code()))).Exec(ctx)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (repo *EntActRepository) createVersions(ctx context.Context, actCode act.ActCode, vs []*act.ActVersion) error {
+	eact, err := repo.tx.Act.Query().Where(eact.Code(string(actCode))).First(ctx)
+	if err != nil {
+		return err
+	}
+	for _, v := range vs {
+		_, err = repo.tx.ActVersion.Create().
+			SetCode(string(v.Code())).SetVersion(uint(v.Version())).
+			SetText(string(v.Text())).SetCreatedAt(time.Time(v.CreatedAt())).
+			SetAct(eact).SetActCode(eact.Code).
+			Save(ctx)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
