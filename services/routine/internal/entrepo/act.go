@@ -21,12 +21,12 @@ type EntActRepository struct {
 }
 
 func (repo *EntActRepository) FindActByCode(ctx context.Context, code act.ActCode) (fAct *act.Act, err error) {
-	finally, err := repo.BeginOrContinueTx(ctx)
+	tx, finally, err := repo.Tx(ctx)
 	defer finally(&err)
 	if err != nil {
 		return nil, err
 	}
-	a, err := repo.tx.Act.Query().
+	a, err := tx.Act.Query().
 		Where(eact.Code(string(code))).
 		WithActVersions(
 			func(q *ent.ActVersionQuery) {
@@ -48,26 +48,32 @@ func (repo *EntActRepository) FindActByCode(ctx context.Context, code act.ActCod
 }
 
 func (repo *EntActRepository) Save(ctx context.Context, target *act.Act) (sAct *act.Act, err error) {
-	finally, err := repo.BeginOrContinueTx(ctx)
+	_, finally, err := repo.Tx(ctx)
 	defer finally(&err)
 	if err != nil {
 		return nil, err
 	}
 	prev, err := repo.FindActByCode(ctx, target.Code())
 	if repository.IsNotFound(err) {
-		return repo.insertNewAct(repo.tx, ctx, target)
+		return repo.insertNewAct(ctx, target)
 	} else if err != nil {
 		return nil, err
 	}
 	return repo.updateVersions(ctx, prev, target)
 }
 
-func (repo *EntActRepository) insertNewAct(tx *ent.Tx, ctx context.Context, target *act.Act) (*act.Act, error) {
+func (repo *EntActRepository) insertNewAct(ctx context.Context, target *act.Act) (*act.Act, error) {
+	tx, finally, err := repo.Tx(ctx)
+	defer finally(&err)
+	if err != nil {
+		return nil, err
+	}
+
 	eat, err := entActTypeFromActType(target.Type())
 	if err != nil {
 		return nil, err
 	}
-	eact, err := repo.tx.Act.Create().
+	eact, err := tx.Act.Create().
 		SetCode(string(target.Code())).
 		SetActType(eat).
 		SetName(string(target.Name())).
@@ -86,14 +92,20 @@ func (repo *EntActRepository) insertNewAct(tx *ent.Tx, ctx context.Context, targ
 }
 
 func (repo *EntActRepository) createVerBulk(ctx context.Context, eact *ent.Act, vers act.ActVersions) ([]*ent.ActVersion, error) {
+	tx, finally, err := repo.Tx(ctx)
+	defer finally(&err)
+	if err != nil {
+		return nil, err
+	}
+
 	states := make([]*ent.ActVersionCreate, len(vers))
 	for i, v := range vers {
-		states[i] = repo.tx.ActVersion.Create().
+		states[i] = tx.ActVersion.Create().
 			SetCode(string(v.Code())).SetVersion(uint(v.Version())).
 			SetText(string(v.Text())).SetCreatedAt(time.Time(v.CreatedAt())).
 			SetAct(eact).SetActCode(eact.Code)
 	}
-	evs, err := repo.tx.ActVersion.CreateBulk(states...).Save(ctx)
+	evs, err := tx.ActVersion.CreateBulk(states...).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -109,12 +121,17 @@ func (repo *EntActRepository) createVerBulk(ctx context.Context, eact *ent.Act, 
 }
 
 func (repo *EntActRepository) createImgBulk(ctx context.Context, ver *ent.ActVersion, imgs act.ActImageSrcs) ([]*ent.ActImage, error) {
+	tx, finally, err := repo.Tx(ctx)
+	defer finally(&err)
+	if err != nil {
+		return nil, err
+	}
 	states := make([]*ent.ActImageCreate, len(imgs))
 	for i, img := range imgs {
-		states[i] = repo.tx.ActImage.Create().
+		states[i] = tx.ActImage.Create().
 			SetActVersionCode(ver.Code).SetOrder(uint(i) + 1).SetSrc(img)
 	}
-	return repo.tx.ActImage.CreateBulk(states...).Save(ctx)
+	return tx.ActImage.CreateBulk(states...).Save(ctx)
 }
 
 func (repo *EntActRepository) updateVersions(ctx context.Context, prev *act.Act, cur *act.Act) (*act.Act, error) {
@@ -149,8 +166,13 @@ func (repo *EntActRepository) updateVersions(ctx context.Context, prev *act.Act,
 }
 
 func (repo *EntActRepository) deleteVersions(ctx context.Context, vs []*act.ActVersion) error {
+	tx, finally, err := repo.Tx(ctx)
+	defer finally(&err)
+	if err != nil {
+		return err
+	}
 	for _, v := range vs {
-		_, err := repo.tx.ActVersion.Delete().Where(eactv.Code(string(v.Code()))).Exec(ctx)
+		_, err := tx.ActVersion.Delete().Where(eactv.Code(string(v.Code()))).Exec(ctx)
 		if err != nil {
 			return err
 		}
@@ -159,12 +181,17 @@ func (repo *EntActRepository) deleteVersions(ctx context.Context, vs []*act.ActV
 }
 
 func (repo *EntActRepository) createVersions(ctx context.Context, actCode act.ActCode, vs []*act.ActVersion) error {
-	eact, err := repo.tx.Act.Query().Where(eact.Code(string(actCode))).First(ctx)
+	tx, finally, err := repo.Tx(ctx)
+	defer finally(&err)
+	if err != nil {
+		return err
+	}
+	eact, err := tx.Act.Query().Where(eact.Code(string(actCode))).First(ctx)
 	if err != nil {
 		return err
 	}
 	for _, v := range vs {
-		_, err = repo.tx.ActVersion.Create().
+		_, err = tx.ActVersion.Create().
 			SetCode(string(v.Code())).SetVersion(uint(v.Version())).
 			SetText(string(v.Text())).SetCreatedAt(time.Time(v.CreatedAt())).
 			SetAct(eact).SetActCode(eact.Code).

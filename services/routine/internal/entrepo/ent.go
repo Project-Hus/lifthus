@@ -18,6 +18,12 @@ type EntRepository struct {
 	tx *ent.Tx
 }
 
+func (repo *EntRepository) Tx(ctx context.Context) (tx *ent.Tx, finally func(*error), err error) {
+	finally, err = repo.BeginOrContinueTx(ctx)
+	tx = repo.tx
+	return
+}
+
 func (repo *EntRepository) BeginOrContinueTx(ctx context.Context) (finally func(*error), err error) {
 	if repo.tx != nil {
 		return repo.txFinallyContinue(), nil
