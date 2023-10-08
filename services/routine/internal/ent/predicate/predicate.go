@@ -9,8 +9,20 @@ import (
 // Act is the predicate function for act builders.
 type Act func(*sql.Selector)
 
-// ActImage is the predicate function for actimage builders.
-type ActImage func(*sql.Selector)
-
 // ActVersion is the predicate function for actversion builders.
 type ActVersion func(*sql.Selector)
+
+// DailyRoutine is the predicate function for dailyroutine builders.
+type DailyRoutine func(*sql.Selector)
+
+// Image is the predicate function for image builders.
+type Image func(*sql.Selector)
+
+// Program is the predicate function for program builders.
+type Program func(*sql.Selector)
+
+// ProgramVersion is the predicate function for programversion builders.
+type ProgramVersion func(*sql.Selector)
+
+// RoutineAct is the predicate function for routineact builders.
+type RoutineAct func(*sql.Selector)

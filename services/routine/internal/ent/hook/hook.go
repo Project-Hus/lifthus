@@ -20,18 +20,6 @@ func (f ActFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ActMutation", m)
 }
 
-// The ActImageFunc type is an adapter to allow the use of ordinary
-// function as ActImage mutator.
-type ActImageFunc func(context.Context, *ent.ActImageMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f ActImageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.ActImageMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ActImageMutation", m)
-}
-
 // The ActVersionFunc type is an adapter to allow the use of ordinary
 // function as ActVersion mutator.
 type ActVersionFunc func(context.Context, *ent.ActVersionMutation) (ent.Value, error)
@@ -42,6 +30,66 @@ func (f ActVersionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ActVersionMutation", m)
+}
+
+// The DailyRoutineFunc type is an adapter to allow the use of ordinary
+// function as DailyRoutine mutator.
+type DailyRoutineFunc func(context.Context, *ent.DailyRoutineMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DailyRoutineFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DailyRoutineMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DailyRoutineMutation", m)
+}
+
+// The ImageFunc type is an adapter to allow the use of ordinary
+// function as Image mutator.
+type ImageFunc func(context.Context, *ent.ImageMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ImageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ImageMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ImageMutation", m)
+}
+
+// The ProgramFunc type is an adapter to allow the use of ordinary
+// function as Program mutator.
+type ProgramFunc func(context.Context, *ent.ProgramMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProgramFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ProgramMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProgramMutation", m)
+}
+
+// The ProgramVersionFunc type is an adapter to allow the use of ordinary
+// function as ProgramVersion mutator.
+type ProgramVersionFunc func(context.Context, *ent.ProgramVersionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProgramVersionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ProgramVersionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProgramVersionMutation", m)
+}
+
+// The RoutineActFunc type is an adapter to allow the use of ordinary
+// function as RoutineAct mutator.
+type RoutineActFunc func(context.Context, *ent.RoutineActMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f RoutineActFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.RoutineActMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RoutineActMutation", m)
 }
 
 // Condition is a hook condition function.

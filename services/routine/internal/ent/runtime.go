@@ -4,8 +4,12 @@ package ent
 
 import (
 	"routine/internal/ent/act"
-	"routine/internal/ent/actimage"
 	"routine/internal/ent/actversion"
+	"routine/internal/ent/dailyroutine"
+	"routine/internal/ent/image"
+	"routine/internal/ent/program"
+	"routine/internal/ent/programversion"
+	"routine/internal/ent/routineact"
 	"routine/internal/ent/schema"
 )
 
@@ -23,16 +27,6 @@ func init() {
 	actDescName := actFields[3].Descriptor()
 	// act.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	act.NameValidator = actDescName.Validators[0].(func(string) error)
-	actimageFields := schema.ActImage{}.Fields()
-	_ = actimageFields
-	// actimageDescActVersionCode is the schema descriptor for act_version_code field.
-	actimageDescActVersionCode := actimageFields[1].Descriptor()
-	// actimage.ActVersionCodeValidator is a validator for the "act_version_code" field. It is called by the builders before save.
-	actimage.ActVersionCodeValidator = actimageDescActVersionCode.Validators[0].(func(string) error)
-	// actimageDescSrc is the schema descriptor for src field.
-	actimageDescSrc := actimageFields[3].Descriptor()
-	// actimage.SrcValidator is a validator for the "src" field. It is called by the builders before save.
-	actimage.SrcValidator = actimageDescSrc.Validators[0].(func(string) error)
 	actversionFields := schema.ActVersion{}.Fields()
 	_ = actversionFields
 	// actversionDescCode is the schema descriptor for code field.
@@ -47,4 +41,62 @@ func init() {
 	actversionDescText := actversionFields[5].Descriptor()
 	// actversion.TextValidator is a validator for the "text" field. It is called by the builders before save.
 	actversion.TextValidator = actversionDescText.Validators[0].(func(string) error)
+	dailyroutineFields := schema.DailyRoutine{}.Fields()
+	_ = dailyroutineFields
+	// dailyroutineDescCode is the schema descriptor for code field.
+	dailyroutineDescCode := dailyroutineFields[1].Descriptor()
+	// dailyroutine.CodeValidator is a validator for the "code" field. It is called by the builders before save.
+	dailyroutine.CodeValidator = dailyroutineDescCode.Validators[0].(func(string) error)
+	// dailyroutineDescProgramVersionCode is the schema descriptor for program_version_code field.
+	dailyroutineDescProgramVersionCode := dailyroutineFields[2].Descriptor()
+	// dailyroutine.ProgramVersionCodeValidator is a validator for the "program_version_code" field. It is called by the builders before save.
+	dailyroutine.ProgramVersionCodeValidator = dailyroutineDescProgramVersionCode.Validators[0].(func(string) error)
+	imageFields := schema.Image{}.Fields()
+	_ = imageFields
+	// imageDescKey is the schema descriptor for key field.
+	imageDescKey := imageFields[1].Descriptor()
+	// image.KeyValidator is a validator for the "key" field. It is called by the builders before save.
+	image.KeyValidator = imageDescKey.Validators[0].(func(string) error)
+	// imageDescSrc is the schema descriptor for src field.
+	imageDescSrc := imageFields[2].Descriptor()
+	// image.SrcValidator is a validator for the "src" field. It is called by the builders before save.
+	image.SrcValidator = imageDescSrc.Validators[0].(func(string) error)
+	programFields := schema.Program{}.Fields()
+	_ = programFields
+	// programDescCode is the schema descriptor for code field.
+	programDescCode := programFields[1].Descriptor()
+	// program.CodeValidator is a validator for the "code" field. It is called by the builders before save.
+	program.CodeValidator = programDescCode.Validators[0].(func(string) error)
+	// programDescTitle is the schema descriptor for title field.
+	programDescTitle := programFields[3].Descriptor()
+	// program.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	program.TitleValidator = programDescTitle.Validators[0].(func(string) error)
+	// programDescVersionDerivedFrom is the schema descriptor for version_derived_from field.
+	programDescVersionDerivedFrom := programFields[6].Descriptor()
+	// program.VersionDerivedFromValidator is a validator for the "version_derived_from" field. It is called by the builders before save.
+	program.VersionDerivedFromValidator = programDescVersionDerivedFrom.Validators[0].(func(string) error)
+	programversionFields := schema.ProgramVersion{}.Fields()
+	_ = programversionFields
+	// programversionDescCode is the schema descriptor for code field.
+	programversionDescCode := programversionFields[1].Descriptor()
+	// programversion.CodeValidator is a validator for the "code" field. It is called by the builders before save.
+	programversion.CodeValidator = programversionDescCode.Validators[0].(func(string) error)
+	// programversionDescProgramCode is the schema descriptor for program_code field.
+	programversionDescProgramCode := programversionFields[2].Descriptor()
+	// programversion.ProgramCodeValidator is a validator for the "program_code" field. It is called by the builders before save.
+	programversion.ProgramCodeValidator = programversionDescProgramCode.Validators[0].(func(string) error)
+	// programversionDescText is the schema descriptor for text field.
+	programversionDescText := programversionFields[5].Descriptor()
+	// programversion.TextValidator is a validator for the "text" field. It is called by the builders before save.
+	programversion.TextValidator = programversionDescText.Validators[0].(func(string) error)
+	routineactFields := schema.RoutineAct{}.Fields()
+	_ = routineactFields
+	// routineactDescDailyRoutineCode is the schema descriptor for daily_routine_code field.
+	routineactDescDailyRoutineCode := routineactFields[1].Descriptor()
+	// routineact.DailyRoutineCodeValidator is a validator for the "daily_routine_code" field. It is called by the builders before save.
+	routineact.DailyRoutineCodeValidator = routineactDescDailyRoutineCode.Validators[0].(func(string) error)
+	// routineactDescActVersion is the schema descriptor for act_version field.
+	routineactDescActVersion := routineactFields[3].Descriptor()
+	// routineact.ActVersionValidator is a validator for the "act_version" field. It is called by the builders before save.
+	routineact.ActVersionValidator = routineactDescActVersion.Validators[0].(func(string) error)
 }

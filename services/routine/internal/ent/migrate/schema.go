@@ -35,28 +35,6 @@ var (
 			},
 		},
 	}
-	// ActImagesColumns holds the columns for the "act_images" table.
-	ActImagesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUint64, Increment: true},
-		{Name: "act_version_code", Type: field.TypeString, Size: 20},
-		{Name: "order", Type: field.TypeUint},
-		{Name: "src", Type: field.TypeString, Size: 2147483647},
-		{Name: "act_version_act_images", Type: field.TypeUint64},
-	}
-	// ActImagesTable holds the schema information for the "act_images" table.
-	ActImagesTable = &schema.Table{
-		Name:       "act_images",
-		Columns:    ActImagesColumns,
-		PrimaryKey: []*schema.Column{ActImagesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "act_images_act_versions_act_images",
-				Columns:    []*schema.Column{ActImagesColumns[4]},
-				RefColumns: []*schema.Column{ActVersionsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-	}
 	// ActVersionsColumns holds the columns for the "act_versions" table.
 	ActVersionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
@@ -81,15 +59,176 @@ var (
 			},
 		},
 	}
+	// DailyRoutinesColumns holds the columns for the "daily_routines" table.
+	DailyRoutinesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "code", Type: field.TypeString, Unique: true, Size: 20},
+		{Name: "program_version_code", Type: field.TypeString, Size: 20},
+		{Name: "day", Type: field.TypeUint},
+		{Name: "program_version_daily_routines", Type: field.TypeUint64},
+	}
+	// DailyRoutinesTable holds the schema information for the "daily_routines" table.
+	DailyRoutinesTable = &schema.Table{
+		Name:       "daily_routines",
+		Columns:    DailyRoutinesColumns,
+		PrimaryKey: []*schema.Column{DailyRoutinesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "daily_routines_program_versions_daily_routines",
+				Columns:    []*schema.Column{DailyRoutinesColumns[4]},
+				RefColumns: []*schema.Column{ProgramVersionsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// ImagesColumns holds the columns for the "images" table.
+	ImagesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "key", Type: field.TypeString, Unique: true},
+		{Name: "src", Type: field.TypeString, Unique: true},
+	}
+	// ImagesTable holds the schema information for the "images" table.
+	ImagesTable = &schema.Table{
+		Name:       "images",
+		Columns:    ImagesColumns,
+		PrimaryKey: []*schema.Column{ImagesColumns[0]},
+	}
+	// ProgramsColumns holds the columns for the "programs" table.
+	ProgramsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "code", Type: field.TypeString, Unique: true, Size: 20},
+		{Name: "program_type", Type: field.TypeEnum, Enums: []string{"weekly", "daily"}},
+		{Name: "title", Type: field.TypeString, Size: 50},
+		{Name: "author", Type: field.TypeUint64},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "version_derived_from", Type: field.TypeString, Size: 20},
+	}
+	// ProgramsTable holds the schema information for the "programs" table.
+	ProgramsTable = &schema.Table{
+		Name:       "programs",
+		Columns:    ProgramsColumns,
+		PrimaryKey: []*schema.Column{ProgramsColumns[0]},
+	}
+	// ProgramVersionsColumns holds the columns for the "program_versions" table.
+	ProgramVersionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "code", Type: field.TypeString, Unique: true, Size: 20},
+		{Name: "program_code", Type: field.TypeString, Size: 20},
+		{Name: "version", Type: field.TypeUint},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "text", Type: field.TypeString, Size: 2147483647},
+		{Name: "program_program_versions", Type: field.TypeUint64},
+	}
+	// ProgramVersionsTable holds the schema information for the "program_versions" table.
+	ProgramVersionsTable = &schema.Table{
+		Name:       "program_versions",
+		Columns:    ProgramVersionsColumns,
+		PrimaryKey: []*schema.Column{ProgramVersionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "program_versions_programs_program_versions",
+				Columns:    []*schema.Column{ProgramVersionsColumns[6]},
+				RefColumns: []*schema.Column{ProgramsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// RoutineActsColumns holds the columns for the "routine_acts" table.
+	RoutineActsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "daily_routine_code", Type: field.TypeString, Size: 20},
+		{Name: "order", Type: field.TypeUint},
+		{Name: "act_version", Type: field.TypeString, Size: 20},
+		{Name: "stage", Type: field.TypeEnum, Enums: []string{"warmup", "main", "cooldown"}},
+		{Name: "reps_or_meters", Type: field.TypeUint},
+		{Name: "ratio_or_secs", Type: field.TypeFloat64},
+		{Name: "daily_routine_routine_acts", Type: field.TypeUint64},
+	}
+	// RoutineActsTable holds the schema information for the "routine_acts" table.
+	RoutineActsTable = &schema.Table{
+		Name:       "routine_acts",
+		Columns:    RoutineActsColumns,
+		PrimaryKey: []*schema.Column{RoutineActsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "routine_acts_daily_routines_routine_acts",
+				Columns:    []*schema.Column{RoutineActsColumns[7]},
+				RefColumns: []*schema.Column{DailyRoutinesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// ActVersionImagesColumns holds the columns for the "act_version_images" table.
+	ActVersionImagesColumns = []*schema.Column{
+		{Name: "act_version_id", Type: field.TypeUint64},
+		{Name: "image_id", Type: field.TypeUint64},
+	}
+	// ActVersionImagesTable holds the schema information for the "act_version_images" table.
+	ActVersionImagesTable = &schema.Table{
+		Name:       "act_version_images",
+		Columns:    ActVersionImagesColumns,
+		PrimaryKey: []*schema.Column{ActVersionImagesColumns[0], ActVersionImagesColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "act_version_images_act_version_id",
+				Columns:    []*schema.Column{ActVersionImagesColumns[0]},
+				RefColumns: []*schema.Column{ActVersionsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "act_version_images_image_id",
+				Columns:    []*schema.Column{ActVersionImagesColumns[1]},
+				RefColumns: []*schema.Column{ImagesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// ProgramVersionImagesColumns holds the columns for the "program_version_images" table.
+	ProgramVersionImagesColumns = []*schema.Column{
+		{Name: "program_version_id", Type: field.TypeUint64},
+		{Name: "image_id", Type: field.TypeUint64},
+	}
+	// ProgramVersionImagesTable holds the schema information for the "program_version_images" table.
+	ProgramVersionImagesTable = &schema.Table{
+		Name:       "program_version_images",
+		Columns:    ProgramVersionImagesColumns,
+		PrimaryKey: []*schema.Column{ProgramVersionImagesColumns[0], ProgramVersionImagesColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "program_version_images_program_version_id",
+				Columns:    []*schema.Column{ProgramVersionImagesColumns[0]},
+				RefColumns: []*schema.Column{ProgramVersionsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "program_version_images_image_id",
+				Columns:    []*schema.Column{ProgramVersionImagesColumns[1]},
+				RefColumns: []*schema.Column{ImagesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ActsTable,
-		ActImagesTable,
 		ActVersionsTable,
+		DailyRoutinesTable,
+		ImagesTable,
+		ProgramsTable,
+		ProgramVersionsTable,
+		RoutineActsTable,
+		ActVersionImagesTable,
+		ProgramVersionImagesTable,
 	}
 )
 
 func init() {
-	ActImagesTable.ForeignKeys[0].RefTable = ActVersionsTable
 	ActVersionsTable.ForeignKeys[0].RefTable = ActsTable
+	DailyRoutinesTable.ForeignKeys[0].RefTable = ProgramVersionsTable
+	ProgramVersionsTable.ForeignKeys[0].RefTable = ProgramsTable
+	RoutineActsTable.ForeignKeys[0].RefTable = DailyRoutinesTable
+	ActVersionImagesTable.ForeignKeys[0].RefTable = ActVersionsTable
+	ActVersionImagesTable.ForeignKeys[1].RefTable = ImagesTable
+	ProgramVersionImagesTable.ForeignKeys[0].RefTable = ProgramVersionsTable
+	ProgramVersionImagesTable.ForeignKeys[1].RefTable = ImagesTable
 }

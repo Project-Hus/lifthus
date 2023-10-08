@@ -378,21 +378,21 @@ func HasActWith(preds ...predicate.Act) predicate.ActVersion {
 	})
 }
 
-// HasActImages applies the HasEdge predicate on the "act_images" edge.
-func HasActImages() predicate.ActVersion {
+// HasImages applies the HasEdge predicate on the "images" edge.
+func HasImages() predicate.ActVersion {
 	return predicate.ActVersion(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ActImagesTable, ActImagesColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, ImagesTable, ImagesPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasActImagesWith applies the HasEdge predicate on the "act_images" edge with a given conditions (other predicates).
-func HasActImagesWith(preds ...predicate.ActImage) predicate.ActVersion {
+// HasImagesWith applies the HasEdge predicate on the "images" edge with a given conditions (other predicates).
+func HasImagesWith(preds ...predicate.Image) predicate.ActVersion {
 	return predicate.ActVersion(func(s *sql.Selector) {
-		step := newActImagesStep()
+		step := newImagesStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

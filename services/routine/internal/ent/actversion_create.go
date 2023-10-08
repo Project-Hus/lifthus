@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"routine/internal/ent/act"
-	"routine/internal/ent/actimage"
 	"routine/internal/ent/actversion"
+	"routine/internal/ent/image"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -69,19 +69,19 @@ func (avc *ActVersionCreate) SetAct(a *Act) *ActVersionCreate {
 	return avc.SetActID(a.ID)
 }
 
-// AddActImageIDs adds the "act_images" edge to the ActImage entity by IDs.
-func (avc *ActVersionCreate) AddActImageIDs(ids ...uint64) *ActVersionCreate {
-	avc.mutation.AddActImageIDs(ids...)
+// AddImageIDs adds the "images" edge to the Image entity by IDs.
+func (avc *ActVersionCreate) AddImageIDs(ids ...uint64) *ActVersionCreate {
+	avc.mutation.AddImageIDs(ids...)
 	return avc
 }
 
-// AddActImages adds the "act_images" edges to the ActImage entity.
-func (avc *ActVersionCreate) AddActImages(a ...*ActImage) *ActVersionCreate {
-	ids := make([]uint64, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+// AddImages adds the "images" edges to the Image entity.
+func (avc *ActVersionCreate) AddImages(i ...*Image) *ActVersionCreate {
+	ids := make([]uint64, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
 	}
-	return avc.AddActImageIDs(ids...)
+	return avc.AddImageIDs(ids...)
 }
 
 // Mutation returns the ActVersionMutation object of the builder.
@@ -220,15 +220,15 @@ func (avc *ActVersionCreate) createSpec() (*ActVersion, *sqlgraph.CreateSpec) {
 		_node.act_act_versions = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := avc.mutation.ActImagesIDs(); len(nodes) > 0 {
+	if nodes := avc.mutation.ImagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   actversion.ActImagesTable,
-			Columns: []string{actversion.ActImagesColumn},
+			Table:   actversion.ImagesTable,
+			Columns: actversion.ImagesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(actimage.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

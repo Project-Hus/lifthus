@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"routine/internal/ent/act"
-	"routine/internal/ent/actimage"
 	"routine/internal/ent/actversion"
+	"routine/internal/ent/image"
 	"routine/internal/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
@@ -46,19 +46,19 @@ func (avu *ActVersionUpdate) SetAct(a *Act) *ActVersionUpdate {
 	return avu.SetActID(a.ID)
 }
 
-// AddActImageIDs adds the "act_images" edge to the ActImage entity by IDs.
-func (avu *ActVersionUpdate) AddActImageIDs(ids ...uint64) *ActVersionUpdate {
-	avu.mutation.AddActImageIDs(ids...)
+// AddImageIDs adds the "images" edge to the Image entity by IDs.
+func (avu *ActVersionUpdate) AddImageIDs(ids ...uint64) *ActVersionUpdate {
+	avu.mutation.AddImageIDs(ids...)
 	return avu
 }
 
-// AddActImages adds the "act_images" edges to the ActImage entity.
-func (avu *ActVersionUpdate) AddActImages(a ...*ActImage) *ActVersionUpdate {
-	ids := make([]uint64, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+// AddImages adds the "images" edges to the Image entity.
+func (avu *ActVersionUpdate) AddImages(i ...*Image) *ActVersionUpdate {
+	ids := make([]uint64, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
 	}
-	return avu.AddActImageIDs(ids...)
+	return avu.AddImageIDs(ids...)
 }
 
 // Mutation returns the ActVersionMutation object of the builder.
@@ -72,25 +72,25 @@ func (avu *ActVersionUpdate) ClearAct() *ActVersionUpdate {
 	return avu
 }
 
-// ClearActImages clears all "act_images" edges to the ActImage entity.
-func (avu *ActVersionUpdate) ClearActImages() *ActVersionUpdate {
-	avu.mutation.ClearActImages()
+// ClearImages clears all "images" edges to the Image entity.
+func (avu *ActVersionUpdate) ClearImages() *ActVersionUpdate {
+	avu.mutation.ClearImages()
 	return avu
 }
 
-// RemoveActImageIDs removes the "act_images" edge to ActImage entities by IDs.
-func (avu *ActVersionUpdate) RemoveActImageIDs(ids ...uint64) *ActVersionUpdate {
-	avu.mutation.RemoveActImageIDs(ids...)
+// RemoveImageIDs removes the "images" edge to Image entities by IDs.
+func (avu *ActVersionUpdate) RemoveImageIDs(ids ...uint64) *ActVersionUpdate {
+	avu.mutation.RemoveImageIDs(ids...)
 	return avu
 }
 
-// RemoveActImages removes "act_images" edges to ActImage entities.
-func (avu *ActVersionUpdate) RemoveActImages(a ...*ActImage) *ActVersionUpdate {
-	ids := make([]uint64, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+// RemoveImages removes "images" edges to Image entities.
+func (avu *ActVersionUpdate) RemoveImages(i ...*Image) *ActVersionUpdate {
+	ids := make([]uint64, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
 	}
-	return avu.RemoveActImageIDs(ids...)
+	return avu.RemoveImageIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -177,28 +177,28 @@ func (avu *ActVersionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if avu.mutation.ActImagesCleared() {
+	if avu.mutation.ImagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   actversion.ActImagesTable,
-			Columns: []string{actversion.ActImagesColumn},
+			Table:   actversion.ImagesTable,
+			Columns: actversion.ImagesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(actimage.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeUint64),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := avu.mutation.RemovedActImagesIDs(); len(nodes) > 0 && !avu.mutation.ActImagesCleared() {
+	if nodes := avu.mutation.RemovedImagesIDs(); len(nodes) > 0 && !avu.mutation.ImagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   actversion.ActImagesTable,
-			Columns: []string{actversion.ActImagesColumn},
+			Table:   actversion.ImagesTable,
+			Columns: actversion.ImagesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(actimage.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {
@@ -206,15 +206,15 @@ func (avu *ActVersionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := avu.mutation.ActImagesIDs(); len(nodes) > 0 {
+	if nodes := avu.mutation.ImagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   actversion.ActImagesTable,
-			Columns: []string{actversion.ActImagesColumn},
+			Table:   actversion.ImagesTable,
+			Columns: actversion.ImagesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(actimage.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {
@@ -259,19 +259,19 @@ func (avuo *ActVersionUpdateOne) SetAct(a *Act) *ActVersionUpdateOne {
 	return avuo.SetActID(a.ID)
 }
 
-// AddActImageIDs adds the "act_images" edge to the ActImage entity by IDs.
-func (avuo *ActVersionUpdateOne) AddActImageIDs(ids ...uint64) *ActVersionUpdateOne {
-	avuo.mutation.AddActImageIDs(ids...)
+// AddImageIDs adds the "images" edge to the Image entity by IDs.
+func (avuo *ActVersionUpdateOne) AddImageIDs(ids ...uint64) *ActVersionUpdateOne {
+	avuo.mutation.AddImageIDs(ids...)
 	return avuo
 }
 
-// AddActImages adds the "act_images" edges to the ActImage entity.
-func (avuo *ActVersionUpdateOne) AddActImages(a ...*ActImage) *ActVersionUpdateOne {
-	ids := make([]uint64, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+// AddImages adds the "images" edges to the Image entity.
+func (avuo *ActVersionUpdateOne) AddImages(i ...*Image) *ActVersionUpdateOne {
+	ids := make([]uint64, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
 	}
-	return avuo.AddActImageIDs(ids...)
+	return avuo.AddImageIDs(ids...)
 }
 
 // Mutation returns the ActVersionMutation object of the builder.
@@ -285,25 +285,25 @@ func (avuo *ActVersionUpdateOne) ClearAct() *ActVersionUpdateOne {
 	return avuo
 }
 
-// ClearActImages clears all "act_images" edges to the ActImage entity.
-func (avuo *ActVersionUpdateOne) ClearActImages() *ActVersionUpdateOne {
-	avuo.mutation.ClearActImages()
+// ClearImages clears all "images" edges to the Image entity.
+func (avuo *ActVersionUpdateOne) ClearImages() *ActVersionUpdateOne {
+	avuo.mutation.ClearImages()
 	return avuo
 }
 
-// RemoveActImageIDs removes the "act_images" edge to ActImage entities by IDs.
-func (avuo *ActVersionUpdateOne) RemoveActImageIDs(ids ...uint64) *ActVersionUpdateOne {
-	avuo.mutation.RemoveActImageIDs(ids...)
+// RemoveImageIDs removes the "images" edge to Image entities by IDs.
+func (avuo *ActVersionUpdateOne) RemoveImageIDs(ids ...uint64) *ActVersionUpdateOne {
+	avuo.mutation.RemoveImageIDs(ids...)
 	return avuo
 }
 
-// RemoveActImages removes "act_images" edges to ActImage entities.
-func (avuo *ActVersionUpdateOne) RemoveActImages(a ...*ActImage) *ActVersionUpdateOne {
-	ids := make([]uint64, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+// RemoveImages removes "images" edges to Image entities.
+func (avuo *ActVersionUpdateOne) RemoveImages(i ...*Image) *ActVersionUpdateOne {
+	ids := make([]uint64, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
 	}
-	return avuo.RemoveActImageIDs(ids...)
+	return avuo.RemoveImageIDs(ids...)
 }
 
 // Where appends a list predicates to the ActVersionUpdate builder.
@@ -420,28 +420,28 @@ func (avuo *ActVersionUpdateOne) sqlSave(ctx context.Context) (_node *ActVersion
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if avuo.mutation.ActImagesCleared() {
+	if avuo.mutation.ImagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   actversion.ActImagesTable,
-			Columns: []string{actversion.ActImagesColumn},
+			Table:   actversion.ImagesTable,
+			Columns: actversion.ImagesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(actimage.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeUint64),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := avuo.mutation.RemovedActImagesIDs(); len(nodes) > 0 && !avuo.mutation.ActImagesCleared() {
+	if nodes := avuo.mutation.RemovedImagesIDs(); len(nodes) > 0 && !avuo.mutation.ImagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   actversion.ActImagesTable,
-			Columns: []string{actversion.ActImagesColumn},
+			Table:   actversion.ImagesTable,
+			Columns: actversion.ImagesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(actimage.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {
@@ -449,15 +449,15 @@ func (avuo *ActVersionUpdateOne) sqlSave(ctx context.Context) (_node *ActVersion
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := avuo.mutation.ActImagesIDs(); len(nodes) > 0 {
+	if nodes := avuo.mutation.ImagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   actversion.ActImagesTable,
-			Columns: []string{actversion.ActImagesColumn},
+			Table:   actversion.ImagesTable,
+			Columns: actversion.ImagesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(actimage.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

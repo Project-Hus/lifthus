@@ -39,8 +39,8 @@ type ActVersion struct {
 type ActVersionEdges struct {
 	// Act holds the value of the act edge.
 	Act *Act `json:"act,omitempty"`
-	// ActImages holds the value of the act_images edge.
-	ActImages []*ActImage `json:"act_images,omitempty"`
+	// Images holds the value of the images edge.
+	Images []*Image `json:"images,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
@@ -59,13 +59,13 @@ func (e ActVersionEdges) ActOrErr() (*Act, error) {
 	return nil, &NotLoadedError{edge: "act"}
 }
 
-// ActImagesOrErr returns the ActImages value or an error if the edge
+// ImagesOrErr returns the Images value or an error if the edge
 // was not loaded in eager-loading.
-func (e ActVersionEdges) ActImagesOrErr() ([]*ActImage, error) {
+func (e ActVersionEdges) ImagesOrErr() ([]*Image, error) {
 	if e.loadedTypes[1] {
-		return e.ActImages, nil
+		return e.Images, nil
 	}
-	return nil, &NotLoadedError{edge: "act_images"}
+	return nil, &NotLoadedError{edge: "images"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -157,9 +157,9 @@ func (av *ActVersion) QueryAct() *ActQuery {
 	return NewActVersionClient(av.config).QueryAct(av)
 }
 
-// QueryActImages queries the "act_images" edge of the ActVersion entity.
-func (av *ActVersion) QueryActImages() *ActImageQuery {
-	return NewActVersionClient(av.config).QueryActImages(av)
+// QueryImages queries the "images" edge of the ActVersion entity.
+func (av *ActVersion) QueryImages() *ImageQuery {
+	return NewActVersionClient(av.config).QueryImages(av)
 }
 
 // Update returns a builder for updating this ActVersion.

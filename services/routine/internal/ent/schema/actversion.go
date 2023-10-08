@@ -27,6 +27,7 @@ func (ActVersion) Fields() []ent.Field {
 func (ActVersion) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("act", Act.Type).Ref("act_versions").Unique().Required(),
-		edge.To("act_images", ActImage.Type),
+
+		edge.To("images", Image.Type),
 	}
 }

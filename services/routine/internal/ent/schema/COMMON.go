@@ -10,10 +10,12 @@ import (
 // enum
 var ProgramType = []string{"weekly", "daily"}
 var ActType = []string{"weight", "time", "simple"}
+var RoutineActStage = []string{"warmup", "main", "cooldown"}
+
 var RecStatus = []string{"history", "waiting", "proceeding", "completed", "failed", "canceled"}
 
 func IdField() ent.Field {
-	return field.Uint64("id").Unique()
+	return field.Uint64("id").Unique().Immutable()
 }
 
 func CodeIndex() ent.Index {

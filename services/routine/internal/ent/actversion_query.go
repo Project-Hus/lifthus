@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"math"
 	"routine/internal/ent/act"
-	"routine/internal/ent/actimage"
 	"routine/internal/ent/actversion"
+	"routine/internal/ent/image"
 	"routine/internal/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
@@ -20,13 +20,13 @@ import (
 // ActVersionQuery is the builder for querying ActVersion entities.
 type ActVersionQuery struct {
 	config
-	ctx           *QueryContext
-	order         []actversion.OrderOption
-	inters        []Interceptor
-	predicates    []predicate.ActVersion
-	withAct       *ActQuery
-	withActImages *ActImageQuery
-	withFKs       bool
+	ctx        *QueryContext
+	order      []actversion.OrderOption
+	inters     []Interceptor
+	predicates []predicate.ActVersion
+	withAct    *ActQuery
+	withImages *ImageQuery
+	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -85,9 +85,9 @@ func (avq *ActVersionQuery) QueryAct() *ActQuery {
 	return query
 }
 
-// QueryActImages chains the current query on the "act_images" edge.
-func (avq *ActVersionQuery) QueryActImages() *ActImageQuery {
-	query := (&ActImageClient{config: avq.config}).Query()
+// QueryImages chains the current query on the "images" edge.
+func (avq *ActVersionQuery) QueryImages() *ImageQuery {
+	query := (&ImageClient{config: avq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := avq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -98,8 +98,8 @@ func (avq *ActVersionQuery) QueryActImages() *ActImageQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(actversion.Table, actversion.FieldID, selector),
-			sqlgraph.To(actimage.Table, actimage.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, actversion.ActImagesTable, actversion.ActImagesColumn),
+			sqlgraph.To(image.Table, image.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, actversion.ImagesTable, actversion.ImagesPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(avq.driver.Dialect(), step)
 		return fromU, nil
@@ -294,13 +294,13 @@ func (avq *ActVersionQuery) Clone() *ActVersionQuery {
 		return nil
 	}
 	return &ActVersionQuery{
-		config:        avq.config,
-		ctx:           avq.ctx.Clone(),
-		order:         append([]actversion.OrderOption{}, avq.order...),
-		inters:        append([]Interceptor{}, avq.inters...),
-		predicates:    append([]predicate.ActVersion{}, avq.predicates...),
-		withAct:       avq.withAct.Clone(),
-		withActImages: avq.withActImages.Clone(),
+		config:     avq.config,
+		ctx:        avq.ctx.Clone(),
+		order:      append([]actversion.OrderOption{}, avq.order...),
+		inters:     append([]Interceptor{}, avq.inters...),
+		predicates: append([]predicate.ActVersion{}, avq.predicates...),
+		withAct:    avq.withAct.Clone(),
+		withImages: avq.withImages.Clone(),
 		// clone intermediate query.
 		sql:  avq.sql.Clone(),
 		path: avq.path,
@@ -318,14 +318,14 @@ func (avq *ActVersionQuery) WithAct(opts ...func(*ActQuery)) *ActVersionQuery {
 	return avq
 }
 
-// WithActImages tells the query-builder to eager-load the nodes that are connected to
-// the "act_images" edge. The optional arguments are used to configure the query builder of the edge.
-func (avq *ActVersionQuery) WithActImages(opts ...func(*ActImageQuery)) *ActVersionQuery {
-	query := (&ActImageClient{config: avq.config}).Query()
+// WithImages tells the query-builder to eager-load the nodes that are connected to
+// the "images" edge. The optional arguments are used to configure the query builder of the edge.
+func (avq *ActVersionQuery) WithImages(opts ...func(*ImageQuery)) *ActVersionQuery {
+	query := (&ImageClient{config: avq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	avq.withActImages = query
+	avq.withImages = query
 	return avq
 }
 
@@ -410,7 +410,7 @@ func (avq *ActVersionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 		_spec       = avq.querySpec()
 		loadedTypes = [2]bool{
 			avq.withAct != nil,
-			avq.withActImages != nil,
+			avq.withImages != nil,
 		}
 	)
 	if avq.withAct != nil {
@@ -443,10 +443,10 @@ func (avq *ActVersionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 			return nil, err
 		}
 	}
-	if query := avq.withActImages; query != nil {
-		if err := avq.loadActImages(ctx, query, nodes,
-			func(n *ActVersion) { n.Edges.ActImages = []*ActImage{} },
-			func(n *ActVersion, e *ActImage) { n.Edges.ActImages = append(n.Edges.ActImages, e) }); err != nil {
+	if query := avq.withImages; query != nil {
+		if err := avq.loadImages(ctx, query, nodes,
+			func(n *ActVersion) { n.Edges.Images = []*Image{} },
+			func(n *ActVersion, e *Image) { n.Edges.Images = append(n.Edges.Images, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -485,34 +485,64 @@ func (avq *ActVersionQuery) loadAct(ctx context.Context, query *ActQuery, nodes 
 	}
 	return nil
 }
-func (avq *ActVersionQuery) loadActImages(ctx context.Context, query *ActImageQuery, nodes []*ActVersion, init func(*ActVersion), assign func(*ActVersion, *ActImage)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uint64]*ActVersion)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
+func (avq *ActVersionQuery) loadImages(ctx context.Context, query *ImageQuery, nodes []*ActVersion, init func(*ActVersion), assign func(*ActVersion, *Image)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uint64]*ActVersion)
+	nids := make(map[uint64]map[*ActVersion]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
 		if init != nil {
-			init(nodes[i])
+			init(node)
 		}
 	}
-	query.withFKs = true
-	query.Where(predicate.ActImage(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(actversion.ActImagesColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(actversion.ImagesTable)
+		s.Join(joinT).On(s.C(image.FieldID), joinT.C(actversion.ImagesPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(actversion.ImagesPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(actversion.ImagesPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := uint64(values[0].(*sql.NullInt64).Int64)
+				inValue := uint64(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*ActVersion]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Image](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.act_version_act_images
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "act_version_act_images" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "act_version_act_images" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected "images" node returned %v`, n.ID)
 		}
-		assign(node, n)
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }
