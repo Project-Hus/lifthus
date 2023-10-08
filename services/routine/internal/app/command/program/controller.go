@@ -1,56 +1,86 @@
-package program
+package programcmd
 
-// import (
-// 	"lifthus-auth/common/guard"
-// 	"net/http"
-// 	"routine/ent"
+import (
+	"lifthus-auth/common/guard"
+	"net/http"
+	"routine/internal/app/dto"
 
-// 	"github.com/labstack/echo/v4"
-// )
+	"log"
 
-// type ProgramApiControllerParams struct {
-// 	DbClient   *ent.Client
-// 	HttpClient *http.Client
-// }
+	"github.com/labstack/echo/v4"
+)
 
-// // NewProgramApiController returns Echo instance comprising of program api routes to main.
-// func NewProgramApiController(programApi *echo.Echo, params ProgramApiControllerParams) *echo.Echo {
-// 	programApiController := newProgramApiController(params)
+func SetActCommandControllerTo(e *echo.Echo) *echo.Echo {
+	ac := &actCommandController{svc: newActCommandService()}
+	e.POST("/routine/act", ac.createAct, guard.UserGuard)
+	e.POST("/routine/act/upgrade", ac.upgradeAct, guard.UserGuard)
+	return e
+}
 
-// 	/* PROGRAM */
-// 	// create program
-// 	programApi.POST("/routine/program/weekly", programApiController.createWeeklyProgram, guard.UserGuard)
-// 	// query program by program name
-// 	programApi.GET("/routine/program", programApiController.queryProgramsByName)
-// 	// query specific program by slug
-// 	programApi.GET("/routine/program/:slug", programApiController.queryProgramBySlug)
+type actCommandController struct {
+	svc *actCommandService
+}
 
-// 	/* ACT */
-// 	// create act
-// 	programApi.POST("/routine/act", programApiController.createAct, guard.UserGuard)
-// 	// query acts by act name
-// 	programApi.GET("/routine/act", programApiController.queryAct)
+// createAct godoc
+// @Router /act [post]
+// @Param Authorization header string true "lifthus_st"
+// @Param creatActDto body dto.CreateActRequestDto true "create act dto"
+// @Summary
+// @Tags
+// Success 201 "returns created Act"
+// Failure 400 "invalid request"
+// Failure 401 "unauthorized"
+// Failure 403 "forbidden"
+// Failure 500 "failed to create Act"
+func (ac *actCommandController) createAct(c echo.Context) error {
+	reqDto := dto.CreateActRequestDto{}
+	if err := c.Bind(&reqDto); err != nil {
+		log.Printf("failed to bind request: %v", err)
+		return c.String(http.StatusBadRequest, "invalid request")
+	}
 
-// 	return programApi
-// }
+	svcDto, err := reqDto.ToServiceDto()
+	if err != nil {
+		log.Printf("failed to convert to service dto: %v", err)
+		return c.String(http.StatusBadRequest, "invalid request")
+	}
 
-// // newAuthApiController returns a new authApiController that implements every auth api features.
-// func newProgramApiController(params ProgramApiControllerParams) programApis {
-// 	return &programApiController{dbClient: params.DbClient, httpClient: params.HttpClient}
-// }
+	clientId := c.Get("uid").(uint64)
+	if svcDto.Author != clientId {
+		log.Printf("illegal access: %v", err)
+		return c.String(http.StatusForbidden, "illegal access")
+	}
 
-// // authApiController defines what auth api has to have and implements authApis interface at service file.
-// type programApiController struct {
-// 	dbClient   *ent.Client
-// 	httpClient *http.Client
-// }
+	act, err := ac.svc.createAct(c.Request().Context(), *svcDto)
+	if err != nil {
+		log.Printf("failed to create Act: %v", err)
+		return c.String(http.StatusInternalServerError, "failed to create Act")
+	}
+	return c.JSON(http.StatusCreated, act)
+}
 
-// // authApis interface defines what auth api has to handle
-// type programApis interface {
-// 	createWeeklyProgram(c echo.Context) error
-// 	queryProgramsByName(c echo.Context) error
-// 	queryProgramBySlug(c echo.Context) error
-
-// 	createAct(c echo.Context) error
-// 	queryAct(c echo.Context) error
-// }
+// upgradeAct godoc
+// @Router /act/upgrade [post]
+// @Param Authorization header string true "lifthus_st"
+// @Param upgradeActDto body dto.UpgradeActRequestDto true "upgrade act dto"
+// @Summary
+// @Tags
+// Success 201 "returns upgraded Act"
+// Failure 400 "invalid request"
+// Failure 401 "unauthorized"
+// Failure 403 "forbidden"
+// Failure 500 "failed to create Act"
+func (ac *actCommandController) upgradeAct(c echo.Context) error {
+	reqDto := dto.UpgradeActRequestDto{}
+	if err := c.Bind(&reqDto); err != nil {
+		log.Printf("failed to bind request: %v", err)
+		return c.String(http.StatusBadRequest, "invalid request")
+	}
+	clientId := c.Get("uid").(uint64)
+	qaDto, err := ac.svc.upgradeAct(c.Request().Context(), clientId, dto.UpgradeActServiceDto(reqDto))
+	if err != nil {
+		log.Printf("failed to upgrade Act: %v", err)
+		return c.String(http.StatusInternalServerError, "failed to upgrade Act")
+	}
+	return c.JSON(http.StatusCreated, qaDto)
+}

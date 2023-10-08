@@ -1,4 +1,4 @@
-package actCommand
+package actcmd
 
 import (
 	"lifthus-auth/common/guard"
