@@ -126,6 +126,18 @@ var (
 		Name:       "images",
 		Columns:    ImagesColumns,
 		PrimaryKey: []*schema.Column{ImagesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "image_key",
+				Unique:  true,
+				Columns: []*schema.Column{ImagesColumns[1]},
+			},
+			{
+				Name:    "image_src",
+				Unique:  true,
+				Columns: []*schema.Column{ImagesColumns[2]},
+			},
+		},
 	}
 	// ProgramsColumns holds the columns for the "programs" table.
 	ProgramsColumns = []*schema.Column{

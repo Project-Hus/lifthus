@@ -6,7 +6,9 @@ import (
 	"routine/internal/domain/aggregates/act"
 	"routine/internal/ent"
 	eact "routine/internal/ent/act"
+	"routine/internal/ent/actimage"
 	eactv "routine/internal/ent/actversion"
+	"routine/internal/ent/image"
 	"routine/internal/repository"
 	"time"
 )
@@ -33,7 +35,8 @@ func (repo *EntActRepository) FindActByCode(ctx context.Context, code act.ActCod
 				q.WithImages()
 				q.WithActImages(
 					func(q *ent.ActImageQuery) {
-						q.Order(ent.Asc(eacti.FieldOrder))
+						q.Order(ent.Asc(actimage.FieldOrder))
+						q.WithImage()
 					},
 				)
 			},
@@ -128,8 +131,11 @@ func (repo *EntActRepository) createImgBulk(ctx context.Context, ver *ent.ActVer
 	}
 	states := make([]*ent.ActImageCreate, len(imgs))
 	for i, img := range imgs {
-		states[i] = tx.ActImage.Create().
-			SetActVersionCode(ver.Code).SetOrder(uint(i) + 1).SetSrc(img)
+		img, err := tx.Image.Query().Where(image.Src(img)).First(ctx)
+		if err != nil {
+			return nil, err
+		}
+		states[i] = tx.ActImage.Create().SetOrder(uint(i) + 1).SetImage(img)
 	}
 	return tx.ActImage.CreateBulk(states...).Save(ctx)
 }

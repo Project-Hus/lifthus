@@ -40,7 +40,7 @@ func (repo *EntActRepository) actVersionsFromEntVersions(ctx context.Context, ev
 func imgSrcsFromEntImgs(eis []*ent.ActImage) act.ActImageSrcs {
 	imgSrcs := make(act.ActImageSrcs, len(eis))
 	for i, ei := range eis {
-		imgSrcs[i] = ei.Src
+		imgSrcs[i] = ei.Edges.Image.Src
 	}
 	return imgSrcs
 }
