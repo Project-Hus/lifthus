@@ -28,7 +28,7 @@ type Program struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// VersionDerivedFrom holds the value of the "version_derived_from" field.
-	VersionDerivedFrom string `json:"version_derived_from,omitempty"`
+	VersionDerivedFrom *string `json:"version_derived_from,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProgramQuery when eager-loading is set.
 	Edges        ProgramEdges `json:"edges"`
@@ -119,7 +119,8 @@ func (pr *Program) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field version_derived_from", values[i])
 			} else if value.Valid {
-				pr.VersionDerivedFrom = value.String
+				pr.VersionDerivedFrom = new(string)
+				*pr.VersionDerivedFrom = value.String
 			}
 		default:
 			pr.selectValues.Set(columns[i], values[i])
@@ -177,8 +178,10 @@ func (pr *Program) String() string {
 	builder.WriteString("created_at=")
 	builder.WriteString(pr.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("version_derived_from=")
-	builder.WriteString(pr.VersionDerivedFrom)
+	if v := pr.VersionDerivedFrom; v != nil {
+		builder.WriteString("version_derived_from=")
+		builder.WriteString(*v)
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

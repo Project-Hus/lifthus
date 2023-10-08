@@ -23,7 +23,7 @@ func (Program) Fields() []ent.Field {
 		field.Uint64("author").Immutable(),
 		CreatedAtField(),
 
-		CodeRef("version_derived_from"),
+		CodeRefNillable("version_derived_from"),
 	}
 }
 

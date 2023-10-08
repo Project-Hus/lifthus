@@ -204,7 +204,7 @@ func (pc *ProgramCreate) createSpec() (*Program, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := pc.mutation.VersionDerivedFrom(); ok {
 		_spec.SetField(program.FieldVersionDerivedFrom, field.TypeString, value)
-		_node.VersionDerivedFrom = value
+		_node.VersionDerivedFrom = &value
 	}
 	if nodes := pc.mutation.ProgramVersionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

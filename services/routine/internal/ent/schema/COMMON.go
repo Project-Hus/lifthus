@@ -30,6 +30,10 @@ func CodeRef(fn string) ent.Field {
 	return field.String(fn).NotEmpty().Annotations(entsql.Annotation{Size: 20}).Immutable()
 }
 
+func CodeRefNillable(fn string) ent.Field {
+	return field.String(fn).NotEmpty().Annotations(entsql.Annotation{Size: 20}).Immutable().Nillable()
+}
+
 func CreatedAtField() ent.Field {
 	return field.Time("created_at").Immutable()
 }

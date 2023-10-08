@@ -3812,7 +3812,7 @@ func (m *ProgramMutation) VersionDerivedFrom() (r string, exists bool) {
 // OldVersionDerivedFrom returns the old "version_derived_from" field's value of the Program entity.
 // If the Program object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProgramMutation) OldVersionDerivedFrom(ctx context.Context) (v string, err error) {
+func (m *ProgramMutation) OldVersionDerivedFrom(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldVersionDerivedFrom is only allowed on UpdateOne operations")
 	}
