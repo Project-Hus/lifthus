@@ -14,6 +14,12 @@ type EntProgramRepository struct {
 }
 
 func (repo *EntProgramRepository) FindProgramByCode(ctx context.Context, code program.ProgramCode) (fProgram *program.Program, err error) {
+	_, finally, err := repo.Tx(ctx)
+	defer finally(&err)
+	if err != nil {
+		return nil, err
+	}
+	//ep, err := tx..Query().Where(eprogram.Code(code)).First(ctx)
 	return nil, nil
 }
 

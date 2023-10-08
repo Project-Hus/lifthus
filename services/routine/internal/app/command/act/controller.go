@@ -26,7 +26,7 @@ type actCommandController struct {
 // @Param Authorization header string true "lifthus_st"
 // @Param creatActDto body dto.CreateActRequestDto true "create act dto"
 // @Summary
-// @Tags
+// @Tags act
 // Success 201 "returns created Act"
 // Failure 400 "invalid request"
 // Failure 401 "unauthorized"
@@ -64,7 +64,7 @@ func (ac *actCommandController) createAct(c echo.Context) error {
 // @Param Authorization header string true "lifthus_st"
 // @Param upgradeActDto body dto.UpgradeActRequestDto true "upgrade act dto"
 // @Summary
-// @Tags
+// @Tags act
 // Success 201 "returns upgraded Act"
 // Failure 400 "invalid request"
 // Failure 401 "unauthorized"

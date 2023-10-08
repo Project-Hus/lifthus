@@ -5,8 +5,8 @@ import (
 	"strconv"
 )
 
-func QueryProgramDtoFrom(p *program.Program) QueryProgramDto {
-	return QueryProgramDto{}
+func QueryProgramDtoFrom(p *program.Program) *QueryProgramDto {
+	return &QueryProgramDto{}
 }
 
 type QueryProgramDto struct {

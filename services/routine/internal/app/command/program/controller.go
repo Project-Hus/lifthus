@@ -24,7 +24,7 @@ type programCommandController struct {
 // @Param Authorization header string true "lifthus_st"
 // @Param creatProgramDto body dto.CreateProgramRequestDto true "create program dto"
 // @Summary
-// @Tags
+// @Tags program
 // Success 201 "returns created Program"
 // Failure 400 "invalid request"
 // Failure 401 "unauthorized"
@@ -38,7 +38,7 @@ func (pc *programCommandController) createProgram(c echo.Context) error {
 	}
 	cpSvcDto, err := cpDto.ToServiceDto()
 	if err != nil {
-		log.Printf("failed to convert to service dto: %v", err)
+		log.Printf("failed to convert createProgramReqDto to service dto: %v", err)
 		return c.String(http.StatusBadRequest, "invalid request body")
 	}
 	clientId := c.Get("uid").(uint64)
