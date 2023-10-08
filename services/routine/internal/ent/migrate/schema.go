@@ -35,6 +35,40 @@ var (
 			},
 		},
 	}
+	// ActImagesColumns holds the columns for the "act_images" table.
+	ActImagesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "order", Type: field.TypeUint},
+		{Name: "act_version_id", Type: field.TypeUint64},
+		{Name: "image_id", Type: field.TypeUint64},
+	}
+	// ActImagesTable holds the schema information for the "act_images" table.
+	ActImagesTable = &schema.Table{
+		Name:       "act_images",
+		Columns:    ActImagesColumns,
+		PrimaryKey: []*schema.Column{ActImagesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "act_images_act_versions_act_version",
+				Columns:    []*schema.Column{ActImagesColumns[2]},
+				RefColumns: []*schema.Column{ActVersionsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "act_images_images_image",
+				Columns:    []*schema.Column{ActImagesColumns[3]},
+				RefColumns: []*schema.Column{ImagesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "actimage_act_version_id_image_id",
+				Unique:  true,
+				Columns: []*schema.Column{ActImagesColumns[2], ActImagesColumns[3]},
+			},
+		},
+	}
 	// ActVersionsColumns holds the columns for the "act_versions" table.
 	ActVersionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
@@ -109,6 +143,40 @@ var (
 		Columns:    ProgramsColumns,
 		PrimaryKey: []*schema.Column{ProgramsColumns[0]},
 	}
+	// ProgramImagesColumns holds the columns for the "program_images" table.
+	ProgramImagesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "order", Type: field.TypeUint},
+		{Name: "program_version_id", Type: field.TypeUint64},
+		{Name: "image_id", Type: field.TypeUint64},
+	}
+	// ProgramImagesTable holds the schema information for the "program_images" table.
+	ProgramImagesTable = &schema.Table{
+		Name:       "program_images",
+		Columns:    ProgramImagesColumns,
+		PrimaryKey: []*schema.Column{ProgramImagesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "program_images_program_versions_program_version",
+				Columns:    []*schema.Column{ProgramImagesColumns[2]},
+				RefColumns: []*schema.Column{ProgramVersionsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "program_images_images_image",
+				Columns:    []*schema.Column{ProgramImagesColumns[3]},
+				RefColumns: []*schema.Column{ImagesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "programimage_program_version_id_image_id",
+				Unique:  true,
+				Columns: []*schema.Column{ProgramImagesColumns[2], ProgramImagesColumns[3]},
+			},
+		},
+	}
 	// ProgramVersionsColumns holds the columns for the "program_versions" table.
 	ProgramVersionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
@@ -158,77 +226,27 @@ var (
 			},
 		},
 	}
-	// ActVersionImagesColumns holds the columns for the "act_version_images" table.
-	ActVersionImagesColumns = []*schema.Column{
-		{Name: "act_version_id", Type: field.TypeUint64},
-		{Name: "image_id", Type: field.TypeUint64},
-	}
-	// ActVersionImagesTable holds the schema information for the "act_version_images" table.
-	ActVersionImagesTable = &schema.Table{
-		Name:       "act_version_images",
-		Columns:    ActVersionImagesColumns,
-		PrimaryKey: []*schema.Column{ActVersionImagesColumns[0], ActVersionImagesColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "act_version_images_act_version_id",
-				Columns:    []*schema.Column{ActVersionImagesColumns[0]},
-				RefColumns: []*schema.Column{ActVersionsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "act_version_images_image_id",
-				Columns:    []*schema.Column{ActVersionImagesColumns[1]},
-				RefColumns: []*schema.Column{ImagesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// ProgramVersionImagesColumns holds the columns for the "program_version_images" table.
-	ProgramVersionImagesColumns = []*schema.Column{
-		{Name: "program_version_id", Type: field.TypeUint64},
-		{Name: "image_id", Type: field.TypeUint64},
-	}
-	// ProgramVersionImagesTable holds the schema information for the "program_version_images" table.
-	ProgramVersionImagesTable = &schema.Table{
-		Name:       "program_version_images",
-		Columns:    ProgramVersionImagesColumns,
-		PrimaryKey: []*schema.Column{ProgramVersionImagesColumns[0], ProgramVersionImagesColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "program_version_images_program_version_id",
-				Columns:    []*schema.Column{ProgramVersionImagesColumns[0]},
-				RefColumns: []*schema.Column{ProgramVersionsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "program_version_images_image_id",
-				Columns:    []*schema.Column{ProgramVersionImagesColumns[1]},
-				RefColumns: []*schema.Column{ImagesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ActsTable,
+		ActImagesTable,
 		ActVersionsTable,
 		DailyRoutinesTable,
 		ImagesTable,
 		ProgramsTable,
+		ProgramImagesTable,
 		ProgramVersionsTable,
 		RoutineActsTable,
-		ActVersionImagesTable,
-		ProgramVersionImagesTable,
 	}
 )
 
 func init() {
+	ActImagesTable.ForeignKeys[0].RefTable = ActVersionsTable
+	ActImagesTable.ForeignKeys[1].RefTable = ImagesTable
 	ActVersionsTable.ForeignKeys[0].RefTable = ActsTable
 	DailyRoutinesTable.ForeignKeys[0].RefTable = ProgramVersionsTable
+	ProgramImagesTable.ForeignKeys[0].RefTable = ProgramVersionsTable
+	ProgramImagesTable.ForeignKeys[1].RefTable = ImagesTable
 	ProgramVersionsTable.ForeignKeys[0].RefTable = ProgramsTable
 	RoutineActsTable.ForeignKeys[0].RefTable = DailyRoutinesTable
-	ActVersionImagesTable.ForeignKeys[0].RefTable = ActVersionsTable
-	ActVersionImagesTable.ForeignKeys[1].RefTable = ImagesTable
-	ProgramVersionImagesTable.ForeignKeys[0].RefTable = ProgramVersionsTable
-	ProgramVersionImagesTable.ForeignKeys[1].RefTable = ImagesTable
 }

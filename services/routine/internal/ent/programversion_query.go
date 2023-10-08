@@ -11,6 +11,7 @@ import (
 	"routine/internal/ent/image"
 	"routine/internal/ent/predicate"
 	"routine/internal/ent/program"
+	"routine/internal/ent/programimage"
 	"routine/internal/ent/programversion"
 
 	"entgo.io/ent/dialect/sql"
@@ -28,6 +29,7 @@ type ProgramVersionQuery struct {
 	withProgram       *ProgramQuery
 	withImages        *ImageQuery
 	withDailyRoutines *DailyRoutineQuery
+	withProgramImages *ProgramImageQuery
 	withFKs           bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -124,6 +126,28 @@ func (pvq *ProgramVersionQuery) QueryDailyRoutines() *DailyRoutineQuery {
 			sqlgraph.From(programversion.Table, programversion.FieldID, selector),
 			sqlgraph.To(dailyroutine.Table, dailyroutine.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, programversion.DailyRoutinesTable, programversion.DailyRoutinesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(pvq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProgramImages chains the current query on the "program_images" edge.
+func (pvq *ProgramVersionQuery) QueryProgramImages() *ProgramImageQuery {
+	query := (&ProgramImageClient{config: pvq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pvq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pvq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(programversion.Table, programversion.FieldID, selector),
+			sqlgraph.To(programimage.Table, programimage.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, programversion.ProgramImagesTable, programversion.ProgramImagesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pvq.driver.Dialect(), step)
 		return fromU, nil
@@ -326,6 +350,7 @@ func (pvq *ProgramVersionQuery) Clone() *ProgramVersionQuery {
 		withProgram:       pvq.withProgram.Clone(),
 		withImages:        pvq.withImages.Clone(),
 		withDailyRoutines: pvq.withDailyRoutines.Clone(),
+		withProgramImages: pvq.withProgramImages.Clone(),
 		// clone intermediate query.
 		sql:  pvq.sql.Clone(),
 		path: pvq.path,
@@ -362,6 +387,17 @@ func (pvq *ProgramVersionQuery) WithDailyRoutines(opts ...func(*DailyRoutineQuer
 		opt(query)
 	}
 	pvq.withDailyRoutines = query
+	return pvq
+}
+
+// WithProgramImages tells the query-builder to eager-load the nodes that are connected to
+// the "program_images" edge. The optional arguments are used to configure the query builder of the edge.
+func (pvq *ProgramVersionQuery) WithProgramImages(opts ...func(*ProgramImageQuery)) *ProgramVersionQuery {
+	query := (&ProgramImageClient{config: pvq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	pvq.withProgramImages = query
 	return pvq
 }
 
@@ -444,10 +480,11 @@ func (pvq *ProgramVersionQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 		nodes       = []*ProgramVersion{}
 		withFKs     = pvq.withFKs
 		_spec       = pvq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			pvq.withProgram != nil,
 			pvq.withImages != nil,
 			pvq.withDailyRoutines != nil,
+			pvq.withProgramImages != nil,
 		}
 	)
 	if pvq.withProgram != nil {
@@ -491,6 +528,13 @@ func (pvq *ProgramVersionQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 		if err := pvq.loadDailyRoutines(ctx, query, nodes,
 			func(n *ProgramVersion) { n.Edges.DailyRoutines = []*DailyRoutine{} },
 			func(n *ProgramVersion, e *DailyRoutine) { n.Edges.DailyRoutines = append(n.Edges.DailyRoutines, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := pvq.withProgramImages; query != nil {
+		if err := pvq.loadProgramImages(ctx, query, nodes,
+			func(n *ProgramVersion) { n.Edges.ProgramImages = []*ProgramImage{} },
+			func(n *ProgramVersion, e *ProgramImage) { n.Edges.ProgramImages = append(n.Edges.ProgramImages, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -616,6 +660,36 @@ func (pvq *ProgramVersionQuery) loadDailyRoutines(ctx context.Context, query *Da
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "program_version_daily_routines" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (pvq *ProgramVersionQuery) loadProgramImages(ctx context.Context, query *ProgramImageQuery, nodes []*ProgramVersion, init func(*ProgramVersion), assign func(*ProgramVersion, *ProgramImage)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint64]*ProgramVersion)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(programimage.FieldProgramVersionID)
+	}
+	query.Where(predicate.ProgramImage(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(programversion.ProgramImagesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ProgramVersionID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "program_version_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

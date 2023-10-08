@@ -28,6 +28,8 @@ const (
 	EdgeImages = "images"
 	// EdgeDailyRoutines holds the string denoting the daily_routines edge name in mutations.
 	EdgeDailyRoutines = "daily_routines"
+	// EdgeProgramImages holds the string denoting the program_images edge name in mutations.
+	EdgeProgramImages = "program_images"
 	// Table holds the table name of the programversion in the database.
 	Table = "program_versions"
 	// ProgramTable is the table that holds the program relation/edge.
@@ -38,7 +40,7 @@ const (
 	// ProgramColumn is the table column denoting the program relation/edge.
 	ProgramColumn = "program_program_versions"
 	// ImagesTable is the table that holds the images relation/edge. The primary key declared below.
-	ImagesTable = "program_version_images"
+	ImagesTable = "program_images"
 	// ImagesInverseTable is the table name for the Image entity.
 	// It exists in this package in order to avoid circular dependency with the "image" package.
 	ImagesInverseTable = "images"
@@ -49,6 +51,13 @@ const (
 	DailyRoutinesInverseTable = "daily_routines"
 	// DailyRoutinesColumn is the table column denoting the daily_routines relation/edge.
 	DailyRoutinesColumn = "program_version_daily_routines"
+	// ProgramImagesTable is the table that holds the program_images relation/edge.
+	ProgramImagesTable = "program_images"
+	// ProgramImagesInverseTable is the table name for the ProgramImage entity.
+	// It exists in this package in order to avoid circular dependency with the "programimage" package.
+	ProgramImagesInverseTable = "program_images"
+	// ProgramImagesColumn is the table column denoting the program_images relation/edge.
+	ProgramImagesColumn = "program_version_id"
 )
 
 // Columns holds all SQL columns for programversion fields.
@@ -164,6 +173,20 @@ func ByDailyRoutines(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newDailyRoutinesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByProgramImagesCount orders the results by program_images count.
+func ByProgramImagesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newProgramImagesStep(), opts...)
+	}
+}
+
+// ByProgramImages orders the results by program_images terms.
+func ByProgramImages(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newProgramImagesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newProgramStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -183,5 +206,12 @@ func newDailyRoutinesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DailyRoutinesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, DailyRoutinesTable, DailyRoutinesColumn),
+	)
+}
+func newProgramImagesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ProgramImagesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ProgramImagesTable, ProgramImagesColumn),
 	)
 }

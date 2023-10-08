@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Act is the client for interacting with the Act builders.
 	Act *ActClient
+	// ActImage is the client for interacting with the ActImage builders.
+	ActImage *ActImageClient
 	// ActVersion is the client for interacting with the ActVersion builders.
 	ActVersion *ActVersionClient
 	// DailyRoutine is the client for interacting with the DailyRoutine builders.
@@ -22,6 +24,8 @@ type Tx struct {
 	Image *ImageClient
 	// Program is the client for interacting with the Program builders.
 	Program *ProgramClient
+	// ProgramImage is the client for interacting with the ProgramImage builders.
+	ProgramImage *ProgramImageClient
 	// ProgramVersion is the client for interacting with the ProgramVersion builders.
 	ProgramVersion *ProgramVersionClient
 	// RoutineAct is the client for interacting with the RoutineAct builders.
@@ -158,10 +162,12 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Act = NewActClient(tx.config)
+	tx.ActImage = NewActImageClient(tx.config)
 	tx.ActVersion = NewActVersionClient(tx.config)
 	tx.DailyRoutine = NewDailyRoutineClient(tx.config)
 	tx.Image = NewImageClient(tx.config)
 	tx.Program = NewProgramClient(tx.config)
+	tx.ProgramImage = NewProgramImageClient(tx.config)
 	tx.ProgramVersion = NewProgramVersionClient(tx.config)
 	tx.RoutineAct = NewRoutineActClient(tx.config)
 }

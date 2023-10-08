@@ -10,6 +10,7 @@ import (
 	"routine/internal/ent/image"
 	"routine/internal/ent/predicate"
 	"routine/internal/ent/program"
+	"routine/internal/ent/programimage"
 	"routine/internal/ent/programversion"
 
 	"entgo.io/ent/dialect/sql"
@@ -71,6 +72,21 @@ func (pvu *ProgramVersionUpdate) AddDailyRoutines(d ...*DailyRoutine) *ProgramVe
 	return pvu.AddDailyRoutineIDs(ids...)
 }
 
+// AddProgramImageIDs adds the "program_images" edge to the ProgramImage entity by IDs.
+func (pvu *ProgramVersionUpdate) AddProgramImageIDs(ids ...uint64) *ProgramVersionUpdate {
+	pvu.mutation.AddProgramImageIDs(ids...)
+	return pvu
+}
+
+// AddProgramImages adds the "program_images" edges to the ProgramImage entity.
+func (pvu *ProgramVersionUpdate) AddProgramImages(p ...*ProgramImage) *ProgramVersionUpdate {
+	ids := make([]uint64, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pvu.AddProgramImageIDs(ids...)
+}
+
 // Mutation returns the ProgramVersionMutation object of the builder.
 func (pvu *ProgramVersionUpdate) Mutation() *ProgramVersionMutation {
 	return pvu.mutation
@@ -122,6 +138,27 @@ func (pvu *ProgramVersionUpdate) RemoveDailyRoutines(d ...*DailyRoutine) *Progra
 		ids[i] = d[i].ID
 	}
 	return pvu.RemoveDailyRoutineIDs(ids...)
+}
+
+// ClearProgramImages clears all "program_images" edges to the ProgramImage entity.
+func (pvu *ProgramVersionUpdate) ClearProgramImages() *ProgramVersionUpdate {
+	pvu.mutation.ClearProgramImages()
+	return pvu
+}
+
+// RemoveProgramImageIDs removes the "program_images" edge to ProgramImage entities by IDs.
+func (pvu *ProgramVersionUpdate) RemoveProgramImageIDs(ids ...uint64) *ProgramVersionUpdate {
+	pvu.mutation.RemoveProgramImageIDs(ids...)
+	return pvu
+}
+
+// RemoveProgramImages removes "program_images" edges to ProgramImage entities.
+func (pvu *ProgramVersionUpdate) RemoveProgramImages(p ...*ProgramImage) *ProgramVersionUpdate {
+	ids := make([]uint64, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pvu.RemoveProgramImageIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -290,6 +327,51 @@ func (pvu *ProgramVersionUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if pvu.mutation.ProgramImagesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   programversion.ProgramImagesTable,
+			Columns: []string{programversion.ProgramImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(programimage.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pvu.mutation.RemovedProgramImagesIDs(); len(nodes) > 0 && !pvu.mutation.ProgramImagesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   programversion.ProgramImagesTable,
+			Columns: []string{programversion.ProgramImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(programimage.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pvu.mutation.ProgramImagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   programversion.ProgramImagesTable,
+			Columns: []string{programversion.ProgramImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(programimage.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pvu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{programversion.Label}
@@ -351,6 +433,21 @@ func (pvuo *ProgramVersionUpdateOne) AddDailyRoutines(d ...*DailyRoutine) *Progr
 	return pvuo.AddDailyRoutineIDs(ids...)
 }
 
+// AddProgramImageIDs adds the "program_images" edge to the ProgramImage entity by IDs.
+func (pvuo *ProgramVersionUpdateOne) AddProgramImageIDs(ids ...uint64) *ProgramVersionUpdateOne {
+	pvuo.mutation.AddProgramImageIDs(ids...)
+	return pvuo
+}
+
+// AddProgramImages adds the "program_images" edges to the ProgramImage entity.
+func (pvuo *ProgramVersionUpdateOne) AddProgramImages(p ...*ProgramImage) *ProgramVersionUpdateOne {
+	ids := make([]uint64, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pvuo.AddProgramImageIDs(ids...)
+}
+
 // Mutation returns the ProgramVersionMutation object of the builder.
 func (pvuo *ProgramVersionUpdateOne) Mutation() *ProgramVersionMutation {
 	return pvuo.mutation
@@ -402,6 +499,27 @@ func (pvuo *ProgramVersionUpdateOne) RemoveDailyRoutines(d ...*DailyRoutine) *Pr
 		ids[i] = d[i].ID
 	}
 	return pvuo.RemoveDailyRoutineIDs(ids...)
+}
+
+// ClearProgramImages clears all "program_images" edges to the ProgramImage entity.
+func (pvuo *ProgramVersionUpdateOne) ClearProgramImages() *ProgramVersionUpdateOne {
+	pvuo.mutation.ClearProgramImages()
+	return pvuo
+}
+
+// RemoveProgramImageIDs removes the "program_images" edge to ProgramImage entities by IDs.
+func (pvuo *ProgramVersionUpdateOne) RemoveProgramImageIDs(ids ...uint64) *ProgramVersionUpdateOne {
+	pvuo.mutation.RemoveProgramImageIDs(ids...)
+	return pvuo
+}
+
+// RemoveProgramImages removes "program_images" edges to ProgramImage entities.
+func (pvuo *ProgramVersionUpdateOne) RemoveProgramImages(p ...*ProgramImage) *ProgramVersionUpdateOne {
+	ids := make([]uint64, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pvuo.RemoveProgramImageIDs(ids...)
 }
 
 // Where appends a list predicates to the ProgramVersionUpdate builder.
@@ -593,6 +711,51 @@ func (pvuo *ProgramVersionUpdateOne) sqlSave(ctx context.Context) (_node *Progra
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dailyroutine.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pvuo.mutation.ProgramImagesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   programversion.ProgramImagesTable,
+			Columns: []string{programversion.ProgramImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(programimage.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pvuo.mutation.RemovedProgramImagesIDs(); len(nodes) > 0 && !pvuo.mutation.ProgramImagesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   programversion.ProgramImagesTable,
+			Columns: []string{programversion.ProgramImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(programimage.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pvuo.mutation.ProgramImagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   programversion.ProgramImagesTable,
+			Columns: []string{programversion.ProgramImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(programimage.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

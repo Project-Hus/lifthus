@@ -32,9 +32,13 @@ type ImageEdges struct {
 	ActVersions []*ActVersion `json:"act_versions,omitempty"`
 	// ProgramVersions holds the value of the program_versions edge.
 	ProgramVersions []*ProgramVersion `json:"program_versions,omitempty"`
+	// ActImages holds the value of the act_images edge.
+	ActImages []*ActImage `json:"act_images,omitempty"`
+	// ProgramImages holds the value of the program_images edge.
+	ProgramImages []*ProgramImage `json:"program_images,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [4]bool
 }
 
 // ActVersionsOrErr returns the ActVersions value or an error if the edge
@@ -53,6 +57,24 @@ func (e ImageEdges) ProgramVersionsOrErr() ([]*ProgramVersion, error) {
 		return e.ProgramVersions, nil
 	}
 	return nil, &NotLoadedError{edge: "program_versions"}
+}
+
+// ActImagesOrErr returns the ActImages value or an error if the edge
+// was not loaded in eager-loading.
+func (e ImageEdges) ActImagesOrErr() ([]*ActImage, error) {
+	if e.loadedTypes[2] {
+		return e.ActImages, nil
+	}
+	return nil, &NotLoadedError{edge: "act_images"}
+}
+
+// ProgramImagesOrErr returns the ProgramImages value or an error if the edge
+// was not loaded in eager-loading.
+func (e ImageEdges) ProgramImagesOrErr() ([]*ProgramImage, error) {
+	if e.loadedTypes[3] {
+		return e.ProgramImages, nil
+	}
+	return nil, &NotLoadedError{edge: "program_images"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -118,6 +140,16 @@ func (i *Image) QueryActVersions() *ActVersionQuery {
 // QueryProgramVersions queries the "program_versions" edge of the Image entity.
 func (i *Image) QueryProgramVersions() *ProgramVersionQuery {
 	return NewImageClient(i.config).QueryProgramVersions(i)
+}
+
+// QueryActImages queries the "act_images" edge of the Image entity.
+func (i *Image) QueryActImages() *ActImageQuery {
+	return NewImageClient(i.config).QueryActImages(i)
+}
+
+// QueryProgramImages queries the "program_images" edge of the Image entity.
+func (i *Image) QueryProgramImages() *ProgramImageQuery {
+	return NewImageClient(i.config).QueryProgramImages(i)
 }
 
 // Update returns a builder for updating this Image.

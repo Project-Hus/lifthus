@@ -6,7 +6,6 @@ import (
 	"routine/internal/domain/aggregates/act"
 	"routine/internal/ent"
 	eact "routine/internal/ent/act"
-	eacti "routine/internal/ent/actimage"
 	eactv "routine/internal/ent/actversion"
 	"routine/internal/repository"
 	"time"
@@ -31,6 +30,7 @@ func (repo *EntActRepository) FindActByCode(ctx context.Context, code act.ActCod
 		WithActVersions(
 			func(q *ent.ActVersionQuery) {
 				q.Order(ent.Asc((eactv.FieldVersion)))
+				q.WithImages()
 				q.WithActImages(
 					func(q *ent.ActImageQuery) {
 						q.Order(ent.Asc(eacti.FieldOrder))

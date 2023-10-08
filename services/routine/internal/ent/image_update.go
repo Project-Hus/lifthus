@@ -6,9 +6,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"routine/internal/ent/actimage"
 	"routine/internal/ent/actversion"
 	"routine/internal/ent/image"
 	"routine/internal/ent/predicate"
+	"routine/internal/ent/programimage"
 	"routine/internal/ent/programversion"
 
 	"entgo.io/ent/dialect/sql"
@@ -71,6 +73,36 @@ func (iu *ImageUpdate) AddProgramVersions(p ...*ProgramVersion) *ImageUpdate {
 	return iu.AddProgramVersionIDs(ids...)
 }
 
+// AddActImageIDs adds the "act_images" edge to the ActImage entity by IDs.
+func (iu *ImageUpdate) AddActImageIDs(ids ...uint64) *ImageUpdate {
+	iu.mutation.AddActImageIDs(ids...)
+	return iu
+}
+
+// AddActImages adds the "act_images" edges to the ActImage entity.
+func (iu *ImageUpdate) AddActImages(a ...*ActImage) *ImageUpdate {
+	ids := make([]uint64, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return iu.AddActImageIDs(ids...)
+}
+
+// AddProgramImageIDs adds the "program_images" edge to the ProgramImage entity by IDs.
+func (iu *ImageUpdate) AddProgramImageIDs(ids ...uint64) *ImageUpdate {
+	iu.mutation.AddProgramImageIDs(ids...)
+	return iu
+}
+
+// AddProgramImages adds the "program_images" edges to the ProgramImage entity.
+func (iu *ImageUpdate) AddProgramImages(p ...*ProgramImage) *ImageUpdate {
+	ids := make([]uint64, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return iu.AddProgramImageIDs(ids...)
+}
+
 // Mutation returns the ImageMutation object of the builder.
 func (iu *ImageUpdate) Mutation() *ImageMutation {
 	return iu.mutation
@@ -116,6 +148,48 @@ func (iu *ImageUpdate) RemoveProgramVersions(p ...*ProgramVersion) *ImageUpdate 
 		ids[i] = p[i].ID
 	}
 	return iu.RemoveProgramVersionIDs(ids...)
+}
+
+// ClearActImages clears all "act_images" edges to the ActImage entity.
+func (iu *ImageUpdate) ClearActImages() *ImageUpdate {
+	iu.mutation.ClearActImages()
+	return iu
+}
+
+// RemoveActImageIDs removes the "act_images" edge to ActImage entities by IDs.
+func (iu *ImageUpdate) RemoveActImageIDs(ids ...uint64) *ImageUpdate {
+	iu.mutation.RemoveActImageIDs(ids...)
+	return iu
+}
+
+// RemoveActImages removes "act_images" edges to ActImage entities.
+func (iu *ImageUpdate) RemoveActImages(a ...*ActImage) *ImageUpdate {
+	ids := make([]uint64, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return iu.RemoveActImageIDs(ids...)
+}
+
+// ClearProgramImages clears all "program_images" edges to the ProgramImage entity.
+func (iu *ImageUpdate) ClearProgramImages() *ImageUpdate {
+	iu.mutation.ClearProgramImages()
+	return iu
+}
+
+// RemoveProgramImageIDs removes the "program_images" edge to ProgramImage entities by IDs.
+func (iu *ImageUpdate) RemoveProgramImageIDs(ids ...uint64) *ImageUpdate {
+	iu.mutation.RemoveProgramImageIDs(ids...)
+	return iu
+}
+
+// RemoveProgramImages removes "program_images" edges to ProgramImage entities.
+func (iu *ImageUpdate) RemoveProgramImages(p ...*ProgramImage) *ImageUpdate {
+	ids := make([]uint64, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return iu.RemoveProgramImageIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -268,6 +342,96 @@ func (iu *ImageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if iu.mutation.ActImagesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   image.ActImagesTable,
+			Columns: []string{image.ActImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(actimage.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.RemovedActImagesIDs(); len(nodes) > 0 && !iu.mutation.ActImagesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   image.ActImagesTable,
+			Columns: []string{image.ActImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(actimage.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.ActImagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   image.ActImagesTable,
+			Columns: []string{image.ActImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(actimage.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if iu.mutation.ProgramImagesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   image.ProgramImagesTable,
+			Columns: []string{image.ProgramImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(programimage.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.RemovedProgramImagesIDs(); len(nodes) > 0 && !iu.mutation.ProgramImagesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   image.ProgramImagesTable,
+			Columns: []string{image.ProgramImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(programimage.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.ProgramImagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   image.ProgramImagesTable,
+			Columns: []string{image.ProgramImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(programimage.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, iu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{image.Label}
@@ -330,6 +494,36 @@ func (iuo *ImageUpdateOne) AddProgramVersions(p ...*ProgramVersion) *ImageUpdate
 	return iuo.AddProgramVersionIDs(ids...)
 }
 
+// AddActImageIDs adds the "act_images" edge to the ActImage entity by IDs.
+func (iuo *ImageUpdateOne) AddActImageIDs(ids ...uint64) *ImageUpdateOne {
+	iuo.mutation.AddActImageIDs(ids...)
+	return iuo
+}
+
+// AddActImages adds the "act_images" edges to the ActImage entity.
+func (iuo *ImageUpdateOne) AddActImages(a ...*ActImage) *ImageUpdateOne {
+	ids := make([]uint64, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return iuo.AddActImageIDs(ids...)
+}
+
+// AddProgramImageIDs adds the "program_images" edge to the ProgramImage entity by IDs.
+func (iuo *ImageUpdateOne) AddProgramImageIDs(ids ...uint64) *ImageUpdateOne {
+	iuo.mutation.AddProgramImageIDs(ids...)
+	return iuo
+}
+
+// AddProgramImages adds the "program_images" edges to the ProgramImage entity.
+func (iuo *ImageUpdateOne) AddProgramImages(p ...*ProgramImage) *ImageUpdateOne {
+	ids := make([]uint64, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return iuo.AddProgramImageIDs(ids...)
+}
+
 // Mutation returns the ImageMutation object of the builder.
 func (iuo *ImageUpdateOne) Mutation() *ImageMutation {
 	return iuo.mutation
@@ -375,6 +569,48 @@ func (iuo *ImageUpdateOne) RemoveProgramVersions(p ...*ProgramVersion) *ImageUpd
 		ids[i] = p[i].ID
 	}
 	return iuo.RemoveProgramVersionIDs(ids...)
+}
+
+// ClearActImages clears all "act_images" edges to the ActImage entity.
+func (iuo *ImageUpdateOne) ClearActImages() *ImageUpdateOne {
+	iuo.mutation.ClearActImages()
+	return iuo
+}
+
+// RemoveActImageIDs removes the "act_images" edge to ActImage entities by IDs.
+func (iuo *ImageUpdateOne) RemoveActImageIDs(ids ...uint64) *ImageUpdateOne {
+	iuo.mutation.RemoveActImageIDs(ids...)
+	return iuo
+}
+
+// RemoveActImages removes "act_images" edges to ActImage entities.
+func (iuo *ImageUpdateOne) RemoveActImages(a ...*ActImage) *ImageUpdateOne {
+	ids := make([]uint64, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return iuo.RemoveActImageIDs(ids...)
+}
+
+// ClearProgramImages clears all "program_images" edges to the ProgramImage entity.
+func (iuo *ImageUpdateOne) ClearProgramImages() *ImageUpdateOne {
+	iuo.mutation.ClearProgramImages()
+	return iuo
+}
+
+// RemoveProgramImageIDs removes the "program_images" edge to ProgramImage entities by IDs.
+func (iuo *ImageUpdateOne) RemoveProgramImageIDs(ids ...uint64) *ImageUpdateOne {
+	iuo.mutation.RemoveProgramImageIDs(ids...)
+	return iuo
+}
+
+// RemoveProgramImages removes "program_images" edges to ProgramImage entities.
+func (iuo *ImageUpdateOne) RemoveProgramImages(p ...*ProgramImage) *ImageUpdateOne {
+	ids := make([]uint64, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return iuo.RemoveProgramImageIDs(ids...)
 }
 
 // Where appends a list predicates to the ImageUpdate builder.
@@ -550,6 +786,96 @@ func (iuo *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(programversion.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if iuo.mutation.ActImagesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   image.ActImagesTable,
+			Columns: []string{image.ActImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(actimage.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.RemovedActImagesIDs(); len(nodes) > 0 && !iuo.mutation.ActImagesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   image.ActImagesTable,
+			Columns: []string{image.ActImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(actimage.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.ActImagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   image.ActImagesTable,
+			Columns: []string{image.ActImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(actimage.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if iuo.mutation.ProgramImagesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   image.ProgramImagesTable,
+			Columns: []string{image.ProgramImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(programimage.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.RemovedProgramImagesIDs(); len(nodes) > 0 && !iuo.mutation.ProgramImagesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   image.ProgramImagesTable,
+			Columns: []string{image.ProgramImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(programimage.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.ProgramImagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   image.ProgramImagesTable,
+			Columns: []string{image.ProgramImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(programimage.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

@@ -26,6 +26,8 @@ const (
 	EdgeAct = "act"
 	// EdgeImages holds the string denoting the images edge name in mutations.
 	EdgeImages = "images"
+	// EdgeActImages holds the string denoting the act_images edge name in mutations.
+	EdgeActImages = "act_images"
 	// Table holds the table name of the actversion in the database.
 	Table = "act_versions"
 	// ActTable is the table that holds the act relation/edge.
@@ -36,10 +38,17 @@ const (
 	// ActColumn is the table column denoting the act relation/edge.
 	ActColumn = "act_act_versions"
 	// ImagesTable is the table that holds the images relation/edge. The primary key declared below.
-	ImagesTable = "act_version_images"
+	ImagesTable = "act_images"
 	// ImagesInverseTable is the table name for the Image entity.
 	// It exists in this package in order to avoid circular dependency with the "image" package.
 	ImagesInverseTable = "images"
+	// ActImagesTable is the table that holds the act_images relation/edge.
+	ActImagesTable = "act_images"
+	// ActImagesInverseTable is the table name for the ActImage entity.
+	// It exists in this package in order to avoid circular dependency with the "actimage" package.
+	ActImagesInverseTable = "act_images"
+	// ActImagesColumn is the table column denoting the act_images relation/edge.
+	ActImagesColumn = "act_version_id"
 )
 
 // Columns holds all SQL columns for actversion fields.
@@ -141,6 +150,20 @@ func ByImages(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newImagesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByActImagesCount orders the results by act_images count.
+func ByActImagesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newActImagesStep(), opts...)
+	}
+}
+
+// ByActImages orders the results by act_images terms.
+func ByActImages(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newActImagesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newActStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -153,5 +176,12 @@ func newImagesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ImagesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, ImagesTable, ImagesPrimaryKey...),
+	)
+}
+func newActImagesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ActImagesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ActImagesTable, ActImagesColumn),
 	)
 }

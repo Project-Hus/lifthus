@@ -6,8 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"routine/internal/ent/actimage"
 	"routine/internal/ent/actversion"
 	"routine/internal/ent/image"
+	"routine/internal/ent/programimage"
 	"routine/internal/ent/programversion"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -67,6 +69,36 @@ func (ic *ImageCreate) AddProgramVersions(p ...*ProgramVersion) *ImageCreate {
 		ids[i] = p[i].ID
 	}
 	return ic.AddProgramVersionIDs(ids...)
+}
+
+// AddActImageIDs adds the "act_images" edge to the ActImage entity by IDs.
+func (ic *ImageCreate) AddActImageIDs(ids ...uint64) *ImageCreate {
+	ic.mutation.AddActImageIDs(ids...)
+	return ic
+}
+
+// AddActImages adds the "act_images" edges to the ActImage entity.
+func (ic *ImageCreate) AddActImages(a ...*ActImage) *ImageCreate {
+	ids := make([]uint64, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return ic.AddActImageIDs(ids...)
+}
+
+// AddProgramImageIDs adds the "program_images" edge to the ProgramImage entity by IDs.
+func (ic *ImageCreate) AddProgramImageIDs(ids ...uint64) *ImageCreate {
+	ic.mutation.AddProgramImageIDs(ids...)
+	return ic
+}
+
+// AddProgramImages adds the "program_images" edges to the ProgramImage entity.
+func (ic *ImageCreate) AddProgramImages(p ...*ProgramImage) *ImageCreate {
+	ids := make([]uint64, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return ic.AddProgramImageIDs(ids...)
 }
 
 // Mutation returns the ImageMutation object of the builder.
@@ -184,6 +216,38 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(programversion.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ic.mutation.ActImagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   image.ActImagesTable,
+			Columns: []string{image.ActImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(actimage.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ic.mutation.ProgramImagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   image.ProgramImagesTable,
+			Columns: []string{image.ProgramImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(programimage.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

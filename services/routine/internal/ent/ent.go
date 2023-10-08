@@ -8,10 +8,12 @@ import (
 	"fmt"
 	"reflect"
 	"routine/internal/ent/act"
+	"routine/internal/ent/actimage"
 	"routine/internal/ent/actversion"
 	"routine/internal/ent/dailyroutine"
 	"routine/internal/ent/image"
 	"routine/internal/ent/program"
+	"routine/internal/ent/programimage"
 	"routine/internal/ent/programversion"
 	"routine/internal/ent/routineact"
 	"sync"
@@ -80,10 +82,12 @@ func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			act.Table:            act.ValidColumn,
+			actimage.Table:       actimage.ValidColumn,
 			actversion.Table:     actversion.ValidColumn,
 			dailyroutine.Table:   dailyroutine.ValidColumn,
 			image.Table:          image.ValidColumn,
 			program.Table:        program.ValidColumn,
+			programimage.Table:   programimage.ValidColumn,
 			programversion.Table: programversion.ValidColumn,
 			routineact.Table:     routineact.ValidColumn,
 		})

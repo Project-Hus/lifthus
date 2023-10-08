@@ -401,6 +401,29 @@ func HasImagesWith(preds ...predicate.Image) predicate.ActVersion {
 	})
 }
 
+// HasActImages applies the HasEdge predicate on the "act_images" edge.
+func HasActImages() predicate.ActVersion {
+	return predicate.ActVersion(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, ActImagesTable, ActImagesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasActImagesWith applies the HasEdge predicate on the "act_images" edge with a given conditions (other predicates).
+func HasActImagesWith(preds ...predicate.ActImage) predicate.ActVersion {
+	return predicate.ActVersion(func(s *sql.Selector) {
+		step := newActImagesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.ActVersion) predicate.ActVersion {
 	return predicate.ActVersion(func(s *sql.Selector) {

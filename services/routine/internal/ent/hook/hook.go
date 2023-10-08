@@ -20,6 +20,18 @@ func (f ActFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ActMutation", m)
 }
 
+// The ActImageFunc type is an adapter to allow the use of ordinary
+// function as ActImage mutator.
+type ActImageFunc func(context.Context, *ent.ActImageMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ActImageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ActImageMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ActImageMutation", m)
+}
+
 // The ActVersionFunc type is an adapter to allow the use of ordinary
 // function as ActVersion mutator.
 type ActVersionFunc func(context.Context, *ent.ActVersionMutation) (ent.Value, error)
@@ -66,6 +78,18 @@ func (f ProgramFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProgramMutation", m)
+}
+
+// The ProgramImageFunc type is an adapter to allow the use of ordinary
+// function as ProgramImage mutator.
+type ProgramImageFunc func(context.Context, *ent.ProgramImageMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProgramImageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ProgramImageMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProgramImageMutation", m)
 }
 
 // The ProgramVersionFunc type is an adapter to allow the use of ordinary

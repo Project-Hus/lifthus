@@ -20,18 +20,36 @@ const (
 	EdgeActVersions = "act_versions"
 	// EdgeProgramVersions holds the string denoting the program_versions edge name in mutations.
 	EdgeProgramVersions = "program_versions"
+	// EdgeActImages holds the string denoting the act_images edge name in mutations.
+	EdgeActImages = "act_images"
+	// EdgeProgramImages holds the string denoting the program_images edge name in mutations.
+	EdgeProgramImages = "program_images"
 	// Table holds the table name of the image in the database.
 	Table = "images"
 	// ActVersionsTable is the table that holds the act_versions relation/edge. The primary key declared below.
-	ActVersionsTable = "act_version_images"
+	ActVersionsTable = "act_images"
 	// ActVersionsInverseTable is the table name for the ActVersion entity.
 	// It exists in this package in order to avoid circular dependency with the "actversion" package.
 	ActVersionsInverseTable = "act_versions"
 	// ProgramVersionsTable is the table that holds the program_versions relation/edge. The primary key declared below.
-	ProgramVersionsTable = "program_version_images"
+	ProgramVersionsTable = "program_images"
 	// ProgramVersionsInverseTable is the table name for the ProgramVersion entity.
 	// It exists in this package in order to avoid circular dependency with the "programversion" package.
 	ProgramVersionsInverseTable = "program_versions"
+	// ActImagesTable is the table that holds the act_images relation/edge.
+	ActImagesTable = "act_images"
+	// ActImagesInverseTable is the table name for the ActImage entity.
+	// It exists in this package in order to avoid circular dependency with the "actimage" package.
+	ActImagesInverseTable = "act_images"
+	// ActImagesColumn is the table column denoting the act_images relation/edge.
+	ActImagesColumn = "image_id"
+	// ProgramImagesTable is the table that holds the program_images relation/edge.
+	ProgramImagesTable = "program_images"
+	// ProgramImagesInverseTable is the table name for the ProgramImage entity.
+	// It exists in this package in order to avoid circular dependency with the "programimage" package.
+	ProgramImagesInverseTable = "program_images"
+	// ProgramImagesColumn is the table column denoting the program_images relation/edge.
+	ProgramImagesColumn = "image_id"
 )
 
 // Columns holds all SQL columns for image fields.
@@ -112,6 +130,34 @@ func ByProgramVersions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newProgramVersionsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByActImagesCount orders the results by act_images count.
+func ByActImagesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newActImagesStep(), opts...)
+	}
+}
+
+// ByActImages orders the results by act_images terms.
+func ByActImages(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newActImagesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByProgramImagesCount orders the results by program_images count.
+func ByProgramImagesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newProgramImagesStep(), opts...)
+	}
+}
+
+// ByProgramImages orders the results by program_images terms.
+func ByProgramImages(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newProgramImagesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newActVersionsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -124,5 +170,19 @@ func newProgramVersionsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ProgramVersionsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, ProgramVersionsTable, ProgramVersionsPrimaryKey...),
+	)
+}
+func newActImagesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ActImagesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ActImagesTable, ActImagesColumn),
+	)
+}
+func newProgramImagesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ProgramImagesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ProgramImagesTable, ProgramImagesColumn),
 	)
 }

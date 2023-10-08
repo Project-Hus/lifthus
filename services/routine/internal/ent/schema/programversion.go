@@ -30,7 +30,7 @@ func (ProgramVersion) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("program", Program.Type).Ref("program_versions").Unique().Required(),
 
-		edge.To("images", Image.Type),
+		edge.To("images", Image.Type).Through("program_images", ProgramImage.Type),
 		edge.To("daily_routines", DailyRoutine.Type),
 	}
 }

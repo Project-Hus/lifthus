@@ -7,9 +7,11 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"math"
+	"routine/internal/ent/actimage"
 	"routine/internal/ent/actversion"
 	"routine/internal/ent/image"
 	"routine/internal/ent/predicate"
+	"routine/internal/ent/programimage"
 	"routine/internal/ent/programversion"
 
 	"entgo.io/ent/dialect/sql"
@@ -26,6 +28,8 @@ type ImageQuery struct {
 	predicates          []predicate.Image
 	withActVersions     *ActVersionQuery
 	withProgramVersions *ProgramVersionQuery
+	withActImages       *ActImageQuery
+	withProgramImages   *ProgramImageQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -99,6 +103,50 @@ func (iq *ImageQuery) QueryProgramVersions() *ProgramVersionQuery {
 			sqlgraph.From(image.Table, image.FieldID, selector),
 			sqlgraph.To(programversion.Table, programversion.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, image.ProgramVersionsTable, image.ProgramVersionsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryActImages chains the current query on the "act_images" edge.
+func (iq *ImageQuery) QueryActImages() *ActImageQuery {
+	query := (&ActImageClient{config: iq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(image.Table, image.FieldID, selector),
+			sqlgraph.To(actimage.Table, actimage.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, image.ActImagesTable, image.ActImagesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProgramImages chains the current query on the "program_images" edge.
+func (iq *ImageQuery) QueryProgramImages() *ProgramImageQuery {
+	query := (&ProgramImageClient{config: iq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(image.Table, image.FieldID, selector),
+			sqlgraph.To(programimage.Table, programimage.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, image.ProgramImagesTable, image.ProgramImagesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -300,6 +348,8 @@ func (iq *ImageQuery) Clone() *ImageQuery {
 		predicates:          append([]predicate.Image{}, iq.predicates...),
 		withActVersions:     iq.withActVersions.Clone(),
 		withProgramVersions: iq.withProgramVersions.Clone(),
+		withActImages:       iq.withActImages.Clone(),
+		withProgramImages:   iq.withProgramImages.Clone(),
 		// clone intermediate query.
 		sql:  iq.sql.Clone(),
 		path: iq.path,
@@ -325,6 +375,28 @@ func (iq *ImageQuery) WithProgramVersions(opts ...func(*ProgramVersionQuery)) *I
 		opt(query)
 	}
 	iq.withProgramVersions = query
+	return iq
+}
+
+// WithActImages tells the query-builder to eager-load the nodes that are connected to
+// the "act_images" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *ImageQuery) WithActImages(opts ...func(*ActImageQuery)) *ImageQuery {
+	query := (&ActImageClient{config: iq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withActImages = query
+	return iq
+}
+
+// WithProgramImages tells the query-builder to eager-load the nodes that are connected to
+// the "program_images" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *ImageQuery) WithProgramImages(opts ...func(*ProgramImageQuery)) *ImageQuery {
+	query := (&ProgramImageClient{config: iq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withProgramImages = query
 	return iq
 }
 
@@ -406,9 +478,11 @@ func (iq *ImageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Image,
 	var (
 		nodes       = []*Image{}
 		_spec       = iq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [4]bool{
 			iq.withActVersions != nil,
 			iq.withProgramVersions != nil,
+			iq.withActImages != nil,
+			iq.withProgramImages != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -440,6 +514,20 @@ func (iq *ImageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Image,
 		if err := iq.loadProgramVersions(ctx, query, nodes,
 			func(n *Image) { n.Edges.ProgramVersions = []*ProgramVersion{} },
 			func(n *Image, e *ProgramVersion) { n.Edges.ProgramVersions = append(n.Edges.ProgramVersions, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := iq.withActImages; query != nil {
+		if err := iq.loadActImages(ctx, query, nodes,
+			func(n *Image) { n.Edges.ActImages = []*ActImage{} },
+			func(n *Image, e *ActImage) { n.Edges.ActImages = append(n.Edges.ActImages, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := iq.withProgramImages; query != nil {
+		if err := iq.loadProgramImages(ctx, query, nodes,
+			func(n *Image) { n.Edges.ProgramImages = []*ProgramImage{} },
+			func(n *Image, e *ProgramImage) { n.Edges.ProgramImages = append(n.Edges.ProgramImages, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -565,6 +653,66 @@ func (iq *ImageQuery) loadProgramVersions(ctx context.Context, query *ProgramVer
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (iq *ImageQuery) loadActImages(ctx context.Context, query *ActImageQuery, nodes []*Image, init func(*Image), assign func(*Image, *ActImage)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint64]*Image)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(actimage.FieldImageID)
+	}
+	query.Where(predicate.ActImage(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(image.ActImagesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ImageID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "image_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (iq *ImageQuery) loadProgramImages(ctx context.Context, query *ProgramImageQuery, nodes []*Image, init func(*Image), assign func(*Image, *ProgramImage)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint64]*Image)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(programimage.FieldImageID)
+	}
+	query.Where(predicate.ProgramImage(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(image.ProgramImagesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ImageID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "image_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

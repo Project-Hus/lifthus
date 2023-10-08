@@ -23,7 +23,7 @@ func (Image) Fields() []ent.Field {
 // Edges of the Image.
 func (Image) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("act_versions", ActVersion.Type).Ref("images"),
-		edge.From("program_versions", ProgramVersion.Type).Ref("images"),
+		edge.From("act_versions", ActVersion.Type).Ref("images").Through("act_images", ActImage.Type),
+		edge.From("program_versions", ProgramVersion.Type).Ref("images").Through("program_images", ProgramImage.Type),
 	}
 }

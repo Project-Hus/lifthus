@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"routine/internal/ent/act"
+	"routine/internal/ent/actimage"
 	"routine/internal/ent/actversion"
 	"routine/internal/ent/image"
 	"time"
@@ -82,6 +83,21 @@ func (avc *ActVersionCreate) AddImages(i ...*Image) *ActVersionCreate {
 		ids[j] = i[j].ID
 	}
 	return avc.AddImageIDs(ids...)
+}
+
+// AddActImageIDs adds the "act_images" edge to the ActImage entity by IDs.
+func (avc *ActVersionCreate) AddActImageIDs(ids ...uint64) *ActVersionCreate {
+	avc.mutation.AddActImageIDs(ids...)
+	return avc
+}
+
+// AddActImages adds the "act_images" edges to the ActImage entity.
+func (avc *ActVersionCreate) AddActImages(a ...*ActImage) *ActVersionCreate {
+	ids := make([]uint64, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return avc.AddActImageIDs(ids...)
 }
 
 // Mutation returns the ActVersionMutation object of the builder.
@@ -229,6 +245,22 @@ func (avc *ActVersionCreate) createSpec() (*ActVersion, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := avc.mutation.ActImagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   actversion.ActImagesTable,
+			Columns: []string{actversion.ActImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(actimage.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

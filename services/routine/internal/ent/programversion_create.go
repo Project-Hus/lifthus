@@ -9,6 +9,7 @@ import (
 	"routine/internal/ent/dailyroutine"
 	"routine/internal/ent/image"
 	"routine/internal/ent/program"
+	"routine/internal/ent/programimage"
 	"routine/internal/ent/programversion"
 	"time"
 
@@ -98,6 +99,21 @@ func (pvc *ProgramVersionCreate) AddDailyRoutines(d ...*DailyRoutine) *ProgramVe
 		ids[i] = d[i].ID
 	}
 	return pvc.AddDailyRoutineIDs(ids...)
+}
+
+// AddProgramImageIDs adds the "program_images" edge to the ProgramImage entity by IDs.
+func (pvc *ProgramVersionCreate) AddProgramImageIDs(ids ...uint64) *ProgramVersionCreate {
+	pvc.mutation.AddProgramImageIDs(ids...)
+	return pvc
+}
+
+// AddProgramImages adds the "program_images" edges to the ProgramImage entity.
+func (pvc *ProgramVersionCreate) AddProgramImages(p ...*ProgramImage) *ProgramVersionCreate {
+	ids := make([]uint64, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pvc.AddProgramImageIDs(ids...)
 }
 
 // Mutation returns the ProgramVersionMutation object of the builder.
@@ -261,6 +277,22 @@ func (pvc *ProgramVersionCreate) createSpec() (*ProgramVersion, *sqlgraph.Create
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dailyroutine.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pvc.mutation.ProgramImagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   programversion.ProgramImagesTable,
+			Columns: []string{programversion.ProgramImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(programimage.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

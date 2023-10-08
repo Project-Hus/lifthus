@@ -11,10 +11,12 @@ import (
 	"routine/internal/ent/migrate"
 
 	"routine/internal/ent/act"
+	"routine/internal/ent/actimage"
 	"routine/internal/ent/actversion"
 	"routine/internal/ent/dailyroutine"
 	"routine/internal/ent/image"
 	"routine/internal/ent/program"
+	"routine/internal/ent/programimage"
 	"routine/internal/ent/programversion"
 	"routine/internal/ent/routineact"
 
@@ -31,6 +33,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Act is the client for interacting with the Act builders.
 	Act *ActClient
+	// ActImage is the client for interacting with the ActImage builders.
+	ActImage *ActImageClient
 	// ActVersion is the client for interacting with the ActVersion builders.
 	ActVersion *ActVersionClient
 	// DailyRoutine is the client for interacting with the DailyRoutine builders.
@@ -39,6 +43,8 @@ type Client struct {
 	Image *ImageClient
 	// Program is the client for interacting with the Program builders.
 	Program *ProgramClient
+	// ProgramImage is the client for interacting with the ProgramImage builders.
+	ProgramImage *ProgramImageClient
 	// ProgramVersion is the client for interacting with the ProgramVersion builders.
 	ProgramVersion *ProgramVersionClient
 	// RoutineAct is the client for interacting with the RoutineAct builders.
@@ -57,10 +63,12 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Act = NewActClient(c.config)
+	c.ActImage = NewActImageClient(c.config)
 	c.ActVersion = NewActVersionClient(c.config)
 	c.DailyRoutine = NewDailyRoutineClient(c.config)
 	c.Image = NewImageClient(c.config)
 	c.Program = NewProgramClient(c.config)
+	c.ProgramImage = NewProgramImageClient(c.config)
 	c.ProgramVersion = NewProgramVersionClient(c.config)
 	c.RoutineAct = NewRoutineActClient(c.config)
 }
@@ -146,10 +154,12 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:            ctx,
 		config:         cfg,
 		Act:            NewActClient(cfg),
+		ActImage:       NewActImageClient(cfg),
 		ActVersion:     NewActVersionClient(cfg),
 		DailyRoutine:   NewDailyRoutineClient(cfg),
 		Image:          NewImageClient(cfg),
 		Program:        NewProgramClient(cfg),
+		ProgramImage:   NewProgramImageClient(cfg),
 		ProgramVersion: NewProgramVersionClient(cfg),
 		RoutineAct:     NewRoutineActClient(cfg),
 	}, nil
@@ -172,10 +182,12 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:            ctx,
 		config:         cfg,
 		Act:            NewActClient(cfg),
+		ActImage:       NewActImageClient(cfg),
 		ActVersion:     NewActVersionClient(cfg),
 		DailyRoutine:   NewDailyRoutineClient(cfg),
 		Image:          NewImageClient(cfg),
 		Program:        NewProgramClient(cfg),
+		ProgramImage:   NewProgramImageClient(cfg),
 		ProgramVersion: NewProgramVersionClient(cfg),
 		RoutineAct:     NewRoutineActClient(cfg),
 	}, nil
@@ -207,8 +219,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Act, c.ActVersion, c.DailyRoutine, c.Image, c.Program, c.ProgramVersion,
-		c.RoutineAct,
+		c.Act, c.ActImage, c.ActVersion, c.DailyRoutine, c.Image, c.Program,
+		c.ProgramImage, c.ProgramVersion, c.RoutineAct,
 	} {
 		n.Use(hooks...)
 	}
@@ -218,8 +230,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Act, c.ActVersion, c.DailyRoutine, c.Image, c.Program, c.ProgramVersion,
-		c.RoutineAct,
+		c.Act, c.ActImage, c.ActVersion, c.DailyRoutine, c.Image, c.Program,
+		c.ProgramImage, c.ProgramVersion, c.RoutineAct,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -230,6 +242,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *ActMutation:
 		return c.Act.mutate(ctx, m)
+	case *ActImageMutation:
+		return c.ActImage.mutate(ctx, m)
 	case *ActVersionMutation:
 		return c.ActVersion.mutate(ctx, m)
 	case *DailyRoutineMutation:
@@ -238,6 +252,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Image.mutate(ctx, m)
 	case *ProgramMutation:
 		return c.Program.mutate(ctx, m)
+	case *ProgramImageMutation:
+		return c.ProgramImage.mutate(ctx, m)
 	case *ProgramVersionMutation:
 		return c.ProgramVersion.mutate(ctx, m)
 	case *RoutineActMutation:
@@ -381,6 +397,156 @@ func (c *ActClient) mutate(ctx context.Context, m *ActMutation) (Value, error) {
 	}
 }
 
+// ActImageClient is a client for the ActImage schema.
+type ActImageClient struct {
+	config
+}
+
+// NewActImageClient returns a client for the ActImage from the given config.
+func NewActImageClient(c config) *ActImageClient {
+	return &ActImageClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `actimage.Hooks(f(g(h())))`.
+func (c *ActImageClient) Use(hooks ...Hook) {
+	c.hooks.ActImage = append(c.hooks.ActImage, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `actimage.Intercept(f(g(h())))`.
+func (c *ActImageClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ActImage = append(c.inters.ActImage, interceptors...)
+}
+
+// Create returns a builder for creating a ActImage entity.
+func (c *ActImageClient) Create() *ActImageCreate {
+	mutation := newActImageMutation(c.config, OpCreate)
+	return &ActImageCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ActImage entities.
+func (c *ActImageClient) CreateBulk(builders ...*ActImageCreate) *ActImageCreateBulk {
+	return &ActImageCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ActImage.
+func (c *ActImageClient) Update() *ActImageUpdate {
+	mutation := newActImageMutation(c.config, OpUpdate)
+	return &ActImageUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ActImageClient) UpdateOne(ai *ActImage) *ActImageUpdateOne {
+	mutation := newActImageMutation(c.config, OpUpdateOne, withActImage(ai))
+	return &ActImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ActImageClient) UpdateOneID(id uint64) *ActImageUpdateOne {
+	mutation := newActImageMutation(c.config, OpUpdateOne, withActImageID(id))
+	return &ActImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ActImage.
+func (c *ActImageClient) Delete() *ActImageDelete {
+	mutation := newActImageMutation(c.config, OpDelete)
+	return &ActImageDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ActImageClient) DeleteOne(ai *ActImage) *ActImageDeleteOne {
+	return c.DeleteOneID(ai.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ActImageClient) DeleteOneID(id uint64) *ActImageDeleteOne {
+	builder := c.Delete().Where(actimage.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ActImageDeleteOne{builder}
+}
+
+// Query returns a query builder for ActImage.
+func (c *ActImageClient) Query() *ActImageQuery {
+	return &ActImageQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeActImage},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ActImage entity by its id.
+func (c *ActImageClient) Get(ctx context.Context, id uint64) (*ActImage, error) {
+	return c.Query().Where(actimage.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ActImageClient) GetX(ctx context.Context, id uint64) *ActImage {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryActVersion queries the act_version edge of a ActImage.
+func (c *ActImageClient) QueryActVersion(ai *ActImage) *ActVersionQuery {
+	query := (&ActVersionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ai.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(actimage.Table, actimage.FieldID, id),
+			sqlgraph.To(actversion.Table, actversion.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, actimage.ActVersionTable, actimage.ActVersionColumn),
+		)
+		fromV = sqlgraph.Neighbors(ai.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryImage queries the image edge of a ActImage.
+func (c *ActImageClient) QueryImage(ai *ActImage) *ImageQuery {
+	query := (&ImageClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ai.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(actimage.Table, actimage.FieldID, id),
+			sqlgraph.To(image.Table, image.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, actimage.ImageTable, actimage.ImageColumn),
+		)
+		fromV = sqlgraph.Neighbors(ai.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ActImageClient) Hooks() []Hook {
+	return c.hooks.ActImage
+}
+
+// Interceptors returns the client interceptors.
+func (c *ActImageClient) Interceptors() []Interceptor {
+	return c.inters.ActImage
+}
+
+func (c *ActImageClient) mutate(ctx context.Context, m *ActImageMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ActImageCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ActImageUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ActImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ActImageDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ActImage mutation op: %q", m.Op())
+	}
+}
+
 // ActVersionClient is a client for the ActVersion schema.
 type ActVersionClient struct {
 	config
@@ -499,6 +665,22 @@ func (c *ActVersionClient) QueryImages(av *ActVersion) *ImageQuery {
 			sqlgraph.From(actversion.Table, actversion.FieldID, id),
 			sqlgraph.To(image.Table, image.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, actversion.ImagesTable, actversion.ImagesPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(av.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryActImages queries the act_images edge of a ActVersion.
+func (c *ActVersionClient) QueryActImages(av *ActVersion) *ActImageQuery {
+	query := (&ActImageClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := av.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(actversion.Table, actversion.FieldID, id),
+			sqlgraph.To(actimage.Table, actimage.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, actversion.ActImagesTable, actversion.ActImagesColumn),
 		)
 		fromV = sqlgraph.Neighbors(av.driver.Dialect(), step)
 		return fromV, nil
@@ -806,6 +988,38 @@ func (c *ImageClient) QueryProgramVersions(i *Image) *ProgramVersionQuery {
 	return query
 }
 
+// QueryActImages queries the act_images edge of a Image.
+func (c *ImageClient) QueryActImages(i *Image) *ActImageQuery {
+	query := (&ActImageClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(image.Table, image.FieldID, id),
+			sqlgraph.To(actimage.Table, actimage.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, image.ActImagesTable, image.ActImagesColumn),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProgramImages queries the program_images edge of a Image.
+func (c *ImageClient) QueryProgramImages(i *Image) *ProgramImageQuery {
+	query := (&ProgramImageClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(image.Table, image.FieldID, id),
+			sqlgraph.To(programimage.Table, programimage.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, image.ProgramImagesTable, image.ProgramImagesColumn),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ImageClient) Hooks() []Hook {
 	return c.hooks.Image
@@ -965,6 +1179,156 @@ func (c *ProgramClient) mutate(ctx context.Context, m *ProgramMutation) (Value, 
 	}
 }
 
+// ProgramImageClient is a client for the ProgramImage schema.
+type ProgramImageClient struct {
+	config
+}
+
+// NewProgramImageClient returns a client for the ProgramImage from the given config.
+func NewProgramImageClient(c config) *ProgramImageClient {
+	return &ProgramImageClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `programimage.Hooks(f(g(h())))`.
+func (c *ProgramImageClient) Use(hooks ...Hook) {
+	c.hooks.ProgramImage = append(c.hooks.ProgramImage, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `programimage.Intercept(f(g(h())))`.
+func (c *ProgramImageClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ProgramImage = append(c.inters.ProgramImage, interceptors...)
+}
+
+// Create returns a builder for creating a ProgramImage entity.
+func (c *ProgramImageClient) Create() *ProgramImageCreate {
+	mutation := newProgramImageMutation(c.config, OpCreate)
+	return &ProgramImageCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ProgramImage entities.
+func (c *ProgramImageClient) CreateBulk(builders ...*ProgramImageCreate) *ProgramImageCreateBulk {
+	return &ProgramImageCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ProgramImage.
+func (c *ProgramImageClient) Update() *ProgramImageUpdate {
+	mutation := newProgramImageMutation(c.config, OpUpdate)
+	return &ProgramImageUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ProgramImageClient) UpdateOne(pi *ProgramImage) *ProgramImageUpdateOne {
+	mutation := newProgramImageMutation(c.config, OpUpdateOne, withProgramImage(pi))
+	return &ProgramImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ProgramImageClient) UpdateOneID(id uint64) *ProgramImageUpdateOne {
+	mutation := newProgramImageMutation(c.config, OpUpdateOne, withProgramImageID(id))
+	return &ProgramImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ProgramImage.
+func (c *ProgramImageClient) Delete() *ProgramImageDelete {
+	mutation := newProgramImageMutation(c.config, OpDelete)
+	return &ProgramImageDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ProgramImageClient) DeleteOne(pi *ProgramImage) *ProgramImageDeleteOne {
+	return c.DeleteOneID(pi.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ProgramImageClient) DeleteOneID(id uint64) *ProgramImageDeleteOne {
+	builder := c.Delete().Where(programimage.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ProgramImageDeleteOne{builder}
+}
+
+// Query returns a query builder for ProgramImage.
+func (c *ProgramImageClient) Query() *ProgramImageQuery {
+	return &ProgramImageQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeProgramImage},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ProgramImage entity by its id.
+func (c *ProgramImageClient) Get(ctx context.Context, id uint64) (*ProgramImage, error) {
+	return c.Query().Where(programimage.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ProgramImageClient) GetX(ctx context.Context, id uint64) *ProgramImage {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryProgramVersion queries the program_version edge of a ProgramImage.
+func (c *ProgramImageClient) QueryProgramVersion(pi *ProgramImage) *ProgramVersionQuery {
+	query := (&ProgramVersionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pi.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(programimage.Table, programimage.FieldID, id),
+			sqlgraph.To(programversion.Table, programversion.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, programimage.ProgramVersionTable, programimage.ProgramVersionColumn),
+		)
+		fromV = sqlgraph.Neighbors(pi.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryImage queries the image edge of a ProgramImage.
+func (c *ProgramImageClient) QueryImage(pi *ProgramImage) *ImageQuery {
+	query := (&ImageClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pi.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(programimage.Table, programimage.FieldID, id),
+			sqlgraph.To(image.Table, image.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, programimage.ImageTable, programimage.ImageColumn),
+		)
+		fromV = sqlgraph.Neighbors(pi.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ProgramImageClient) Hooks() []Hook {
+	return c.hooks.ProgramImage
+}
+
+// Interceptors returns the client interceptors.
+func (c *ProgramImageClient) Interceptors() []Interceptor {
+	return c.inters.ProgramImage
+}
+
+func (c *ProgramImageClient) mutate(ctx context.Context, m *ProgramImageMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ProgramImageCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ProgramImageUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ProgramImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ProgramImageDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ProgramImage mutation op: %q", m.Op())
+	}
+}
+
 // ProgramVersionClient is a client for the ProgramVersion schema.
 type ProgramVersionClient struct {
 	config
@@ -1099,6 +1463,22 @@ func (c *ProgramVersionClient) QueryDailyRoutines(pv *ProgramVersion) *DailyRout
 			sqlgraph.From(programversion.Table, programversion.FieldID, id),
 			sqlgraph.To(dailyroutine.Table, dailyroutine.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, programversion.DailyRoutinesTable, programversion.DailyRoutinesColumn),
+		)
+		fromV = sqlgraph.Neighbors(pv.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProgramImages queries the program_images edge of a ProgramVersion.
+func (c *ProgramVersionClient) QueryProgramImages(pv *ProgramVersion) *ProgramImageQuery {
+	query := (&ProgramImageClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pv.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(programversion.Table, programversion.FieldID, id),
+			sqlgraph.To(programimage.Table, programimage.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, programversion.ProgramImagesTable, programversion.ProgramImagesColumn),
 		)
 		fromV = sqlgraph.Neighbors(pv.driver.Dialect(), step)
 		return fromV, nil
@@ -1268,11 +1648,11 @@ func (c *RoutineActClient) mutate(ctx context.Context, m *RoutineActMutation) (V
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Act, ActVersion, DailyRoutine, Image, Program, ProgramVersion,
-		RoutineAct []ent.Hook
+		Act, ActImage, ActVersion, DailyRoutine, Image, Program, ProgramImage,
+		ProgramVersion, RoutineAct []ent.Hook
 	}
 	inters struct {
-		Act, ActVersion, DailyRoutine, Image, Program, ProgramVersion,
-		RoutineAct []ent.Interceptor
+		Act, ActImage, ActVersion, DailyRoutine, Image, Program, ProgramImage,
+		ProgramVersion, RoutineAct []ent.Interceptor
 	}
 )
