@@ -71,6 +71,22 @@ func (ra RoutineAct) Order() RoutineActOrder {
 	return ra.order
 }
 
+func (ra RoutineAct) ActVersion() act.ActVersionCode {
+	return ra.actVersion
+}
+
+func (ra RoutineAct) Stage() RoutineActStage {
+	return ra.stage
+}
+
+func (ra RoutineAct) RepsOrMeters() RepsOrMeters {
+	return ra.repsOrMeters
+}
+
+func (ra RoutineAct) RatioOrSecs() RatioOrSecs {
+	return ra.ratioOrSecs
+}
+
 func (ra *RoutineAct) setDailyRoutine(drcode DailyRoutineCode) {
 	ra.dailyRoutine = drcode
 }

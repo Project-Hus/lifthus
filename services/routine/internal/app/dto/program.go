@@ -1,23 +1,8 @@
 package dto
 
 import (
-	"routine/internal/domain/aggregates/program"
 	"strconv"
 )
-
-func QueryProgramDtoFrom(p *program.Program) *QueryProgramDto {
-	return &QueryProgramDto{}
-}
-
-type QueryProgramDto struct {
-}
-
-func QueryProgramVersionDtoFrom(pv *program.ProgramVersion) QueryProgramVersionDto {
-	return QueryProgramVersionDto{}
-}
-
-type QueryProgramVersionDto struct {
-}
 
 type CreateProgramRequestDto struct {
 	ProgramType string  `json:"programType"`
