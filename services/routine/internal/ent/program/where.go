@@ -365,6 +365,16 @@ func VersionDerivedFromHasSuffix(v string) predicate.Program {
 	return predicate.Program(sql.FieldHasSuffix(FieldVersionDerivedFrom, v))
 }
 
+// VersionDerivedFromIsNil applies the IsNil predicate on the "version_derived_from" field.
+func VersionDerivedFromIsNil() predicate.Program {
+	return predicate.Program(sql.FieldIsNull(FieldVersionDerivedFrom))
+}
+
+// VersionDerivedFromNotNil applies the NotNil predicate on the "version_derived_from" field.
+func VersionDerivedFromNotNil() predicate.Program {
+	return predicate.Program(sql.FieldNotNull(FieldVersionDerivedFrom))
+}
+
 // VersionDerivedFromEqualFold applies the EqualFold predicate on the "version_derived_from" field.
 func VersionDerivedFromEqualFold(v string) predicate.Program {
 	return predicate.Program(sql.FieldEqualFold(FieldVersionDerivedFrom, v))

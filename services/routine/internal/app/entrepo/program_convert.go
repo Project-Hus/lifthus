@@ -169,3 +169,12 @@ func StageFromEntStage(es routineact.Stage) (program.RoutineActStage, error) {
 		return program.RoutineActStage{}, fmt.Errorf("unknown stage: %s", es)
 	}
 }
+
+func entProgramTypeFrom(pt string) (eprogram.ProgramType, error) {
+	switch pt {
+	case program.WEEKLY:
+		return eprogram.ProgramTypeWeekly, nil
+	default:
+		return "", fmt.Errorf("unknown program type: %s", pt)
+	}
+}

@@ -31,7 +31,7 @@ func CodeRef(fn string) ent.Field {
 }
 
 func CodeRefNillable(fn string) ent.Field {
-	return field.String(fn).NotEmpty().Annotations(entsql.Annotation{Size: 20}).Immutable().Nillable()
+	return field.String(fn).NotEmpty().Annotations(entsql.Annotation{Size: 20}).Immutable().Optional().Nillable()
 }
 
 func CreatedAtField() ent.Field {

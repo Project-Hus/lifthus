@@ -147,7 +147,7 @@ var (
 		{Name: "title", Type: field.TypeString, Size: 50},
 		{Name: "author", Type: field.TypeUint64},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "version_derived_from", Type: field.TypeString, Size: 20},
+		{Name: "version_derived_from", Type: field.TypeString, Nullable: true, Size: 20},
 	}
 	// ProgramsTable holds the schema information for the "programs" table.
 	ProgramsTable = &schema.Table{

@@ -105,6 +105,9 @@ func (pu *ProgramUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if pu.mutation.VersionDerivedFromCleared() {
+		_spec.ClearField(program.FieldVersionDerivedFrom, field.TypeString)
+	}
 	if pu.mutation.ProgramVersionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -276,6 +279,9 @@ func (puo *ProgramUpdateOne) sqlSave(ctx context.Context) (_node *Program, err e
 				ps[i](selector)
 			}
 		}
+	}
+	if puo.mutation.VersionDerivedFromCleared() {
+		_spec.ClearField(program.FieldVersionDerivedFrom, field.TypeString)
 	}
 	if puo.mutation.ProgramVersionsCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -57,6 +57,14 @@ func (pc *ProgramCreate) SetVersionDerivedFrom(s string) *ProgramCreate {
 	return pc
 }
 
+// SetNillableVersionDerivedFrom sets the "version_derived_from" field if the given value is not nil.
+func (pc *ProgramCreate) SetNillableVersionDerivedFrom(s *string) *ProgramCreate {
+	if s != nil {
+		pc.SetVersionDerivedFrom(*s)
+	}
+	return pc
+}
+
 // SetID sets the "id" field.
 func (pc *ProgramCreate) SetID(u uint64) *ProgramCreate {
 	pc.mutation.SetID(u)
@@ -141,9 +149,6 @@ func (pc *ProgramCreate) check() error {
 	}
 	if _, ok := pc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Program.created_at"`)}
-	}
-	if _, ok := pc.mutation.VersionDerivedFrom(); !ok {
-		return &ValidationError{Name: "version_derived_from", err: errors.New(`ent: missing required field "Program.version_derived_from"`)}
 	}
 	if v, ok := pc.mutation.VersionDerivedFrom(); ok {
 		if err := program.VersionDerivedFromValidator(v); err != nil {

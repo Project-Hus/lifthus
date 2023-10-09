@@ -10,6 +10,7 @@ import (
 	eprogramversion "routine/internal/ent/programversion"
 	"routine/internal/ent/routineact"
 	"routine/internal/repository"
+	"time"
 )
 
 func NewEntProgramRepository() *EntProgramRepository {
@@ -74,6 +75,26 @@ func (repo *EntProgramRepository) Save(ctx context.Context, target *program.Prog
 }
 
 func (repo *EntProgramRepository) insertNewProgram(ctx context.Context, np *program.Program) (*program.Program, error) {
+	tx, finally, err := repo.Tx(ctx)
+	defer finally(&err)
+	if err != nil {
+		return nil, err
+	}
+	ptype, err := entProgramTypeFrom(np.ProgramType().Type())
+	if err != nil {
+		return nil, err
+	}
+	_, err = tx.Program.Create().
+		SetCode(string(np.Code())).
+		SetProgramType(ptype).
+		SetTitle(string(np.Title())).
+		SetAuthor(uint64(np.Author())).
+		SetCreatedAt(time.Time(np.CreatedAt())).
+		SetNillableVersionDerivedFrom((*string)(np.DerivedFrom())).
+		Save(ctx)
+	if err != nil {
+		return nil, err
+	}
 	return nil, nil
 }
 
