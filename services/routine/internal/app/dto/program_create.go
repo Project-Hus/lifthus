@@ -48,6 +48,8 @@ func (cpr CreateProgramRequestDto) ToServiceDto() (*CreateProgramServiceDto, err
 	}
 
 	return &CreateProgramServiceDto{
+		ProgramType:   cpr.ProgramType,
+		Title:         cpr.Title,
 		Author:        author,
 		DerivedFrom:   cpr.DerivedFrom,
 		ImageSrcs:     cpr.ImageSrcs,
@@ -57,6 +59,9 @@ func (cpr CreateProgramRequestDto) ToServiceDto() (*CreateProgramServiceDto, err
 }
 
 type CreateProgramServiceDto struct {
+	ProgramType string
+	Title       string
+
 	Author      uint64
 	DerivedFrom *string
 

@@ -11,7 +11,7 @@ import (
 
 func SetProgramCommandControllerTo(e *echo.Echo) *echo.Echo {
 	pc := &programCommandController{svc: newProgramCommandService()}
-	e.POST("/routine/act", pc.createProgram, guard.UserGuard)
+	e.POST("/routine/program/weekly", pc.createWeeklyProgram, guard.UserGuard)
 	return e
 }
 
@@ -20,7 +20,7 @@ type programCommandController struct {
 }
 
 // createProgram godoc
-// @Router /program [post]
+// @Router /program/weekly [post]
 // @Param Authorization header string true "lifthus_st"
 // @Param creatProgramDto body dto.CreateProgramRequestDto true "create program dto"
 // @Summary
@@ -30,7 +30,7 @@ type programCommandController struct {
 // Failure 401 "unauthorized"
 // Failure 403 "forbidden"
 // Failure 500 "failed to create Program"
-func (pc *programCommandController) createProgram(c echo.Context) error {
+func (pc *programCommandController) createWeeklyProgram(c echo.Context) error {
 	cpDto := dto.CreateProgramRequestDto{}
 	if err := c.Bind(&cpDto); err != nil {
 		log.Printf("failed to bind request body: %v", err)
@@ -46,7 +46,7 @@ func (pc *programCommandController) createProgram(c echo.Context) error {
 		log.Printf("User %d attempted to create Program illegally", clientId)
 		return c.String(http.StatusForbidden, "illegal access")
 	}
-	qpDto, err := pc.svc.createProgram(*cpSvcDto)
+	qpDto, err := pc.svc.createWeeklyProgram(c.Request().Context(), *cpSvcDto)
 	if err != nil {
 		log.Printf("failed to create Program: %v", err)
 		return c.String(http.StatusInternalServerError, "failed to create Program")
