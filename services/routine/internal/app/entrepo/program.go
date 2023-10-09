@@ -9,6 +9,7 @@ import (
 	"routine/internal/ent/programimage"
 	eprogramversion "routine/internal/ent/programversion"
 	"routine/internal/ent/routineact"
+	"routine/internal/repository"
 )
 
 func NewEntProgramRepository() *EntProgramRepository {
@@ -48,9 +49,34 @@ func (repo *EntProgramRepository) FindProgramByCode(ctx context.Context, code pr
 			},
 		).
 		First(ctx)
+	if ent.IsNotFound(err) {
+		return nil, repository.ErrNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
 	return ProgramFromEntProgram(ep)
 }
 
 func (repo *EntProgramRepository) Save(ctx context.Context, target *program.Program) (saved *program.Program, err error) {
+	finally, err := repo.BeginOrContinueTx(ctx)
+	defer finally(&err)
+	if err != nil {
+		return nil, err
+	}
+	existing, err := repo.FindProgramByCode(ctx, target.Code())
+	if repository.IsNotFound(err) {
+		return repo.insertNewProgram(ctx, target)
+	} else if err != nil {
+		return nil, err
+	}
+	return repo.updateProgram(ctx, existing, target)
+}
+
+func (repo *EntProgramRepository) insertNewProgram(ctx context.Context, np *program.Program) (*program.Program, error) {
+	return nil, nil
+}
+
+func (repo *EntProgramRepository) updateProgram(ctx context.Context, existing *program.Program, target *program.Program) (*program.Program, error) {
 	return nil, nil
 }
