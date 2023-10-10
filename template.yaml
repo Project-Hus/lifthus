@@ -165,7 +165,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       MemorySize: 128
-      CodeUri: services/routine/cmd/routine
+      CodeUri: services/routine
       Handler: routine
       Runtime: go1.x
       Architectures:

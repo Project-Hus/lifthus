@@ -5,8 +5,14 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"routine/ent"
+	"routine/internal/ent"
 )
+
+var Client *ent.Client
+
+func EntClient() *ent.Client {
+	return Client
+}
 
 // ConncectToLifthusRoutine returns lifthus_routine_db's ent client.
 // you've got to close it with Close() in defer out of this function.
@@ -28,6 +34,8 @@ func ConnectToLifthusRoutine() (*ent.Client, error) {
 		log.Print("[F] opening connection to mysql failed: %w", err)
 		return nil, err
 	}
+
+	Client = client
 
 	// Running the auto migration tool.
 	if err := client.Schema.Create(

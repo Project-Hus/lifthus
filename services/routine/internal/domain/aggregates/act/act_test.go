@@ -137,17 +137,17 @@ func TestActFrom(t *testing.T) {
 	v6 := &ActVersion{version: 6}
 	v11 := &ActVersion{version: 11}
 	versions := ActVersions{v1, v3, v4, v6, v11}
-	_, err := ActFrom("code", SimpleType, getValidActName(), *user.UserFrom(42), domain.CreatedAt(time.Now()), versions)
+	_, err := ActFrom("code", SimpleType, getValidActName(), user.UserFrom(42).Id(), domain.CreatedAt(time.Now()), versions)
 	if err != nil {
 		t.Errorf("sorted versions should be valid but got unexpected error:%v", err)
 	}
 	versions = ActVersions{v1, v4, v3, v6, v11}
-	_, err = ActFrom("code", SimpleType, getValidActName(), *user.UserFrom(42), domain.CreatedAt(time.Now()), versions)
+	_, err = ActFrom("code", SimpleType, getValidActName(), user.UserFrom(42).Id(), domain.CreatedAt(time.Now()), versions)
 	if err != ErrInvalidActVersions {
 		t.Errorf("unsorted versions should cause ErrInvalidActVersions but got %v", err)
 	}
 	versions = ActVersions{v1, v3, v3, v6, v11}
-	_, err = ActFrom("code", SimpleType, getValidActName(), *user.UserFrom(42), domain.CreatedAt(time.Now()), versions)
+	_, err = ActFrom("code", SimpleType, getValidActName(), user.UserFrom(42).Id(), domain.CreatedAt(time.Now()), versions)
 	if err != ErrInvalidActVersions {
 		t.Errorf("versions with duplicated version number should cause ErrInvalidActVersions but got %v", err)
 	}
