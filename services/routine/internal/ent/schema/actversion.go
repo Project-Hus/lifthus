@@ -29,5 +29,7 @@ func (ActVersion) Edges() []ent.Edge {
 		edge.From("act", Act.Type).Ref("act_versions").Unique().Required(),
 
 		edge.To("images", Image.Type).Through("act_images", ActImage.Type),
+
+		edge.To("routine_acts", RoutineAct.Type),
 	}
 }

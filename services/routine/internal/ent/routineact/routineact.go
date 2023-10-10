@@ -18,18 +18,27 @@ const (
 	FieldDailyRoutineCode = "daily_routine_code"
 	// FieldOrder holds the string denoting the order field in the database.
 	FieldOrder = "order"
-	// FieldActVersion holds the string denoting the act_version field in the database.
-	FieldActVersion = "act_version"
+	// FieldActVersionCode holds the string denoting the act_version_code field in the database.
+	FieldActVersionCode = "act_version_code"
 	// FieldStage holds the string denoting the stage field in the database.
 	FieldStage = "stage"
 	// FieldRepsOrMeters holds the string denoting the reps_or_meters field in the database.
 	FieldRepsOrMeters = "reps_or_meters"
 	// FieldRatioOrSecs holds the string denoting the ratio_or_secs field in the database.
 	FieldRatioOrSecs = "ratio_or_secs"
+	// EdgeActVersion holds the string denoting the act_version edge name in mutations.
+	EdgeActVersion = "act_version"
 	// EdgeDailyRoutine holds the string denoting the daily_routine edge name in mutations.
 	EdgeDailyRoutine = "daily_routine"
 	// Table holds the table name of the routineact in the database.
 	Table = "routine_acts"
+	// ActVersionTable is the table that holds the act_version relation/edge.
+	ActVersionTable = "routine_acts"
+	// ActVersionInverseTable is the table name for the ActVersion entity.
+	// It exists in this package in order to avoid circular dependency with the "actversion" package.
+	ActVersionInverseTable = "act_versions"
+	// ActVersionColumn is the table column denoting the act_version relation/edge.
+	ActVersionColumn = "act_version_routine_acts"
 	// DailyRoutineTable is the table that holds the daily_routine relation/edge.
 	DailyRoutineTable = "routine_acts"
 	// DailyRoutineInverseTable is the table name for the DailyRoutine entity.
@@ -44,7 +53,7 @@ var Columns = []string{
 	FieldID,
 	FieldDailyRoutineCode,
 	FieldOrder,
-	FieldActVersion,
+	FieldActVersionCode,
 	FieldStage,
 	FieldRepsOrMeters,
 	FieldRatioOrSecs,
@@ -53,6 +62,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "routine_acts"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
+	"act_version_routine_acts",
 	"daily_routine_routine_acts",
 }
 
@@ -74,8 +84,8 @@ func ValidColumn(column string) bool {
 var (
 	// DailyRoutineCodeValidator is a validator for the "daily_routine_code" field. It is called by the builders before save.
 	DailyRoutineCodeValidator func(string) error
-	// ActVersionValidator is a validator for the "act_version" field. It is called by the builders before save.
-	ActVersionValidator func(string) error
+	// ActVersionCodeValidator is a validator for the "act_version_code" field. It is called by the builders before save.
+	ActVersionCodeValidator func(string) error
 )
 
 // Stage defines the type for the "stage" enum field.
@@ -120,9 +130,9 @@ func ByOrder(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldOrder, opts...).ToFunc()
 }
 
-// ByActVersion orders the results by the act_version field.
-func ByActVersion(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldActVersion, opts...).ToFunc()
+// ByActVersionCode orders the results by the act_version_code field.
+func ByActVersionCode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldActVersionCode, opts...).ToFunc()
 }
 
 // ByStage orders the results by the stage field.
@@ -140,11 +150,25 @@ func ByRatioOrSecs(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRatioOrSecs, opts...).ToFunc()
 }
 
+// ByActVersionField orders the results by act_version field.
+func ByActVersionField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newActVersionStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByDailyRoutineField orders the results by daily_routine field.
 func ByDailyRoutineField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newDailyRoutineStep(), sql.OrderByField(field, opts...))
 	}
+}
+func newActVersionStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ActVersionInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, ActVersionTable, ActVersionColumn),
+	)
 }
 func newDailyRoutineStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

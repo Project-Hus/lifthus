@@ -95,8 +95,8 @@ func init() {
 	routineactDescDailyRoutineCode := routineactFields[1].Descriptor()
 	// routineact.DailyRoutineCodeValidator is a validator for the "daily_routine_code" field. It is called by the builders before save.
 	routineact.DailyRoutineCodeValidator = routineactDescDailyRoutineCode.Validators[0].(func(string) error)
-	// routineactDescActVersion is the schema descriptor for act_version field.
-	routineactDescActVersion := routineactFields[3].Descriptor()
-	// routineact.ActVersionValidator is a validator for the "act_version" field. It is called by the builders before save.
-	routineact.ActVersionValidator = routineactDescActVersion.Validators[0].(func(string) error)
+	// routineactDescActVersionCode is the schema descriptor for act_version_code field.
+	routineactDescActVersionCode := routineactFields[3].Descriptor()
+	// routineact.ActVersionCodeValidator is a validator for the "act_version_code" field. It is called by the builders before save.
+	routineact.ActVersionCodeValidator = routineactDescActVersionCode.Validators[0].(func(string) error)
 }

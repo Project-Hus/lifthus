@@ -672,6 +672,22 @@ func (c *ActVersionClient) QueryImages(av *ActVersion) *ImageQuery {
 	return query
 }
 
+// QueryRoutineActs queries the routine_acts edge of a ActVersion.
+func (c *ActVersionClient) QueryRoutineActs(av *ActVersion) *RoutineActQuery {
+	query := (&RoutineActClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := av.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(actversion.Table, actversion.FieldID, id),
+			sqlgraph.To(routineact.Table, routineact.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, actversion.RoutineActsTable, actversion.RoutineActsColumn),
+		)
+		fromV = sqlgraph.Neighbors(av.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryActImages queries the act_images edge of a ActVersion.
 func (c *ActVersionClient) QueryActImages(av *ActVersion) *ActImageQuery {
 	query := (&ActImageClient{config: c.config}).Query()
@@ -1602,6 +1618,22 @@ func (c *RoutineActClient) GetX(ctx context.Context, id uint64) *RoutineAct {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryActVersion queries the act_version edge of a RoutineAct.
+func (c *RoutineActClient) QueryActVersion(ra *RoutineAct) *ActVersionQuery {
+	query := (&ActVersionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ra.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(routineact.Table, routineact.FieldID, id),
+			sqlgraph.To(actversion.Table, actversion.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, routineact.ActVersionTable, routineact.ActVersionColumn),
+		)
+		fromV = sqlgraph.Neighbors(ra.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryDailyRoutine queries the daily_routine edge of a RoutineAct.

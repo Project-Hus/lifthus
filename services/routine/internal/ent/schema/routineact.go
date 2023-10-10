@@ -17,7 +17,7 @@ func (RoutineAct) Fields() []ent.Field {
 		IdField(),
 		CodeRef("daily_routine_code"),
 		field.Uint("order").Immutable(),
-		CodeRef("act_version"),
+		CodeRef("act_version_code"),
 		field.Enum("stage").Values(RoutineActStage...).Immutable(),
 		field.Uint("reps_or_meters").Immutable(),
 		field.Float("ratio_or_secs").Immutable(),
@@ -27,6 +27,7 @@ func (RoutineAct) Fields() []ent.Field {
 // Edges of the RoutineAct.
 func (RoutineAct) Edges() []ent.Edge {
 	return []ent.Edge{
+		edge.From("act_version", ActVersion.Type).Ref("routine_acts").Unique().Required(),
 		edge.From("daily_routine", DailyRoutine.Type).Ref("routine_acts").Unique().Required(),
 	}
 }

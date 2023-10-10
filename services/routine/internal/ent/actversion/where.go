@@ -401,6 +401,29 @@ func HasImagesWith(preds ...predicate.Image) predicate.ActVersion {
 	})
 }
 
+// HasRoutineActs applies the HasEdge predicate on the "routine_acts" edge.
+func HasRoutineActs() predicate.ActVersion {
+	return predicate.ActVersion(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, RoutineActsTable, RoutineActsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRoutineActsWith applies the HasEdge predicate on the "routine_acts" edge with a given conditions (other predicates).
+func HasRoutineActsWith(preds ...predicate.RoutineAct) predicate.ActVersion {
+	return predicate.ActVersion(func(s *sql.Selector) {
+		step := newRoutineActsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasActImages applies the HasEdge predicate on the "act_images" edge.
 func HasActImages() predicate.ActVersion {
 	return predicate.ActVersion(func(s *sql.Selector) {

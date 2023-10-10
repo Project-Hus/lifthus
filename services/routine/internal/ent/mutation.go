@@ -1297,27 +1297,30 @@ func (m *ActImageMutation) ResetEdge(name string) error {
 // ActVersionMutation represents an operation that mutates the ActVersion nodes in the graph.
 type ActVersionMutation struct {
 	config
-	op                Op
-	typ               string
-	id                *uint64
-	code              *string
-	act_code          *string
-	version           *uint
-	addversion        *int
-	created_at        *time.Time
-	text              *string
-	clearedFields     map[string]struct{}
-	act               *uint64
-	clearedact        bool
-	images            map[uint64]struct{}
-	removedimages     map[uint64]struct{}
-	clearedimages     bool
-	act_images        map[uint64]struct{}
-	removedact_images map[uint64]struct{}
-	clearedact_images bool
-	done              bool
-	oldValue          func(context.Context) (*ActVersion, error)
-	predicates        []predicate.ActVersion
+	op                  Op
+	typ                 string
+	id                  *uint64
+	code                *string
+	act_code            *string
+	version             *uint
+	addversion          *int
+	created_at          *time.Time
+	text                *string
+	clearedFields       map[string]struct{}
+	act                 *uint64
+	clearedact          bool
+	images              map[uint64]struct{}
+	removedimages       map[uint64]struct{}
+	clearedimages       bool
+	routine_acts        map[uint64]struct{}
+	removedroutine_acts map[uint64]struct{}
+	clearedroutine_acts bool
+	act_images          map[uint64]struct{}
+	removedact_images   map[uint64]struct{}
+	clearedact_images   bool
+	done                bool
+	oldValue            func(context.Context) (*ActVersion, error)
+	predicates          []predicate.ActVersion
 }
 
 var _ ent.Mutation = (*ActVersionMutation)(nil)
@@ -1717,6 +1720,60 @@ func (m *ActVersionMutation) ResetImages() {
 	m.removedimages = nil
 }
 
+// AddRoutineActIDs adds the "routine_acts" edge to the RoutineAct entity by ids.
+func (m *ActVersionMutation) AddRoutineActIDs(ids ...uint64) {
+	if m.routine_acts == nil {
+		m.routine_acts = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		m.routine_acts[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRoutineActs clears the "routine_acts" edge to the RoutineAct entity.
+func (m *ActVersionMutation) ClearRoutineActs() {
+	m.clearedroutine_acts = true
+}
+
+// RoutineActsCleared reports if the "routine_acts" edge to the RoutineAct entity was cleared.
+func (m *ActVersionMutation) RoutineActsCleared() bool {
+	return m.clearedroutine_acts
+}
+
+// RemoveRoutineActIDs removes the "routine_acts" edge to the RoutineAct entity by IDs.
+func (m *ActVersionMutation) RemoveRoutineActIDs(ids ...uint64) {
+	if m.removedroutine_acts == nil {
+		m.removedroutine_acts = make(map[uint64]struct{})
+	}
+	for i := range ids {
+		delete(m.routine_acts, ids[i])
+		m.removedroutine_acts[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRoutineActs returns the removed IDs of the "routine_acts" edge to the RoutineAct entity.
+func (m *ActVersionMutation) RemovedRoutineActsIDs() (ids []uint64) {
+	for id := range m.removedroutine_acts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RoutineActsIDs returns the "routine_acts" edge IDs in the mutation.
+func (m *ActVersionMutation) RoutineActsIDs() (ids []uint64) {
+	for id := range m.routine_acts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRoutineActs resets all changes to the "routine_acts" edge.
+func (m *ActVersionMutation) ResetRoutineActs() {
+	m.routine_acts = nil
+	m.clearedroutine_acts = false
+	m.removedroutine_acts = nil
+}
+
 // AddActImageIDs adds the "act_images" edge to the ActImage entity by ids.
 func (m *ActVersionMutation) AddActImageIDs(ids ...uint64) {
 	if m.act_images == nil {
@@ -1987,12 +2044,15 @@ func (m *ActVersionMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ActVersionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.act != nil {
 		edges = append(edges, actversion.EdgeAct)
 	}
 	if m.images != nil {
 		edges = append(edges, actversion.EdgeImages)
+	}
+	if m.routine_acts != nil {
+		edges = append(edges, actversion.EdgeRoutineActs)
 	}
 	if m.act_images != nil {
 		edges = append(edges, actversion.EdgeActImages)
@@ -2014,6 +2074,12 @@ func (m *ActVersionMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case actversion.EdgeRoutineActs:
+		ids := make([]ent.Value, 0, len(m.routine_acts))
+		for id := range m.routine_acts {
+			ids = append(ids, id)
+		}
+		return ids
 	case actversion.EdgeActImages:
 		ids := make([]ent.Value, 0, len(m.act_images))
 		for id := range m.act_images {
@@ -2026,9 +2092,12 @@ func (m *ActVersionMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ActVersionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedimages != nil {
 		edges = append(edges, actversion.EdgeImages)
+	}
+	if m.removedroutine_acts != nil {
+		edges = append(edges, actversion.EdgeRoutineActs)
 	}
 	if m.removedact_images != nil {
 		edges = append(edges, actversion.EdgeActImages)
@@ -2046,6 +2115,12 @@ func (m *ActVersionMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case actversion.EdgeRoutineActs:
+		ids := make([]ent.Value, 0, len(m.removedroutine_acts))
+		for id := range m.removedroutine_acts {
+			ids = append(ids, id)
+		}
+		return ids
 	case actversion.EdgeActImages:
 		ids := make([]ent.Value, 0, len(m.removedact_images))
 		for id := range m.removedact_images {
@@ -2058,12 +2133,15 @@ func (m *ActVersionMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ActVersionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedact {
 		edges = append(edges, actversion.EdgeAct)
 	}
 	if m.clearedimages {
 		edges = append(edges, actversion.EdgeImages)
+	}
+	if m.clearedroutine_acts {
+		edges = append(edges, actversion.EdgeRoutineActs)
 	}
 	if m.clearedact_images {
 		edges = append(edges, actversion.EdgeActImages)
@@ -2079,6 +2157,8 @@ func (m *ActVersionMutation) EdgeCleared(name string) bool {
 		return m.clearedact
 	case actversion.EdgeImages:
 		return m.clearedimages
+	case actversion.EdgeRoutineActs:
+		return m.clearedroutine_acts
 	case actversion.EdgeActImages:
 		return m.clearedact_images
 	}
@@ -2105,6 +2185,9 @@ func (m *ActVersionMutation) ResetEdge(name string) error {
 		return nil
 	case actversion.EdgeImages:
 		m.ResetImages()
+		return nil
+	case actversion.EdgeRoutineActs:
+		m.ResetRoutineActs()
 		return nil
 	case actversion.EdgeActImages:
 		m.ResetActImages()
@@ -5707,13 +5790,15 @@ type RoutineActMutation struct {
 	daily_routine_code   *string
 	_order               *uint
 	add_order            *int
-	act_version          *string
+	act_version_code     *string
 	stage                *routineact.Stage
 	reps_or_meters       *uint
 	addreps_or_meters    *int
 	ratio_or_secs        *float64
 	addratio_or_secs     *float64
 	clearedFields        map[string]struct{}
+	act_version          *uint64
+	clearedact_version   bool
 	daily_routine        *uint64
 	cleareddaily_routine bool
 	done                 bool
@@ -5917,40 +6002,40 @@ func (m *RoutineActMutation) ResetOrder() {
 	m.add_order = nil
 }
 
-// SetActVersion sets the "act_version" field.
-func (m *RoutineActMutation) SetActVersion(s string) {
-	m.act_version = &s
+// SetActVersionCode sets the "act_version_code" field.
+func (m *RoutineActMutation) SetActVersionCode(s string) {
+	m.act_version_code = &s
 }
 
-// ActVersion returns the value of the "act_version" field in the mutation.
-func (m *RoutineActMutation) ActVersion() (r string, exists bool) {
-	v := m.act_version
+// ActVersionCode returns the value of the "act_version_code" field in the mutation.
+func (m *RoutineActMutation) ActVersionCode() (r string, exists bool) {
+	v := m.act_version_code
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldActVersion returns the old "act_version" field's value of the RoutineAct entity.
+// OldActVersionCode returns the old "act_version_code" field's value of the RoutineAct entity.
 // If the RoutineAct object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RoutineActMutation) OldActVersion(ctx context.Context) (v string, err error) {
+func (m *RoutineActMutation) OldActVersionCode(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldActVersion is only allowed on UpdateOne operations")
+		return v, errors.New("OldActVersionCode is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldActVersion requires an ID field in the mutation")
+		return v, errors.New("OldActVersionCode requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldActVersion: %w", err)
+		return v, fmt.Errorf("querying old value for OldActVersionCode: %w", err)
 	}
-	return oldValue.ActVersion, nil
+	return oldValue.ActVersionCode, nil
 }
 
-// ResetActVersion resets all changes to the "act_version" field.
-func (m *RoutineActMutation) ResetActVersion() {
-	m.act_version = nil
+// ResetActVersionCode resets all changes to the "act_version_code" field.
+func (m *RoutineActMutation) ResetActVersionCode() {
+	m.act_version_code = nil
 }
 
 // SetStage sets the "stage" field.
@@ -6101,6 +6186,45 @@ func (m *RoutineActMutation) ResetRatioOrSecs() {
 	m.addratio_or_secs = nil
 }
 
+// SetActVersionID sets the "act_version" edge to the ActVersion entity by id.
+func (m *RoutineActMutation) SetActVersionID(id uint64) {
+	m.act_version = &id
+}
+
+// ClearActVersion clears the "act_version" edge to the ActVersion entity.
+func (m *RoutineActMutation) ClearActVersion() {
+	m.clearedact_version = true
+}
+
+// ActVersionCleared reports if the "act_version" edge to the ActVersion entity was cleared.
+func (m *RoutineActMutation) ActVersionCleared() bool {
+	return m.clearedact_version
+}
+
+// ActVersionID returns the "act_version" edge ID in the mutation.
+func (m *RoutineActMutation) ActVersionID() (id uint64, exists bool) {
+	if m.act_version != nil {
+		return *m.act_version, true
+	}
+	return
+}
+
+// ActVersionIDs returns the "act_version" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ActVersionID instead. It exists only for internal usage by the builders.
+func (m *RoutineActMutation) ActVersionIDs() (ids []uint64) {
+	if id := m.act_version; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetActVersion resets all changes to the "act_version" edge.
+func (m *RoutineActMutation) ResetActVersion() {
+	m.act_version = nil
+	m.clearedact_version = false
+}
+
 // SetDailyRoutineID sets the "daily_routine" edge to the DailyRoutine entity by id.
 func (m *RoutineActMutation) SetDailyRoutineID(id uint64) {
 	m.daily_routine = &id
@@ -6181,8 +6305,8 @@ func (m *RoutineActMutation) Fields() []string {
 	if m._order != nil {
 		fields = append(fields, routineact.FieldOrder)
 	}
-	if m.act_version != nil {
-		fields = append(fields, routineact.FieldActVersion)
+	if m.act_version_code != nil {
+		fields = append(fields, routineact.FieldActVersionCode)
 	}
 	if m.stage != nil {
 		fields = append(fields, routineact.FieldStage)
@@ -6205,8 +6329,8 @@ func (m *RoutineActMutation) Field(name string) (ent.Value, bool) {
 		return m.DailyRoutineCode()
 	case routineact.FieldOrder:
 		return m.Order()
-	case routineact.FieldActVersion:
-		return m.ActVersion()
+	case routineact.FieldActVersionCode:
+		return m.ActVersionCode()
 	case routineact.FieldStage:
 		return m.Stage()
 	case routineact.FieldRepsOrMeters:
@@ -6226,8 +6350,8 @@ func (m *RoutineActMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldDailyRoutineCode(ctx)
 	case routineact.FieldOrder:
 		return m.OldOrder(ctx)
-	case routineact.FieldActVersion:
-		return m.OldActVersion(ctx)
+	case routineact.FieldActVersionCode:
+		return m.OldActVersionCode(ctx)
 	case routineact.FieldStage:
 		return m.OldStage(ctx)
 	case routineact.FieldRepsOrMeters:
@@ -6257,12 +6381,12 @@ func (m *RoutineActMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetOrder(v)
 		return nil
-	case routineact.FieldActVersion:
+	case routineact.FieldActVersionCode:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetActVersion(v)
+		m.SetActVersionCode(v)
 		return nil
 	case routineact.FieldStage:
 		v, ok := value.(routineact.Stage)
@@ -6379,8 +6503,8 @@ func (m *RoutineActMutation) ResetField(name string) error {
 	case routineact.FieldOrder:
 		m.ResetOrder()
 		return nil
-	case routineact.FieldActVersion:
-		m.ResetActVersion()
+	case routineact.FieldActVersionCode:
+		m.ResetActVersionCode()
 		return nil
 	case routineact.FieldStage:
 		m.ResetStage()
@@ -6397,7 +6521,10 @@ func (m *RoutineActMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *RoutineActMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.act_version != nil {
+		edges = append(edges, routineact.EdgeActVersion)
+	}
 	if m.daily_routine != nil {
 		edges = append(edges, routineact.EdgeDailyRoutine)
 	}
@@ -6408,6 +6535,10 @@ func (m *RoutineActMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *RoutineActMutation) AddedIDs(name string) []ent.Value {
 	switch name {
+	case routineact.EdgeActVersion:
+		if id := m.act_version; id != nil {
+			return []ent.Value{*id}
+		}
 	case routineact.EdgeDailyRoutine:
 		if id := m.daily_routine; id != nil {
 			return []ent.Value{*id}
@@ -6418,7 +6549,7 @@ func (m *RoutineActMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *RoutineActMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	return edges
 }
 
@@ -6430,7 +6561,10 @@ func (m *RoutineActMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *RoutineActMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.clearedact_version {
+		edges = append(edges, routineact.EdgeActVersion)
+	}
 	if m.cleareddaily_routine {
 		edges = append(edges, routineact.EdgeDailyRoutine)
 	}
@@ -6441,6 +6575,8 @@ func (m *RoutineActMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *RoutineActMutation) EdgeCleared(name string) bool {
 	switch name {
+	case routineact.EdgeActVersion:
+		return m.clearedact_version
 	case routineact.EdgeDailyRoutine:
 		return m.cleareddaily_routine
 	}
@@ -6451,6 +6587,9 @@ func (m *RoutineActMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *RoutineActMutation) ClearEdge(name string) error {
 	switch name {
+	case routineact.EdgeActVersion:
+		m.ClearActVersion()
+		return nil
 	case routineact.EdgeDailyRoutine:
 		m.ClearDailyRoutine()
 		return nil
@@ -6462,6 +6601,9 @@ func (m *RoutineActMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *RoutineActMutation) ResetEdge(name string) error {
 	switch name {
+	case routineact.EdgeActVersion:
+		m.ResetActVersion()
+		return nil
 	case routineact.EdgeDailyRoutine:
 		m.ResetDailyRoutine()
 		return nil

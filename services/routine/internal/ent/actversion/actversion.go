@@ -26,6 +26,8 @@ const (
 	EdgeAct = "act"
 	// EdgeImages holds the string denoting the images edge name in mutations.
 	EdgeImages = "images"
+	// EdgeRoutineActs holds the string denoting the routine_acts edge name in mutations.
+	EdgeRoutineActs = "routine_acts"
 	// EdgeActImages holds the string denoting the act_images edge name in mutations.
 	EdgeActImages = "act_images"
 	// Table holds the table name of the actversion in the database.
@@ -42,6 +44,13 @@ const (
 	// ImagesInverseTable is the table name for the Image entity.
 	// It exists in this package in order to avoid circular dependency with the "image" package.
 	ImagesInverseTable = "images"
+	// RoutineActsTable is the table that holds the routine_acts relation/edge.
+	RoutineActsTable = "routine_acts"
+	// RoutineActsInverseTable is the table name for the RoutineAct entity.
+	// It exists in this package in order to avoid circular dependency with the "routineact" package.
+	RoutineActsInverseTable = "routine_acts"
+	// RoutineActsColumn is the table column denoting the routine_acts relation/edge.
+	RoutineActsColumn = "act_version_routine_acts"
 	// ActImagesTable is the table that holds the act_images relation/edge.
 	ActImagesTable = "act_images"
 	// ActImagesInverseTable is the table name for the ActImage entity.
@@ -151,6 +160,20 @@ func ByImages(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByRoutineActsCount orders the results by routine_acts count.
+func ByRoutineActsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newRoutineActsStep(), opts...)
+	}
+}
+
+// ByRoutineActs orders the results by routine_acts terms.
+func ByRoutineActs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRoutineActsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByActImagesCount orders the results by act_images count.
 func ByActImagesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -176,6 +199,13 @@ func newImagesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ImagesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, ImagesTable, ImagesPrimaryKey...),
+	)
+}
+func newRoutineActsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RoutineActsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, RoutineActsTable, RoutineActsColumn),
 	)
 }
 func newActImagesStep() *sqlgraph.Step {

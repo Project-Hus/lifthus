@@ -218,10 +218,11 @@ var (
 		{Name: "id", Type: field.TypeUint64, Increment: true},
 		{Name: "daily_routine_code", Type: field.TypeString, Size: 20},
 		{Name: "order", Type: field.TypeUint},
-		{Name: "act_version", Type: field.TypeString, Size: 20},
+		{Name: "act_version_code", Type: field.TypeString, Size: 20},
 		{Name: "stage", Type: field.TypeEnum, Enums: []string{"warmup", "main", "cooldown"}},
 		{Name: "reps_or_meters", Type: field.TypeUint},
 		{Name: "ratio_or_secs", Type: field.TypeFloat64},
+		{Name: "act_version_routine_acts", Type: field.TypeUint64},
 		{Name: "daily_routine_routine_acts", Type: field.TypeUint64},
 	}
 	// RoutineActsTable holds the schema information for the "routine_acts" table.
@@ -231,8 +232,14 @@ var (
 		PrimaryKey: []*schema.Column{RoutineActsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "routine_acts_daily_routines_routine_acts",
+				Symbol:     "routine_acts_act_versions_routine_acts",
 				Columns:    []*schema.Column{RoutineActsColumns[7]},
+				RefColumns: []*schema.Column{ActVersionsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "routine_acts_daily_routines_routine_acts",
+				Columns:    []*schema.Column{RoutineActsColumns[8]},
 				RefColumns: []*schema.Column{DailyRoutinesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -260,5 +267,6 @@ func init() {
 	ProgramImagesTable.ForeignKeys[0].RefTable = ProgramVersionsTable
 	ProgramImagesTable.ForeignKeys[1].RefTable = ImagesTable
 	ProgramVersionsTable.ForeignKeys[0].RefTable = ProgramsTable
-	RoutineActsTable.ForeignKeys[0].RefTable = DailyRoutinesTable
+	RoutineActsTable.ForeignKeys[0].RefTable = ActVersionsTable
+	RoutineActsTable.ForeignKeys[1].RefTable = DailyRoutinesTable
 }

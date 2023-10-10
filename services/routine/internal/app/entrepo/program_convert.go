@@ -146,7 +146,7 @@ func RoutineActFromEnt(drcode string, era *ent.RoutineAct) (*program.RoutineAct,
 	ra := program.RoutineActFrom(
 		program.DailyRoutineCode(drcode),
 		program.RoutineActOrder(era.Order),
-		act.ActVersionCode(era.ActVersion),
+		act.ActVersionCode(era.ActVersionCode),
 		stage,
 		program.RepsOrMeters(era.RepsOrMeters),
 		program.RatioOrSecs(era.RatioOrSecs),

@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"routine/internal/ent/actversion"
 	"routine/internal/ent/dailyroutine"
 	"routine/internal/ent/predicate"
 	"routine/internal/ent/routineact"
@@ -28,6 +29,17 @@ func (rau *RoutineActUpdate) Where(ps ...predicate.RoutineAct) *RoutineActUpdate
 	return rau
 }
 
+// SetActVersionID sets the "act_version" edge to the ActVersion entity by ID.
+func (rau *RoutineActUpdate) SetActVersionID(id uint64) *RoutineActUpdate {
+	rau.mutation.SetActVersionID(id)
+	return rau
+}
+
+// SetActVersion sets the "act_version" edge to the ActVersion entity.
+func (rau *RoutineActUpdate) SetActVersion(a *ActVersion) *RoutineActUpdate {
+	return rau.SetActVersionID(a.ID)
+}
+
 // SetDailyRoutineID sets the "daily_routine" edge to the DailyRoutine entity by ID.
 func (rau *RoutineActUpdate) SetDailyRoutineID(id uint64) *RoutineActUpdate {
 	rau.mutation.SetDailyRoutineID(id)
@@ -42,6 +54,12 @@ func (rau *RoutineActUpdate) SetDailyRoutine(d *DailyRoutine) *RoutineActUpdate 
 // Mutation returns the RoutineActMutation object of the builder.
 func (rau *RoutineActUpdate) Mutation() *RoutineActMutation {
 	return rau.mutation
+}
+
+// ClearActVersion clears the "act_version" edge to the ActVersion entity.
+func (rau *RoutineActUpdate) ClearActVersion() *RoutineActUpdate {
+	rau.mutation.ClearActVersion()
+	return rau
 }
 
 // ClearDailyRoutine clears the "daily_routine" edge to the DailyRoutine entity.
@@ -79,6 +97,9 @@ func (rau *RoutineActUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (rau *RoutineActUpdate) check() error {
+	if _, ok := rau.mutation.ActVersionID(); rau.mutation.ActVersionCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "RoutineAct.act_version"`)
+	}
 	if _, ok := rau.mutation.DailyRoutineID(); rau.mutation.DailyRoutineCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "RoutineAct.daily_routine"`)
 	}
@@ -96,6 +117,35 @@ func (rau *RoutineActUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if rau.mutation.ActVersionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   routineact.ActVersionTable,
+			Columns: []string{routineact.ActVersionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(actversion.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := rau.mutation.ActVersionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   routineact.ActVersionTable,
+			Columns: []string{routineact.ActVersionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(actversion.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if rau.mutation.DailyRoutineCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -146,6 +196,17 @@ type RoutineActUpdateOne struct {
 	mutation *RoutineActMutation
 }
 
+// SetActVersionID sets the "act_version" edge to the ActVersion entity by ID.
+func (rauo *RoutineActUpdateOne) SetActVersionID(id uint64) *RoutineActUpdateOne {
+	rauo.mutation.SetActVersionID(id)
+	return rauo
+}
+
+// SetActVersion sets the "act_version" edge to the ActVersion entity.
+func (rauo *RoutineActUpdateOne) SetActVersion(a *ActVersion) *RoutineActUpdateOne {
+	return rauo.SetActVersionID(a.ID)
+}
+
 // SetDailyRoutineID sets the "daily_routine" edge to the DailyRoutine entity by ID.
 func (rauo *RoutineActUpdateOne) SetDailyRoutineID(id uint64) *RoutineActUpdateOne {
 	rauo.mutation.SetDailyRoutineID(id)
@@ -160,6 +221,12 @@ func (rauo *RoutineActUpdateOne) SetDailyRoutine(d *DailyRoutine) *RoutineActUpd
 // Mutation returns the RoutineActMutation object of the builder.
 func (rauo *RoutineActUpdateOne) Mutation() *RoutineActMutation {
 	return rauo.mutation
+}
+
+// ClearActVersion clears the "act_version" edge to the ActVersion entity.
+func (rauo *RoutineActUpdateOne) ClearActVersion() *RoutineActUpdateOne {
+	rauo.mutation.ClearActVersion()
+	return rauo
 }
 
 // ClearDailyRoutine clears the "daily_routine" edge to the DailyRoutine entity.
@@ -210,6 +277,9 @@ func (rauo *RoutineActUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (rauo *RoutineActUpdateOne) check() error {
+	if _, ok := rauo.mutation.ActVersionID(); rauo.mutation.ActVersionCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "RoutineAct.act_version"`)
+	}
 	if _, ok := rauo.mutation.DailyRoutineID(); rauo.mutation.DailyRoutineCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "RoutineAct.daily_routine"`)
 	}
@@ -244,6 +314,35 @@ func (rauo *RoutineActUpdateOne) sqlSave(ctx context.Context) (_node *RoutineAct
 				ps[i](selector)
 			}
 		}
+	}
+	if rauo.mutation.ActVersionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   routineact.ActVersionTable,
+			Columns: []string{routineact.ActVersionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(actversion.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := rauo.mutation.ActVersionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   routineact.ActVersionTable,
+			Columns: []string{routineact.ActVersionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(actversion.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if rauo.mutation.DailyRoutineCleared() {
 		edge := &sqlgraph.EdgeSpec{

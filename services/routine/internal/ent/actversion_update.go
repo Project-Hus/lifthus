@@ -11,6 +11,7 @@ import (
 	"routine/internal/ent/actversion"
 	"routine/internal/ent/image"
 	"routine/internal/ent/predicate"
+	"routine/internal/ent/routineact"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -62,6 +63,21 @@ func (avu *ActVersionUpdate) AddImages(i ...*Image) *ActVersionUpdate {
 	return avu.AddImageIDs(ids...)
 }
 
+// AddRoutineActIDs adds the "routine_acts" edge to the RoutineAct entity by IDs.
+func (avu *ActVersionUpdate) AddRoutineActIDs(ids ...uint64) *ActVersionUpdate {
+	avu.mutation.AddRoutineActIDs(ids...)
+	return avu
+}
+
+// AddRoutineActs adds the "routine_acts" edges to the RoutineAct entity.
+func (avu *ActVersionUpdate) AddRoutineActs(r ...*RoutineAct) *ActVersionUpdate {
+	ids := make([]uint64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return avu.AddRoutineActIDs(ids...)
+}
+
 // AddActImageIDs adds the "act_images" edge to the ActImage entity by IDs.
 func (avu *ActVersionUpdate) AddActImageIDs(ids ...uint64) *ActVersionUpdate {
 	avu.mutation.AddActImageIDs(ids...)
@@ -107,6 +123,27 @@ func (avu *ActVersionUpdate) RemoveImages(i ...*Image) *ActVersionUpdate {
 		ids[j] = i[j].ID
 	}
 	return avu.RemoveImageIDs(ids...)
+}
+
+// ClearRoutineActs clears all "routine_acts" edges to the RoutineAct entity.
+func (avu *ActVersionUpdate) ClearRoutineActs() *ActVersionUpdate {
+	avu.mutation.ClearRoutineActs()
+	return avu
+}
+
+// RemoveRoutineActIDs removes the "routine_acts" edge to RoutineAct entities by IDs.
+func (avu *ActVersionUpdate) RemoveRoutineActIDs(ids ...uint64) *ActVersionUpdate {
+	avu.mutation.RemoveRoutineActIDs(ids...)
+	return avu
+}
+
+// RemoveRoutineActs removes "routine_acts" edges to RoutineAct entities.
+func (avu *ActVersionUpdate) RemoveRoutineActs(r ...*RoutineAct) *ActVersionUpdate {
+	ids := make([]uint64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return avu.RemoveRoutineActIDs(ids...)
 }
 
 // ClearActImages clears all "act_images" edges to the ActImage entity.
@@ -259,6 +296,51 @@ func (avu *ActVersionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if avu.mutation.RoutineActsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   actversion.RoutineActsTable,
+			Columns: []string{actversion.RoutineActsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := avu.mutation.RemovedRoutineActsIDs(); len(nodes) > 0 && !avu.mutation.RoutineActsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   actversion.RoutineActsTable,
+			Columns: []string{actversion.RoutineActsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := avu.mutation.RoutineActsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   actversion.RoutineActsTable,
+			Columns: []string{actversion.RoutineActsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if avu.mutation.ActImagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -356,6 +438,21 @@ func (avuo *ActVersionUpdateOne) AddImages(i ...*Image) *ActVersionUpdateOne {
 	return avuo.AddImageIDs(ids...)
 }
 
+// AddRoutineActIDs adds the "routine_acts" edge to the RoutineAct entity by IDs.
+func (avuo *ActVersionUpdateOne) AddRoutineActIDs(ids ...uint64) *ActVersionUpdateOne {
+	avuo.mutation.AddRoutineActIDs(ids...)
+	return avuo
+}
+
+// AddRoutineActs adds the "routine_acts" edges to the RoutineAct entity.
+func (avuo *ActVersionUpdateOne) AddRoutineActs(r ...*RoutineAct) *ActVersionUpdateOne {
+	ids := make([]uint64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return avuo.AddRoutineActIDs(ids...)
+}
+
 // AddActImageIDs adds the "act_images" edge to the ActImage entity by IDs.
 func (avuo *ActVersionUpdateOne) AddActImageIDs(ids ...uint64) *ActVersionUpdateOne {
 	avuo.mutation.AddActImageIDs(ids...)
@@ -401,6 +498,27 @@ func (avuo *ActVersionUpdateOne) RemoveImages(i ...*Image) *ActVersionUpdateOne 
 		ids[j] = i[j].ID
 	}
 	return avuo.RemoveImageIDs(ids...)
+}
+
+// ClearRoutineActs clears all "routine_acts" edges to the RoutineAct entity.
+func (avuo *ActVersionUpdateOne) ClearRoutineActs() *ActVersionUpdateOne {
+	avuo.mutation.ClearRoutineActs()
+	return avuo
+}
+
+// RemoveRoutineActIDs removes the "routine_acts" edge to RoutineAct entities by IDs.
+func (avuo *ActVersionUpdateOne) RemoveRoutineActIDs(ids ...uint64) *ActVersionUpdateOne {
+	avuo.mutation.RemoveRoutineActIDs(ids...)
+	return avuo
+}
+
+// RemoveRoutineActs removes "routine_acts" edges to RoutineAct entities.
+func (avuo *ActVersionUpdateOne) RemoveRoutineActs(r ...*RoutineAct) *ActVersionUpdateOne {
+	ids := make([]uint64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return avuo.RemoveRoutineActIDs(ids...)
 }
 
 // ClearActImages clears all "act_images" edges to the ActImage entity.
@@ -576,6 +694,51 @@ func (avuo *ActVersionUpdateOne) sqlSave(ctx context.Context) (_node *ActVersion
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if avuo.mutation.RoutineActsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   actversion.RoutineActsTable,
+			Columns: []string{actversion.RoutineActsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := avuo.mutation.RemovedRoutineActsIDs(); len(nodes) > 0 && !avuo.mutation.RoutineActsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   actversion.RoutineActsTable,
+			Columns: []string{actversion.RoutineActsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := avuo.mutation.RoutineActsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   actversion.RoutineActsTable,
+			Columns: []string{actversion.RoutineActsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {

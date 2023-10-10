@@ -12,6 +12,7 @@ import (
 	"routine/internal/ent/actversion"
 	"routine/internal/ent/image"
 	"routine/internal/ent/predicate"
+	"routine/internal/ent/routineact"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -21,14 +22,15 @@ import (
 // ActVersionQuery is the builder for querying ActVersion entities.
 type ActVersionQuery struct {
 	config
-	ctx           *QueryContext
-	order         []actversion.OrderOption
-	inters        []Interceptor
-	predicates    []predicate.ActVersion
-	withAct       *ActQuery
-	withImages    *ImageQuery
-	withActImages *ActImageQuery
-	withFKs       bool
+	ctx             *QueryContext
+	order           []actversion.OrderOption
+	inters          []Interceptor
+	predicates      []predicate.ActVersion
+	withAct         *ActQuery
+	withImages      *ImageQuery
+	withRoutineActs *RoutineActQuery
+	withActImages   *ActImageQuery
+	withFKs         bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -102,6 +104,28 @@ func (avq *ActVersionQuery) QueryImages() *ImageQuery {
 			sqlgraph.From(actversion.Table, actversion.FieldID, selector),
 			sqlgraph.To(image.Table, image.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, actversion.ImagesTable, actversion.ImagesPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(avq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRoutineActs chains the current query on the "routine_acts" edge.
+func (avq *ActVersionQuery) QueryRoutineActs() *RoutineActQuery {
+	query := (&RoutineActClient{config: avq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := avq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := avq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(actversion.Table, actversion.FieldID, selector),
+			sqlgraph.To(routineact.Table, routineact.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, actversion.RoutineActsTable, actversion.RoutineActsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(avq.driver.Dialect(), step)
 		return fromU, nil
@@ -318,14 +342,15 @@ func (avq *ActVersionQuery) Clone() *ActVersionQuery {
 		return nil
 	}
 	return &ActVersionQuery{
-		config:        avq.config,
-		ctx:           avq.ctx.Clone(),
-		order:         append([]actversion.OrderOption{}, avq.order...),
-		inters:        append([]Interceptor{}, avq.inters...),
-		predicates:    append([]predicate.ActVersion{}, avq.predicates...),
-		withAct:       avq.withAct.Clone(),
-		withImages:    avq.withImages.Clone(),
-		withActImages: avq.withActImages.Clone(),
+		config:          avq.config,
+		ctx:             avq.ctx.Clone(),
+		order:           append([]actversion.OrderOption{}, avq.order...),
+		inters:          append([]Interceptor{}, avq.inters...),
+		predicates:      append([]predicate.ActVersion{}, avq.predicates...),
+		withAct:         avq.withAct.Clone(),
+		withImages:      avq.withImages.Clone(),
+		withRoutineActs: avq.withRoutineActs.Clone(),
+		withActImages:   avq.withActImages.Clone(),
 		// clone intermediate query.
 		sql:  avq.sql.Clone(),
 		path: avq.path,
@@ -351,6 +376,17 @@ func (avq *ActVersionQuery) WithImages(opts ...func(*ImageQuery)) *ActVersionQue
 		opt(query)
 	}
 	avq.withImages = query
+	return avq
+}
+
+// WithRoutineActs tells the query-builder to eager-load the nodes that are connected to
+// the "routine_acts" edge. The optional arguments are used to configure the query builder of the edge.
+func (avq *ActVersionQuery) WithRoutineActs(opts ...func(*RoutineActQuery)) *ActVersionQuery {
+	query := (&RoutineActClient{config: avq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	avq.withRoutineActs = query
 	return avq
 }
 
@@ -444,9 +480,10 @@ func (avq *ActVersionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 		nodes       = []*ActVersion{}
 		withFKs     = avq.withFKs
 		_spec       = avq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			avq.withAct != nil,
 			avq.withImages != nil,
+			avq.withRoutineActs != nil,
 			avq.withActImages != nil,
 		}
 	)
@@ -484,6 +521,13 @@ func (avq *ActVersionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 		if err := avq.loadImages(ctx, query, nodes,
 			func(n *ActVersion) { n.Edges.Images = []*Image{} },
 			func(n *ActVersion, e *Image) { n.Edges.Images = append(n.Edges.Images, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := avq.withRoutineActs; query != nil {
+		if err := avq.loadRoutineActs(ctx, query, nodes,
+			func(n *ActVersion) { n.Edges.RoutineActs = []*RoutineAct{} },
+			func(n *ActVersion, e *RoutineAct) { n.Edges.RoutineActs = append(n.Edges.RoutineActs, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -587,6 +631,37 @@ func (avq *ActVersionQuery) loadImages(ctx context.Context, query *ImageQuery, n
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (avq *ActVersionQuery) loadRoutineActs(ctx context.Context, query *RoutineActQuery, nodes []*ActVersion, init func(*ActVersion), assign func(*ActVersion, *RoutineAct)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint64]*ActVersion)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.RoutineAct(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(actversion.RoutineActsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.act_version_routine_acts
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "act_version_routine_acts" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "act_version_routine_acts" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

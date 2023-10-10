@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"routine/internal/ent/actversion"
 	"routine/internal/ent/dailyroutine"
 	"routine/internal/ent/predicate"
 	"routine/internal/ent/routineact"
@@ -22,6 +23,7 @@ type RoutineActQuery struct {
 	order            []routineact.OrderOption
 	inters           []Interceptor
 	predicates       []predicate.RoutineAct
+	withActVersion   *ActVersionQuery
 	withDailyRoutine *DailyRoutineQuery
 	withFKs          bool
 	// intermediate query (i.e. traversal path).
@@ -58,6 +60,28 @@ func (raq *RoutineActQuery) Unique(unique bool) *RoutineActQuery {
 func (raq *RoutineActQuery) Order(o ...routineact.OrderOption) *RoutineActQuery {
 	raq.order = append(raq.order, o...)
 	return raq
+}
+
+// QueryActVersion chains the current query on the "act_version" edge.
+func (raq *RoutineActQuery) QueryActVersion() *ActVersionQuery {
+	query := (&ActVersionClient{config: raq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := raq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := raq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(routineact.Table, routineact.FieldID, selector),
+			sqlgraph.To(actversion.Table, actversion.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, routineact.ActVersionTable, routineact.ActVersionColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(raq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryDailyRoutine chains the current query on the "daily_routine" edge.
@@ -274,11 +298,23 @@ func (raq *RoutineActQuery) Clone() *RoutineActQuery {
 		order:            append([]routineact.OrderOption{}, raq.order...),
 		inters:           append([]Interceptor{}, raq.inters...),
 		predicates:       append([]predicate.RoutineAct{}, raq.predicates...),
+		withActVersion:   raq.withActVersion.Clone(),
 		withDailyRoutine: raq.withDailyRoutine.Clone(),
 		// clone intermediate query.
 		sql:  raq.sql.Clone(),
 		path: raq.path,
 	}
+}
+
+// WithActVersion tells the query-builder to eager-load the nodes that are connected to
+// the "act_version" edge. The optional arguments are used to configure the query builder of the edge.
+func (raq *RoutineActQuery) WithActVersion(opts ...func(*ActVersionQuery)) *RoutineActQuery {
+	query := (&ActVersionClient{config: raq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	raq.withActVersion = query
+	return raq
 }
 
 // WithDailyRoutine tells the query-builder to eager-load the nodes that are connected to
@@ -371,11 +407,12 @@ func (raq *RoutineActQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 		nodes       = []*RoutineAct{}
 		withFKs     = raq.withFKs
 		_spec       = raq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
+			raq.withActVersion != nil,
 			raq.withDailyRoutine != nil,
 		}
 	)
-	if raq.withDailyRoutine != nil {
+	if raq.withActVersion != nil || raq.withDailyRoutine != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -399,6 +436,12 @@ func (raq *RoutineActQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := raq.withActVersion; query != nil {
+		if err := raq.loadActVersion(ctx, query, nodes, nil,
+			func(n *RoutineAct, e *ActVersion) { n.Edges.ActVersion = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := raq.withDailyRoutine; query != nil {
 		if err := raq.loadDailyRoutine(ctx, query, nodes, nil,
 			func(n *RoutineAct, e *DailyRoutine) { n.Edges.DailyRoutine = e }); err != nil {
@@ -408,6 +451,38 @@ func (raq *RoutineActQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	return nodes, nil
 }
 
+func (raq *RoutineActQuery) loadActVersion(ctx context.Context, query *ActVersionQuery, nodes []*RoutineAct, init func(*RoutineAct), assign func(*RoutineAct, *ActVersion)) error {
+	ids := make([]uint64, 0, len(nodes))
+	nodeids := make(map[uint64][]*RoutineAct)
+	for i := range nodes {
+		if nodes[i].act_version_routine_acts == nil {
+			continue
+		}
+		fk := *nodes[i].act_version_routine_acts
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(actversion.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "act_version_routine_acts" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (raq *RoutineActQuery) loadDailyRoutine(ctx context.Context, query *DailyRoutineQuery, nodes []*RoutineAct, init func(*RoutineAct), assign func(*RoutineAct, *DailyRoutine)) error {
 	ids := make([]uint64, 0, len(nodes))
 	nodeids := make(map[uint64][]*RoutineAct)

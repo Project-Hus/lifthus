@@ -134,7 +134,8 @@ func (repo *EntProgramRepository) insertNewRoutineActs(ctx context.Context, edr 
 			return nil, err
 		}
 		era, err := tx.RoutineAct.Create().
-			SetActVersion(eav.Code).
+			SetActVersion(eav).
+			SetActVersionCode(eav.Code).
 			SetDailyRoutine(edr).
 			SetDailyRoutineCode(edr.Code).
 			SetOrder(uint(ra.Order())).

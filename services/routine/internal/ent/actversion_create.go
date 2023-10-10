@@ -10,6 +10,7 @@ import (
 	"routine/internal/ent/actimage"
 	"routine/internal/ent/actversion"
 	"routine/internal/ent/image"
+	"routine/internal/ent/routineact"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -83,6 +84,21 @@ func (avc *ActVersionCreate) AddImages(i ...*Image) *ActVersionCreate {
 		ids[j] = i[j].ID
 	}
 	return avc.AddImageIDs(ids...)
+}
+
+// AddRoutineActIDs adds the "routine_acts" edge to the RoutineAct entity by IDs.
+func (avc *ActVersionCreate) AddRoutineActIDs(ids ...uint64) *ActVersionCreate {
+	avc.mutation.AddRoutineActIDs(ids...)
+	return avc
+}
+
+// AddRoutineActs adds the "routine_acts" edges to the RoutineAct entity.
+func (avc *ActVersionCreate) AddRoutineActs(r ...*RoutineAct) *ActVersionCreate {
+	ids := make([]uint64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return avc.AddRoutineActIDs(ids...)
 }
 
 // AddActImageIDs adds the "act_images" edge to the ActImage entity by IDs.
@@ -245,6 +261,22 @@ func (avc *ActVersionCreate) createSpec() (*ActVersion, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeUint64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := avc.mutation.RoutineActsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   actversion.RoutineActsTable,
+			Columns: []string{actversion.RoutineActsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64),
 			},
 		}
 		for _, k := range nodes {
