@@ -26,7 +26,7 @@ func (repo *EntActRepository) actVersionsFromEntVersions(ctx context.Context, ev
 		imgs := ev.Edges.ActImages
 		imgSrcs := imgSrcsFromEntImgs(imgs)
 		v := act.ActVersionFrom(
-			act.ActVersionCode(ev.ActCode),
+			act.ActVersionCode(ev.Code),
 			act.ActVersionNumber(ev.Version),
 			imgSrcs,
 			act.ActText(ev.Text),
