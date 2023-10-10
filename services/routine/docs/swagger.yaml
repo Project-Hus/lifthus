@@ -69,7 +69,7 @@ definitions:
       text:
         type: string
     type: object
-host: localhost:9100
+host: api.dev.lifthus.com
 info:
   contact:
     email: lifthus531@gmail.com
