@@ -18,6 +18,6 @@ vet: fmt
 .PHONY:vet
 
 build: vet
-	GOWORK=off go generate ./ent
+	GOWORK=off go generate ./internal/ent
 	go build ./cmd/routine/...
 .PHONY:build

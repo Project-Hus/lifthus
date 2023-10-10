@@ -15,114 +15,121 @@
         },
         "version": "0.0.0"
     },
-    "host": "api.lifthus.com",
+    "host": "localhost:9100",
     "basePath": "/routine",
     "paths": {
         "/act": {
-            "get": {
-                "tags": [
-                    "act"
-                ],
-                "summary": "gets Act name from query-string and returns corresponding Acts",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "act name",
-                        "name": "name",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "skip",
-                        "name": "skip",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "act id",
-                        "name": "id",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "returns acts"
-                    },
-                    "400": {
-                        "description": "invalid request"
-                    },
-                    "500": {
-                        "description": "failed to query acts"
-                    }
-                }
-            },
             "post": {
                 "tags": [
                     "act"
                 ],
-                "summary": "gets CreateActDto from body and returns created act's ID",
-                "parameters": [
-                    {
-                        "description": "createAct DTO",
-                        "name": "createActDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreateActDto"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "returns created act's ID"
-                    },
-                    "400": {
-                        "description": "invalid body"
-                    },
-                    "401": {
-                        "description": "unauthorized"
-                    },
-                    "403": {
-                        "description": "forbidden"
-                    },
-                    "500": {
-                        "description": "failed to create program"
-                    }
-                }
-            }
-        },
-        "/program": {
-            "get": {
-                "tags": [
-                    "program"
-                ],
-                "summary": "gets Program name from query-string and returns corresponding Programs",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "program title",
-                        "name": "title",
-                        "in": "query",
+                        "description": "lifthus_st",
+                        "name": "Authorization",
+                        "in": "header",
                         "required": true
                     },
                     {
-                        "type": "integer",
-                        "description": "skip",
-                        "name": "skip",
-                        "in": "query"
+                        "description": "create act dto",
+                        "name": "creatActDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateActRequestDto"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/act/upgrade": {
+            "post": {
+                "tags": [
+                    "act"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "lifthus_st",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "upgrade act dto",
+                        "name": "upgradeActDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpgradeActRequestDto"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/act/{code}": {
+            "get": {
+                "tags": [
+                    "act"
+                ],
+                "summary": "get act by code",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "act code",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "returns programs"
+                        "description": "returns act info as json"
                     },
                     "400": {
                         "description": "invalid request"
                     },
+                    "404": {
+                        "description": "act not found"
+                    },
                     "500": {
-                        "description": "failed to query programs"
+                        "description": "internal server error"
                     }
                 }
+            }
+        },
+        "/images/{target}": {
+            "post": {
+                "tags": [
+                    ""
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "images for target",
+                        "name": "target",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "images of act",
+                        "name": "images",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "lifthus_st",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {}
             }
         },
         "/program/weekly": {
@@ -130,459 +137,148 @@
                 "tags": [
                     "program"
                 ],
-                "summary": "gets CreateWeeklyProgramDto from body and returns created program's ID",
                 "parameters": [
                     {
-                        "description": "createWeeklyProgram DTO",
-                        "name": "createWeeklyProgramDto",
+                        "type": "string",
+                        "description": "lifthus_st",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "create program dto",
+                        "name": "creatProgramDto",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateWeeklyProgramDto"
+                            "$ref": "#/definitions/dto.CreateProgramRequestDto"
                         }
                     }
                 ],
-                "responses": {
-                    "201": {
-                        "description": "returns created program's ID"
-                    },
-                    "400": {
-                        "description": "invalid body"
-                    },
-                    "401": {
-                        "description": "unauthorized"
-                    },
-                    "403": {
-                        "description": "forbidden"
-                    },
-                    "500": {
-                        "description": "failed to create program"
-                    }
-                }
+                "responses": {}
             }
         },
-        "/program/{slug}": {
+        "/program/{code}": {
             "get": {
                 "tags": [
                     "program"
                 ],
-                "summary": "gets Program slug from path and returns corresponding Program",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "program slug",
-                        "name": "slug",
+                        "description": "program code",
+                        "name": "code",
                         "in": "path",
                         "required": true
                     }
                 ],
-                "responses": {
-                    "200": {
-                        "description": "returns program"
-                    },
-                    "400": {
-                        "description": "invalid request"
-                    },
-                    "404": {
-                        "description": "program not found"
-                    },
-                    "500": {
-                        "description": "failed to query program"
-                    }
-                }
-            }
-        },
-        "/rec/program/weekly": {
-            "post": {
-                "tags": [
-                    "rec"
-                ],
-                "summary": "gets CreateWeeklyProgramRecDto from body and returns created rec's ID",
-                "parameters": [
-                    {
-                        "description": "createWeeklyProgramRec DTO",
-                        "name": "createWeeklyProgramRecDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreateWeeklyProgramRecDto"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "returns created rec's ID"
-                    },
-                    "400": {
-                        "description": "invalid body"
-                    },
-                    "401": {
-                        "description": "unauthorized"
-                    },
-                    "403": {
-                        "description": "forbidden"
-                    },
-                    "500": {
-                        "description": "failed to create rec"
-                    }
-                }
-            }
-        },
-        "/rec/routineact": {
-            "get": {
-                "tags": [
-                    "rec"
-                ],
-                "summary": "gets specific date or range of date and returns routineact recs",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "date like 2006-01-02",
-                        "name": "date",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "start date like 2006-01-02",
-                        "name": "startDate",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "end date like 2006-01-02s",
-                        "name": "endDate",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "returns routineact recs"
-                    },
-                    "400": {
-                        "description": "invalid request"
-                    },
-                    "401": {
-                        "description": "unauthorized"
-                    },
-                    "403": {
-                        "description": "forbidden"
-                    },
-                    "500": {
-                        "description": "failed to query routineact recs"
-                    }
-                }
-            },
-            "put": {
-                "tags": [
-                    "rec"
-                ],
-                "summary": "updates routineact rec",
-                "parameters": [
-                    {
-                        "description": "update routineact rec dto",
-                        "name": "updateRoutineActRecDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateRoutineActRecDto"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "returns updated routineact rec"
-                    },
-                    "400": {
-                        "description": "invalid request"
-                    },
-                    "401": {
-                        "description": "unauthorized"
-                    },
-                    "403": {
-                        "description": "forbidden"
-                    },
-                    "500": {
-                        "description": "failed to update routineact rec"
-                    }
-                }
+                "responses": {}
             }
         }
     },
     "definitions": {
-        "dto.CreateActDto": {
+        "dto.CreateActRequestDto": {
             "type": "object",
             "properties": {
-                "arms": {
-                    "description": "prime movers",
-                    "type": "boolean"
+                "actType": {
+                    "type": "string"
                 },
                 "author": {
-                    "type": "integer"
-                },
-                "bodyweight": {
-                    "type": "boolean"
-                },
-                "cardio": {
-                    "type": "boolean"
-                },
-                "chest": {
-                    "type": "boolean"
-                },
-                "core": {
-                    "type": "boolean"
-                },
-                "description": {
                     "type": "string"
                 },
-                "etc": {
-                    "type": "boolean"
-                },
-                "full": {
-                    "type": "boolean"
-                },
-                "glute": {
-                    "type": "boolean"
-                },
-                "image": {
-                    "type": "string"
-                },
-                "legs_back": {
-                    "type": "boolean"
-                },
-                "legs_front": {
-                    "type": "boolean"
-                },
-                "lower": {
-                    "type": "boolean"
-                },
-                "lower_back": {
-                    "type": "boolean"
+                "imageSrcs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "name": {
                     "type": "string"
                 },
-                "shoulders": {
-                    "type": "boolean"
-                },
-                "tags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "type": {
+                "text": {
                     "type": "string"
-                },
-                "upper": {
-                    "description": "upper/lower/full body",
-                    "type": "boolean"
-                },
-                "upper_back": {
-                    "type": "boolean"
-                },
-                "weight": {
-                    "description": "weight/cardio",
-                    "type": "boolean"
                 }
             }
         },
-        "dto.CreateWeeklyDailyRoutineDto": {
+        "dto.CreateProgramRequestDailyRoutineDto": {
             "type": "object",
             "properties": {
                 "day": {
                     "type": "integer"
                 },
-                "week": {
-                    "type": "integer"
-                }
-            }
-        },
-        "dto.CreateWeeklyDailyRoutineRecDto": {
-            "type": "object",
-            "properties": {
-                "daily_routine_id": {
-                    "type": "integer"
-                },
-                "date": {
-                    "type": "string"
-                },
-                "routine_act_recs": {
+                "routineActs": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.CreateWeeklyRoutineActRecDto"
+                        "$ref": "#/definitions/dto.CreateProgramRequestRoutineActDto"
                     }
                 }
             }
         },
-        "dto.CreateWeeklyProgramDto": {
+        "dto.CreateProgramRequestDto": {
             "type": "object",
             "properties": {
                 "author": {
-                    "type": "integer"
-                },
-                "daily_routines": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.CreateWeeklyDailyRoutineDto"
-                    }
-                },
-                "description": {
                     "type": "string"
                 },
-                "image": {
-                    "type": "string"
-                },
-                "routine_acts": {
+                "dailyRoutines": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.CreateWeeklyRoutineActDto"
+                        "$ref": "#/definitions/dto.CreateProgramRequestDailyRoutineDto"
                     }
                 },
-                "tags": {
+                "derivedFrom": {
+                    "type": "string"
+                },
+                "imageSrcs": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
+                },
+                "programType": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
                 },
                 "title": {
                     "type": "string"
-                },
-                "weekly_routines": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.CreateWeeklyRoutineDto"
-                    }
                 }
             }
         },
-        "dto.CreateWeeklyProgramRecDto": {
+        "dto.CreateProgramRequestRoutineActDto": {
             "type": "object",
             "properties": {
-                "author": {
-                    "type": "integer"
-                },
-                "comment": {
+                "actVersion": {
                     "type": "string"
-                },
-                "end_date": {
-                    "type": "string"
-                },
-                "program_id": {
-                    "type": "integer"
-                },
-                "start_date": {
-                    "type": "string"
-                },
-                "weekly_routine_recs": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.CreateWeeklyRoutineRecDto"
-                    }
-                }
-            }
-        },
-        "dto.CreateWeeklyRoutineActDto": {
-            "type": "object",
-            "properties": {
-                "act_id": {
-                    "type": "integer"
-                },
-                "day": {
-                    "type": "integer"
-                },
-                "lap": {
-                    "type": "integer"
                 },
                 "order": {
                     "type": "integer"
                 },
-                "reps": {
-                    "type": "integer"
-                },
-                "w_ratio": {
+                "ratioOrSecs": {
                     "type": "number"
                 },
-                "warmup": {
-                    "type": "boolean"
-                },
-                "week": {
+                "repsOrMeters": {
                     "type": "integer"
+                },
+                "stage": {
+                    "type": "string"
                 }
             }
         },
-        "dto.CreateWeeklyRoutineActRecDto": {
+        "dto.UpgradeActRequestDto": {
             "type": "object",
             "properties": {
-                "act_id": {
-                    "type": "integer"
+                "actCode": {
+                    "type": "string"
                 },
-                "lap": {
-                    "type": "integer"
-                },
-                "order": {
-                    "type": "integer"
-                },
-                "reps": {
-                    "type": "integer"
-                },
-                "routine_act_id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "dto.CreateWeeklyRoutineDto": {
-            "type": "object",
-            "properties": {
-                "week": {
-                    "type": "integer"
-                }
-            }
-        },
-        "dto.CreateWeeklyRoutineRecDto": {
-            "type": "object",
-            "properties": {
-                "daily_routine_recs": {
+                "imageSrcs": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.CreateWeeklyDailyRoutineRecDto"
+                        "type": "string"
                     }
                 },
-                "start_date": {
-                    "type": "string"
-                },
-                "week": {
-                    "type": "integer"
-                },
-                "weekly_routine_id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "dto.UpdateRoutineActRecDto": {
-            "type": "object",
-            "properties": {
-                "author": {
-                    "type": "integer"
-                },
-                "comment": {
-                    "type": "string"
-                },
-                "current_lap": {
-                    "type": "integer"
-                },
-                "current_reps": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "image": {
-                    "type": "string"
-                },
-                "started_at": {
-                    "type": "string"
-                },
-                "status": {
+                "text": {
                     "type": "string"
                 }
             }

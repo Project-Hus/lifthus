@@ -102,3 +102,11 @@ func (a Act) CreatedAt() domain.CreatedAt {
 func (a Act) Versions() []*ActVersion {
 	return a.versions
 }
+
+func (a Act) VersionsMap() map[ActVersionNumber]*ActVersion {
+	m := make(map[ActVersionNumber]*ActVersion)
+	for _, v := range a.Versions() {
+		m[v.Version()] = v
+	}
+	return m
+}

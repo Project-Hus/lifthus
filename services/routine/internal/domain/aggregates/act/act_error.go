@@ -10,3 +10,4 @@ func (e ActError) Error() string {
 
 var ErrInvalidActInfo = ActError{"invalid act info"}
 var ErrInvalidActVersions = ActError{"invalid act versions"}
+var ErrInvalidActType = ActError{"invalid act type"}
