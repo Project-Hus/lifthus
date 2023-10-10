@@ -28,7 +28,7 @@ const docTemplate = `{
         "/act": {
             "post": {
                 "tags": [
-                    ""
+                    "act"
                 ],
                 "parameters": [
                     {
@@ -54,7 +54,7 @@ const docTemplate = `{
         "/act/upgrade": {
             "post": {
                 "tags": [
-                    ""
+                    "act"
                 ],
                 "parameters": [
                     {
@@ -138,6 +138,49 @@ const docTemplate = `{
                 ],
                 "responses": {}
             }
+        },
+        "/program/weekly": {
+            "post": {
+                "tags": [
+                    "program"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "lifthus_st",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "create program dto",
+                        "name": "creatProgramDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateProgramRequestDto"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/program/{code}": {
+            "get": {
+                "tags": [
+                    "program"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "program code",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
         }
     },
     "definitions": {
@@ -160,6 +203,72 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateProgramRequestDailyRoutineDto": {
+            "type": "object",
+            "properties": {
+                "day": {
+                    "type": "integer"
+                },
+                "routineActs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CreateProgramRequestRoutineActDto"
+                    }
+                }
+            }
+        },
+        "dto.CreateProgramRequestDto": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "type": "string"
+                },
+                "dailyRoutines": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CreateProgramRequestDailyRoutineDto"
+                    }
+                },
+                "derivedFrom": {
+                    "type": "string"
+                },
+                "imageSrcs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "programType": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CreateProgramRequestRoutineActDto": {
+            "type": "object",
+            "properties": {
+                "actVersion": {
+                    "type": "string"
+                },
+                "order": {
+                    "type": "integer"
+                },
+                "ratioOrSecs": {
+                    "type": "number"
+                },
+                "repsOrMeters": {
+                    "type": "integer"
+                },
+                "stage": {
                     "type": "string"
                 }
             }

@@ -15,6 +15,49 @@ definitions:
       text:
         type: string
     type: object
+  dto.CreateProgramRequestDailyRoutineDto:
+    properties:
+      day:
+        type: integer
+      routineActs:
+        items:
+          $ref: '#/definitions/dto.CreateProgramRequestRoutineActDto'
+        type: array
+    type: object
+  dto.CreateProgramRequestDto:
+    properties:
+      author:
+        type: string
+      dailyRoutines:
+        items:
+          $ref: '#/definitions/dto.CreateProgramRequestDailyRoutineDto'
+        type: array
+      derivedFrom:
+        type: string
+      imageSrcs:
+        items:
+          type: string
+        type: array
+      programType:
+        type: string
+      text:
+        type: string
+      title:
+        type: string
+    type: object
+  dto.CreateProgramRequestRoutineActDto:
+    properties:
+      actVersion:
+        type: string
+      order:
+        type: integer
+      ratioOrSecs:
+        type: number
+      repsOrMeters:
+        type: integer
+      stage:
+        type: string
+    type: object
   dto.UpgradeActRequestDto:
     properties:
       actCode:
@@ -56,7 +99,7 @@ paths:
           $ref: '#/definitions/dto.CreateActRequestDto'
       responses: {}
       tags:
-      - ""
+      - act
   /act/{code}:
     get:
       parameters:
@@ -93,7 +136,7 @@ paths:
           $ref: '#/definitions/dto.UpgradeActRequestDto'
       responses: {}
       tags:
-      - ""
+      - act
   /images/{target}:
     post:
       parameters:
@@ -115,4 +158,32 @@ paths:
       responses: {}
       tags:
       - ""
+  /program/{code}:
+    get:
+      parameters:
+      - description: program code
+        in: path
+        name: code
+        required: true
+        type: string
+      responses: {}
+      tags:
+      - program
+  /program/weekly:
+    post:
+      parameters:
+      - description: lifthus_st
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: create program dto
+        in: body
+        name: creatProgramDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateProgramRequestDto'
+      responses: {}
+      tags:
+      - program
 swagger: "2.0"
