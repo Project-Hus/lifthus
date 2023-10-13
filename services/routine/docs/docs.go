@@ -114,7 +114,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "act code",
+                        "description": "act name",
                         "name": "name",
                         "in": "query"
                     }

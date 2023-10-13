@@ -56,7 +56,18 @@ func (repo *EntActRepository) FindActsByName(ctx context.Context, actName string
 	if err != nil {
 		return nil, err
 	}
-	eacts, err := tx.Act.Query().Where(eact.NameContains(actName)).All(ctx)
+	eacts, err := tx.Act.Query().Where(eact.NameContains(actName)).WithActVersions(
+		func(q *ent.ActVersionQuery) {
+			q.Order(ent.Asc((eactv.FieldVersion)))
+			q.WithImages()
+			q.WithActImages(
+				func(q *ent.ActImageQuery) {
+					q.Order(ent.Asc(actimage.FieldOrder))
+					q.WithImage()
+				},
+			)
+		},
+	).All(ctx)
 	if err != nil {
 		return nil, err
 	}
