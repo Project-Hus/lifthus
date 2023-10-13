@@ -43,7 +43,7 @@ func (ac *actQueryController) queryAct(c echo.Context) error {
 
 // queryActs godoc
 // @Router       /acts [get]
-// @Param name query string false "act code"
+// @Param name query string false "act name"
 // @Summary      get acts that match the query
 // @Description
 // @Tags         act

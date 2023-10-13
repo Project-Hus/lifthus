@@ -138,7 +138,7 @@ paths:
   /acts:
     get:
       parameters:
-      - description: act code
+      - description: act name
         in: query
         name: name
         type: string
