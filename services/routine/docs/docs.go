@@ -26,6 +26,34 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/act": {
+            "get": {
+                "tags": [
+                    "act"
+                ],
+                "summary": "get specific act",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "act code",
+                        "name": "code",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns act info as json"
+                    },
+                    "400": {
+                        "description": "invalid request"
+                    },
+                    "404": {
+                        "description": "act not found"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            },
             "post": {
                 "tags": [
                     "act"
@@ -77,24 +105,23 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/act/{code}": {
+        "/acts": {
             "get": {
                 "tags": [
                     "act"
                 ],
-                "summary": "get act by code",
+                "summary": "get acts that match the query",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "act code",
-                        "name": "code",
-                        "in": "path",
-                        "required": true
+                        "name": "name",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "returns act info as json"
+                        "description": "returns acts info as json array"
                     },
                     "400": {
                         "description": "invalid request"

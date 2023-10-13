@@ -84,6 +84,24 @@ info:
   version: 0.0.0
 paths:
   /act:
+    get:
+      parameters:
+      - description: act code
+        in: query
+        name: code
+        type: string
+      responses:
+        "200":
+          description: returns act info as json
+        "400":
+          description: invalid request
+        "404":
+          description: act not found
+        "500":
+          description: internal server error
+      summary: get specific act
+      tags:
+      - act
     post:
       parameters:
       - description: lifthus_st
@@ -98,26 +116,6 @@ paths:
         schema:
           $ref: '#/definitions/dto.CreateActRequestDto'
       responses: {}
-      tags:
-      - act
-  /act/{code}:
-    get:
-      parameters:
-      - description: act code
-        in: path
-        name: code
-        required: true
-        type: string
-      responses:
-        "200":
-          description: returns act info as json
-        "400":
-          description: invalid request
-        "404":
-          description: act not found
-        "500":
-          description: internal server error
-      summary: get act by code
       tags:
       - act
   /act/upgrade:
@@ -135,6 +133,25 @@ paths:
         schema:
           $ref: '#/definitions/dto.UpgradeActRequestDto'
       responses: {}
+      tags:
+      - act
+  /acts:
+    get:
+      parameters:
+      - description: act code
+        in: query
+        name: name
+        type: string
+      responses:
+        "200":
+          description: returns acts info as json array
+        "400":
+          description: invalid request
+        "404":
+          description: act not found
+        "500":
+          description: internal server error
+      summary: get acts that match the query
       tags:
       - act
   /images/{target}:
