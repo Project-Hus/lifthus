@@ -50,6 +50,26 @@ func (repo *EntActRepository) FindActByCode(ctx context.Context, code act.ActCod
 	return repo.actFromEntAct(ctx, a)
 }
 
+func (repo *EntActRepository) FindActsByName(ctx context.Context, actName string) (fActs []*act.Act, err error) {
+	tx, finally, err := repo.Tx(ctx)
+	defer finally(&err)
+	if err != nil {
+		return nil, err
+	}
+	eacts, err := tx.Act.Query().Where(eact.NameContains(actName)).All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	fActs = make([]*act.Act, len(eacts))
+	for i, eact := range eacts {
+		fActs[i], err = repo.actFromEntAct(ctx, eact)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return fActs, nil
+}
+
 func (repo *EntActRepository) Save(ctx context.Context, target *act.Act) (sAct *act.Act, err error) {
 	_, finally, err := repo.Tx(ctx)
 	defer finally(&err)
