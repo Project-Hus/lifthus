@@ -39,3 +39,7 @@ func (ac *actQueryController) queryActByCode(c echo.Context) error {
 	}
 	return c.JSON(http.StatusCreated, qaDto)
 }
+
+func (ac *actQueryController) queryActsByName(c echo.Context) error {
+	return c.String(http.StatusNotImplemented, "not implemented")
+}
