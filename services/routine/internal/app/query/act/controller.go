@@ -52,6 +52,11 @@ func (ac *actQueryController) queryAct(c echo.Context) error {
 // @Failure      404 "act not found"
 // @Failure      500 "internal server error"
 func (ac *actQueryController) queryActs(c echo.Context) error {
-
-	return c.String(http.StatusNotImplemented, "not implemented")
+	name := c.QueryParam("name")
+	qaDtos, err := ac.svc.queryActsByName(c.Request().Context(), name)
+	if err != nil {
+		log.Printf("failed to query acts: %v", err)
+		return c.String(http.StatusInternalServerError, "failed to query acts")
+	}
+	return c.JSON(http.StatusOK, qaDtos)
 }
