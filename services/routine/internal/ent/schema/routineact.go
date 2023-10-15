@@ -27,6 +27,6 @@ func (RoutineAct) Fields() []ent.Field {
 func (RoutineAct) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("act", Act.Type).Ref("routine_acts").Unique().Required(),
-		edge.From("day_routine", DayRoutine.Type).Ref("routine_acts").Unique().Required(),
+		edge.From("routine", Routine.Type).Ref("routine_acts").Unique().Required(),
 	}
 }

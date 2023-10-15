@@ -14,12 +14,12 @@ type Tx struct {
 	config
 	// Act is the client for interacting with the Act builders.
 	Act *ActClient
-	// DayRoutine is the client for interacting with the DayRoutine builders.
-	DayRoutine *DayRoutineClient
 	// Program is the client for interacting with the Program builders.
 	Program *ProgramClient
 	// ProgramRelease is the client for interacting with the ProgramRelease builders.
 	ProgramRelease *ProgramReleaseClient
+	// Routine is the client for interacting with the Routine builders.
+	Routine *RoutineClient
 	// RoutineAct is the client for interacting with the RoutineAct builders.
 	RoutineAct *RoutineActClient
 	// S3ActImage is the client for interacting with the S3ActImage builders.
@@ -160,9 +160,9 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Act = NewActClient(tx.config)
-	tx.DayRoutine = NewDayRoutineClient(tx.config)
 	tx.Program = NewProgramClient(tx.config)
 	tx.ProgramRelease = NewProgramReleaseClient(tx.config)
+	tx.Routine = NewRoutineClient(tx.config)
 	tx.RoutineAct = NewRoutineActClient(tx.config)
 	tx.S3ActImage = NewS3ActImageClient(tx.config)
 	tx.S3Image = NewS3ImageClient(tx.config)

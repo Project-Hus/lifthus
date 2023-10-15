@@ -7,12 +7,12 @@ import (
 )
 
 // DayRoutine holds the schema definition for the DailyRoutine entity.
-type DayRoutine struct {
+type Routine struct {
 	ent.Schema
 }
 
 // Fields of the DailyRoutine.
-func (DayRoutine) Fields() []ent.Field {
+func (Routine) Fields() []ent.Field {
 	return []ent.Field{
 		IdField(),
 		field.Int("day").Immutable(),
@@ -20,8 +20,10 @@ func (DayRoutine) Fields() []ent.Field {
 }
 
 // Edges of the DailyRoutine.
-func (DayRoutine) Edges() []ent.Edge {
+func (Routine) Edges() []ent.Edge {
 	return []ent.Edge{
+		edge.From("program_release", ProgramRelease.Type).Ref("routines").Unique().Required(),
+
 		edge.To("routine_acts", RoutineAct.Type),
 	}
 }

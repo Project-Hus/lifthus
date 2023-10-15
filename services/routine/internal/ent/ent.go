@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"reflect"
 	"routine/internal/ent/act"
-	"routine/internal/ent/dayroutine"
 	"routine/internal/ent/program"
 	"routine/internal/ent/programrelease"
+	"routine/internal/ent/routine"
 	"routine/internal/ent/routineact"
 	"routine/internal/ent/s3actimage"
 	"routine/internal/ent/s3image"
@@ -81,9 +81,9 @@ func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			act.Table:            act.ValidColumn,
-			dayroutine.Table:     dayroutine.ValidColumn,
 			program.Table:        program.ValidColumn,
 			programrelease.Table: programrelease.ValidColumn,
+			routine.Table:        routine.ValidColumn,
 			routineact.Table:     routineact.ValidColumn,
 			s3actimage.Table:     s3actimage.ValidColumn,
 			s3image.Table:        s3image.ValidColumn,

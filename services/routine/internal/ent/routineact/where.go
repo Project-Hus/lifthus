@@ -302,21 +302,21 @@ func HasActWith(preds ...predicate.Act) predicate.RoutineAct {
 	})
 }
 
-// HasDayRoutine applies the HasEdge predicate on the "day_routine" edge.
-func HasDayRoutine() predicate.RoutineAct {
+// HasRoutine applies the HasEdge predicate on the "routine" edge.
+func HasRoutine() predicate.RoutineAct {
 	return predicate.RoutineAct(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, DayRoutineTable, DayRoutineColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, RoutineTable, RoutineColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasDayRoutineWith applies the HasEdge predicate on the "day_routine" edge with a given conditions (other predicates).
-func HasDayRoutineWith(preds ...predicate.DayRoutine) predicate.RoutineAct {
+// HasRoutineWith applies the HasEdge predicate on the "routine" edge with a given conditions (other predicates).
+func HasRoutineWith(preds ...predicate.Routine) predicate.RoutineAct {
 	return predicate.RoutineAct(func(s *sql.Selector) {
-		step := newDayRoutineStep()
+		step := newRoutineStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

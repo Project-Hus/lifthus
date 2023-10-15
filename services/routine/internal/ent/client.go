@@ -11,9 +11,9 @@ import (
 	"routine/internal/ent/migrate"
 
 	"routine/internal/ent/act"
-	"routine/internal/ent/dayroutine"
 	"routine/internal/ent/program"
 	"routine/internal/ent/programrelease"
+	"routine/internal/ent/routine"
 	"routine/internal/ent/routineact"
 	"routine/internal/ent/s3actimage"
 	"routine/internal/ent/s3image"
@@ -32,12 +32,12 @@ type Client struct {
 	Schema *migrate.Schema
 	// Act is the client for interacting with the Act builders.
 	Act *ActClient
-	// DayRoutine is the client for interacting with the DayRoutine builders.
-	DayRoutine *DayRoutineClient
 	// Program is the client for interacting with the Program builders.
 	Program *ProgramClient
 	// ProgramRelease is the client for interacting with the ProgramRelease builders.
 	ProgramRelease *ProgramReleaseClient
+	// Routine is the client for interacting with the Routine builders.
+	Routine *RoutineClient
 	// RoutineAct is the client for interacting with the RoutineAct builders.
 	RoutineAct *RoutineActClient
 	// S3ActImage is the client for interacting with the S3ActImage builders.
@@ -60,9 +60,9 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Act = NewActClient(c.config)
-	c.DayRoutine = NewDayRoutineClient(c.config)
 	c.Program = NewProgramClient(c.config)
 	c.ProgramRelease = NewProgramReleaseClient(c.config)
+	c.Routine = NewRoutineClient(c.config)
 	c.RoutineAct = NewRoutineActClient(c.config)
 	c.S3ActImage = NewS3ActImageClient(c.config)
 	c.S3Image = NewS3ImageClient(c.config)
@@ -150,9 +150,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:            ctx,
 		config:         cfg,
 		Act:            NewActClient(cfg),
-		DayRoutine:     NewDayRoutineClient(cfg),
 		Program:        NewProgramClient(cfg),
 		ProgramRelease: NewProgramReleaseClient(cfg),
+		Routine:        NewRoutineClient(cfg),
 		RoutineAct:     NewRoutineActClient(cfg),
 		S3ActImage:     NewS3ActImageClient(cfg),
 		S3Image:        NewS3ImageClient(cfg),
@@ -177,9 +177,9 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:            ctx,
 		config:         cfg,
 		Act:            NewActClient(cfg),
-		DayRoutine:     NewDayRoutineClient(cfg),
 		Program:        NewProgramClient(cfg),
 		ProgramRelease: NewProgramReleaseClient(cfg),
+		Routine:        NewRoutineClient(cfg),
 		RoutineAct:     NewRoutineActClient(cfg),
 		S3ActImage:     NewS3ActImageClient(cfg),
 		S3Image:        NewS3ImageClient(cfg),
@@ -213,7 +213,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Act, c.DayRoutine, c.Program, c.ProgramRelease, c.RoutineAct, c.S3ActImage,
+		c.Act, c.Program, c.ProgramRelease, c.Routine, c.RoutineAct, c.S3ActImage,
 		c.S3Image, c.S3ProgramImage,
 	} {
 		n.Use(hooks...)
@@ -224,7 +224,7 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Act, c.DayRoutine, c.Program, c.ProgramRelease, c.RoutineAct, c.S3ActImage,
+		c.Act, c.Program, c.ProgramRelease, c.Routine, c.RoutineAct, c.S3ActImage,
 		c.S3Image, c.S3ProgramImage,
 	} {
 		n.Intercept(interceptors...)
@@ -236,12 +236,12 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *ActMutation:
 		return c.Act.mutate(ctx, m)
-	case *DayRoutineMutation:
-		return c.DayRoutine.mutate(ctx, m)
 	case *ProgramMutation:
 		return c.Program.mutate(ctx, m)
 	case *ProgramReleaseMutation:
 		return c.ProgramRelease.mutate(ctx, m)
+	case *RoutineMutation:
+		return c.Routine.mutate(ctx, m)
 	case *RoutineActMutation:
 		return c.RoutineAct.mutate(ctx, m)
 	case *S3ActImageMutation:
@@ -402,140 +402,6 @@ func (c *ActClient) mutate(ctx context.Context, m *ActMutation) (Value, error) {
 		return (&ActDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Act mutation op: %q", m.Op())
-	}
-}
-
-// DayRoutineClient is a client for the DayRoutine schema.
-type DayRoutineClient struct {
-	config
-}
-
-// NewDayRoutineClient returns a client for the DayRoutine from the given config.
-func NewDayRoutineClient(c config) *DayRoutineClient {
-	return &DayRoutineClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `dayroutine.Hooks(f(g(h())))`.
-func (c *DayRoutineClient) Use(hooks ...Hook) {
-	c.hooks.DayRoutine = append(c.hooks.DayRoutine, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `dayroutine.Intercept(f(g(h())))`.
-func (c *DayRoutineClient) Intercept(interceptors ...Interceptor) {
-	c.inters.DayRoutine = append(c.inters.DayRoutine, interceptors...)
-}
-
-// Create returns a builder for creating a DayRoutine entity.
-func (c *DayRoutineClient) Create() *DayRoutineCreate {
-	mutation := newDayRoutineMutation(c.config, OpCreate)
-	return &DayRoutineCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of DayRoutine entities.
-func (c *DayRoutineClient) CreateBulk(builders ...*DayRoutineCreate) *DayRoutineCreateBulk {
-	return &DayRoutineCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for DayRoutine.
-func (c *DayRoutineClient) Update() *DayRoutineUpdate {
-	mutation := newDayRoutineMutation(c.config, OpUpdate)
-	return &DayRoutineUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *DayRoutineClient) UpdateOne(dr *DayRoutine) *DayRoutineUpdateOne {
-	mutation := newDayRoutineMutation(c.config, OpUpdateOne, withDayRoutine(dr))
-	return &DayRoutineUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *DayRoutineClient) UpdateOneID(id int64) *DayRoutineUpdateOne {
-	mutation := newDayRoutineMutation(c.config, OpUpdateOne, withDayRoutineID(id))
-	return &DayRoutineUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for DayRoutine.
-func (c *DayRoutineClient) Delete() *DayRoutineDelete {
-	mutation := newDayRoutineMutation(c.config, OpDelete)
-	return &DayRoutineDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *DayRoutineClient) DeleteOne(dr *DayRoutine) *DayRoutineDeleteOne {
-	return c.DeleteOneID(dr.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *DayRoutineClient) DeleteOneID(id int64) *DayRoutineDeleteOne {
-	builder := c.Delete().Where(dayroutine.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &DayRoutineDeleteOne{builder}
-}
-
-// Query returns a query builder for DayRoutine.
-func (c *DayRoutineClient) Query() *DayRoutineQuery {
-	return &DayRoutineQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeDayRoutine},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a DayRoutine entity by its id.
-func (c *DayRoutineClient) Get(ctx context.Context, id int64) (*DayRoutine, error) {
-	return c.Query().Where(dayroutine.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *DayRoutineClient) GetX(ctx context.Context, id int64) *DayRoutine {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryRoutineActs queries the routine_acts edge of a DayRoutine.
-func (c *DayRoutineClient) QueryRoutineActs(dr *DayRoutine) *RoutineActQuery {
-	query := (&RoutineActClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := dr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(dayroutine.Table, dayroutine.FieldID, id),
-			sqlgraph.To(routineact.Table, routineact.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, dayroutine.RoutineActsTable, dayroutine.RoutineActsColumn),
-		)
-		fromV = sqlgraph.Neighbors(dr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *DayRoutineClient) Hooks() []Hook {
-	return c.hooks.DayRoutine
-}
-
-// Interceptors returns the client interceptors.
-func (c *DayRoutineClient) Interceptors() []Interceptor {
-	return c.inters.DayRoutine
-}
-
-func (c *DayRoutineClient) mutate(ctx context.Context, m *DayRoutineMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&DayRoutineCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&DayRoutineUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&DayRoutineUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&DayRoutineDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown DayRoutine mutation op: %q", m.Op())
 	}
 }
 
@@ -798,15 +664,15 @@ func (c *ProgramReleaseClient) QueryS3ProgramImages(pr *ProgramRelease) *S3Progr
 	return query
 }
 
-// QueryDayRoutines queries the day_routines edge of a ProgramRelease.
-func (c *ProgramReleaseClient) QueryDayRoutines(pr *ProgramRelease) *DayRoutineQuery {
-	query := (&DayRoutineClient{config: c.config}).Query()
+// QueryRoutines queries the routines edge of a ProgramRelease.
+func (c *ProgramReleaseClient) QueryRoutines(pr *ProgramRelease) *RoutineQuery {
+	query := (&RoutineClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := pr.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(programrelease.Table, programrelease.FieldID, id),
-			sqlgraph.To(dayroutine.Table, dayroutine.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, programrelease.DayRoutinesTable, programrelease.DayRoutinesColumn),
+			sqlgraph.To(routine.Table, routine.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, programrelease.RoutinesTable, programrelease.RoutinesColumn),
 		)
 		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
 		return fromV, nil
@@ -836,6 +702,156 @@ func (c *ProgramReleaseClient) mutate(ctx context.Context, m *ProgramReleaseMuta
 		return (&ProgramReleaseDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown ProgramRelease mutation op: %q", m.Op())
+	}
+}
+
+// RoutineClient is a client for the Routine schema.
+type RoutineClient struct {
+	config
+}
+
+// NewRoutineClient returns a client for the Routine from the given config.
+func NewRoutineClient(c config) *RoutineClient {
+	return &RoutineClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `routine.Hooks(f(g(h())))`.
+func (c *RoutineClient) Use(hooks ...Hook) {
+	c.hooks.Routine = append(c.hooks.Routine, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `routine.Intercept(f(g(h())))`.
+func (c *RoutineClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Routine = append(c.inters.Routine, interceptors...)
+}
+
+// Create returns a builder for creating a Routine entity.
+func (c *RoutineClient) Create() *RoutineCreate {
+	mutation := newRoutineMutation(c.config, OpCreate)
+	return &RoutineCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Routine entities.
+func (c *RoutineClient) CreateBulk(builders ...*RoutineCreate) *RoutineCreateBulk {
+	return &RoutineCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Routine.
+func (c *RoutineClient) Update() *RoutineUpdate {
+	mutation := newRoutineMutation(c.config, OpUpdate)
+	return &RoutineUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *RoutineClient) UpdateOne(r *Routine) *RoutineUpdateOne {
+	mutation := newRoutineMutation(c.config, OpUpdateOne, withRoutine(r))
+	return &RoutineUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *RoutineClient) UpdateOneID(id int64) *RoutineUpdateOne {
+	mutation := newRoutineMutation(c.config, OpUpdateOne, withRoutineID(id))
+	return &RoutineUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Routine.
+func (c *RoutineClient) Delete() *RoutineDelete {
+	mutation := newRoutineMutation(c.config, OpDelete)
+	return &RoutineDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *RoutineClient) DeleteOne(r *Routine) *RoutineDeleteOne {
+	return c.DeleteOneID(r.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *RoutineClient) DeleteOneID(id int64) *RoutineDeleteOne {
+	builder := c.Delete().Where(routine.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &RoutineDeleteOne{builder}
+}
+
+// Query returns a query builder for Routine.
+func (c *RoutineClient) Query() *RoutineQuery {
+	return &RoutineQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeRoutine},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Routine entity by its id.
+func (c *RoutineClient) Get(ctx context.Context, id int64) (*Routine, error) {
+	return c.Query().Where(routine.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *RoutineClient) GetX(ctx context.Context, id int64) *Routine {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryProgramRelease queries the program_release edge of a Routine.
+func (c *RoutineClient) QueryProgramRelease(r *Routine) *ProgramReleaseQuery {
+	query := (&ProgramReleaseClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := r.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(routine.Table, routine.FieldID, id),
+			sqlgraph.To(programrelease.Table, programrelease.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, routine.ProgramReleaseTable, routine.ProgramReleaseColumn),
+		)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRoutineActs queries the routine_acts edge of a Routine.
+func (c *RoutineClient) QueryRoutineActs(r *Routine) *RoutineActQuery {
+	query := (&RoutineActClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := r.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(routine.Table, routine.FieldID, id),
+			sqlgraph.To(routineact.Table, routineact.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, routine.RoutineActsTable, routine.RoutineActsColumn),
+		)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *RoutineClient) Hooks() []Hook {
+	return c.hooks.Routine
+}
+
+// Interceptors returns the client interceptors.
+func (c *RoutineClient) Interceptors() []Interceptor {
+	return c.inters.Routine
+}
+
+func (c *RoutineClient) mutate(ctx context.Context, m *RoutineMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&RoutineCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&RoutineUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&RoutineUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&RoutineDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Routine mutation op: %q", m.Op())
 	}
 }
 
@@ -948,15 +964,15 @@ func (c *RoutineActClient) QueryAct(ra *RoutineAct) *ActQuery {
 	return query
 }
 
-// QueryDayRoutine queries the day_routine edge of a RoutineAct.
-func (c *RoutineActClient) QueryDayRoutine(ra *RoutineAct) *DayRoutineQuery {
-	query := (&DayRoutineClient{config: c.config}).Query()
+// QueryRoutine queries the routine edge of a RoutineAct.
+func (c *RoutineActClient) QueryRoutine(ra *RoutineAct) *RoutineQuery {
+	query := (&RoutineClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := ra.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(routineact.Table, routineact.FieldID, id),
-			sqlgraph.To(dayroutine.Table, dayroutine.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, routineact.DayRoutineTable, routineact.DayRoutineColumn),
+			sqlgraph.To(routine.Table, routine.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, routineact.RoutineTable, routineact.RoutineColumn),
 		)
 		fromV = sqlgraph.Neighbors(ra.driver.Dialect(), step)
 		return fromV, nil
@@ -1426,11 +1442,11 @@ func (c *S3ProgramImageClient) mutate(ctx context.Context, m *S3ProgramImageMuta
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Act, DayRoutine, Program, ProgramRelease, RoutineAct, S3ActImage, S3Image,
+		Act, Program, ProgramRelease, Routine, RoutineAct, S3ActImage, S3Image,
 		S3ProgramImage []ent.Hook
 	}
 	inters struct {
-		Act, DayRoutine, Program, ProgramRelease, RoutineAct, S3ActImage, S3Image,
+		Act, Program, ProgramRelease, Routine, RoutineAct, S3ActImage, S3Image,
 		S3ProgramImage []ent.Interceptor
 	}
 )

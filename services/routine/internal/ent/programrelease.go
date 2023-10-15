@@ -37,8 +37,8 @@ type ProgramReleaseEdges struct {
 	Program *Program `json:"program,omitempty"`
 	// S3ProgramImages holds the value of the s3_program_images edge.
 	S3ProgramImages []*S3ProgramImage `json:"s3_program_images,omitempty"`
-	// DayRoutines holds the value of the day_routines edge.
-	DayRoutines []*DayRoutine `json:"day_routines,omitempty"`
+	// Routines holds the value of the routines edge.
+	Routines []*Routine `json:"routines,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -66,13 +66,13 @@ func (e ProgramReleaseEdges) S3ProgramImagesOrErr() ([]*S3ProgramImage, error) {
 	return nil, &NotLoadedError{edge: "s3_program_images"}
 }
 
-// DayRoutinesOrErr returns the DayRoutines value or an error if the edge
+// RoutinesOrErr returns the Routines value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProgramReleaseEdges) DayRoutinesOrErr() ([]*DayRoutine, error) {
+func (e ProgramReleaseEdges) RoutinesOrErr() ([]*Routine, error) {
 	if e.loadedTypes[2] {
-		return e.DayRoutines, nil
+		return e.Routines, nil
 	}
-	return nil, &NotLoadedError{edge: "day_routines"}
+	return nil, &NotLoadedError{edge: "routines"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -157,9 +157,9 @@ func (pr *ProgramRelease) QueryS3ProgramImages() *S3ProgramImageQuery {
 	return NewProgramReleaseClient(pr.config).QueryS3ProgramImages(pr)
 }
 
-// QueryDayRoutines queries the "day_routines" edge of the ProgramRelease entity.
-func (pr *ProgramRelease) QueryDayRoutines() *DayRoutineQuery {
-	return NewProgramReleaseClient(pr.config).QueryDayRoutines(pr)
+// QueryRoutines queries the "routines" edge of the ProgramRelease entity.
+func (pr *ProgramRelease) QueryRoutines() *RoutineQuery {
+	return NewProgramReleaseClient(pr.config).QueryRoutines(pr)
 }
 
 // Update returns a builder for updating this ProgramRelease.

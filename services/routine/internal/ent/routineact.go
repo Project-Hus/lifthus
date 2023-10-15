@@ -5,7 +5,7 @@ package ent
 import (
 	"fmt"
 	"routine/internal/ent/act"
-	"routine/internal/ent/dayroutine"
+	"routine/internal/ent/routine"
 	"routine/internal/ent/routineact"
 	"strings"
 
@@ -30,18 +30,18 @@ type RoutineAct struct {
 	RatioOrSecs float64 `json:"ratio_or_secs,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RoutineActQuery when eager-loading is set.
-	Edges                    RoutineActEdges `json:"edges"`
-	act_routine_acts         *int64
-	day_routine_routine_acts *int64
-	selectValues             sql.SelectValues
+	Edges                RoutineActEdges `json:"edges"`
+	act_routine_acts     *int64
+	routine_routine_acts *int64
+	selectValues         sql.SelectValues
 }
 
 // RoutineActEdges holds the relations/edges for other nodes in the graph.
 type RoutineActEdges struct {
 	// Act holds the value of the act edge.
 	Act *Act `json:"act,omitempty"`
-	// DayRoutine holds the value of the day_routine edge.
-	DayRoutine *DayRoutine `json:"day_routine,omitempty"`
+	// Routine holds the value of the routine edge.
+	Routine *Routine `json:"routine,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
@@ -60,17 +60,17 @@ func (e RoutineActEdges) ActOrErr() (*Act, error) {
 	return nil, &NotLoadedError{edge: "act"}
 }
 
-// DayRoutineOrErr returns the DayRoutine value or an error if the edge
+// RoutineOrErr returns the Routine value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e RoutineActEdges) DayRoutineOrErr() (*DayRoutine, error) {
+func (e RoutineActEdges) RoutineOrErr() (*Routine, error) {
 	if e.loadedTypes[1] {
-		if e.DayRoutine == nil {
+		if e.Routine == nil {
 			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: dayroutine.Label}
+			return nil, &NotFoundError{label: routine.Label}
 		}
-		return e.DayRoutine, nil
+		return e.Routine, nil
 	}
-	return nil, &NotLoadedError{edge: "day_routine"}
+	return nil, &NotLoadedError{edge: "routine"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -86,7 +86,7 @@ func (*RoutineAct) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case routineact.ForeignKeys[0]: // act_routine_acts
 			values[i] = new(sql.NullInt64)
-		case routineact.ForeignKeys[1]: // day_routine_routine_acts
+		case routineact.ForeignKeys[1]: // routine_routine_acts
 			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -148,10 +148,10 @@ func (ra *RoutineAct) assignValues(columns []string, values []any) error {
 			}
 		case routineact.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field day_routine_routine_acts", value)
+				return fmt.Errorf("unexpected type %T for edge-field routine_routine_acts", value)
 			} else if value.Valid {
-				ra.day_routine_routine_acts = new(int64)
-				*ra.day_routine_routine_acts = int64(value.Int64)
+				ra.routine_routine_acts = new(int64)
+				*ra.routine_routine_acts = int64(value.Int64)
 			}
 		default:
 			ra.selectValues.Set(columns[i], values[i])
@@ -171,9 +171,9 @@ func (ra *RoutineAct) QueryAct() *ActQuery {
 	return NewRoutineActClient(ra.config).QueryAct(ra)
 }
 
-// QueryDayRoutine queries the "day_routine" edge of the RoutineAct entity.
-func (ra *RoutineAct) QueryDayRoutine() *DayRoutineQuery {
-	return NewRoutineActClient(ra.config).QueryDayRoutine(ra)
+// QueryRoutine queries the "routine" edge of the RoutineAct entity.
+func (ra *RoutineAct) QueryRoutine() *RoutineQuery {
+	return NewRoutineActClient(ra.config).QueryRoutine(ra)
 }
 
 // Update returns a builder for updating this RoutineAct.

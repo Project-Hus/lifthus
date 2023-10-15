@@ -37,26 +37,6 @@ var (
 			},
 		},
 	}
-	// DayRoutinesColumns holds the columns for the "day_routines" table.
-	DayRoutinesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt64, Increment: true},
-		{Name: "day", Type: field.TypeInt},
-		{Name: "program_release_day_routines", Type: field.TypeInt64, Nullable: true},
-	}
-	// DayRoutinesTable holds the schema information for the "day_routines" table.
-	DayRoutinesTable = &schema.Table{
-		Name:       "day_routines",
-		Columns:    DayRoutinesColumns,
-		PrimaryKey: []*schema.Column{DayRoutinesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "day_routines_program_releases_day_routines",
-				Columns:    []*schema.Column{DayRoutinesColumns[2]},
-				RefColumns: []*schema.Column{ProgramReleasesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
-	}
 	// ProgramsColumns holds the columns for the "programs" table.
 	ProgramsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
@@ -66,7 +46,7 @@ var (
 		{Name: "author", Type: field.TypeInt64},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "parent_program", Type: field.TypeString, Nullable: true, Size: 20},
-		{Name: "parent_version", Type: field.TypeInt},
+		{Name: "parent_version", Type: field.TypeInt, Nullable: true},
 	}
 	// ProgramsTable holds the schema information for the "programs" table.
 	ProgramsTable = &schema.Table{
@@ -96,6 +76,26 @@ var (
 			},
 		},
 	}
+	// RoutinesColumns holds the columns for the "routines" table.
+	RoutinesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "day", Type: field.TypeInt},
+		{Name: "program_release_routines", Type: field.TypeInt64},
+	}
+	// RoutinesTable holds the schema information for the "routines" table.
+	RoutinesTable = &schema.Table{
+		Name:       "routines",
+		Columns:    RoutinesColumns,
+		PrimaryKey: []*schema.Column{RoutinesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "routines_program_releases_routines",
+				Columns:    []*schema.Column{RoutinesColumns[2]},
+				RefColumns: []*schema.Column{ProgramReleasesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// RoutineActsColumns holds the columns for the "routine_acts" table.
 	RoutineActsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
@@ -105,7 +105,7 @@ var (
 		{Name: "reps_or_meters", Type: field.TypeUint},
 		{Name: "ratio_or_secs", Type: field.TypeFloat64},
 		{Name: "act_routine_acts", Type: field.TypeInt64},
-		{Name: "day_routine_routine_acts", Type: field.TypeInt64},
+		{Name: "routine_routine_acts", Type: field.TypeInt64},
 	}
 	// RoutineActsTable holds the schema information for the "routine_acts" table.
 	RoutineActsTable = &schema.Table{
@@ -120,9 +120,9 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "routine_acts_day_routines_routine_acts",
+				Symbol:     "routine_acts_routines_routine_acts",
 				Columns:    []*schema.Column{RoutineActsColumns[7]},
-				RefColumns: []*schema.Column{DayRoutinesColumns[0]},
+				RefColumns: []*schema.Column{RoutinesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -209,9 +209,9 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ActsTable,
-		DayRoutinesTable,
 		ProgramsTable,
 		ProgramReleasesTable,
+		RoutinesTable,
 		RoutineActsTable,
 		S3actImagesTable,
 		S3imagesTable,
@@ -220,10 +220,10 @@ var (
 )
 
 func init() {
-	DayRoutinesTable.ForeignKeys[0].RefTable = ProgramReleasesTable
 	ProgramReleasesTable.ForeignKeys[0].RefTable = ProgramsTable
+	RoutinesTable.ForeignKeys[0].RefTable = ProgramReleasesTable
 	RoutineActsTable.ForeignKeys[0].RefTable = ActsTable
-	RoutineActsTable.ForeignKeys[1].RefTable = DayRoutinesTable
+	RoutineActsTable.ForeignKeys[1].RefTable = RoutinesTable
 	S3actImagesTable.ForeignKeys[0].RefTable = ActsTable
 	S3actImagesTable.ForeignKeys[1].RefTable = S3imagesTable
 	S3programImagesTable.ForeignKeys[0].RefTable = ProgramReleasesTable

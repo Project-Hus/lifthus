@@ -27,6 +27,6 @@ func (ProgramRelease) Edges() []ent.Edge {
 		edge.From("program", Program.Type).Ref("program_releases").Unique().Required(),
 
 		edge.To("s3_program_images", S3ProgramImage.Type),
-		edge.To("day_routines", DayRoutine.Type),
+		edge.To("routines", Routine.Type),
 	}
 }

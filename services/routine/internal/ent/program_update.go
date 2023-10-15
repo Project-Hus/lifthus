@@ -108,6 +108,9 @@ func (pu *ProgramUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if pu.mutation.ParentProgramCleared() {
 		_spec.ClearField(program.FieldParentProgram, field.TypeString)
 	}
+	if pu.mutation.ParentVersionCleared() {
+		_spec.ClearField(program.FieldParentVersion, field.TypeInt)
+	}
 	if pu.mutation.ProgramReleasesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -282,6 +285,9 @@ func (puo *ProgramUpdateOne) sqlSave(ctx context.Context) (_node *Program, err e
 	}
 	if puo.mutation.ParentProgramCleared() {
 		_spec.ClearField(program.FieldParentProgram, field.TypeString)
+	}
+	if puo.mutation.ParentVersionCleared() {
+		_spec.ClearField(program.FieldParentVersion, field.TypeInt)
 	}
 	if puo.mutation.ProgramReleasesCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"routine/internal/ent/act"
-	"routine/internal/ent/dayroutine"
 	"routine/internal/ent/predicate"
+	"routine/internal/ent/routine"
 	"routine/internal/ent/routineact"
 
 	"entgo.io/ent/dialect/sql"
@@ -40,15 +40,15 @@ func (rau *RoutineActUpdate) SetAct(a *Act) *RoutineActUpdate {
 	return rau.SetActID(a.ID)
 }
 
-// SetDayRoutineID sets the "day_routine" edge to the DayRoutine entity by ID.
-func (rau *RoutineActUpdate) SetDayRoutineID(id int64) *RoutineActUpdate {
-	rau.mutation.SetDayRoutineID(id)
+// SetRoutineID sets the "routine" edge to the Routine entity by ID.
+func (rau *RoutineActUpdate) SetRoutineID(id int64) *RoutineActUpdate {
+	rau.mutation.SetRoutineID(id)
 	return rau
 }
 
-// SetDayRoutine sets the "day_routine" edge to the DayRoutine entity.
-func (rau *RoutineActUpdate) SetDayRoutine(d *DayRoutine) *RoutineActUpdate {
-	return rau.SetDayRoutineID(d.ID)
+// SetRoutine sets the "routine" edge to the Routine entity.
+func (rau *RoutineActUpdate) SetRoutine(r *Routine) *RoutineActUpdate {
+	return rau.SetRoutineID(r.ID)
 }
 
 // Mutation returns the RoutineActMutation object of the builder.
@@ -62,9 +62,9 @@ func (rau *RoutineActUpdate) ClearAct() *RoutineActUpdate {
 	return rau
 }
 
-// ClearDayRoutine clears the "day_routine" edge to the DayRoutine entity.
-func (rau *RoutineActUpdate) ClearDayRoutine() *RoutineActUpdate {
-	rau.mutation.ClearDayRoutine()
+// ClearRoutine clears the "routine" edge to the Routine entity.
+func (rau *RoutineActUpdate) ClearRoutine() *RoutineActUpdate {
+	rau.mutation.ClearRoutine()
 	return rau
 }
 
@@ -100,8 +100,8 @@ func (rau *RoutineActUpdate) check() error {
 	if _, ok := rau.mutation.ActID(); rau.mutation.ActCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "RoutineAct.act"`)
 	}
-	if _, ok := rau.mutation.DayRoutineID(); rau.mutation.DayRoutineCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "RoutineAct.day_routine"`)
+	if _, ok := rau.mutation.RoutineID(); rau.mutation.RoutineCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "RoutineAct.routine"`)
 	}
 	return nil
 }
@@ -147,28 +147,28 @@ func (rau *RoutineActUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if rau.mutation.DayRoutineCleared() {
+	if rau.mutation.RoutineCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   routineact.DayRoutineTable,
-			Columns: []string{routineact.DayRoutineColumn},
+			Table:   routineact.RoutineTable,
+			Columns: []string{routineact.RoutineColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dayroutine.FieldID, field.TypeInt64),
+				IDSpec: sqlgraph.NewFieldSpec(routine.FieldID, field.TypeInt64),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rau.mutation.DayRoutineIDs(); len(nodes) > 0 {
+	if nodes := rau.mutation.RoutineIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   routineact.DayRoutineTable,
-			Columns: []string{routineact.DayRoutineColumn},
+			Table:   routineact.RoutineTable,
+			Columns: []string{routineact.RoutineColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dayroutine.FieldID, field.TypeInt64),
+				IDSpec: sqlgraph.NewFieldSpec(routine.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -207,15 +207,15 @@ func (rauo *RoutineActUpdateOne) SetAct(a *Act) *RoutineActUpdateOne {
 	return rauo.SetActID(a.ID)
 }
 
-// SetDayRoutineID sets the "day_routine" edge to the DayRoutine entity by ID.
-func (rauo *RoutineActUpdateOne) SetDayRoutineID(id int64) *RoutineActUpdateOne {
-	rauo.mutation.SetDayRoutineID(id)
+// SetRoutineID sets the "routine" edge to the Routine entity by ID.
+func (rauo *RoutineActUpdateOne) SetRoutineID(id int64) *RoutineActUpdateOne {
+	rauo.mutation.SetRoutineID(id)
 	return rauo
 }
 
-// SetDayRoutine sets the "day_routine" edge to the DayRoutine entity.
-func (rauo *RoutineActUpdateOne) SetDayRoutine(d *DayRoutine) *RoutineActUpdateOne {
-	return rauo.SetDayRoutineID(d.ID)
+// SetRoutine sets the "routine" edge to the Routine entity.
+func (rauo *RoutineActUpdateOne) SetRoutine(r *Routine) *RoutineActUpdateOne {
+	return rauo.SetRoutineID(r.ID)
 }
 
 // Mutation returns the RoutineActMutation object of the builder.
@@ -229,9 +229,9 @@ func (rauo *RoutineActUpdateOne) ClearAct() *RoutineActUpdateOne {
 	return rauo
 }
 
-// ClearDayRoutine clears the "day_routine" edge to the DayRoutine entity.
-func (rauo *RoutineActUpdateOne) ClearDayRoutine() *RoutineActUpdateOne {
-	rauo.mutation.ClearDayRoutine()
+// ClearRoutine clears the "routine" edge to the Routine entity.
+func (rauo *RoutineActUpdateOne) ClearRoutine() *RoutineActUpdateOne {
+	rauo.mutation.ClearRoutine()
 	return rauo
 }
 
@@ -280,8 +280,8 @@ func (rauo *RoutineActUpdateOne) check() error {
 	if _, ok := rauo.mutation.ActID(); rauo.mutation.ActCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "RoutineAct.act"`)
 	}
-	if _, ok := rauo.mutation.DayRoutineID(); rauo.mutation.DayRoutineCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "RoutineAct.day_routine"`)
+	if _, ok := rauo.mutation.RoutineID(); rauo.mutation.RoutineCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "RoutineAct.routine"`)
 	}
 	return nil
 }
@@ -344,28 +344,28 @@ func (rauo *RoutineActUpdateOne) sqlSave(ctx context.Context) (_node *RoutineAct
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if rauo.mutation.DayRoutineCleared() {
+	if rauo.mutation.RoutineCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   routineact.DayRoutineTable,
-			Columns: []string{routineact.DayRoutineColumn},
+			Table:   routineact.RoutineTable,
+			Columns: []string{routineact.RoutineColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dayroutine.FieldID, field.TypeInt64),
+				IDSpec: sqlgraph.NewFieldSpec(routine.FieldID, field.TypeInt64),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rauo.mutation.DayRoutineIDs(); len(nodes) > 0 {
+	if nodes := rauo.mutation.RoutineIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   routineact.DayRoutineTable,
-			Columns: []string{routineact.DayRoutineColumn},
+			Table:   routineact.RoutineTable,
+			Columns: []string{routineact.RoutineColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dayroutine.FieldID, field.TypeInt64),
+				IDSpec: sqlgraph.NewFieldSpec(routine.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

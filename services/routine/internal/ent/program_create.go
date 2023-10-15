@@ -71,6 +71,14 @@ func (pc *ProgramCreate) SetParentVersion(i int) *ProgramCreate {
 	return pc
 }
 
+// SetNillableParentVersion sets the "parent_version" field if the given value is not nil.
+func (pc *ProgramCreate) SetNillableParentVersion(i *int) *ProgramCreate {
+	if i != nil {
+		pc.SetParentVersion(*i)
+	}
+	return pc
+}
+
 // SetID sets the "id" field.
 func (pc *ProgramCreate) SetID(i int64) *ProgramCreate {
 	pc.mutation.SetID(i)
@@ -161,9 +169,6 @@ func (pc *ProgramCreate) check() error {
 			return &ValidationError{Name: "parent_program", err: fmt.Errorf(`ent: validator failed for field "Program.parent_program": %w`, err)}
 		}
 	}
-	if _, ok := pc.mutation.ParentVersion(); !ok {
-		return &ValidationError{Name: "parent_version", err: errors.New(`ent: missing required field "Program.parent_version"`)}
-	}
 	return nil
 }
 
@@ -222,7 +227,7 @@ func (pc *ProgramCreate) createSpec() (*Program, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := pc.mutation.ParentVersion(); ok {
 		_spec.SetField(program.FieldParentVersion, field.TypeInt, value)
-		_node.ParentVersion = value
+		_node.ParentVersion = &value
 	}
 	if nodes := pc.mutation.ProgramReleasesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

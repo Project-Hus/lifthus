@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"routine/internal/ent/act"
-	"routine/internal/ent/dayroutine"
+	"routine/internal/ent/routine"
 	"routine/internal/ent/routineact"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -68,15 +68,15 @@ func (rac *RoutineActCreate) SetAct(a *Act) *RoutineActCreate {
 	return rac.SetActID(a.ID)
 }
 
-// SetDayRoutineID sets the "day_routine" edge to the DayRoutine entity by ID.
-func (rac *RoutineActCreate) SetDayRoutineID(id int64) *RoutineActCreate {
-	rac.mutation.SetDayRoutineID(id)
+// SetRoutineID sets the "routine" edge to the Routine entity by ID.
+func (rac *RoutineActCreate) SetRoutineID(id int64) *RoutineActCreate {
+	rac.mutation.SetRoutineID(id)
 	return rac
 }
 
-// SetDayRoutine sets the "day_routine" edge to the DayRoutine entity.
-func (rac *RoutineActCreate) SetDayRoutine(d *DayRoutine) *RoutineActCreate {
-	return rac.SetDayRoutineID(d.ID)
+// SetRoutine sets the "routine" edge to the Routine entity.
+func (rac *RoutineActCreate) SetRoutine(r *Routine) *RoutineActCreate {
+	return rac.SetRoutineID(r.ID)
 }
 
 // Mutation returns the RoutineActMutation object of the builder.
@@ -141,8 +141,8 @@ func (rac *RoutineActCreate) check() error {
 	if _, ok := rac.mutation.ActID(); !ok {
 		return &ValidationError{Name: "act", err: errors.New(`ent: missing required edge "RoutineAct.act"`)}
 	}
-	if _, ok := rac.mutation.DayRoutineID(); !ok {
-		return &ValidationError{Name: "day_routine", err: errors.New(`ent: missing required edge "RoutineAct.day_routine"`)}
+	if _, ok := rac.mutation.RoutineID(); !ok {
+		return &ValidationError{Name: "routine", err: errors.New(`ent: missing required edge "RoutineAct.routine"`)}
 	}
 	return nil
 }
@@ -213,21 +213,21 @@ func (rac *RoutineActCreate) createSpec() (*RoutineAct, *sqlgraph.CreateSpec) {
 		_node.act_routine_acts = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := rac.mutation.DayRoutineIDs(); len(nodes) > 0 {
+	if nodes := rac.mutation.RoutineIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   routineact.DayRoutineTable,
-			Columns: []string{routineact.DayRoutineColumn},
+			Table:   routineact.RoutineTable,
+			Columns: []string{routineact.RoutineColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dayroutine.FieldID, field.TypeInt64),
+				IDSpec: sqlgraph.NewFieldSpec(routine.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.day_routine_routine_acts = &nodes[0]
+		_node.routine_routine_acts = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

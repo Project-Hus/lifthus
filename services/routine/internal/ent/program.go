@@ -30,7 +30,7 @@ type Program struct {
 	// ParentProgram holds the value of the "parent_program" field.
 	ParentProgram *string `json:"parent_program,omitempty"`
 	// ParentVersion holds the value of the "parent_version" field.
-	ParentVersion int `json:"parent_version,omitempty"`
+	ParentVersion *int `json:"parent_version,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProgramQuery when eager-loading is set.
 	Edges        ProgramEdges `json:"edges"`
@@ -128,7 +128,8 @@ func (pr *Program) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field parent_version", values[i])
 			} else if value.Valid {
-				pr.ParentVersion = int(value.Int64)
+				pr.ParentVersion = new(int)
+				*pr.ParentVersion = int(value.Int64)
 			}
 		default:
 			pr.selectValues.Set(columns[i], values[i])
@@ -191,8 +192,10 @@ func (pr *Program) String() string {
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	builder.WriteString("parent_version=")
-	builder.WriteString(fmt.Sprintf("%v", pr.ParentVersion))
+	if v := pr.ParentVersion; v != nil {
+		builder.WriteString("parent_version=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

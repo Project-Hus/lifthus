@@ -430,6 +430,16 @@ func ParentVersionLTE(v int) predicate.Program {
 	return predicate.Program(sql.FieldLTE(FieldParentVersion, v))
 }
 
+// ParentVersionIsNil applies the IsNil predicate on the "parent_version" field.
+func ParentVersionIsNil() predicate.Program {
+	return predicate.Program(sql.FieldIsNull(FieldParentVersion))
+}
+
+// ParentVersionNotNil applies the NotNil predicate on the "parent_version" field.
+func ParentVersionNotNil() predicate.Program {
+	return predicate.Program(sql.FieldNotNull(FieldParentVersion))
+}
+
 // HasProgramReleases applies the HasEdge predicate on the "program_releases" edge.
 func HasProgramReleases() predicate.Program {
 	return predicate.Program(func(s *sql.Selector) {

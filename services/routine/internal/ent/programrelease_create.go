@@ -6,9 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"routine/internal/ent/dayroutine"
 	"routine/internal/ent/program"
 	"routine/internal/ent/programrelease"
+	"routine/internal/ent/routine"
 	"routine/internal/ent/s3programimage"
 	"time"
 
@@ -73,19 +73,19 @@ func (prc *ProgramReleaseCreate) AddS3ProgramImages(s ...*S3ProgramImage) *Progr
 	return prc.AddS3ProgramImageIDs(ids...)
 }
 
-// AddDayRoutineIDs adds the "day_routines" edge to the DayRoutine entity by IDs.
-func (prc *ProgramReleaseCreate) AddDayRoutineIDs(ids ...int64) *ProgramReleaseCreate {
-	prc.mutation.AddDayRoutineIDs(ids...)
+// AddRoutineIDs adds the "routines" edge to the Routine entity by IDs.
+func (prc *ProgramReleaseCreate) AddRoutineIDs(ids ...int64) *ProgramReleaseCreate {
+	prc.mutation.AddRoutineIDs(ids...)
 	return prc
 }
 
-// AddDayRoutines adds the "day_routines" edges to the DayRoutine entity.
-func (prc *ProgramReleaseCreate) AddDayRoutines(d ...*DayRoutine) *ProgramReleaseCreate {
-	ids := make([]int64, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
+// AddRoutines adds the "routines" edges to the Routine entity.
+func (prc *ProgramReleaseCreate) AddRoutines(r ...*Routine) *ProgramReleaseCreate {
+	ids := make([]int64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
 	}
-	return prc.AddDayRoutineIDs(ids...)
+	return prc.AddRoutineIDs(ids...)
 }
 
 // Mutation returns the ProgramReleaseMutation object of the builder.
@@ -211,15 +211,15 @@ func (prc *ProgramReleaseCreate) createSpec() (*ProgramRelease, *sqlgraph.Create
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := prc.mutation.DayRoutinesIDs(); len(nodes) > 0 {
+	if nodes := prc.mutation.RoutinesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   programrelease.DayRoutinesTable,
-			Columns: []string{programrelease.DayRoutinesColumn},
+			Table:   programrelease.RoutinesTable,
+			Columns: []string{programrelease.RoutinesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dayroutine.FieldID, field.TypeInt64),
+				IDSpec: sqlgraph.NewFieldSpec(routine.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

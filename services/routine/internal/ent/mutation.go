@@ -7,10 +7,10 @@ import (
 	"errors"
 	"fmt"
 	"routine/internal/ent/act"
-	"routine/internal/ent/dayroutine"
 	"routine/internal/ent/predicate"
 	"routine/internal/ent/program"
 	"routine/internal/ent/programrelease"
+	"routine/internal/ent/routine"
 	"routine/internal/ent/routineact"
 	"routine/internal/ent/s3actimage"
 	"routine/internal/ent/s3image"
@@ -32,9 +32,9 @@ const (
 
 	// Node types.
 	TypeAct            = "Act"
-	TypeDayRoutine     = "DayRoutine"
 	TypeProgram        = "Program"
 	TypeProgramRelease = "ProgramRelease"
+	TypeRoutine        = "Routine"
 	TypeRoutineAct     = "RoutineAct"
 	TypeS3ActImage     = "S3ActImage"
 	TypeS3Image        = "S3Image"
@@ -909,467 +909,6 @@ func (m *ActMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Act edge %s", name)
 }
 
-// DayRoutineMutation represents an operation that mutates the DayRoutine nodes in the graph.
-type DayRoutineMutation struct {
-	config
-	op                  Op
-	typ                 string
-	id                  *int64
-	day                 *int
-	addday              *int
-	clearedFields       map[string]struct{}
-	routine_acts        map[int64]struct{}
-	removedroutine_acts map[int64]struct{}
-	clearedroutine_acts bool
-	done                bool
-	oldValue            func(context.Context) (*DayRoutine, error)
-	predicates          []predicate.DayRoutine
-}
-
-var _ ent.Mutation = (*DayRoutineMutation)(nil)
-
-// dayroutineOption allows management of the mutation configuration using functional options.
-type dayroutineOption func(*DayRoutineMutation)
-
-// newDayRoutineMutation creates new mutation for the DayRoutine entity.
-func newDayRoutineMutation(c config, op Op, opts ...dayroutineOption) *DayRoutineMutation {
-	m := &DayRoutineMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeDayRoutine,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withDayRoutineID sets the ID field of the mutation.
-func withDayRoutineID(id int64) dayroutineOption {
-	return func(m *DayRoutineMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *DayRoutine
-		)
-		m.oldValue = func(ctx context.Context) (*DayRoutine, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().DayRoutine.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withDayRoutine sets the old DayRoutine of the mutation.
-func withDayRoutine(node *DayRoutine) dayroutineOption {
-	return func(m *DayRoutineMutation) {
-		m.oldValue = func(context.Context) (*DayRoutine, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m DayRoutineMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m DayRoutineMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of DayRoutine entities.
-func (m *DayRoutineMutation) SetID(id int64) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *DayRoutineMutation) ID() (id int64, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *DayRoutineMutation) IDs(ctx context.Context) ([]int64, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []int64{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().DayRoutine.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetDay sets the "day" field.
-func (m *DayRoutineMutation) SetDay(i int) {
-	m.day = &i
-	m.addday = nil
-}
-
-// Day returns the value of the "day" field in the mutation.
-func (m *DayRoutineMutation) Day() (r int, exists bool) {
-	v := m.day
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDay returns the old "day" field's value of the DayRoutine entity.
-// If the DayRoutine object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DayRoutineMutation) OldDay(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDay is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDay requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDay: %w", err)
-	}
-	return oldValue.Day, nil
-}
-
-// AddDay adds i to the "day" field.
-func (m *DayRoutineMutation) AddDay(i int) {
-	if m.addday != nil {
-		*m.addday += i
-	} else {
-		m.addday = &i
-	}
-}
-
-// AddedDay returns the value that was added to the "day" field in this mutation.
-func (m *DayRoutineMutation) AddedDay() (r int, exists bool) {
-	v := m.addday
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetDay resets all changes to the "day" field.
-func (m *DayRoutineMutation) ResetDay() {
-	m.day = nil
-	m.addday = nil
-}
-
-// AddRoutineActIDs adds the "routine_acts" edge to the RoutineAct entity by ids.
-func (m *DayRoutineMutation) AddRoutineActIDs(ids ...int64) {
-	if m.routine_acts == nil {
-		m.routine_acts = make(map[int64]struct{})
-	}
-	for i := range ids {
-		m.routine_acts[ids[i]] = struct{}{}
-	}
-}
-
-// ClearRoutineActs clears the "routine_acts" edge to the RoutineAct entity.
-func (m *DayRoutineMutation) ClearRoutineActs() {
-	m.clearedroutine_acts = true
-}
-
-// RoutineActsCleared reports if the "routine_acts" edge to the RoutineAct entity was cleared.
-func (m *DayRoutineMutation) RoutineActsCleared() bool {
-	return m.clearedroutine_acts
-}
-
-// RemoveRoutineActIDs removes the "routine_acts" edge to the RoutineAct entity by IDs.
-func (m *DayRoutineMutation) RemoveRoutineActIDs(ids ...int64) {
-	if m.removedroutine_acts == nil {
-		m.removedroutine_acts = make(map[int64]struct{})
-	}
-	for i := range ids {
-		delete(m.routine_acts, ids[i])
-		m.removedroutine_acts[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedRoutineActs returns the removed IDs of the "routine_acts" edge to the RoutineAct entity.
-func (m *DayRoutineMutation) RemovedRoutineActsIDs() (ids []int64) {
-	for id := range m.removedroutine_acts {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// RoutineActsIDs returns the "routine_acts" edge IDs in the mutation.
-func (m *DayRoutineMutation) RoutineActsIDs() (ids []int64) {
-	for id := range m.routine_acts {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetRoutineActs resets all changes to the "routine_acts" edge.
-func (m *DayRoutineMutation) ResetRoutineActs() {
-	m.routine_acts = nil
-	m.clearedroutine_acts = false
-	m.removedroutine_acts = nil
-}
-
-// Where appends a list predicates to the DayRoutineMutation builder.
-func (m *DayRoutineMutation) Where(ps ...predicate.DayRoutine) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the DayRoutineMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *DayRoutineMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.DayRoutine, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *DayRoutineMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *DayRoutineMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (DayRoutine).
-func (m *DayRoutineMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *DayRoutineMutation) Fields() []string {
-	fields := make([]string, 0, 1)
-	if m.day != nil {
-		fields = append(fields, dayroutine.FieldDay)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *DayRoutineMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case dayroutine.FieldDay:
-		return m.Day()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *DayRoutineMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case dayroutine.FieldDay:
-		return m.OldDay(ctx)
-	}
-	return nil, fmt.Errorf("unknown DayRoutine field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *DayRoutineMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case dayroutine.FieldDay:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDay(v)
-		return nil
-	}
-	return fmt.Errorf("unknown DayRoutine field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *DayRoutineMutation) AddedFields() []string {
-	var fields []string
-	if m.addday != nil {
-		fields = append(fields, dayroutine.FieldDay)
-	}
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *DayRoutineMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case dayroutine.FieldDay:
-		return m.AddedDay()
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *DayRoutineMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	case dayroutine.FieldDay:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddDay(v)
-		return nil
-	}
-	return fmt.Errorf("unknown DayRoutine numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *DayRoutineMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *DayRoutineMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *DayRoutineMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown DayRoutine nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *DayRoutineMutation) ResetField(name string) error {
-	switch name {
-	case dayroutine.FieldDay:
-		m.ResetDay()
-		return nil
-	}
-	return fmt.Errorf("unknown DayRoutine field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *DayRoutineMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.routine_acts != nil {
-		edges = append(edges, dayroutine.EdgeRoutineActs)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *DayRoutineMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case dayroutine.EdgeRoutineActs:
-		ids := make([]ent.Value, 0, len(m.routine_acts))
-		for id := range m.routine_acts {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *DayRoutineMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.removedroutine_acts != nil {
-		edges = append(edges, dayroutine.EdgeRoutineActs)
-	}
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *DayRoutineMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case dayroutine.EdgeRoutineActs:
-		ids := make([]ent.Value, 0, len(m.removedroutine_acts))
-		for id := range m.removedroutine_acts {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *DayRoutineMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.clearedroutine_acts {
-		edges = append(edges, dayroutine.EdgeRoutineActs)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *DayRoutineMutation) EdgeCleared(name string) bool {
-	switch name {
-	case dayroutine.EdgeRoutineActs:
-		return m.clearedroutine_acts
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *DayRoutineMutation) ClearEdge(name string) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown DayRoutine unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *DayRoutineMutation) ResetEdge(name string) error {
-	switch name {
-	case dayroutine.EdgeRoutineActs:
-		m.ResetRoutineActs()
-		return nil
-	}
-	return fmt.Errorf("unknown DayRoutine edge %s", name)
-}
-
 // ProgramMutation represents an operation that mutates the Program nodes in the graph.
 type ProgramMutation struct {
 	config
@@ -1765,7 +1304,7 @@ func (m *ProgramMutation) ParentVersion() (r int, exists bool) {
 // OldParentVersion returns the old "parent_version" field's value of the Program entity.
 // If the Program object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProgramMutation) OldParentVersion(ctx context.Context) (v int, err error) {
+func (m *ProgramMutation) OldParentVersion(ctx context.Context) (v *int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldParentVersion is only allowed on UpdateOne operations")
 	}
@@ -1797,10 +1336,24 @@ func (m *ProgramMutation) AddedParentVersion() (r int, exists bool) {
 	return *v, true
 }
 
+// ClearParentVersion clears the value of the "parent_version" field.
+func (m *ProgramMutation) ClearParentVersion() {
+	m.parent_version = nil
+	m.addparent_version = nil
+	m.clearedFields[program.FieldParentVersion] = struct{}{}
+}
+
+// ParentVersionCleared returns if the "parent_version" field was cleared in this mutation.
+func (m *ProgramMutation) ParentVersionCleared() bool {
+	_, ok := m.clearedFields[program.FieldParentVersion]
+	return ok
+}
+
 // ResetParentVersion resets all changes to the "parent_version" field.
 func (m *ProgramMutation) ResetParentVersion() {
 	m.parent_version = nil
 	m.addparent_version = nil
+	delete(m.clearedFields, program.FieldParentVersion)
 }
 
 // AddProgramReleaseIDs adds the "program_releases" edge to the ProgramRelease entity by ids.
@@ -2076,6 +1629,9 @@ func (m *ProgramMutation) ClearedFields() []string {
 	if m.FieldCleared(program.FieldParentProgram) {
 		fields = append(fields, program.FieldParentProgram)
 	}
+	if m.FieldCleared(program.FieldParentVersion) {
+		fields = append(fields, program.FieldParentVersion)
+	}
 	return fields
 }
 
@@ -2092,6 +1648,9 @@ func (m *ProgramMutation) ClearField(name string) error {
 	switch name {
 	case program.FieldParentProgram:
 		m.ClearParentProgram()
+		return nil
+	case program.FieldParentVersion:
+		m.ClearParentVersion()
 		return nil
 	}
 	return fmt.Errorf("unknown Program nullable field %s", name)
@@ -2226,9 +1785,9 @@ type ProgramReleaseMutation struct {
 	s3_program_images        map[int64]struct{}
 	removeds3_program_images map[int64]struct{}
 	cleareds3_program_images bool
-	day_routines             map[int64]struct{}
-	removedday_routines      map[int64]struct{}
-	clearedday_routines      bool
+	routines                 map[int64]struct{}
+	removedroutines          map[int64]struct{}
+	clearedroutines          bool
 	done                     bool
 	oldValue                 func(context.Context) (*ProgramRelease, error)
 	predicates               []predicate.ProgramRelease
@@ -2559,58 +2118,58 @@ func (m *ProgramReleaseMutation) ResetS3ProgramImages() {
 	m.removeds3_program_images = nil
 }
 
-// AddDayRoutineIDs adds the "day_routines" edge to the DayRoutine entity by ids.
-func (m *ProgramReleaseMutation) AddDayRoutineIDs(ids ...int64) {
-	if m.day_routines == nil {
-		m.day_routines = make(map[int64]struct{})
+// AddRoutineIDs adds the "routines" edge to the Routine entity by ids.
+func (m *ProgramReleaseMutation) AddRoutineIDs(ids ...int64) {
+	if m.routines == nil {
+		m.routines = make(map[int64]struct{})
 	}
 	for i := range ids {
-		m.day_routines[ids[i]] = struct{}{}
+		m.routines[ids[i]] = struct{}{}
 	}
 }
 
-// ClearDayRoutines clears the "day_routines" edge to the DayRoutine entity.
-func (m *ProgramReleaseMutation) ClearDayRoutines() {
-	m.clearedday_routines = true
+// ClearRoutines clears the "routines" edge to the Routine entity.
+func (m *ProgramReleaseMutation) ClearRoutines() {
+	m.clearedroutines = true
 }
 
-// DayRoutinesCleared reports if the "day_routines" edge to the DayRoutine entity was cleared.
-func (m *ProgramReleaseMutation) DayRoutinesCleared() bool {
-	return m.clearedday_routines
+// RoutinesCleared reports if the "routines" edge to the Routine entity was cleared.
+func (m *ProgramReleaseMutation) RoutinesCleared() bool {
+	return m.clearedroutines
 }
 
-// RemoveDayRoutineIDs removes the "day_routines" edge to the DayRoutine entity by IDs.
-func (m *ProgramReleaseMutation) RemoveDayRoutineIDs(ids ...int64) {
-	if m.removedday_routines == nil {
-		m.removedday_routines = make(map[int64]struct{})
+// RemoveRoutineIDs removes the "routines" edge to the Routine entity by IDs.
+func (m *ProgramReleaseMutation) RemoveRoutineIDs(ids ...int64) {
+	if m.removedroutines == nil {
+		m.removedroutines = make(map[int64]struct{})
 	}
 	for i := range ids {
-		delete(m.day_routines, ids[i])
-		m.removedday_routines[ids[i]] = struct{}{}
+		delete(m.routines, ids[i])
+		m.removedroutines[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedDayRoutines returns the removed IDs of the "day_routines" edge to the DayRoutine entity.
-func (m *ProgramReleaseMutation) RemovedDayRoutinesIDs() (ids []int64) {
-	for id := range m.removedday_routines {
+// RemovedRoutines returns the removed IDs of the "routines" edge to the Routine entity.
+func (m *ProgramReleaseMutation) RemovedRoutinesIDs() (ids []int64) {
+	for id := range m.removedroutines {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// DayRoutinesIDs returns the "day_routines" edge IDs in the mutation.
-func (m *ProgramReleaseMutation) DayRoutinesIDs() (ids []int64) {
-	for id := range m.day_routines {
+// RoutinesIDs returns the "routines" edge IDs in the mutation.
+func (m *ProgramReleaseMutation) RoutinesIDs() (ids []int64) {
+	for id := range m.routines {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetDayRoutines resets all changes to the "day_routines" edge.
-func (m *ProgramReleaseMutation) ResetDayRoutines() {
-	m.day_routines = nil
-	m.clearedday_routines = false
-	m.removedday_routines = nil
+// ResetRoutines resets all changes to the "routines" edge.
+func (m *ProgramReleaseMutation) ResetRoutines() {
+	m.routines = nil
+	m.clearedroutines = false
+	m.removedroutines = nil
 }
 
 // Where appends a list predicates to the ProgramReleaseMutation builder.
@@ -2802,8 +2361,8 @@ func (m *ProgramReleaseMutation) AddedEdges() []string {
 	if m.s3_program_images != nil {
 		edges = append(edges, programrelease.EdgeS3ProgramImages)
 	}
-	if m.day_routines != nil {
-		edges = append(edges, programrelease.EdgeDayRoutines)
+	if m.routines != nil {
+		edges = append(edges, programrelease.EdgeRoutines)
 	}
 	return edges
 }
@@ -2822,9 +2381,9 @@ func (m *ProgramReleaseMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case programrelease.EdgeDayRoutines:
-		ids := make([]ent.Value, 0, len(m.day_routines))
-		for id := range m.day_routines {
+	case programrelease.EdgeRoutines:
+		ids := make([]ent.Value, 0, len(m.routines))
+		for id := range m.routines {
 			ids = append(ids, id)
 		}
 		return ids
@@ -2838,8 +2397,8 @@ func (m *ProgramReleaseMutation) RemovedEdges() []string {
 	if m.removeds3_program_images != nil {
 		edges = append(edges, programrelease.EdgeS3ProgramImages)
 	}
-	if m.removedday_routines != nil {
-		edges = append(edges, programrelease.EdgeDayRoutines)
+	if m.removedroutines != nil {
+		edges = append(edges, programrelease.EdgeRoutines)
 	}
 	return edges
 }
@@ -2854,9 +2413,9 @@ func (m *ProgramReleaseMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case programrelease.EdgeDayRoutines:
-		ids := make([]ent.Value, 0, len(m.removedday_routines))
-		for id := range m.removedday_routines {
+	case programrelease.EdgeRoutines:
+		ids := make([]ent.Value, 0, len(m.removedroutines))
+		for id := range m.removedroutines {
 			ids = append(ids, id)
 		}
 		return ids
@@ -2873,8 +2432,8 @@ func (m *ProgramReleaseMutation) ClearedEdges() []string {
 	if m.cleareds3_program_images {
 		edges = append(edges, programrelease.EdgeS3ProgramImages)
 	}
-	if m.clearedday_routines {
-		edges = append(edges, programrelease.EdgeDayRoutines)
+	if m.clearedroutines {
+		edges = append(edges, programrelease.EdgeRoutines)
 	}
 	return edges
 }
@@ -2887,8 +2446,8 @@ func (m *ProgramReleaseMutation) EdgeCleared(name string) bool {
 		return m.clearedprogram
 	case programrelease.EdgeS3ProgramImages:
 		return m.cleareds3_program_images
-	case programrelease.EdgeDayRoutines:
-		return m.clearedday_routines
+	case programrelease.EdgeRoutines:
+		return m.clearedroutines
 	}
 	return false
 }
@@ -2914,35 +2473,555 @@ func (m *ProgramReleaseMutation) ResetEdge(name string) error {
 	case programrelease.EdgeS3ProgramImages:
 		m.ResetS3ProgramImages()
 		return nil
-	case programrelease.EdgeDayRoutines:
-		m.ResetDayRoutines()
+	case programrelease.EdgeRoutines:
+		m.ResetRoutines()
 		return nil
 	}
 	return fmt.Errorf("unknown ProgramRelease edge %s", name)
 }
 
+// RoutineMutation represents an operation that mutates the Routine nodes in the graph.
+type RoutineMutation struct {
+	config
+	op                     Op
+	typ                    string
+	id                     *int64
+	day                    *int
+	addday                 *int
+	clearedFields          map[string]struct{}
+	program_release        *int64
+	clearedprogram_release bool
+	routine_acts           map[int64]struct{}
+	removedroutine_acts    map[int64]struct{}
+	clearedroutine_acts    bool
+	done                   bool
+	oldValue               func(context.Context) (*Routine, error)
+	predicates             []predicate.Routine
+}
+
+var _ ent.Mutation = (*RoutineMutation)(nil)
+
+// routineOption allows management of the mutation configuration using functional options.
+type routineOption func(*RoutineMutation)
+
+// newRoutineMutation creates new mutation for the Routine entity.
+func newRoutineMutation(c config, op Op, opts ...routineOption) *RoutineMutation {
+	m := &RoutineMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeRoutine,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withRoutineID sets the ID field of the mutation.
+func withRoutineID(id int64) routineOption {
+	return func(m *RoutineMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Routine
+		)
+		m.oldValue = func(ctx context.Context) (*Routine, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Routine.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withRoutine sets the old Routine of the mutation.
+func withRoutine(node *Routine) routineOption {
+	return func(m *RoutineMutation) {
+		m.oldValue = func(context.Context) (*Routine, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m RoutineMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m RoutineMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Routine entities.
+func (m *RoutineMutation) SetID(id int64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *RoutineMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *RoutineMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Routine.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetDay sets the "day" field.
+func (m *RoutineMutation) SetDay(i int) {
+	m.day = &i
+	m.addday = nil
+}
+
+// Day returns the value of the "day" field in the mutation.
+func (m *RoutineMutation) Day() (r int, exists bool) {
+	v := m.day
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDay returns the old "day" field's value of the Routine entity.
+// If the Routine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RoutineMutation) OldDay(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDay is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDay requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDay: %w", err)
+	}
+	return oldValue.Day, nil
+}
+
+// AddDay adds i to the "day" field.
+func (m *RoutineMutation) AddDay(i int) {
+	if m.addday != nil {
+		*m.addday += i
+	} else {
+		m.addday = &i
+	}
+}
+
+// AddedDay returns the value that was added to the "day" field in this mutation.
+func (m *RoutineMutation) AddedDay() (r int, exists bool) {
+	v := m.addday
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDay resets all changes to the "day" field.
+func (m *RoutineMutation) ResetDay() {
+	m.day = nil
+	m.addday = nil
+}
+
+// SetProgramReleaseID sets the "program_release" edge to the ProgramRelease entity by id.
+func (m *RoutineMutation) SetProgramReleaseID(id int64) {
+	m.program_release = &id
+}
+
+// ClearProgramRelease clears the "program_release" edge to the ProgramRelease entity.
+func (m *RoutineMutation) ClearProgramRelease() {
+	m.clearedprogram_release = true
+}
+
+// ProgramReleaseCleared reports if the "program_release" edge to the ProgramRelease entity was cleared.
+func (m *RoutineMutation) ProgramReleaseCleared() bool {
+	return m.clearedprogram_release
+}
+
+// ProgramReleaseID returns the "program_release" edge ID in the mutation.
+func (m *RoutineMutation) ProgramReleaseID() (id int64, exists bool) {
+	if m.program_release != nil {
+		return *m.program_release, true
+	}
+	return
+}
+
+// ProgramReleaseIDs returns the "program_release" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProgramReleaseID instead. It exists only for internal usage by the builders.
+func (m *RoutineMutation) ProgramReleaseIDs() (ids []int64) {
+	if id := m.program_release; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProgramRelease resets all changes to the "program_release" edge.
+func (m *RoutineMutation) ResetProgramRelease() {
+	m.program_release = nil
+	m.clearedprogram_release = false
+}
+
+// AddRoutineActIDs adds the "routine_acts" edge to the RoutineAct entity by ids.
+func (m *RoutineMutation) AddRoutineActIDs(ids ...int64) {
+	if m.routine_acts == nil {
+		m.routine_acts = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.routine_acts[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRoutineActs clears the "routine_acts" edge to the RoutineAct entity.
+func (m *RoutineMutation) ClearRoutineActs() {
+	m.clearedroutine_acts = true
+}
+
+// RoutineActsCleared reports if the "routine_acts" edge to the RoutineAct entity was cleared.
+func (m *RoutineMutation) RoutineActsCleared() bool {
+	return m.clearedroutine_acts
+}
+
+// RemoveRoutineActIDs removes the "routine_acts" edge to the RoutineAct entity by IDs.
+func (m *RoutineMutation) RemoveRoutineActIDs(ids ...int64) {
+	if m.removedroutine_acts == nil {
+		m.removedroutine_acts = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.routine_acts, ids[i])
+		m.removedroutine_acts[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRoutineActs returns the removed IDs of the "routine_acts" edge to the RoutineAct entity.
+func (m *RoutineMutation) RemovedRoutineActsIDs() (ids []int64) {
+	for id := range m.removedroutine_acts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RoutineActsIDs returns the "routine_acts" edge IDs in the mutation.
+func (m *RoutineMutation) RoutineActsIDs() (ids []int64) {
+	for id := range m.routine_acts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRoutineActs resets all changes to the "routine_acts" edge.
+func (m *RoutineMutation) ResetRoutineActs() {
+	m.routine_acts = nil
+	m.clearedroutine_acts = false
+	m.removedroutine_acts = nil
+}
+
+// Where appends a list predicates to the RoutineMutation builder.
+func (m *RoutineMutation) Where(ps ...predicate.Routine) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the RoutineMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *RoutineMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Routine, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *RoutineMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *RoutineMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Routine).
+func (m *RoutineMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *RoutineMutation) Fields() []string {
+	fields := make([]string, 0, 1)
+	if m.day != nil {
+		fields = append(fields, routine.FieldDay)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *RoutineMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case routine.FieldDay:
+		return m.Day()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *RoutineMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case routine.FieldDay:
+		return m.OldDay(ctx)
+	}
+	return nil, fmt.Errorf("unknown Routine field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RoutineMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case routine.FieldDay:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDay(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Routine field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *RoutineMutation) AddedFields() []string {
+	var fields []string
+	if m.addday != nil {
+		fields = append(fields, routine.FieldDay)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *RoutineMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case routine.FieldDay:
+		return m.AddedDay()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RoutineMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case routine.FieldDay:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDay(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Routine numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *RoutineMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *RoutineMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *RoutineMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Routine nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *RoutineMutation) ResetField(name string) error {
+	switch name {
+	case routine.FieldDay:
+		m.ResetDay()
+		return nil
+	}
+	return fmt.Errorf("unknown Routine field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *RoutineMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.program_release != nil {
+		edges = append(edges, routine.EdgeProgramRelease)
+	}
+	if m.routine_acts != nil {
+		edges = append(edges, routine.EdgeRoutineActs)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *RoutineMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case routine.EdgeProgramRelease:
+		if id := m.program_release; id != nil {
+			return []ent.Value{*id}
+		}
+	case routine.EdgeRoutineActs:
+		ids := make([]ent.Value, 0, len(m.routine_acts))
+		for id := range m.routine_acts {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *RoutineMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.removedroutine_acts != nil {
+		edges = append(edges, routine.EdgeRoutineActs)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *RoutineMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case routine.EdgeRoutineActs:
+		ids := make([]ent.Value, 0, len(m.removedroutine_acts))
+		for id := range m.removedroutine_acts {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *RoutineMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedprogram_release {
+		edges = append(edges, routine.EdgeProgramRelease)
+	}
+	if m.clearedroutine_acts {
+		edges = append(edges, routine.EdgeRoutineActs)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *RoutineMutation) EdgeCleared(name string) bool {
+	switch name {
+	case routine.EdgeProgramRelease:
+		return m.clearedprogram_release
+	case routine.EdgeRoutineActs:
+		return m.clearedroutine_acts
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *RoutineMutation) ClearEdge(name string) error {
+	switch name {
+	case routine.EdgeProgramRelease:
+		m.ClearProgramRelease()
+		return nil
+	}
+	return fmt.Errorf("unknown Routine unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *RoutineMutation) ResetEdge(name string) error {
+	switch name {
+	case routine.EdgeProgramRelease:
+		m.ResetProgramRelease()
+		return nil
+	case routine.EdgeRoutineActs:
+		m.ResetRoutineActs()
+		return nil
+	}
+	return fmt.Errorf("unknown Routine edge %s", name)
+}
+
 // RoutineActMutation represents an operation that mutates the RoutineAct nodes in the graph.
 type RoutineActMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *int64
-	_order             *int
-	add_order          *int
-	act_code           *string
-	stage              *routineact.Stage
-	reps_or_meters     *uint
-	addreps_or_meters  *int
-	ratio_or_secs      *float64
-	addratio_or_secs   *float64
-	clearedFields      map[string]struct{}
-	act                *int64
-	clearedact         bool
-	day_routine        *int64
-	clearedday_routine bool
-	done               bool
-	oldValue           func(context.Context) (*RoutineAct, error)
-	predicates         []predicate.RoutineAct
+	op                Op
+	typ               string
+	id                *int64
+	_order            *int
+	add_order         *int
+	act_code          *string
+	stage             *routineact.Stage
+	reps_or_meters    *uint
+	addreps_or_meters *int
+	ratio_or_secs     *float64
+	addratio_or_secs  *float64
+	clearedFields     map[string]struct{}
+	act               *int64
+	clearedact        bool
+	routine           *int64
+	clearedroutine    bool
+	done              bool
+	oldValue          func(context.Context) (*RoutineAct, error)
+	predicates        []predicate.RoutineAct
 }
 
 var _ ent.Mutation = (*RoutineActMutation)(nil)
@@ -3328,43 +3407,43 @@ func (m *RoutineActMutation) ResetAct() {
 	m.clearedact = false
 }
 
-// SetDayRoutineID sets the "day_routine" edge to the DayRoutine entity by id.
-func (m *RoutineActMutation) SetDayRoutineID(id int64) {
-	m.day_routine = &id
+// SetRoutineID sets the "routine" edge to the Routine entity by id.
+func (m *RoutineActMutation) SetRoutineID(id int64) {
+	m.routine = &id
 }
 
-// ClearDayRoutine clears the "day_routine" edge to the DayRoutine entity.
-func (m *RoutineActMutation) ClearDayRoutine() {
-	m.clearedday_routine = true
+// ClearRoutine clears the "routine" edge to the Routine entity.
+func (m *RoutineActMutation) ClearRoutine() {
+	m.clearedroutine = true
 }
 
-// DayRoutineCleared reports if the "day_routine" edge to the DayRoutine entity was cleared.
-func (m *RoutineActMutation) DayRoutineCleared() bool {
-	return m.clearedday_routine
+// RoutineCleared reports if the "routine" edge to the Routine entity was cleared.
+func (m *RoutineActMutation) RoutineCleared() bool {
+	return m.clearedroutine
 }
 
-// DayRoutineID returns the "day_routine" edge ID in the mutation.
-func (m *RoutineActMutation) DayRoutineID() (id int64, exists bool) {
-	if m.day_routine != nil {
-		return *m.day_routine, true
+// RoutineID returns the "routine" edge ID in the mutation.
+func (m *RoutineActMutation) RoutineID() (id int64, exists bool) {
+	if m.routine != nil {
+		return *m.routine, true
 	}
 	return
 }
 
-// DayRoutineIDs returns the "day_routine" edge IDs in the mutation.
+// RoutineIDs returns the "routine" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// DayRoutineID instead. It exists only for internal usage by the builders.
-func (m *RoutineActMutation) DayRoutineIDs() (ids []int64) {
-	if id := m.day_routine; id != nil {
+// RoutineID instead. It exists only for internal usage by the builders.
+func (m *RoutineActMutation) RoutineIDs() (ids []int64) {
+	if id := m.routine; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetDayRoutine resets all changes to the "day_routine" edge.
-func (m *RoutineActMutation) ResetDayRoutine() {
-	m.day_routine = nil
-	m.clearedday_routine = false
+// ResetRoutine resets all changes to the "routine" edge.
+func (m *RoutineActMutation) ResetRoutine() {
+	m.routine = nil
+	m.clearedroutine = false
 }
 
 // Where appends a list predicates to the RoutineActMutation builder.
@@ -3611,8 +3690,8 @@ func (m *RoutineActMutation) AddedEdges() []string {
 	if m.act != nil {
 		edges = append(edges, routineact.EdgeAct)
 	}
-	if m.day_routine != nil {
-		edges = append(edges, routineact.EdgeDayRoutine)
+	if m.routine != nil {
+		edges = append(edges, routineact.EdgeRoutine)
 	}
 	return edges
 }
@@ -3625,8 +3704,8 @@ func (m *RoutineActMutation) AddedIDs(name string) []ent.Value {
 		if id := m.act; id != nil {
 			return []ent.Value{*id}
 		}
-	case routineact.EdgeDayRoutine:
-		if id := m.day_routine; id != nil {
+	case routineact.EdgeRoutine:
+		if id := m.routine; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -3651,8 +3730,8 @@ func (m *RoutineActMutation) ClearedEdges() []string {
 	if m.clearedact {
 		edges = append(edges, routineact.EdgeAct)
 	}
-	if m.clearedday_routine {
-		edges = append(edges, routineact.EdgeDayRoutine)
+	if m.clearedroutine {
+		edges = append(edges, routineact.EdgeRoutine)
 	}
 	return edges
 }
@@ -3663,8 +3742,8 @@ func (m *RoutineActMutation) EdgeCleared(name string) bool {
 	switch name {
 	case routineact.EdgeAct:
 		return m.clearedact
-	case routineact.EdgeDayRoutine:
-		return m.clearedday_routine
+	case routineact.EdgeRoutine:
+		return m.clearedroutine
 	}
 	return false
 }
@@ -3676,8 +3755,8 @@ func (m *RoutineActMutation) ClearEdge(name string) error {
 	case routineact.EdgeAct:
 		m.ClearAct()
 		return nil
-	case routineact.EdgeDayRoutine:
-		m.ClearDayRoutine()
+	case routineact.EdgeRoutine:
+		m.ClearRoutine()
 		return nil
 	}
 	return fmt.Errorf("unknown RoutineAct unique edge %s", name)
@@ -3690,8 +3769,8 @@ func (m *RoutineActMutation) ResetEdge(name string) error {
 	case routineact.EdgeAct:
 		m.ResetAct()
 		return nil
-	case routineact.EdgeDayRoutine:
-		m.ResetDayRoutine()
+	case routineact.EdgeRoutine:
+		m.ResetRoutine()
 		return nil
 	}
 	return fmt.Errorf("unknown RoutineAct edge %s", name)

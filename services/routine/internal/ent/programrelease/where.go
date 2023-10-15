@@ -261,21 +261,21 @@ func HasS3ProgramImagesWith(preds ...predicate.S3ProgramImage) predicate.Program
 	})
 }
 
-// HasDayRoutines applies the HasEdge predicate on the "day_routines" edge.
-func HasDayRoutines() predicate.ProgramRelease {
+// HasRoutines applies the HasEdge predicate on the "routines" edge.
+func HasRoutines() predicate.ProgramRelease {
 	return predicate.ProgramRelease(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, DayRoutinesTable, DayRoutinesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, RoutinesTable, RoutinesColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasDayRoutinesWith applies the HasEdge predicate on the "day_routines" edge with a given conditions (other predicates).
-func HasDayRoutinesWith(preds ...predicate.DayRoutine) predicate.ProgramRelease {
+// HasRoutinesWith applies the HasEdge predicate on the "routines" edge with a given conditions (other predicates).
+func HasRoutinesWith(preds ...predicate.Routine) predicate.ProgramRelease {
 	return predicate.ProgramRelease(func(s *sql.Selector) {
-		step := newDayRoutinesStep()
+		step := newRoutinesStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -26,8 +26,8 @@ const (
 	FieldRatioOrSecs = "ratio_or_secs"
 	// EdgeAct holds the string denoting the act edge name in mutations.
 	EdgeAct = "act"
-	// EdgeDayRoutine holds the string denoting the day_routine edge name in mutations.
-	EdgeDayRoutine = "day_routine"
+	// EdgeRoutine holds the string denoting the routine edge name in mutations.
+	EdgeRoutine = "routine"
 	// Table holds the table name of the routineact in the database.
 	Table = "routine_acts"
 	// ActTable is the table that holds the act relation/edge.
@@ -37,13 +37,13 @@ const (
 	ActInverseTable = "acts"
 	// ActColumn is the table column denoting the act relation/edge.
 	ActColumn = "act_routine_acts"
-	// DayRoutineTable is the table that holds the day_routine relation/edge.
-	DayRoutineTable = "routine_acts"
-	// DayRoutineInverseTable is the table name for the DayRoutine entity.
-	// It exists in this package in order to avoid circular dependency with the "dayroutine" package.
-	DayRoutineInverseTable = "day_routines"
-	// DayRoutineColumn is the table column denoting the day_routine relation/edge.
-	DayRoutineColumn = "day_routine_routine_acts"
+	// RoutineTable is the table that holds the routine relation/edge.
+	RoutineTable = "routine_acts"
+	// RoutineInverseTable is the table name for the Routine entity.
+	// It exists in this package in order to avoid circular dependency with the "routine" package.
+	RoutineInverseTable = "routines"
+	// RoutineColumn is the table column denoting the routine relation/edge.
+	RoutineColumn = "routine_routine_acts"
 )
 
 // Columns holds all SQL columns for routineact fields.
@@ -60,7 +60,7 @@ var Columns = []string{
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"act_routine_acts",
-	"day_routine_routine_acts",
+	"routine_routine_acts",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -147,10 +147,10 @@ func ByActField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByDayRoutineField orders the results by day_routine field.
-func ByDayRoutineField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByRoutineField orders the results by routine field.
+func ByRoutineField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newDayRoutineStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newRoutineStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newActStep() *sqlgraph.Step {
@@ -160,10 +160,10 @@ func newActStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, true, ActTable, ActColumn),
 	)
 }
-func newDayRoutineStep() *sqlgraph.Step {
+func newRoutineStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(DayRoutineInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, DayRoutineTable, DayRoutineColumn),
+		sqlgraph.To(RoutineInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, RoutineTable, RoutineColumn),
 	)
 }

@@ -7,10 +7,10 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"math"
-	"routine/internal/ent/dayroutine"
 	"routine/internal/ent/predicate"
 	"routine/internal/ent/program"
 	"routine/internal/ent/programrelease"
+	"routine/internal/ent/routine"
 	"routine/internal/ent/s3programimage"
 
 	"entgo.io/ent/dialect/sql"
@@ -27,7 +27,7 @@ type ProgramReleaseQuery struct {
 	predicates          []predicate.ProgramRelease
 	withProgram         *ProgramQuery
 	withS3ProgramImages *S3ProgramImageQuery
-	withDayRoutines     *DayRoutineQuery
+	withRoutines        *RoutineQuery
 	withFKs             bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -109,9 +109,9 @@ func (prq *ProgramReleaseQuery) QueryS3ProgramImages() *S3ProgramImageQuery {
 	return query
 }
 
-// QueryDayRoutines chains the current query on the "day_routines" edge.
-func (prq *ProgramReleaseQuery) QueryDayRoutines() *DayRoutineQuery {
-	query := (&DayRoutineClient{config: prq.config}).Query()
+// QueryRoutines chains the current query on the "routines" edge.
+func (prq *ProgramReleaseQuery) QueryRoutines() *RoutineQuery {
+	query := (&RoutineClient{config: prq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := prq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -122,8 +122,8 @@ func (prq *ProgramReleaseQuery) QueryDayRoutines() *DayRoutineQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(programrelease.Table, programrelease.FieldID, selector),
-			sqlgraph.To(dayroutine.Table, dayroutine.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, programrelease.DayRoutinesTable, programrelease.DayRoutinesColumn),
+			sqlgraph.To(routine.Table, routine.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, programrelease.RoutinesTable, programrelease.RoutinesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(prq.driver.Dialect(), step)
 		return fromU, nil
@@ -325,7 +325,7 @@ func (prq *ProgramReleaseQuery) Clone() *ProgramReleaseQuery {
 		predicates:          append([]predicate.ProgramRelease{}, prq.predicates...),
 		withProgram:         prq.withProgram.Clone(),
 		withS3ProgramImages: prq.withS3ProgramImages.Clone(),
-		withDayRoutines:     prq.withDayRoutines.Clone(),
+		withRoutines:        prq.withRoutines.Clone(),
 		// clone intermediate query.
 		sql:  prq.sql.Clone(),
 		path: prq.path,
@@ -354,14 +354,14 @@ func (prq *ProgramReleaseQuery) WithS3ProgramImages(opts ...func(*S3ProgramImage
 	return prq
 }
 
-// WithDayRoutines tells the query-builder to eager-load the nodes that are connected to
-// the "day_routines" edge. The optional arguments are used to configure the query builder of the edge.
-func (prq *ProgramReleaseQuery) WithDayRoutines(opts ...func(*DayRoutineQuery)) *ProgramReleaseQuery {
-	query := (&DayRoutineClient{config: prq.config}).Query()
+// WithRoutines tells the query-builder to eager-load the nodes that are connected to
+// the "routines" edge. The optional arguments are used to configure the query builder of the edge.
+func (prq *ProgramReleaseQuery) WithRoutines(opts ...func(*RoutineQuery)) *ProgramReleaseQuery {
+	query := (&RoutineClient{config: prq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	prq.withDayRoutines = query
+	prq.withRoutines = query
 	return prq
 }
 
@@ -447,7 +447,7 @@ func (prq *ProgramReleaseQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 		loadedTypes = [3]bool{
 			prq.withProgram != nil,
 			prq.withS3ProgramImages != nil,
-			prq.withDayRoutines != nil,
+			prq.withRoutines != nil,
 		}
 	)
 	if prq.withProgram != nil {
@@ -489,10 +489,10 @@ func (prq *ProgramReleaseQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			return nil, err
 		}
 	}
-	if query := prq.withDayRoutines; query != nil {
-		if err := prq.loadDayRoutines(ctx, query, nodes,
-			func(n *ProgramRelease) { n.Edges.DayRoutines = []*DayRoutine{} },
-			func(n *ProgramRelease, e *DayRoutine) { n.Edges.DayRoutines = append(n.Edges.DayRoutines, e) }); err != nil {
+	if query := prq.withRoutines; query != nil {
+		if err := prq.loadRoutines(ctx, query, nodes,
+			func(n *ProgramRelease) { n.Edges.Routines = []*Routine{} },
+			func(n *ProgramRelease, e *Routine) { n.Edges.Routines = append(n.Edges.Routines, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -561,7 +561,7 @@ func (prq *ProgramReleaseQuery) loadS3ProgramImages(ctx context.Context, query *
 	}
 	return nil
 }
-func (prq *ProgramReleaseQuery) loadDayRoutines(ctx context.Context, query *DayRoutineQuery, nodes []*ProgramRelease, init func(*ProgramRelease), assign func(*ProgramRelease, *DayRoutine)) error {
+func (prq *ProgramReleaseQuery) loadRoutines(ctx context.Context, query *RoutineQuery, nodes []*ProgramRelease, init func(*ProgramRelease), assign func(*ProgramRelease, *Routine)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[int64]*ProgramRelease)
 	for i := range nodes {
@@ -572,21 +572,21 @@ func (prq *ProgramReleaseQuery) loadDayRoutines(ctx context.Context, query *DayR
 		}
 	}
 	query.withFKs = true
-	query.Where(predicate.DayRoutine(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(programrelease.DayRoutinesColumn), fks...))
+	query.Where(predicate.Routine(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(programrelease.RoutinesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.program_release_day_routines
+		fk := n.program_release_routines
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "program_release_day_routines" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "program_release_routines" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "program_release_day_routines" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "program_release_routines" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

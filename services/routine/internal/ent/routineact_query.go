@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"math"
 	"routine/internal/ent/act"
-	"routine/internal/ent/dayroutine"
 	"routine/internal/ent/predicate"
+	"routine/internal/ent/routine"
 	"routine/internal/ent/routineact"
 
 	"entgo.io/ent/dialect/sql"
@@ -19,13 +19,13 @@ import (
 // RoutineActQuery is the builder for querying RoutineAct entities.
 type RoutineActQuery struct {
 	config
-	ctx            *QueryContext
-	order          []routineact.OrderOption
-	inters         []Interceptor
-	predicates     []predicate.RoutineAct
-	withAct        *ActQuery
-	withDayRoutine *DayRoutineQuery
-	withFKs        bool
+	ctx         *QueryContext
+	order       []routineact.OrderOption
+	inters      []Interceptor
+	predicates  []predicate.RoutineAct
+	withAct     *ActQuery
+	withRoutine *RoutineQuery
+	withFKs     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -84,9 +84,9 @@ func (raq *RoutineActQuery) QueryAct() *ActQuery {
 	return query
 }
 
-// QueryDayRoutine chains the current query on the "day_routine" edge.
-func (raq *RoutineActQuery) QueryDayRoutine() *DayRoutineQuery {
-	query := (&DayRoutineClient{config: raq.config}).Query()
+// QueryRoutine chains the current query on the "routine" edge.
+func (raq *RoutineActQuery) QueryRoutine() *RoutineQuery {
+	query := (&RoutineClient{config: raq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := raq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -97,8 +97,8 @@ func (raq *RoutineActQuery) QueryDayRoutine() *DayRoutineQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(routineact.Table, routineact.FieldID, selector),
-			sqlgraph.To(dayroutine.Table, dayroutine.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, routineact.DayRoutineTable, routineact.DayRoutineColumn),
+			sqlgraph.To(routine.Table, routine.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, routineact.RoutineTable, routineact.RoutineColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(raq.driver.Dialect(), step)
 		return fromU, nil
@@ -293,13 +293,13 @@ func (raq *RoutineActQuery) Clone() *RoutineActQuery {
 		return nil
 	}
 	return &RoutineActQuery{
-		config:         raq.config,
-		ctx:            raq.ctx.Clone(),
-		order:          append([]routineact.OrderOption{}, raq.order...),
-		inters:         append([]Interceptor{}, raq.inters...),
-		predicates:     append([]predicate.RoutineAct{}, raq.predicates...),
-		withAct:        raq.withAct.Clone(),
-		withDayRoutine: raq.withDayRoutine.Clone(),
+		config:      raq.config,
+		ctx:         raq.ctx.Clone(),
+		order:       append([]routineact.OrderOption{}, raq.order...),
+		inters:      append([]Interceptor{}, raq.inters...),
+		predicates:  append([]predicate.RoutineAct{}, raq.predicates...),
+		withAct:     raq.withAct.Clone(),
+		withRoutine: raq.withRoutine.Clone(),
 		// clone intermediate query.
 		sql:  raq.sql.Clone(),
 		path: raq.path,
@@ -317,14 +317,14 @@ func (raq *RoutineActQuery) WithAct(opts ...func(*ActQuery)) *RoutineActQuery {
 	return raq
 }
 
-// WithDayRoutine tells the query-builder to eager-load the nodes that are connected to
-// the "day_routine" edge. The optional arguments are used to configure the query builder of the edge.
-func (raq *RoutineActQuery) WithDayRoutine(opts ...func(*DayRoutineQuery)) *RoutineActQuery {
-	query := (&DayRoutineClient{config: raq.config}).Query()
+// WithRoutine tells the query-builder to eager-load the nodes that are connected to
+// the "routine" edge. The optional arguments are used to configure the query builder of the edge.
+func (raq *RoutineActQuery) WithRoutine(opts ...func(*RoutineQuery)) *RoutineActQuery {
+	query := (&RoutineClient{config: raq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	raq.withDayRoutine = query
+	raq.withRoutine = query
 	return raq
 }
 
@@ -409,10 +409,10 @@ func (raq *RoutineActQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 		_spec       = raq.querySpec()
 		loadedTypes = [2]bool{
 			raq.withAct != nil,
-			raq.withDayRoutine != nil,
+			raq.withRoutine != nil,
 		}
 	)
-	if raq.withAct != nil || raq.withDayRoutine != nil {
+	if raq.withAct != nil || raq.withRoutine != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -442,9 +442,9 @@ func (raq *RoutineActQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 			return nil, err
 		}
 	}
-	if query := raq.withDayRoutine; query != nil {
-		if err := raq.loadDayRoutine(ctx, query, nodes, nil,
-			func(n *RoutineAct, e *DayRoutine) { n.Edges.DayRoutine = e }); err != nil {
+	if query := raq.withRoutine; query != nil {
+		if err := raq.loadRoutine(ctx, query, nodes, nil,
+			func(n *RoutineAct, e *Routine) { n.Edges.Routine = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -483,14 +483,14 @@ func (raq *RoutineActQuery) loadAct(ctx context.Context, query *ActQuery, nodes 
 	}
 	return nil
 }
-func (raq *RoutineActQuery) loadDayRoutine(ctx context.Context, query *DayRoutineQuery, nodes []*RoutineAct, init func(*RoutineAct), assign func(*RoutineAct, *DayRoutine)) error {
+func (raq *RoutineActQuery) loadRoutine(ctx context.Context, query *RoutineQuery, nodes []*RoutineAct, init func(*RoutineAct), assign func(*RoutineAct, *Routine)) error {
 	ids := make([]int64, 0, len(nodes))
 	nodeids := make(map[int64][]*RoutineAct)
 	for i := range nodes {
-		if nodes[i].day_routine_routine_acts == nil {
+		if nodes[i].routine_routine_acts == nil {
 			continue
 		}
-		fk := *nodes[i].day_routine_routine_acts
+		fk := *nodes[i].routine_routine_acts
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -499,7 +499,7 @@ func (raq *RoutineActQuery) loadDayRoutine(ctx context.Context, query *DayRoutin
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(dayroutine.IDIn(ids...))
+	query.Where(routine.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -507,7 +507,7 @@ func (raq *RoutineActQuery) loadDayRoutine(ctx context.Context, query *DayRoutin
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "day_routine_routine_acts" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "routine_routine_acts" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

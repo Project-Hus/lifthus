@@ -24,7 +24,7 @@ func (Program) Fields() []ent.Field {
 		CreatedAtField(),
 
 		CodeRefNillable("parent_program"),
-		field.Int("parent_version").Immutable(),
+		field.Int("parent_version").Optional().Nillable().Immutable(),
 	}
 }
 

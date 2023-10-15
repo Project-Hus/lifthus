@@ -6,10 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"routine/internal/ent/dayroutine"
 	"routine/internal/ent/predicate"
 	"routine/internal/ent/program"
 	"routine/internal/ent/programrelease"
+	"routine/internal/ent/routine"
 	"routine/internal/ent/s3programimage"
 
 	"entgo.io/ent/dialect/sql"
@@ -56,19 +56,19 @@ func (pru *ProgramReleaseUpdate) AddS3ProgramImages(s ...*S3ProgramImage) *Progr
 	return pru.AddS3ProgramImageIDs(ids...)
 }
 
-// AddDayRoutineIDs adds the "day_routines" edge to the DayRoutine entity by IDs.
-func (pru *ProgramReleaseUpdate) AddDayRoutineIDs(ids ...int64) *ProgramReleaseUpdate {
-	pru.mutation.AddDayRoutineIDs(ids...)
+// AddRoutineIDs adds the "routines" edge to the Routine entity by IDs.
+func (pru *ProgramReleaseUpdate) AddRoutineIDs(ids ...int64) *ProgramReleaseUpdate {
+	pru.mutation.AddRoutineIDs(ids...)
 	return pru
 }
 
-// AddDayRoutines adds the "day_routines" edges to the DayRoutine entity.
-func (pru *ProgramReleaseUpdate) AddDayRoutines(d ...*DayRoutine) *ProgramReleaseUpdate {
-	ids := make([]int64, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
+// AddRoutines adds the "routines" edges to the Routine entity.
+func (pru *ProgramReleaseUpdate) AddRoutines(r ...*Routine) *ProgramReleaseUpdate {
+	ids := make([]int64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
 	}
-	return pru.AddDayRoutineIDs(ids...)
+	return pru.AddRoutineIDs(ids...)
 }
 
 // Mutation returns the ProgramReleaseMutation object of the builder.
@@ -103,25 +103,25 @@ func (pru *ProgramReleaseUpdate) RemoveS3ProgramImages(s ...*S3ProgramImage) *Pr
 	return pru.RemoveS3ProgramImageIDs(ids...)
 }
 
-// ClearDayRoutines clears all "day_routines" edges to the DayRoutine entity.
-func (pru *ProgramReleaseUpdate) ClearDayRoutines() *ProgramReleaseUpdate {
-	pru.mutation.ClearDayRoutines()
+// ClearRoutines clears all "routines" edges to the Routine entity.
+func (pru *ProgramReleaseUpdate) ClearRoutines() *ProgramReleaseUpdate {
+	pru.mutation.ClearRoutines()
 	return pru
 }
 
-// RemoveDayRoutineIDs removes the "day_routines" edge to DayRoutine entities by IDs.
-func (pru *ProgramReleaseUpdate) RemoveDayRoutineIDs(ids ...int64) *ProgramReleaseUpdate {
-	pru.mutation.RemoveDayRoutineIDs(ids...)
+// RemoveRoutineIDs removes the "routines" edge to Routine entities by IDs.
+func (pru *ProgramReleaseUpdate) RemoveRoutineIDs(ids ...int64) *ProgramReleaseUpdate {
+	pru.mutation.RemoveRoutineIDs(ids...)
 	return pru
 }
 
-// RemoveDayRoutines removes "day_routines" edges to DayRoutine entities.
-func (pru *ProgramReleaseUpdate) RemoveDayRoutines(d ...*DayRoutine) *ProgramReleaseUpdate {
-	ids := make([]int64, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
+// RemoveRoutines removes "routines" edges to Routine entities.
+func (pru *ProgramReleaseUpdate) RemoveRoutines(r ...*Routine) *ProgramReleaseUpdate {
+	ids := make([]int64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
 	}
-	return pru.RemoveDayRoutineIDs(ids...)
+	return pru.RemoveRoutineIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -245,28 +245,28 @@ func (pru *ProgramReleaseUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if pru.mutation.DayRoutinesCleared() {
+	if pru.mutation.RoutinesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   programrelease.DayRoutinesTable,
-			Columns: []string{programrelease.DayRoutinesColumn},
+			Table:   programrelease.RoutinesTable,
+			Columns: []string{programrelease.RoutinesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dayroutine.FieldID, field.TypeInt64),
+				IDSpec: sqlgraph.NewFieldSpec(routine.FieldID, field.TypeInt64),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pru.mutation.RemovedDayRoutinesIDs(); len(nodes) > 0 && !pru.mutation.DayRoutinesCleared() {
+	if nodes := pru.mutation.RemovedRoutinesIDs(); len(nodes) > 0 && !pru.mutation.RoutinesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   programrelease.DayRoutinesTable,
-			Columns: []string{programrelease.DayRoutinesColumn},
+			Table:   programrelease.RoutinesTable,
+			Columns: []string{programrelease.RoutinesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dayroutine.FieldID, field.TypeInt64),
+				IDSpec: sqlgraph.NewFieldSpec(routine.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -274,15 +274,15 @@ func (pru *ProgramReleaseUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pru.mutation.DayRoutinesIDs(); len(nodes) > 0 {
+	if nodes := pru.mutation.RoutinesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   programrelease.DayRoutinesTable,
-			Columns: []string{programrelease.DayRoutinesColumn},
+			Table:   programrelease.RoutinesTable,
+			Columns: []string{programrelease.RoutinesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dayroutine.FieldID, field.TypeInt64),
+				IDSpec: sqlgraph.NewFieldSpec(routine.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -336,19 +336,19 @@ func (pruo *ProgramReleaseUpdateOne) AddS3ProgramImages(s ...*S3ProgramImage) *P
 	return pruo.AddS3ProgramImageIDs(ids...)
 }
 
-// AddDayRoutineIDs adds the "day_routines" edge to the DayRoutine entity by IDs.
-func (pruo *ProgramReleaseUpdateOne) AddDayRoutineIDs(ids ...int64) *ProgramReleaseUpdateOne {
-	pruo.mutation.AddDayRoutineIDs(ids...)
+// AddRoutineIDs adds the "routines" edge to the Routine entity by IDs.
+func (pruo *ProgramReleaseUpdateOne) AddRoutineIDs(ids ...int64) *ProgramReleaseUpdateOne {
+	pruo.mutation.AddRoutineIDs(ids...)
 	return pruo
 }
 
-// AddDayRoutines adds the "day_routines" edges to the DayRoutine entity.
-func (pruo *ProgramReleaseUpdateOne) AddDayRoutines(d ...*DayRoutine) *ProgramReleaseUpdateOne {
-	ids := make([]int64, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
+// AddRoutines adds the "routines" edges to the Routine entity.
+func (pruo *ProgramReleaseUpdateOne) AddRoutines(r ...*Routine) *ProgramReleaseUpdateOne {
+	ids := make([]int64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
 	}
-	return pruo.AddDayRoutineIDs(ids...)
+	return pruo.AddRoutineIDs(ids...)
 }
 
 // Mutation returns the ProgramReleaseMutation object of the builder.
@@ -383,25 +383,25 @@ func (pruo *ProgramReleaseUpdateOne) RemoveS3ProgramImages(s ...*S3ProgramImage)
 	return pruo.RemoveS3ProgramImageIDs(ids...)
 }
 
-// ClearDayRoutines clears all "day_routines" edges to the DayRoutine entity.
-func (pruo *ProgramReleaseUpdateOne) ClearDayRoutines() *ProgramReleaseUpdateOne {
-	pruo.mutation.ClearDayRoutines()
+// ClearRoutines clears all "routines" edges to the Routine entity.
+func (pruo *ProgramReleaseUpdateOne) ClearRoutines() *ProgramReleaseUpdateOne {
+	pruo.mutation.ClearRoutines()
 	return pruo
 }
 
-// RemoveDayRoutineIDs removes the "day_routines" edge to DayRoutine entities by IDs.
-func (pruo *ProgramReleaseUpdateOne) RemoveDayRoutineIDs(ids ...int64) *ProgramReleaseUpdateOne {
-	pruo.mutation.RemoveDayRoutineIDs(ids...)
+// RemoveRoutineIDs removes the "routines" edge to Routine entities by IDs.
+func (pruo *ProgramReleaseUpdateOne) RemoveRoutineIDs(ids ...int64) *ProgramReleaseUpdateOne {
+	pruo.mutation.RemoveRoutineIDs(ids...)
 	return pruo
 }
 
-// RemoveDayRoutines removes "day_routines" edges to DayRoutine entities.
-func (pruo *ProgramReleaseUpdateOne) RemoveDayRoutines(d ...*DayRoutine) *ProgramReleaseUpdateOne {
-	ids := make([]int64, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
+// RemoveRoutines removes "routines" edges to Routine entities.
+func (pruo *ProgramReleaseUpdateOne) RemoveRoutines(r ...*Routine) *ProgramReleaseUpdateOne {
+	ids := make([]int64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
 	}
-	return pruo.RemoveDayRoutineIDs(ids...)
+	return pruo.RemoveRoutineIDs(ids...)
 }
 
 // Where appends a list predicates to the ProgramReleaseUpdate builder.
@@ -555,28 +555,28 @@ func (pruo *ProgramReleaseUpdateOne) sqlSave(ctx context.Context) (_node *Progra
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if pruo.mutation.DayRoutinesCleared() {
+	if pruo.mutation.RoutinesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   programrelease.DayRoutinesTable,
-			Columns: []string{programrelease.DayRoutinesColumn},
+			Table:   programrelease.RoutinesTable,
+			Columns: []string{programrelease.RoutinesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dayroutine.FieldID, field.TypeInt64),
+				IDSpec: sqlgraph.NewFieldSpec(routine.FieldID, field.TypeInt64),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pruo.mutation.RemovedDayRoutinesIDs(); len(nodes) > 0 && !pruo.mutation.DayRoutinesCleared() {
+	if nodes := pruo.mutation.RemovedRoutinesIDs(); len(nodes) > 0 && !pruo.mutation.RoutinesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   programrelease.DayRoutinesTable,
-			Columns: []string{programrelease.DayRoutinesColumn},
+			Table:   programrelease.RoutinesTable,
+			Columns: []string{programrelease.RoutinesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dayroutine.FieldID, field.TypeInt64),
+				IDSpec: sqlgraph.NewFieldSpec(routine.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -584,15 +584,15 @@ func (pruo *ProgramReleaseUpdateOne) sqlSave(ctx context.Context) (_node *Progra
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pruo.mutation.DayRoutinesIDs(); len(nodes) > 0 {
+	if nodes := pruo.mutation.RoutinesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   programrelease.DayRoutinesTable,
-			Columns: []string{programrelease.DayRoutinesColumn},
+			Table:   programrelease.RoutinesTable,
+			Columns: []string{programrelease.RoutinesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dayroutine.FieldID, field.TypeInt64),
+				IDSpec: sqlgraph.NewFieldSpec(routine.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

@@ -22,8 +22,8 @@ const (
 	EdgeProgram = "program"
 	// EdgeS3ProgramImages holds the string denoting the s3_program_images edge name in mutations.
 	EdgeS3ProgramImages = "s3_program_images"
-	// EdgeDayRoutines holds the string denoting the day_routines edge name in mutations.
-	EdgeDayRoutines = "day_routines"
+	// EdgeRoutines holds the string denoting the routines edge name in mutations.
+	EdgeRoutines = "routines"
 	// Table holds the table name of the programrelease in the database.
 	Table = "program_releases"
 	// ProgramTable is the table that holds the program relation/edge.
@@ -40,13 +40,13 @@ const (
 	S3ProgramImagesInverseTable = "s3program_images"
 	// S3ProgramImagesColumn is the table column denoting the s3_program_images relation/edge.
 	S3ProgramImagesColumn = "program_release_id"
-	// DayRoutinesTable is the table that holds the day_routines relation/edge.
-	DayRoutinesTable = "day_routines"
-	// DayRoutinesInverseTable is the table name for the DayRoutine entity.
-	// It exists in this package in order to avoid circular dependency with the "dayroutine" package.
-	DayRoutinesInverseTable = "day_routines"
-	// DayRoutinesColumn is the table column denoting the day_routines relation/edge.
-	DayRoutinesColumn = "program_release_day_routines"
+	// RoutinesTable is the table that holds the routines relation/edge.
+	RoutinesTable = "routines"
+	// RoutinesInverseTable is the table name for the Routine entity.
+	// It exists in this package in order to avoid circular dependency with the "routine" package.
+	RoutinesInverseTable = "routines"
+	// RoutinesColumn is the table column denoting the routines relation/edge.
+	RoutinesColumn = "program_release_routines"
 )
 
 // Columns holds all SQL columns for programrelease fields.
@@ -122,17 +122,17 @@ func ByS3ProgramImages(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByDayRoutinesCount orders the results by day_routines count.
-func ByDayRoutinesCount(opts ...sql.OrderTermOption) OrderOption {
+// ByRoutinesCount orders the results by routines count.
+func ByRoutinesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newDayRoutinesStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newRoutinesStep(), opts...)
 	}
 }
 
-// ByDayRoutines orders the results by day_routines terms.
-func ByDayRoutines(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByRoutines orders the results by routines terms.
+func ByRoutines(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newDayRoutinesStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newRoutinesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newProgramStep() *sqlgraph.Step {
@@ -149,10 +149,10 @@ func newS3ProgramImagesStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, false, S3ProgramImagesTable, S3ProgramImagesColumn),
 	)
 }
-func newDayRoutinesStep() *sqlgraph.Step {
+func newRoutinesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(DayRoutinesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, DayRoutinesTable, DayRoutinesColumn),
+		sqlgraph.To(RoutinesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, RoutinesTable, RoutinesColumn),
 	)
 }

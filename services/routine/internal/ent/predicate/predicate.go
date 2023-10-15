@@ -9,14 +9,14 @@ import (
 // Act is the predicate function for act builders.
 type Act func(*sql.Selector)
 
-// DayRoutine is the predicate function for dayroutine builders.
-type DayRoutine func(*sql.Selector)
-
 // Program is the predicate function for program builders.
 type Program func(*sql.Selector)
 
 // ProgramRelease is the predicate function for programrelease builders.
 type ProgramRelease func(*sql.Selector)
+
+// Routine is the predicate function for routine builders.
+type Routine func(*sql.Selector)
 
 // RoutineAct is the predicate function for routineact builders.
 type RoutineAct func(*sql.Selector)
