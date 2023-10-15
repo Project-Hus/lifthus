@@ -19,17 +19,18 @@ func (Program) Fields() []ent.Field {
 		CodeField(),
 
 		field.Enum("program_type").Values(ProgramType...).Immutable(),
-		field.String("title").NotEmpty().Annotations(entsql.Annotation{Size: 50}).Immutable(),
-		field.Uint64("author").Immutable(),
+		field.String("title").NotEmpty().Annotations(entsql.Annotation{Size: 100}).Immutable(),
+		field.Int64("author").Immutable(),
 		CreatedAtField(),
 
-		CodeRefNillable("version_derived_from"),
+		CodeRefNillable("parent_program"),
+		field.Int("parent_version").Immutable(),
 	}
 }
 
 // Edges of the Program.
 func (Program) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("program_versions", ProgramVersion.Type),
+		edge.To("program_releases", ProgramRelease.Type),
 	}
 }
