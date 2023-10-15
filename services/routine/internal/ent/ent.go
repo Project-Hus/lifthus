@@ -8,14 +8,13 @@ import (
 	"fmt"
 	"reflect"
 	"routine/internal/ent/act"
-	"routine/internal/ent/actimage"
-	"routine/internal/ent/actversion"
-	"routine/internal/ent/dailyroutine"
-	"routine/internal/ent/image"
 	"routine/internal/ent/program"
-	"routine/internal/ent/programimage"
-	"routine/internal/ent/programversion"
+	"routine/internal/ent/programrelease"
+	"routine/internal/ent/routine"
 	"routine/internal/ent/routineact"
+	"routine/internal/ent/s3actimage"
+	"routine/internal/ent/s3image"
+	"routine/internal/ent/s3programimage"
 	"sync"
 
 	"entgo.io/ent"
@@ -82,14 +81,13 @@ func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			act.Table:            act.ValidColumn,
-			actimage.Table:       actimage.ValidColumn,
-			actversion.Table:     actversion.ValidColumn,
-			dailyroutine.Table:   dailyroutine.ValidColumn,
-			image.Table:          image.ValidColumn,
 			program.Table:        program.ValidColumn,
-			programimage.Table:   programimage.ValidColumn,
-			programversion.Table: programversion.ValidColumn,
+			programrelease.Table: programrelease.ValidColumn,
+			routine.Table:        routine.ValidColumn,
 			routineact.Table:     routineact.ValidColumn,
+			s3actimage.Table:     s3actimage.ValidColumn,
+			s3image.Table:        s3image.ValidColumn,
+			s3programimage.Table: s3programimage.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

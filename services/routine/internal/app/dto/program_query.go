@@ -7,82 +7,76 @@ import (
 )
 
 func QueryProgramDtoFrom(p *program.Program) *QueryProgramDto {
-	author := strconv.FormatUint(uint64(p.Author()), 10)
-	versions := QueryProgramVersionsDtoFrom(p.Versions())
+	author := strconv.FormatInt(int64(p.Author()), 10)
+	versions := QueryProgramReleasesDtoFrom(p.Releases())
 	return &QueryProgramDto{
-		Code:        string(p.Code()),
-		ProgramType: string(p.ProgramType().Type()),
-		Title:       string(p.Title()),
-		Author:      author,
-		CreatedAt:   time.Time(p.CreatedAt()).String(),
-		DerivedFrom: (*string)(p.DerivedFrom()),
-		Versions:    versions,
+		Code:              string(p.Code()),
+		ProgramType:       string(p.ProgramType().Type()),
+		Title:             string(p.Title()),
+		Author:            author,
+		CreatedAt:         time.Time(p.CreatedAt()).String(),
+		ParentProgramCode: (*string)(&p.ParentProgramVersion().ProgramCode),
+		ParentVersion:     (*int)(&p.ParentProgramVersion().ProgramVersionNumber),
+		Releases:          versions,
 	}
 }
 
 type QueryProgramDto struct {
-	Code        string                    `json:"code"`
-	ProgramType string                    `json:"programType"`
-	Title       string                    `json:"title"`
-	Author      string                    `json:"author"`
-	CreatedAt   string                    `json:"createdAt"`
-	DerivedFrom *string                   `json:"derivedFrom"`
-	Versions    []*QueryProgramVersionDto `json:"versions"`
+	Code              string                    `json:"code"`
+	ProgramType       string                    `json:"programType"`
+	Title             string                    `json:"title"`
+	Author            string                    `json:"author"`
+	CreatedAt         string                    `json:"createdAt"`
+	ParentProgramCode *string                   `json:"parentProgramCode,omitempty"`
+	ParentVersion     *int                      `json:"parentVersion,omitempty"`
+	Releases          []*QueryProgramReleaseDto `json:"versions"`
 }
 
-func QueryProgramVersionsDtoFrom(pvs []*program.ProgramVersion) []*QueryProgramVersionDto {
-	qpvs := make([]*QueryProgramVersionDto, len(pvs))
+func QueryProgramReleasesDtoFrom(pvs []*program.ProgramRelease) []*QueryProgramReleaseDto {
+	qpvs := make([]*QueryProgramReleaseDto, len(pvs))
 	for i, pv := range pvs {
-		qpvs[i] = QueryProgramVersionDtoFrom(pv)
+		qpvs[i] = QueryProgramReleaseDtoFrom(pv)
 	}
 	return qpvs
 }
 
-func QueryProgramVersionDtoFrom(pv *program.ProgramVersion) *QueryProgramVersionDto {
-	qdrs := QueryDailyRoutinesDtoFrom(pv.DailyRoutines())
-	return &QueryProgramVersionDto{
-		Code:          string(pv.Code()),
-		ProgramCode:   string(pv.Program()),
-		Version:       uint(pv.Version()),
-		CreatedAt:     time.Time(pv.CreatedAt()).String(),
-		ImageSrcs:     pv.ImageSrcs(),
-		Text:          string(pv.Text()),
-		DailyRoutines: qdrs,
+func QueryProgramReleaseDtoFrom(pv *program.ProgramRelease) *QueryProgramReleaseDto {
+	qdrs := QueryRoutinesDtoFrom(pv.Routines())
+	return &QueryProgramReleaseDto{
+		Version:   int(pv.Version()),
+		CreatedAt: time.Time(pv.CreatedAt()).String(),
+		Text:      string(pv.Text()),
+		ImageSrcs: pv.ImageSrcs(),
+		Routines:  qdrs,
 	}
 }
 
-type QueryProgramVersionDto struct {
-	Code          string                  `json:"code"`
-	ProgramCode   string                  `json:"programCode"`
-	Version       uint                    `json:"version"`
-	CreatedAt     string                  `json:"createdAt"`
-	ImageSrcs     []string                `json:"imageSrcs"`
-	Text          string                  `json:"text"`
-	DailyRoutines []*QueryDailyRoutineDto `json:"dailyRoutines"`
+type QueryProgramReleaseDto struct {
+	Version   int                `json:"version"`
+	CreatedAt string             `json:"createdAt"`
+	Text      string             `json:"text"`
+	ImageSrcs []string           `json:"imageSrcs"`
+	Routines  []*QueryRoutineDto `json:"routines"`
 }
 
-func QueryDailyRoutinesDtoFrom(drs []*program.DailyRoutine) []*QueryDailyRoutineDto {
-	qdrs := make([]*QueryDailyRoutineDto, len(drs))
+func QueryRoutinesDtoFrom(drs []*program.Routine) []*QueryRoutineDto {
+	qdrs := make([]*QueryRoutineDto, len(drs))
 	for i, dr := range drs {
-		qdrs[i] = QueryDailyRoutineDtoFrom(dr)
+		qdrs[i] = QueryRoutineDtoFrom(dr)
 	}
 	return qdrs
 }
 
-func QueryDailyRoutineDtoFrom(dr *program.DailyRoutine) *QueryDailyRoutineDto {
+func QueryRoutineDtoFrom(dr *program.Routine) *QueryRoutineDto {
 	qras := QueryRoutineActsDtoFrom(dr.RoutineActs())
-	return &QueryDailyRoutineDto{
-		Code:        string(dr.Code()),
-		VersionCode: string(dr.Version()),
-		Day:         uint(dr.Day()),
+	return &QueryRoutineDto{
+		Day:         int(dr.Day()),
 		RoutineActs: qras,
 	}
 }
 
-type QueryDailyRoutineDto struct {
-	Code        string                `json:"code"`
-	VersionCode string                `json:"versionCode"`
-	Day         uint                  `json:"day"`
+type QueryRoutineDto struct {
+	Day         int                   `json:"day"`
 	RoutineActs []*QueryRoutineActDto `json:"routineActs"`
 }
 
@@ -96,20 +90,18 @@ func QueryRoutineActsDtoFrom(ras []*program.RoutineAct) []*QueryRoutineActDto {
 
 func QueryRoutineActDtoFrom(ra *program.RoutineAct) *QueryRoutineActDto {
 	return &QueryRoutineActDto{
-		DailyRoutineCode: string(ra.DailyRoutine()),
-		Order:            uint(ra.Order()),
-		ActVersionCode:   string(ra.ActVersion()),
-		Stage:            ra.Stage().Type(),
-		RepsOrMeters:     uint(ra.RepsOrMeters()),
-		RatioOrSecs:      float64(ra.RatioOrSecs()),
+		Order:        int(ra.Order()),
+		ActCode:      string(ra.Act()),
+		Stage:        ra.Stage().Type(),
+		RepsOrMeters: int(ra.RepsOrMeters()),
+		RatioOrSecs:  float64(ra.RatioOrSecs()),
 	}
 }
 
 type QueryRoutineActDto struct {
-	DailyRoutineCode string  `json:"dailyRoutineCode"`
-	Order            uint    `json:"order"`
-	ActVersionCode   string  `json:"actVersionCode"`
-	Stage            string  `json:"stage"`
-	RepsOrMeters     uint    `json:"repsOrMeters"`
-	RatioOrSecs      float64 `json:"ratioOrSecs"`
+	Order        int     `json:"order"`
+	ActCode      string  `json:"actCode"`
+	Stage        string  `json:"stage"`
+	RepsOrMeters int     `json:"repsOrMeters"`
+	RatioOrSecs  float64 `json:"ratioOrSecs"`
 }

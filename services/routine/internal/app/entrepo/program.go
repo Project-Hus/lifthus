@@ -4,11 +4,11 @@ import (
 	"context"
 	"routine/internal/domain/aggregates/program"
 	"routine/internal/ent"
-	"routine/internal/ent/dailyroutine"
 	eprogram "routine/internal/ent/program"
-	"routine/internal/ent/programimage"
-	eprogramversion "routine/internal/ent/programversion"
+	"routine/internal/ent/programrelease"
+	"routine/internal/ent/routine"
 	"routine/internal/ent/routineact"
+	"routine/internal/ent/s3programimage"
 	"routine/internal/repository"
 )
 
@@ -27,18 +27,18 @@ func (repo *EntProgramRepository) FindProgramByCode(ctx context.Context, code pr
 		return nil, err
 	}
 	ep, err := tx.Program.Query().Where(eprogram.Code(string(code))).
-		WithProgramVersions(
-			func(q *ent.ProgramVersionQuery) {
-				q.Order(ent.Asc(eprogramversion.FieldVersion))
-				q.WithProgramImages(
-					func(q *ent.ProgramImageQuery) {
-						q.Order(ent.Asc(programimage.FieldOrder))
-						q.WithImage()
+		WithProgramReleases(
+			func(q *ent.ProgramReleaseQuery) {
+				q.Order(ent.Asc(programrelease.FieldVersion))
+				q.WithS3ProgramImages(
+					func(q *ent.S3ProgramImageQuery) {
+						q.Order(ent.Asc(s3programimage.FieldOrder))
+						q.WithS3Image()
 					},
 				)
-				q.WithDailyRoutines(
-					func(q *ent.DailyRoutineQuery) {
-						q.Order(ent.Asc(dailyroutine.FieldDay))
+				q.WithRoutines(
+					func(q *ent.RoutineQuery) {
+						q.Order(ent.Asc(routine.FieldDay))
 						q.WithRoutineActs(
 							func(q *ent.RoutineActQuery) {
 								q.Order(ent.Asc(routineact.FieldOrder))

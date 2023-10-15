@@ -12,37 +12,43 @@ import (
 )
 
 func ProgramFromEntProgram(ep *ent.Program) (*program.Program, error) {
-	switch ep.ProgramType {
-	case eprogram.ProgramTypeWeekly:
-		author := user.UserFrom(user.UserId(ep.Author))
-		if ep.Edges.ProgramVersions == nil {
-			return nil, fmt.Errorf("program versions not found")
-		}
-		versions, err := VersionsFromEnt(ep.Edges.ProgramVersions)
-		if err != nil {
-			return nil, err
-		}
-		p, err := program.WeeklyProgramFrom(
-			program.ProgramCode(ep.Code),
-			program.ProgramTitle(ep.Title),
-			*author,
-			domain.CreatedAt(ep.CreatedAt),
-			(*program.ProgramVersionCode)(ep.VersionDerivedFrom),
-			versions,
-		)
-		if err != nil {
-			return nil, err
-		}
-		return p, nil
-	default:
-		return nil, fmt.Errorf("unknown program type: %s", ep.ProgramType)
+	programType, err := program.MapProgramType(string(ep.ProgramType))
+	if err != nil {
+		return nil, err
 	}
+	if ep.Edges.ProgramReleases == nil {
+		return nil, fmt.Errorf("program releases not found")
+	}
+	rels, err := ReleasesFromEnt(ep.Edges.ProgramReleases)
+	if err != nil {
+		return nil, err
+	}
+	var parent *program.ParentProgramVersion
+	if ep.ParentProgram != nil {
+		parent = &program.ParentProgramVersion{
+			ProgramCode:          program.ProgramCode(*ep.ParentProgram),
+			ProgramVersionNumber: program.ProgramVersionNumber(*ep.ParentVersion),
+		}
+	}
+	p, err := program.ProgramFrom(
+		program.ProgramCode(ep.Code),
+		*programType,
+		program.ProgramTitle(ep.Title),
+		user.UserId(ep.Author),
+		domain.CreatedAt(ep.CreatedAt),
+		parent,
+		rels,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return p, nil
 }
 
-func VersionsFromEnt(epvs []*ent.ProgramVersion) (pvs []*program.ProgramVersion, err error) {
-	pvs = make([]*program.ProgramVersion, len(epvs))
+func ReleasesFromEnt(epvs []*ent.ProgramRelease) (pvs []*program.ProgramRelease, err error) {
+	pvs = make([]*program.ProgramRelease, len(epvs))
 	for i, epv := range epvs {
-		pv, err := VersionFromEnt(epv)
+		pv, err := ReleaseFromEnt(epv)
 		if err != nil {
 			return nil, err
 		}
@@ -51,31 +57,29 @@ func VersionsFromEnt(epvs []*ent.ProgramVersion) (pvs []*program.ProgramVersion,
 	return pvs, nil
 }
 
-func VersionFromEnt(epv *ent.ProgramVersion) (*program.ProgramVersion, error) {
-	if epv.Edges.DailyRoutines == nil {
+func ReleaseFromEnt(epr *ent.ProgramRelease) (*program.ProgramRelease, error) {
+	if epr.Edges.Routines == nil {
 		return nil, fmt.Errorf("daily routines not found")
 	}
-	if epv.Edges.ProgramImages == nil {
+	if epr.Edges.S3ProgramImages == nil {
 		return nil, fmt.Errorf("program images not found")
 	}
-	drs, err := DailyRoutinesFromEnt(epv.Edges.DailyRoutines)
+	rs, err := RoutinesFromEnt(epr.Edges.Routines)
 	if err != nil {
 		return nil, err
 	}
 
-	pvimgs, err := ImagesFromProgramImages(epv.Edges.ProgramImages)
+	rimgs, err := ImageSrcsFromEnt(epr.Edges.S3ProgramImages)
 	if err != nil {
 		return nil, err
 	}
 
-	pv, err := program.ProgramVersionFrom(
-		program.ProgramVersionCode(epv.Code),
-		program.ProgramCode(epv.ProgramCode),
-		program.ProgramVersionNumber(epv.Version),
-		domain.CreatedAt(epv.CreatedAt),
-		pvimgs,
-		program.ProgramText(epv.Text),
-		drs,
+	pv, err := program.ProgramReleaseFrom(
+		program.ProgramVersionNumber(epr.Version),
+		domain.CreatedAt(epr.CreatedAt),
+		rimgs,
+		program.ProgramText(epr.Text),
+		rs,
 	)
 	if err != nil {
 		return nil, err
@@ -83,21 +87,21 @@ func VersionFromEnt(epv *ent.ProgramVersion) (*program.ProgramVersion, error) {
 	return pv, nil
 }
 
-func ImagesFromProgramImages(epis []*ent.ProgramImage) (program.ProgramImageSrcs, error) {
+func ImageSrcsFromEnt(epis []*ent.S3ProgramImage) (program.ProgramImageSrcs, error) {
 	imgs := make(program.ProgramImageSrcs, len(epis))
 	for i, epi := range epis {
-		if epi.Edges.Image == nil {
+		if epi.Edges.S3Image == nil {
 			return nil, fmt.Errorf("image not found")
 		}
-		imgs[i] = epi.Edges.Image.Src
+		imgs[i] = epi.Edges.S3Image.Src
 	}
 	return imgs, nil
 }
 
-func DailyRoutinesFromEnt(edrs []*ent.DailyRoutine) ([]*program.DailyRoutine, error) {
-	drs := make([]*program.DailyRoutine, len(edrs))
+func RoutinesFromEnt(edrs []*ent.Routine) ([]*program.Routine, error) {
+	drs := make([]*program.Routine, len(edrs))
 	for i, edr := range edrs {
-		dr, err := DailyRoutineFromEnt(edr)
+		dr, err := RoutineFromEnt(edr)
 		if err != nil {
 			return nil, err
 		}
@@ -106,18 +110,16 @@ func DailyRoutinesFromEnt(edrs []*ent.DailyRoutine) ([]*program.DailyRoutine, er
 	return drs, nil
 }
 
-func DailyRoutineFromEnt(edr *ent.DailyRoutine) (*program.DailyRoutine, error) {
+func RoutineFromEnt(edr *ent.Routine) (*program.Routine, error) {
 	if edr.Edges.RoutineActs == nil {
 		return nil, fmt.Errorf("routine acts not found")
 	}
-	ras, err := RoutineActsFromEnt(edr.Code, edr.Edges.RoutineActs)
+	ras, err := RoutineActsFromEnt(edr.Edges.RoutineActs)
 	if err != nil {
 		return nil, err
 	}
-	dr, err := program.DailyRoutineFrom(
-		program.DailyRoutineCode(edr.Code),
-		program.ProgramVersionCode(edr.ProgramVersionCode),
-		program.DailyRoutineDay(edr.Day),
+	dr, err := program.RoutineFrom(
+		program.RoutineDay(edr.Day),
 		ras,
 	)
 	if err != nil {
@@ -126,10 +128,10 @@ func DailyRoutineFromEnt(edr *ent.DailyRoutine) (*program.DailyRoutine, error) {
 	return dr, nil
 }
 
-func RoutineActsFromEnt(drcode string, eras []*ent.RoutineAct) ([]*program.RoutineAct, error) {
+func RoutineActsFromEnt(eras []*ent.RoutineAct) ([]*program.RoutineAct, error) {
 	ras := make([]*program.RoutineAct, len(eras))
 	for i, era := range eras {
-		ra, err := RoutineActFromEnt(drcode, era)
+		ra, err := RoutineActFromEnt(era)
 		if err != nil {
 			return nil, err
 		}
@@ -138,15 +140,14 @@ func RoutineActsFromEnt(drcode string, eras []*ent.RoutineAct) ([]*program.Routi
 	return ras, nil
 }
 
-func RoutineActFromEnt(drcode string, era *ent.RoutineAct) (*program.RoutineAct, error) {
+func RoutineActFromEnt(era *ent.RoutineAct) (*program.RoutineAct, error) {
 	stage, err := StageFromEntStage(era.Stage)
 	if err != nil {
 		return nil, err
 	}
 	ra := program.RoutineActFrom(
-		program.DailyRoutineCode(drcode),
 		program.RoutineActOrder(era.Order),
-		act.ActVersionCode(era.ActVersionCode),
+		act.ActCode(era.ActCode),
 		stage,
 		program.RepsOrMeters(era.RepsOrMeters),
 		program.RatioOrSecs(era.RatioOrSecs),
@@ -174,6 +175,8 @@ func entProgramTypeFrom(pt string) (eprogram.ProgramType, error) {
 	switch pt {
 	case program.WEEKLY:
 		return eprogram.ProgramTypeWeekly, nil
+	case program.DAILY:
+		return eprogram.ProgramTypeDaily, nil
 	default:
 		return "", fmt.Errorf("unknown program type: %s", pt)
 	}

@@ -26,9 +26,11 @@ func (Act) Fields() []ent.Field {
 	return []ent.Field{
 		IdField(),
 		CodeField(),
+		field.Int64("author"),
 		field.Enum("act_type").Values(ActType...).Immutable(),
 		field.String("name").NotEmpty().Annotations(entsql.Annotation{Size: 50}).Immutable(),
-		field.Uint64("author"),
+		field.Text("text"),
+		field.Bool("standard").Default(false),
 		CreatedAtField(),
 	}
 }
@@ -36,6 +38,7 @@ func (Act) Fields() []ent.Field {
 // Edges of the Act.
 func (Act) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("act_versions", ActVersion.Type),
+		edge.To("s3_act_images", S3ActImage.Type),
+		edge.To("routine_acts", RoutineAct.Type),
 	}
 }

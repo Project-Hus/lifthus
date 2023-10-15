@@ -9,7 +9,7 @@ import (
 	"math"
 	"routine/internal/ent/predicate"
 	"routine/internal/ent/program"
-	"routine/internal/ent/programversion"
+	"routine/internal/ent/programrelease"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -23,7 +23,7 @@ type ProgramQuery struct {
 	order               []program.OrderOption
 	inters              []Interceptor
 	predicates          []predicate.Program
-	withProgramVersions *ProgramVersionQuery
+	withProgramReleases *ProgramReleaseQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -60,9 +60,9 @@ func (pq *ProgramQuery) Order(o ...program.OrderOption) *ProgramQuery {
 	return pq
 }
 
-// QueryProgramVersions chains the current query on the "program_versions" edge.
-func (pq *ProgramQuery) QueryProgramVersions() *ProgramVersionQuery {
-	query := (&ProgramVersionClient{config: pq.config}).Query()
+// QueryProgramReleases chains the current query on the "program_releases" edge.
+func (pq *ProgramQuery) QueryProgramReleases() *ProgramReleaseQuery {
+	query := (&ProgramReleaseClient{config: pq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := pq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -73,8 +73,8 @@ func (pq *ProgramQuery) QueryProgramVersions() *ProgramVersionQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(program.Table, program.FieldID, selector),
-			sqlgraph.To(programversion.Table, programversion.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, program.ProgramVersionsTable, program.ProgramVersionsColumn),
+			sqlgraph.To(programrelease.Table, programrelease.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, program.ProgramReleasesTable, program.ProgramReleasesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -106,8 +106,8 @@ func (pq *ProgramQuery) FirstX(ctx context.Context) *Program {
 
 // FirstID returns the first Program ID from the query.
 // Returns a *NotFoundError when no Program ID was found.
-func (pq *ProgramQuery) FirstID(ctx context.Context) (id uint64, err error) {
-	var ids []uint64
+func (pq *ProgramQuery) FirstID(ctx context.Context) (id int64, err error) {
+	var ids []int64
 	if ids, err = pq.Limit(1).IDs(setContextOp(ctx, pq.ctx, "FirstID")); err != nil {
 		return
 	}
@@ -119,7 +119,7 @@ func (pq *ProgramQuery) FirstID(ctx context.Context) (id uint64, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (pq *ProgramQuery) FirstIDX(ctx context.Context) uint64 {
+func (pq *ProgramQuery) FirstIDX(ctx context.Context) int64 {
 	id, err := pq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -157,8 +157,8 @@ func (pq *ProgramQuery) OnlyX(ctx context.Context) *Program {
 // OnlyID is like Only, but returns the only Program ID in the query.
 // Returns a *NotSingularError when more than one Program ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (pq *ProgramQuery) OnlyID(ctx context.Context) (id uint64, err error) {
-	var ids []uint64
+func (pq *ProgramQuery) OnlyID(ctx context.Context) (id int64, err error) {
+	var ids []int64
 	if ids, err = pq.Limit(2).IDs(setContextOp(ctx, pq.ctx, "OnlyID")); err != nil {
 		return
 	}
@@ -174,7 +174,7 @@ func (pq *ProgramQuery) OnlyID(ctx context.Context) (id uint64, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (pq *ProgramQuery) OnlyIDX(ctx context.Context) uint64 {
+func (pq *ProgramQuery) OnlyIDX(ctx context.Context) int64 {
 	id, err := pq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -202,7 +202,7 @@ func (pq *ProgramQuery) AllX(ctx context.Context) []*Program {
 }
 
 // IDs executes the query and returns a list of Program IDs.
-func (pq *ProgramQuery) IDs(ctx context.Context) (ids []uint64, err error) {
+func (pq *ProgramQuery) IDs(ctx context.Context) (ids []int64, err error) {
 	if pq.ctx.Unique == nil && pq.path != nil {
 		pq.Unique(true)
 	}
@@ -214,7 +214,7 @@ func (pq *ProgramQuery) IDs(ctx context.Context) (ids []uint64, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (pq *ProgramQuery) IDsX(ctx context.Context) []uint64 {
+func (pq *ProgramQuery) IDsX(ctx context.Context) []int64 {
 	ids, err := pq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -274,21 +274,21 @@ func (pq *ProgramQuery) Clone() *ProgramQuery {
 		order:               append([]program.OrderOption{}, pq.order...),
 		inters:              append([]Interceptor{}, pq.inters...),
 		predicates:          append([]predicate.Program{}, pq.predicates...),
-		withProgramVersions: pq.withProgramVersions.Clone(),
+		withProgramReleases: pq.withProgramReleases.Clone(),
 		// clone intermediate query.
 		sql:  pq.sql.Clone(),
 		path: pq.path,
 	}
 }
 
-// WithProgramVersions tells the query-builder to eager-load the nodes that are connected to
-// the "program_versions" edge. The optional arguments are used to configure the query builder of the edge.
-func (pq *ProgramQuery) WithProgramVersions(opts ...func(*ProgramVersionQuery)) *ProgramQuery {
-	query := (&ProgramVersionClient{config: pq.config}).Query()
+// WithProgramReleases tells the query-builder to eager-load the nodes that are connected to
+// the "program_releases" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *ProgramQuery) WithProgramReleases(opts ...func(*ProgramReleaseQuery)) *ProgramQuery {
+	query := (&ProgramReleaseClient{config: pq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	pq.withProgramVersions = query
+	pq.withProgramReleases = query
 	return pq
 }
 
@@ -371,7 +371,7 @@ func (pq *ProgramQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Prog
 		nodes       = []*Program{}
 		_spec       = pq.querySpec()
 		loadedTypes = [1]bool{
-			pq.withProgramVersions != nil,
+			pq.withProgramReleases != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -392,19 +392,19 @@ func (pq *ProgramQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Prog
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := pq.withProgramVersions; query != nil {
-		if err := pq.loadProgramVersions(ctx, query, nodes,
-			func(n *Program) { n.Edges.ProgramVersions = []*ProgramVersion{} },
-			func(n *Program, e *ProgramVersion) { n.Edges.ProgramVersions = append(n.Edges.ProgramVersions, e) }); err != nil {
+	if query := pq.withProgramReleases; query != nil {
+		if err := pq.loadProgramReleases(ctx, query, nodes,
+			func(n *Program) { n.Edges.ProgramReleases = []*ProgramRelease{} },
+			func(n *Program, e *ProgramRelease) { n.Edges.ProgramReleases = append(n.Edges.ProgramReleases, e) }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (pq *ProgramQuery) loadProgramVersions(ctx context.Context, query *ProgramVersionQuery, nodes []*Program, init func(*Program), assign func(*Program, *ProgramVersion)) error {
+func (pq *ProgramQuery) loadProgramReleases(ctx context.Context, query *ProgramReleaseQuery, nodes []*Program, init func(*Program), assign func(*Program, *ProgramRelease)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uint64]*Program)
+	nodeids := make(map[int64]*Program)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
@@ -413,21 +413,21 @@ func (pq *ProgramQuery) loadProgramVersions(ctx context.Context, query *ProgramV
 		}
 	}
 	query.withFKs = true
-	query.Where(predicate.ProgramVersion(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(program.ProgramVersionsColumn), fks...))
+	query.Where(predicate.ProgramRelease(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(program.ProgramReleasesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.program_program_versions
+		fk := n.program_program_releases
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "program_program_versions" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "program_program_releases" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "program_program_versions" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "program_program_releases" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -444,7 +444,7 @@ func (pq *ProgramQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (pq *ProgramQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(program.Table, program.Columns, sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64))
+	_spec := sqlgraph.NewQuerySpec(program.Table, program.Columns, sqlgraph.NewFieldSpec(program.FieldID, field.TypeInt64))
 	_spec.From = pq.sql
 	if unique := pq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

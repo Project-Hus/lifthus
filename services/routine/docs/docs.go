@@ -79,32 +79,6 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/act/upgrade": {
-            "post": {
-                "tags": [
-                    "act"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "lifthus_st",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "upgrade act dto",
-                        "name": "upgradeActDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpgradeActRequestDto"
-                        }
-                    }
-                ],
-                "responses": {}
-            }
-        },
         "/acts": {
             "get": {
                 "tags": [
@@ -234,20 +208,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CreateProgramRequestDailyRoutineDto": {
-            "type": "object",
-            "properties": {
-                "day": {
-                    "type": "integer"
-                },
-                "routineActs": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.CreateProgramRequestRoutineActDto"
-                    }
-                }
-            }
-        },
         "dto.CreateProgramRequestDto": {
             "type": "object",
             "properties": {
@@ -257,17 +217,20 @@ const docTemplate = `{
                 "dailyRoutines": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.CreateProgramRequestDailyRoutineDto"
+                        "$ref": "#/definitions/dto.CreateProgramRequestRoutineDto"
                     }
-                },
-                "derivedFrom": {
-                    "type": "string"
                 },
                 "imageSrcs": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
+                },
+                "parentProgram": {
+                    "type": "string"
+                },
+                "parentVersion": {
+                    "type": "integer"
                 },
                 "programType": {
                     "type": "string"
@@ -283,7 +246,7 @@ const docTemplate = `{
         "dto.CreateProgramRequestRoutineActDto": {
             "type": "object",
             "properties": {
-                "actVersion": {
+                "actCode": {
                     "type": "string"
                 },
                 "order": {
@@ -300,20 +263,17 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UpgradeActRequestDto": {
+        "dto.CreateProgramRequestRoutineDto": {
             "type": "object",
             "properties": {
-                "actCode": {
-                    "type": "string"
+                "day": {
+                    "type": "integer"
                 },
-                "imageSrcs": {
+                "routineActs": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/dto.CreateProgramRequestRoutineActDto"
                     }
-                },
-                "text": {
-                    "type": "string"
                 }
             }
         }

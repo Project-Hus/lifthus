@@ -22,7 +22,7 @@ func (text ActText) IsValid() bool {
 	return len(text) <= TEXT_MAX_LENGTH && len(text) >= TEXT_MIN_LENGTH
 }
 
-func (ut ActUpgradeTargets) IsValid() bool {
+func (ut ActUpdateTargets) IsValid() bool {
 	if ut.ImageSrcs != nil && !ut.ImageSrcs.IsValid() {
 		return false
 	}
@@ -30,15 +30,4 @@ func (ut ActUpgradeTargets) IsValid() bool {
 		return false
 	}
 	return true
-}
-
-func (versions ActVersions) IsValid() bool {
-	vCnt := ActVersionNumber(0)
-	for _, version := range versions {
-		if version.Version() <= ActVersionNumber(vCnt) {
-			return false
-		}
-		vCnt = version.Version()
-	}
-	return len(versions) > 0
 }

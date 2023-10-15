@@ -41,12 +41,12 @@ func (pc *programCommandController) createWeeklyProgram(c echo.Context) error {
 		log.Printf("failed to convert createProgramReqDto to service dto: %v", err)
 		return c.String(http.StatusBadRequest, "invalid request body")
 	}
-	clientId := c.Get("uid").(uint64)
+	clientId := c.Get("uid").(int64)
 	if cpSvcDto.Author != clientId {
 		log.Printf("User %d attempted to create Program illegally", clientId)
 		return c.String(http.StatusForbidden, "illegal access")
 	}
-	qpDto, err := pc.svc.createWeeklyProgram(c.Request().Context(), *cpSvcDto)
+	qpDto, err := pc.svc.createProgram(c.Request().Context(), *cpSvcDto)
 	if err != nil {
 		log.Printf("failed to create Program: %v", err)
 		return c.String(http.StatusInternalServerError, "failed to create Program")

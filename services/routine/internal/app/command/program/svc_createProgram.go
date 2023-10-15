@@ -6,10 +6,10 @@ import (
 	"routine/internal/domain/aggregates/program"
 )
 
-func dailyRoutinesFrom(drdtos []dto.CreateProgramServiceDailyRoutineDto) ([]*program.DailyRoutine, error) {
-	drs := make([]*program.DailyRoutine, len(drdtos))
+func routinesFrom(drdtos []dto.CreateProgramServiceRoutineDto) ([]*program.Routine, error) {
+	drs := make([]*program.Routine, len(drdtos))
 	for i, drdto := range drdtos {
-		dr, err := dailyRoutineFrom(drdto)
+		dr, err := routineFrom(drdto)
 		if err != nil {
 			return nil, err
 		}
@@ -18,13 +18,13 @@ func dailyRoutinesFrom(drdtos []dto.CreateProgramServiceDailyRoutineDto) ([]*pro
 	return drs, nil
 }
 
-func dailyRoutineFrom(drdto dto.CreateProgramServiceDailyRoutineDto) (*program.DailyRoutine, error) {
+func routineFrom(drdto dto.CreateProgramServiceRoutineDto) (*program.Routine, error) {
 	ras, err := routineActsFrom(drdto.RoutineActs)
 	if err != nil {
 		return nil, err
 	}
-	return program.CreateDailyRoutineWithoutProgramVersion(
-		program.DailyRoutineDay(drdto.Day),
+	return program.CreateRoutine(
+		program.RoutineDay(drdto.Day),
 		ras,
 	)
 }
@@ -46,9 +46,9 @@ func routineActFrom(radto dto.CreateProgramServiceRoutineActDto) (*program.Routi
 	if err != nil {
 		return nil, err
 	}
-	return program.CreateRoutineActWithoutDailyRoutine(
+	return program.CreateRoutineAct(
 		program.RoutineActOrder(radto.Order),
-		act.ActVersionCode(radto.ActVersion),
+		act.ActCode(radto.ActCode),
 		stage,
 		program.RepsOrMeters(radto.RepsOrMeters),
 		program.RatioOrSecs(radto.RatioOrSecs),

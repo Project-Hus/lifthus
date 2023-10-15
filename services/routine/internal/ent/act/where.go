@@ -11,47 +11,47 @@ import (
 )
 
 // ID filters vertices based on their ID field.
-func ID(id uint64) predicate.Act {
+func ID(id int64) predicate.Act {
 	return predicate.Act(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id uint64) predicate.Act {
+func IDEQ(id int64) predicate.Act {
 	return predicate.Act(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id uint64) predicate.Act {
+func IDNEQ(id int64) predicate.Act {
 	return predicate.Act(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...uint64) predicate.Act {
+func IDIn(ids ...int64) predicate.Act {
 	return predicate.Act(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...uint64) predicate.Act {
+func IDNotIn(ids ...int64) predicate.Act {
 	return predicate.Act(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id uint64) predicate.Act {
+func IDGT(id int64) predicate.Act {
 	return predicate.Act(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id uint64) predicate.Act {
+func IDGTE(id int64) predicate.Act {
 	return predicate.Act(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id uint64) predicate.Act {
+func IDLT(id int64) predicate.Act {
 	return predicate.Act(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id uint64) predicate.Act {
+func IDLTE(id int64) predicate.Act {
 	return predicate.Act(sql.FieldLTE(FieldID, id))
 }
 
@@ -60,14 +60,24 @@ func Code(v string) predicate.Act {
 	return predicate.Act(sql.FieldEQ(FieldCode, v))
 }
 
+// Author applies equality check predicate on the "author" field. It's identical to AuthorEQ.
+func Author(v int64) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldAuthor, v))
+}
+
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.Act {
 	return predicate.Act(sql.FieldEQ(FieldName, v))
 }
 
-// Author applies equality check predicate on the "author" field. It's identical to AuthorEQ.
-func Author(v uint64) predicate.Act {
-	return predicate.Act(sql.FieldEQ(FieldAuthor, v))
+// Text applies equality check predicate on the "text" field. It's identical to TextEQ.
+func Text(v string) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldText, v))
+}
+
+// Standard applies equality check predicate on the "standard" field. It's identical to StandardEQ.
+func Standard(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldStandard, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -138,6 +148,46 @@ func CodeEqualFold(v string) predicate.Act {
 // CodeContainsFold applies the ContainsFold predicate on the "code" field.
 func CodeContainsFold(v string) predicate.Act {
 	return predicate.Act(sql.FieldContainsFold(FieldCode, v))
+}
+
+// AuthorEQ applies the EQ predicate on the "author" field.
+func AuthorEQ(v int64) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldAuthor, v))
+}
+
+// AuthorNEQ applies the NEQ predicate on the "author" field.
+func AuthorNEQ(v int64) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldAuthor, v))
+}
+
+// AuthorIn applies the In predicate on the "author" field.
+func AuthorIn(vs ...int64) predicate.Act {
+	return predicate.Act(sql.FieldIn(FieldAuthor, vs...))
+}
+
+// AuthorNotIn applies the NotIn predicate on the "author" field.
+func AuthorNotIn(vs ...int64) predicate.Act {
+	return predicate.Act(sql.FieldNotIn(FieldAuthor, vs...))
+}
+
+// AuthorGT applies the GT predicate on the "author" field.
+func AuthorGT(v int64) predicate.Act {
+	return predicate.Act(sql.FieldGT(FieldAuthor, v))
+}
+
+// AuthorGTE applies the GTE predicate on the "author" field.
+func AuthorGTE(v int64) predicate.Act {
+	return predicate.Act(sql.FieldGTE(FieldAuthor, v))
+}
+
+// AuthorLT applies the LT predicate on the "author" field.
+func AuthorLT(v int64) predicate.Act {
+	return predicate.Act(sql.FieldLT(FieldAuthor, v))
+}
+
+// AuthorLTE applies the LTE predicate on the "author" field.
+func AuthorLTE(v int64) predicate.Act {
+	return predicate.Act(sql.FieldLTE(FieldAuthor, v))
 }
 
 // ActTypeEQ applies the EQ predicate on the "act_type" field.
@@ -225,44 +275,79 @@ func NameContainsFold(v string) predicate.Act {
 	return predicate.Act(sql.FieldContainsFold(FieldName, v))
 }
 
-// AuthorEQ applies the EQ predicate on the "author" field.
-func AuthorEQ(v uint64) predicate.Act {
-	return predicate.Act(sql.FieldEQ(FieldAuthor, v))
+// TextEQ applies the EQ predicate on the "text" field.
+func TextEQ(v string) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldText, v))
 }
 
-// AuthorNEQ applies the NEQ predicate on the "author" field.
-func AuthorNEQ(v uint64) predicate.Act {
-	return predicate.Act(sql.FieldNEQ(FieldAuthor, v))
+// TextNEQ applies the NEQ predicate on the "text" field.
+func TextNEQ(v string) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldText, v))
 }
 
-// AuthorIn applies the In predicate on the "author" field.
-func AuthorIn(vs ...uint64) predicate.Act {
-	return predicate.Act(sql.FieldIn(FieldAuthor, vs...))
+// TextIn applies the In predicate on the "text" field.
+func TextIn(vs ...string) predicate.Act {
+	return predicate.Act(sql.FieldIn(FieldText, vs...))
 }
 
-// AuthorNotIn applies the NotIn predicate on the "author" field.
-func AuthorNotIn(vs ...uint64) predicate.Act {
-	return predicate.Act(sql.FieldNotIn(FieldAuthor, vs...))
+// TextNotIn applies the NotIn predicate on the "text" field.
+func TextNotIn(vs ...string) predicate.Act {
+	return predicate.Act(sql.FieldNotIn(FieldText, vs...))
 }
 
-// AuthorGT applies the GT predicate on the "author" field.
-func AuthorGT(v uint64) predicate.Act {
-	return predicate.Act(sql.FieldGT(FieldAuthor, v))
+// TextGT applies the GT predicate on the "text" field.
+func TextGT(v string) predicate.Act {
+	return predicate.Act(sql.FieldGT(FieldText, v))
 }
 
-// AuthorGTE applies the GTE predicate on the "author" field.
-func AuthorGTE(v uint64) predicate.Act {
-	return predicate.Act(sql.FieldGTE(FieldAuthor, v))
+// TextGTE applies the GTE predicate on the "text" field.
+func TextGTE(v string) predicate.Act {
+	return predicate.Act(sql.FieldGTE(FieldText, v))
 }
 
-// AuthorLT applies the LT predicate on the "author" field.
-func AuthorLT(v uint64) predicate.Act {
-	return predicate.Act(sql.FieldLT(FieldAuthor, v))
+// TextLT applies the LT predicate on the "text" field.
+func TextLT(v string) predicate.Act {
+	return predicate.Act(sql.FieldLT(FieldText, v))
 }
 
-// AuthorLTE applies the LTE predicate on the "author" field.
-func AuthorLTE(v uint64) predicate.Act {
-	return predicate.Act(sql.FieldLTE(FieldAuthor, v))
+// TextLTE applies the LTE predicate on the "text" field.
+func TextLTE(v string) predicate.Act {
+	return predicate.Act(sql.FieldLTE(FieldText, v))
+}
+
+// TextContains applies the Contains predicate on the "text" field.
+func TextContains(v string) predicate.Act {
+	return predicate.Act(sql.FieldContains(FieldText, v))
+}
+
+// TextHasPrefix applies the HasPrefix predicate on the "text" field.
+func TextHasPrefix(v string) predicate.Act {
+	return predicate.Act(sql.FieldHasPrefix(FieldText, v))
+}
+
+// TextHasSuffix applies the HasSuffix predicate on the "text" field.
+func TextHasSuffix(v string) predicate.Act {
+	return predicate.Act(sql.FieldHasSuffix(FieldText, v))
+}
+
+// TextEqualFold applies the EqualFold predicate on the "text" field.
+func TextEqualFold(v string) predicate.Act {
+	return predicate.Act(sql.FieldEqualFold(FieldText, v))
+}
+
+// TextContainsFold applies the ContainsFold predicate on the "text" field.
+func TextContainsFold(v string) predicate.Act {
+	return predicate.Act(sql.FieldContainsFold(FieldText, v))
+}
+
+// StandardEQ applies the EQ predicate on the "standard" field.
+func StandardEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldEQ(FieldStandard, v))
+}
+
+// StandardNEQ applies the NEQ predicate on the "standard" field.
+func StandardNEQ(v bool) predicate.Act {
+	return predicate.Act(sql.FieldNEQ(FieldStandard, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -305,21 +390,44 @@ func CreatedAtLTE(v time.Time) predicate.Act {
 	return predicate.Act(sql.FieldLTE(FieldCreatedAt, v))
 }
 
-// HasActVersions applies the HasEdge predicate on the "act_versions" edge.
-func HasActVersions() predicate.Act {
+// HasS3ActImages applies the HasEdge predicate on the "s3_act_images" edge.
+func HasS3ActImages() predicate.Act {
 	return predicate.Act(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ActVersionsTable, ActVersionsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, S3ActImagesTable, S3ActImagesColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasActVersionsWith applies the HasEdge predicate on the "act_versions" edge with a given conditions (other predicates).
-func HasActVersionsWith(preds ...predicate.ActVersion) predicate.Act {
+// HasS3ActImagesWith applies the HasEdge predicate on the "s3_act_images" edge with a given conditions (other predicates).
+func HasS3ActImagesWith(preds ...predicate.S3ActImage) predicate.Act {
 	return predicate.Act(func(s *sql.Selector) {
-		step := newActVersionsStep()
+		step := newS3ActImagesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasRoutineActs applies the HasEdge predicate on the "routine_acts" edge.
+func HasRoutineActs() predicate.Act {
+	return predicate.Act(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, RoutineActsTable, RoutineActsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRoutineActsWith applies the HasEdge predicate on the "routine_acts" edge with a given conditions (other predicates).
+func HasRoutineActsWith(preds ...predicate.RoutineAct) predicate.Act {
+	return predicate.Act(func(s *sql.Selector) {
+		step := newRoutineActsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

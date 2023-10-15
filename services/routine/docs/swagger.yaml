@@ -15,29 +15,22 @@ definitions:
       text:
         type: string
     type: object
-  dto.CreateProgramRequestDailyRoutineDto:
-    properties:
-      day:
-        type: integer
-      routineActs:
-        items:
-          $ref: '#/definitions/dto.CreateProgramRequestRoutineActDto'
-        type: array
-    type: object
   dto.CreateProgramRequestDto:
     properties:
       author:
         type: string
       dailyRoutines:
         items:
-          $ref: '#/definitions/dto.CreateProgramRequestDailyRoutineDto'
+          $ref: '#/definitions/dto.CreateProgramRequestRoutineDto'
         type: array
-      derivedFrom:
-        type: string
       imageSrcs:
         items:
           type: string
         type: array
+      parentProgram:
+        type: string
+      parentVersion:
+        type: integer
       programType:
         type: string
       text:
@@ -47,7 +40,7 @@ definitions:
     type: object
   dto.CreateProgramRequestRoutineActDto:
     properties:
-      actVersion:
+      actCode:
         type: string
       order:
         type: integer
@@ -58,16 +51,14 @@ definitions:
       stage:
         type: string
     type: object
-  dto.UpgradeActRequestDto:
+  dto.CreateProgramRequestRoutineDto:
     properties:
-      actCode:
-        type: string
-      imageSrcs:
+      day:
+        type: integer
+      routineActs:
         items:
-          type: string
+          $ref: '#/definitions/dto.CreateProgramRequestRoutineActDto'
         type: array
-      text:
-        type: string
     type: object
 host: api.dev.lifthus.com
 info:
@@ -115,23 +106,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.CreateActRequestDto'
-      responses: {}
-      tags:
-      - act
-  /act/upgrade:
-    post:
-      parameters:
-      - description: lifthus_st
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: upgrade act dto
-        in: body
-        name: upgradeActDto
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpgradeActRequestDto'
       responses: {}
       tags:
       - act
