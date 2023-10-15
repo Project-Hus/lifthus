@@ -2,7 +2,7 @@ package program
 
 import "routine/internal/domain/aggregates/act"
 
-func CreateRoutineActWithoutDailyRoutine(
+func CreateRoutineAct(
 	order RoutineActOrder,
 	actCode act.ActCode,
 	stage RoutineActStage,

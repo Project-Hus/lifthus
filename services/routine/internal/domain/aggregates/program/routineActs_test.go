@@ -3,7 +3,7 @@ package program
 func getValidRoutineActs() RoutineActs {
 	ras := RoutineActs{}
 	for ord := 1; ord < 7; ord++ {
-		ra := CreateRoutineActWithoutDailyRoutine(
+		ra := CreateRoutineAct(
 			RoutineActOrder(ord),
 			"ABCDEF12",
 			MainStage,
@@ -32,7 +32,7 @@ func getInvalidRoutineActsSets() []RoutineActs {
 func getRoutineActsWithOrders(orders []RoutineActOrder) RoutineActs {
 	ras := RoutineActs{}
 	for _, ord := range orders {
-		ra := CreateRoutineActWithoutDailyRoutine(
+		ra := CreateRoutineAct(
 			ord,
 			"ABCDEF12",
 			MainStage,

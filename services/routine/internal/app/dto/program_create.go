@@ -5,10 +5,12 @@ import (
 )
 
 type CreateProgramRequestDto struct {
-	ProgramType string  `json:"programType"`
-	Title       string  `json:"title"`
-	Author      string  `json:"author"`
-	DerivedFrom *string `json:"derivedFrom"`
+	ProgramType string `json:"programType"`
+	Title       string `json:"title"`
+	Author      string `json:"author"`
+
+	ParentProgram *string `json:"parentProgram"`
+	ParentVersion *int    `json:"parentVersion"`
 
 	ImageSrcs []string `json:"imageSrcs"`
 	Text      string   `json:"text"`
@@ -48,13 +50,14 @@ func (cpr CreateProgramRequestDto) ToServiceDto() (*CreateProgramServiceDto, err
 	}
 
 	return &CreateProgramServiceDto{
-		ProgramType: cpr.ProgramType,
-		Title:       cpr.Title,
-		Author:      author,
-		DerivedFrom: cpr.DerivedFrom,
-		ImageSrcs:   cpr.ImageSrcs,
-		Text:        cpr.Text,
-		Routines:    svcDRs,
+		ProgramType:   cpr.ProgramType,
+		Title:         cpr.Title,
+		Author:        author,
+		ParentProgram: cpr.ParentProgram,
+		ParentVersion: cpr.ParentVersion,
+		ImageSrcs:     cpr.ImageSrcs,
+		Text:          cpr.Text,
+		Routines:      svcDRs,
 	}, nil
 }
 
@@ -62,8 +65,10 @@ type CreateProgramServiceDto struct {
 	ProgramType string
 	Title       string
 
-	Author      int64
-	DerivedFrom *string
+	Author int64
+
+	ParentProgram *string
+	ParentVersion *int
 
 	ImageSrcs []string
 	Text      string
