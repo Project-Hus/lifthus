@@ -26,6 +26,6 @@ func (S3ActImage) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("act", Act.Type).Ref("s3_act_images").Unique().Field("act_id").Required(),
 
-		edge.To("s3_image", S3ActImage.Type).Unique().Field("image_id").Required(),
+		edge.To("s3_image", S3Image.Type).Unique().Field("image_id").Required(),
 	}
 }

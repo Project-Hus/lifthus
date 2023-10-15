@@ -16,7 +16,7 @@ import (
 type Program struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID uint64 `json:"id,omitempty"`
+	ID int64 `json:"id,omitempty"`
 	// Code holds the value of the "code" field.
 	Code string `json:"code,omitempty"`
 	// ProgramType holds the value of the "program_type" field.
@@ -24,11 +24,13 @@ type Program struct {
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
 	// Author holds the value of the "author" field.
-	Author uint64 `json:"author,omitempty"`
+	Author int64 `json:"author,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
-	// VersionDerivedFrom holds the value of the "version_derived_from" field.
-	VersionDerivedFrom *string `json:"version_derived_from,omitempty"`
+	// ParentProgram holds the value of the "parent_program" field.
+	ParentProgram *string `json:"parent_program,omitempty"`
+	// ParentVersion holds the value of the "parent_version" field.
+	ParentVersion int `json:"parent_version,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProgramQuery when eager-loading is set.
 	Edges        ProgramEdges `json:"edges"`
@@ -37,20 +39,20 @@ type Program struct {
 
 // ProgramEdges holds the relations/edges for other nodes in the graph.
 type ProgramEdges struct {
-	// ProgramVersions holds the value of the program_versions edge.
-	ProgramVersions []*ProgramVersion `json:"program_versions,omitempty"`
+	// ProgramReleases holds the value of the program_releases edge.
+	ProgramReleases []*ProgramRelease `json:"program_releases,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// ProgramVersionsOrErr returns the ProgramVersions value or an error if the edge
+// ProgramReleasesOrErr returns the ProgramReleases value or an error if the edge
 // was not loaded in eager-loading.
-func (e ProgramEdges) ProgramVersionsOrErr() ([]*ProgramVersion, error) {
+func (e ProgramEdges) ProgramReleasesOrErr() ([]*ProgramRelease, error) {
 	if e.loadedTypes[0] {
-		return e.ProgramVersions, nil
+		return e.ProgramReleases, nil
 	}
-	return nil, &NotLoadedError{edge: "program_versions"}
+	return nil, &NotLoadedError{edge: "program_releases"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -58,9 +60,9 @@ func (*Program) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case program.FieldID, program.FieldAuthor:
+		case program.FieldID, program.FieldAuthor, program.FieldParentVersion:
 			values[i] = new(sql.NullInt64)
-		case program.FieldCode, program.FieldProgramType, program.FieldTitle, program.FieldVersionDerivedFrom:
+		case program.FieldCode, program.FieldProgramType, program.FieldTitle, program.FieldParentProgram:
 			values[i] = new(sql.NullString)
 		case program.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -84,7 +86,7 @@ func (pr *Program) assignValues(columns []string, values []any) error {
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			pr.ID = uint64(value.Int64)
+			pr.ID = int64(value.Int64)
 		case program.FieldCode:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field code", values[i])
@@ -107,7 +109,7 @@ func (pr *Program) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field author", values[i])
 			} else if value.Valid {
-				pr.Author = uint64(value.Int64)
+				pr.Author = value.Int64
 			}
 		case program.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -115,12 +117,18 @@ func (pr *Program) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pr.CreatedAt = value.Time
 			}
-		case program.FieldVersionDerivedFrom:
+		case program.FieldParentProgram:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field version_derived_from", values[i])
+				return fmt.Errorf("unexpected type %T for field parent_program", values[i])
 			} else if value.Valid {
-				pr.VersionDerivedFrom = new(string)
-				*pr.VersionDerivedFrom = value.String
+				pr.ParentProgram = new(string)
+				*pr.ParentProgram = value.String
+			}
+		case program.FieldParentVersion:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field parent_version", values[i])
+			} else if value.Valid {
+				pr.ParentVersion = int(value.Int64)
 			}
 		default:
 			pr.selectValues.Set(columns[i], values[i])
@@ -135,9 +143,9 @@ func (pr *Program) Value(name string) (ent.Value, error) {
 	return pr.selectValues.Get(name)
 }
 
-// QueryProgramVersions queries the "program_versions" edge of the Program entity.
-func (pr *Program) QueryProgramVersions() *ProgramVersionQuery {
-	return NewProgramClient(pr.config).QueryProgramVersions(pr)
+// QueryProgramReleases queries the "program_releases" edge of the Program entity.
+func (pr *Program) QueryProgramReleases() *ProgramReleaseQuery {
+	return NewProgramClient(pr.config).QueryProgramReleases(pr)
 }
 
 // Update returns a builder for updating this Program.
@@ -178,10 +186,13 @@ func (pr *Program) String() string {
 	builder.WriteString("created_at=")
 	builder.WriteString(pr.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	if v := pr.VersionDerivedFrom; v != nil {
-		builder.WriteString("version_derived_from=")
+	if v := pr.ParentProgram; v != nil {
+		builder.WriteString("parent_program=")
 		builder.WriteString(*v)
 	}
+	builder.WriteString(", ")
+	builder.WriteString("parent_version=")
+	builder.WriteString(fmt.Sprintf("%v", pr.ParentVersion))
 	builder.WriteByte(')')
 	return builder.String()
 }

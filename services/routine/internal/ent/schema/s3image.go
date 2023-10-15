@@ -32,6 +32,6 @@ func (S3Image) Fields() []ent.Field {
 // Edges of the Image.
 func (S3Image) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("act_s3_images", S3ActImage.Type).Ref("s3_image"),
+		edge.From("s3_act_images", S3ActImage.Type).Ref("s3_image"),
 	}
 }

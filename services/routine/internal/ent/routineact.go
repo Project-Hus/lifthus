@@ -4,8 +4,8 @@ package ent
 
 import (
 	"fmt"
-	"routine/internal/ent/actversion"
-	"routine/internal/ent/dailyroutine"
+	"routine/internal/ent/act"
+	"routine/internal/ent/dayroutine"
 	"routine/internal/ent/routineact"
 	"strings"
 
@@ -17,13 +17,11 @@ import (
 type RoutineAct struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID uint64 `json:"id,omitempty"`
-	// DailyRoutineCode holds the value of the "daily_routine_code" field.
-	DailyRoutineCode string `json:"daily_routine_code,omitempty"`
+	ID int64 `json:"id,omitempty"`
 	// Order holds the value of the "order" field.
-	Order uint `json:"order,omitempty"`
-	// ActVersionCode holds the value of the "act_version_code" field.
-	ActVersionCode string `json:"act_version_code,omitempty"`
+	Order int `json:"order,omitempty"`
+	// ActCode holds the value of the "act_code" field.
+	ActCode string `json:"act_code,omitempty"`
 	// Stage holds the value of the "stage" field.
 	Stage routineact.Stage `json:"stage,omitempty"`
 	// RepsOrMeters holds the value of the "reps_or_meters" field.
@@ -32,47 +30,47 @@ type RoutineAct struct {
 	RatioOrSecs float64 `json:"ratio_or_secs,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RoutineActQuery when eager-loading is set.
-	Edges                      RoutineActEdges `json:"edges"`
-	act_version_routine_acts   *uint64
-	daily_routine_routine_acts *uint64
-	selectValues               sql.SelectValues
+	Edges                    RoutineActEdges `json:"edges"`
+	act_routine_acts         *int64
+	day_routine_routine_acts *int64
+	selectValues             sql.SelectValues
 }
 
 // RoutineActEdges holds the relations/edges for other nodes in the graph.
 type RoutineActEdges struct {
-	// ActVersion holds the value of the act_version edge.
-	ActVersion *ActVersion `json:"act_version,omitempty"`
-	// DailyRoutine holds the value of the daily_routine edge.
-	DailyRoutine *DailyRoutine `json:"daily_routine,omitempty"`
+	// Act holds the value of the act edge.
+	Act *Act `json:"act,omitempty"`
+	// DayRoutine holds the value of the day_routine edge.
+	DayRoutine *DayRoutine `json:"day_routine,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
 }
 
-// ActVersionOrErr returns the ActVersion value or an error if the edge
+// ActOrErr returns the Act value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e RoutineActEdges) ActVersionOrErr() (*ActVersion, error) {
+func (e RoutineActEdges) ActOrErr() (*Act, error) {
 	if e.loadedTypes[0] {
-		if e.ActVersion == nil {
+		if e.Act == nil {
 			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: actversion.Label}
+			return nil, &NotFoundError{label: act.Label}
 		}
-		return e.ActVersion, nil
+		return e.Act, nil
 	}
-	return nil, &NotLoadedError{edge: "act_version"}
+	return nil, &NotLoadedError{edge: "act"}
 }
 
-// DailyRoutineOrErr returns the DailyRoutine value or an error if the edge
+// DayRoutineOrErr returns the DayRoutine value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e RoutineActEdges) DailyRoutineOrErr() (*DailyRoutine, error) {
+func (e RoutineActEdges) DayRoutineOrErr() (*DayRoutine, error) {
 	if e.loadedTypes[1] {
-		if e.DailyRoutine == nil {
+		if e.DayRoutine == nil {
 			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: dailyroutine.Label}
+			return nil, &NotFoundError{label: dayroutine.Label}
 		}
-		return e.DailyRoutine, nil
+		return e.DayRoutine, nil
 	}
-	return nil, &NotLoadedError{edge: "daily_routine"}
+	return nil, &NotLoadedError{edge: "day_routine"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -84,11 +82,11 @@ func (*RoutineAct) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullFloat64)
 		case routineact.FieldID, routineact.FieldOrder, routineact.FieldRepsOrMeters:
 			values[i] = new(sql.NullInt64)
-		case routineact.FieldDailyRoutineCode, routineact.FieldActVersionCode, routineact.FieldStage:
+		case routineact.FieldActCode, routineact.FieldStage:
 			values[i] = new(sql.NullString)
-		case routineact.ForeignKeys[0]: // act_version_routine_acts
+		case routineact.ForeignKeys[0]: // act_routine_acts
 			values[i] = new(sql.NullInt64)
-		case routineact.ForeignKeys[1]: // daily_routine_routine_acts
+		case routineact.ForeignKeys[1]: // day_routine_routine_acts
 			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -110,24 +108,18 @@ func (ra *RoutineAct) assignValues(columns []string, values []any) error {
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			ra.ID = uint64(value.Int64)
-		case routineact.FieldDailyRoutineCode:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field daily_routine_code", values[i])
-			} else if value.Valid {
-				ra.DailyRoutineCode = value.String
-			}
+			ra.ID = int64(value.Int64)
 		case routineact.FieldOrder:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field order", values[i])
 			} else if value.Valid {
-				ra.Order = uint(value.Int64)
+				ra.Order = int(value.Int64)
 			}
-		case routineact.FieldActVersionCode:
+		case routineact.FieldActCode:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field act_version_code", values[i])
+				return fmt.Errorf("unexpected type %T for field act_code", values[i])
 			} else if value.Valid {
-				ra.ActVersionCode = value.String
+				ra.ActCode = value.String
 			}
 		case routineact.FieldStage:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -149,17 +141,17 @@ func (ra *RoutineAct) assignValues(columns []string, values []any) error {
 			}
 		case routineact.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field act_version_routine_acts", value)
+				return fmt.Errorf("unexpected type %T for edge-field act_routine_acts", value)
 			} else if value.Valid {
-				ra.act_version_routine_acts = new(uint64)
-				*ra.act_version_routine_acts = uint64(value.Int64)
+				ra.act_routine_acts = new(int64)
+				*ra.act_routine_acts = int64(value.Int64)
 			}
 		case routineact.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field daily_routine_routine_acts", value)
+				return fmt.Errorf("unexpected type %T for edge-field day_routine_routine_acts", value)
 			} else if value.Valid {
-				ra.daily_routine_routine_acts = new(uint64)
-				*ra.daily_routine_routine_acts = uint64(value.Int64)
+				ra.day_routine_routine_acts = new(int64)
+				*ra.day_routine_routine_acts = int64(value.Int64)
 			}
 		default:
 			ra.selectValues.Set(columns[i], values[i])
@@ -174,14 +166,14 @@ func (ra *RoutineAct) Value(name string) (ent.Value, error) {
 	return ra.selectValues.Get(name)
 }
 
-// QueryActVersion queries the "act_version" edge of the RoutineAct entity.
-func (ra *RoutineAct) QueryActVersion() *ActVersionQuery {
-	return NewRoutineActClient(ra.config).QueryActVersion(ra)
+// QueryAct queries the "act" edge of the RoutineAct entity.
+func (ra *RoutineAct) QueryAct() *ActQuery {
+	return NewRoutineActClient(ra.config).QueryAct(ra)
 }
 
-// QueryDailyRoutine queries the "daily_routine" edge of the RoutineAct entity.
-func (ra *RoutineAct) QueryDailyRoutine() *DailyRoutineQuery {
-	return NewRoutineActClient(ra.config).QueryDailyRoutine(ra)
+// QueryDayRoutine queries the "day_routine" edge of the RoutineAct entity.
+func (ra *RoutineAct) QueryDayRoutine() *DayRoutineQuery {
+	return NewRoutineActClient(ra.config).QueryDayRoutine(ra)
 }
 
 // Update returns a builder for updating this RoutineAct.
@@ -207,14 +199,11 @@ func (ra *RoutineAct) String() string {
 	var builder strings.Builder
 	builder.WriteString("RoutineAct(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", ra.ID))
-	builder.WriteString("daily_routine_code=")
-	builder.WriteString(ra.DailyRoutineCode)
-	builder.WriteString(", ")
 	builder.WriteString("order=")
 	builder.WriteString(fmt.Sprintf("%v", ra.Order))
 	builder.WriteString(", ")
-	builder.WriteString("act_version_code=")
-	builder.WriteString(ra.ActVersionCode)
+	builder.WriteString("act_code=")
+	builder.WriteString(ra.ActCode)
 	builder.WriteString(", ")
 	builder.WriteString("stage=")
 	builder.WriteString(fmt.Sprintf("%v", ra.Stage))

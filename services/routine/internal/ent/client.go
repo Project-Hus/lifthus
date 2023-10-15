@@ -11,14 +11,13 @@ import (
 	"routine/internal/ent/migrate"
 
 	"routine/internal/ent/act"
-	"routine/internal/ent/actimage"
-	"routine/internal/ent/actversion"
-	"routine/internal/ent/dailyroutine"
-	"routine/internal/ent/image"
+	"routine/internal/ent/dayroutine"
 	"routine/internal/ent/program"
-	"routine/internal/ent/programimage"
-	"routine/internal/ent/programversion"
+	"routine/internal/ent/programrelease"
 	"routine/internal/ent/routineact"
+	"routine/internal/ent/s3actimage"
+	"routine/internal/ent/s3image"
+	"routine/internal/ent/s3programimage"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
@@ -33,22 +32,20 @@ type Client struct {
 	Schema *migrate.Schema
 	// Act is the client for interacting with the Act builders.
 	Act *ActClient
-	// ActImage is the client for interacting with the ActImage builders.
-	ActImage *ActImageClient
-	// ActVersion is the client for interacting with the ActVersion builders.
-	ActVersion *ActVersionClient
-	// DailyRoutine is the client for interacting with the DailyRoutine builders.
-	DailyRoutine *DailyRoutineClient
-	// Image is the client for interacting with the Image builders.
-	Image *ImageClient
+	// DayRoutine is the client for interacting with the DayRoutine builders.
+	DayRoutine *DayRoutineClient
 	// Program is the client for interacting with the Program builders.
 	Program *ProgramClient
-	// ProgramImage is the client for interacting with the ProgramImage builders.
-	ProgramImage *ProgramImageClient
-	// ProgramVersion is the client for interacting with the ProgramVersion builders.
-	ProgramVersion *ProgramVersionClient
+	// ProgramRelease is the client for interacting with the ProgramRelease builders.
+	ProgramRelease *ProgramReleaseClient
 	// RoutineAct is the client for interacting with the RoutineAct builders.
 	RoutineAct *RoutineActClient
+	// S3ActImage is the client for interacting with the S3ActImage builders.
+	S3ActImage *S3ActImageClient
+	// S3Image is the client for interacting with the S3Image builders.
+	S3Image *S3ImageClient
+	// S3ProgramImage is the client for interacting with the S3ProgramImage builders.
+	S3ProgramImage *S3ProgramImageClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -63,14 +60,13 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Act = NewActClient(c.config)
-	c.ActImage = NewActImageClient(c.config)
-	c.ActVersion = NewActVersionClient(c.config)
-	c.DailyRoutine = NewDailyRoutineClient(c.config)
-	c.Image = NewImageClient(c.config)
+	c.DayRoutine = NewDayRoutineClient(c.config)
 	c.Program = NewProgramClient(c.config)
-	c.ProgramImage = NewProgramImageClient(c.config)
-	c.ProgramVersion = NewProgramVersionClient(c.config)
+	c.ProgramRelease = NewProgramReleaseClient(c.config)
 	c.RoutineAct = NewRoutineActClient(c.config)
+	c.S3ActImage = NewS3ActImageClient(c.config)
+	c.S3Image = NewS3ImageClient(c.config)
+	c.S3ProgramImage = NewS3ProgramImageClient(c.config)
 }
 
 type (
@@ -154,14 +150,13 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:            ctx,
 		config:         cfg,
 		Act:            NewActClient(cfg),
-		ActImage:       NewActImageClient(cfg),
-		ActVersion:     NewActVersionClient(cfg),
-		DailyRoutine:   NewDailyRoutineClient(cfg),
-		Image:          NewImageClient(cfg),
+		DayRoutine:     NewDayRoutineClient(cfg),
 		Program:        NewProgramClient(cfg),
-		ProgramImage:   NewProgramImageClient(cfg),
-		ProgramVersion: NewProgramVersionClient(cfg),
+		ProgramRelease: NewProgramReleaseClient(cfg),
 		RoutineAct:     NewRoutineActClient(cfg),
+		S3ActImage:     NewS3ActImageClient(cfg),
+		S3Image:        NewS3ImageClient(cfg),
+		S3ProgramImage: NewS3ProgramImageClient(cfg),
 	}, nil
 }
 
@@ -182,14 +177,13 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:            ctx,
 		config:         cfg,
 		Act:            NewActClient(cfg),
-		ActImage:       NewActImageClient(cfg),
-		ActVersion:     NewActVersionClient(cfg),
-		DailyRoutine:   NewDailyRoutineClient(cfg),
-		Image:          NewImageClient(cfg),
+		DayRoutine:     NewDayRoutineClient(cfg),
 		Program:        NewProgramClient(cfg),
-		ProgramImage:   NewProgramImageClient(cfg),
-		ProgramVersion: NewProgramVersionClient(cfg),
+		ProgramRelease: NewProgramReleaseClient(cfg),
 		RoutineAct:     NewRoutineActClient(cfg),
+		S3ActImage:     NewS3ActImageClient(cfg),
+		S3Image:        NewS3ImageClient(cfg),
+		S3ProgramImage: NewS3ProgramImageClient(cfg),
 	}, nil
 }
 
@@ -219,8 +213,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Act, c.ActImage, c.ActVersion, c.DailyRoutine, c.Image, c.Program,
-		c.ProgramImage, c.ProgramVersion, c.RoutineAct,
+		c.Act, c.DayRoutine, c.Program, c.ProgramRelease, c.RoutineAct, c.S3ActImage,
+		c.S3Image, c.S3ProgramImage,
 	} {
 		n.Use(hooks...)
 	}
@@ -230,8 +224,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Act, c.ActImage, c.ActVersion, c.DailyRoutine, c.Image, c.Program,
-		c.ProgramImage, c.ProgramVersion, c.RoutineAct,
+		c.Act, c.DayRoutine, c.Program, c.ProgramRelease, c.RoutineAct, c.S3ActImage,
+		c.S3Image, c.S3ProgramImage,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -242,22 +236,20 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *ActMutation:
 		return c.Act.mutate(ctx, m)
-	case *ActImageMutation:
-		return c.ActImage.mutate(ctx, m)
-	case *ActVersionMutation:
-		return c.ActVersion.mutate(ctx, m)
-	case *DailyRoutineMutation:
-		return c.DailyRoutine.mutate(ctx, m)
-	case *ImageMutation:
-		return c.Image.mutate(ctx, m)
+	case *DayRoutineMutation:
+		return c.DayRoutine.mutate(ctx, m)
 	case *ProgramMutation:
 		return c.Program.mutate(ctx, m)
-	case *ProgramImageMutation:
-		return c.ProgramImage.mutate(ctx, m)
-	case *ProgramVersionMutation:
-		return c.ProgramVersion.mutate(ctx, m)
+	case *ProgramReleaseMutation:
+		return c.ProgramRelease.mutate(ctx, m)
 	case *RoutineActMutation:
 		return c.RoutineAct.mutate(ctx, m)
+	case *S3ActImageMutation:
+		return c.S3ActImage.mutate(ctx, m)
+	case *S3ImageMutation:
+		return c.S3Image.mutate(ctx, m)
+	case *S3ProgramImageMutation:
+		return c.S3ProgramImage.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -309,7 +301,7 @@ func (c *ActClient) UpdateOne(a *Act) *ActUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ActClient) UpdateOneID(id uint64) *ActUpdateOne {
+func (c *ActClient) UpdateOneID(id int64) *ActUpdateOne {
 	mutation := newActMutation(c.config, OpUpdateOne, withActID(id))
 	return &ActUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -326,7 +318,7 @@ func (c *ActClient) DeleteOne(a *Act) *ActDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ActClient) DeleteOneID(id uint64) *ActDeleteOne {
+func (c *ActClient) DeleteOneID(id int64) *ActDeleteOne {
 	builder := c.Delete().Where(act.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -343,12 +335,12 @@ func (c *ActClient) Query() *ActQuery {
 }
 
 // Get returns a Act entity by its id.
-func (c *ActClient) Get(ctx context.Context, id uint64) (*Act, error) {
+func (c *ActClient) Get(ctx context.Context, id int64) (*Act, error) {
 	return c.Query().Where(act.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ActClient) GetX(ctx context.Context, id uint64) *Act {
+func (c *ActClient) GetX(ctx context.Context, id int64) *Act {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -356,15 +348,31 @@ func (c *ActClient) GetX(ctx context.Context, id uint64) *Act {
 	return obj
 }
 
-// QueryActVersions queries the act_versions edge of a Act.
-func (c *ActClient) QueryActVersions(a *Act) *ActVersionQuery {
-	query := (&ActVersionClient{config: c.config}).Query()
+// QueryS3ActImages queries the s3_act_images edge of a Act.
+func (c *ActClient) QueryS3ActImages(a *Act) *S3ActImageQuery {
+	query := (&S3ActImageClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := a.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(act.Table, act.FieldID, id),
-			sqlgraph.To(actversion.Table, actversion.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, act.ActVersionsTable, act.ActVersionsColumn),
+			sqlgraph.To(s3actimage.Table, s3actimage.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, act.S3ActImagesTable, act.S3ActImagesColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRoutineActs queries the routine_acts edge of a Act.
+func (c *ActClient) QueryRoutineActs(a *Act) *RoutineActQuery {
+	query := (&RoutineActClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(act.Table, act.FieldID, id),
+			sqlgraph.To(routineact.Table, routineact.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, act.RoutineActsTable, act.RoutineActsColumn),
 		)
 		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
 		return fromV, nil
@@ -397,424 +405,92 @@ func (c *ActClient) mutate(ctx context.Context, m *ActMutation) (Value, error) {
 	}
 }
 
-// ActImageClient is a client for the ActImage schema.
-type ActImageClient struct {
+// DayRoutineClient is a client for the DayRoutine schema.
+type DayRoutineClient struct {
 	config
 }
 
-// NewActImageClient returns a client for the ActImage from the given config.
-func NewActImageClient(c config) *ActImageClient {
-	return &ActImageClient{config: c}
+// NewDayRoutineClient returns a client for the DayRoutine from the given config.
+func NewDayRoutineClient(c config) *DayRoutineClient {
+	return &DayRoutineClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `actimage.Hooks(f(g(h())))`.
-func (c *ActImageClient) Use(hooks ...Hook) {
-	c.hooks.ActImage = append(c.hooks.ActImage, hooks...)
+// A call to `Use(f, g, h)` equals to `dayroutine.Hooks(f(g(h())))`.
+func (c *DayRoutineClient) Use(hooks ...Hook) {
+	c.hooks.DayRoutine = append(c.hooks.DayRoutine, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `actimage.Intercept(f(g(h())))`.
-func (c *ActImageClient) Intercept(interceptors ...Interceptor) {
-	c.inters.ActImage = append(c.inters.ActImage, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `dayroutine.Intercept(f(g(h())))`.
+func (c *DayRoutineClient) Intercept(interceptors ...Interceptor) {
+	c.inters.DayRoutine = append(c.inters.DayRoutine, interceptors...)
 }
 
-// Create returns a builder for creating a ActImage entity.
-func (c *ActImageClient) Create() *ActImageCreate {
-	mutation := newActImageMutation(c.config, OpCreate)
-	return &ActImageCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a DayRoutine entity.
+func (c *DayRoutineClient) Create() *DayRoutineCreate {
+	mutation := newDayRoutineMutation(c.config, OpCreate)
+	return &DayRoutineCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of ActImage entities.
-func (c *ActImageClient) CreateBulk(builders ...*ActImageCreate) *ActImageCreateBulk {
-	return &ActImageCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of DayRoutine entities.
+func (c *DayRoutineClient) CreateBulk(builders ...*DayRoutineCreate) *DayRoutineCreateBulk {
+	return &DayRoutineCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for ActImage.
-func (c *ActImageClient) Update() *ActImageUpdate {
-	mutation := newActImageMutation(c.config, OpUpdate)
-	return &ActImageUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *ActImageClient) UpdateOne(ai *ActImage) *ActImageUpdateOne {
-	mutation := newActImageMutation(c.config, OpUpdateOne, withActImage(ai))
-	return &ActImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *ActImageClient) UpdateOneID(id uint64) *ActImageUpdateOne {
-	mutation := newActImageMutation(c.config, OpUpdateOne, withActImageID(id))
-	return &ActImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for ActImage.
-func (c *ActImageClient) Delete() *ActImageDelete {
-	mutation := newActImageMutation(c.config, OpDelete)
-	return &ActImageDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *ActImageClient) DeleteOne(ai *ActImage) *ActImageDeleteOne {
-	return c.DeleteOneID(ai.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ActImageClient) DeleteOneID(id uint64) *ActImageDeleteOne {
-	builder := c.Delete().Where(actimage.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &ActImageDeleteOne{builder}
-}
-
-// Query returns a query builder for ActImage.
-func (c *ActImageClient) Query() *ActImageQuery {
-	return &ActImageQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeActImage},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a ActImage entity by its id.
-func (c *ActImageClient) Get(ctx context.Context, id uint64) (*ActImage, error) {
-	return c.Query().Where(actimage.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *ActImageClient) GetX(ctx context.Context, id uint64) *ActImage {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryActVersion queries the act_version edge of a ActImage.
-func (c *ActImageClient) QueryActVersion(ai *ActImage) *ActVersionQuery {
-	query := (&ActVersionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := ai.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(actimage.Table, actimage.FieldID, id),
-			sqlgraph.To(actversion.Table, actversion.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, actimage.ActVersionTable, actimage.ActVersionColumn),
-		)
-		fromV = sqlgraph.Neighbors(ai.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryImage queries the image edge of a ActImage.
-func (c *ActImageClient) QueryImage(ai *ActImage) *ImageQuery {
-	query := (&ImageClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := ai.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(actimage.Table, actimage.FieldID, id),
-			sqlgraph.To(image.Table, image.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, actimage.ImageTable, actimage.ImageColumn),
-		)
-		fromV = sqlgraph.Neighbors(ai.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *ActImageClient) Hooks() []Hook {
-	return c.hooks.ActImage
-}
-
-// Interceptors returns the client interceptors.
-func (c *ActImageClient) Interceptors() []Interceptor {
-	return c.inters.ActImage
-}
-
-func (c *ActImageClient) mutate(ctx context.Context, m *ActImageMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&ActImageCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&ActImageUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&ActImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&ActImageDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown ActImage mutation op: %q", m.Op())
-	}
-}
-
-// ActVersionClient is a client for the ActVersion schema.
-type ActVersionClient struct {
-	config
-}
-
-// NewActVersionClient returns a client for the ActVersion from the given config.
-func NewActVersionClient(c config) *ActVersionClient {
-	return &ActVersionClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `actversion.Hooks(f(g(h())))`.
-func (c *ActVersionClient) Use(hooks ...Hook) {
-	c.hooks.ActVersion = append(c.hooks.ActVersion, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `actversion.Intercept(f(g(h())))`.
-func (c *ActVersionClient) Intercept(interceptors ...Interceptor) {
-	c.inters.ActVersion = append(c.inters.ActVersion, interceptors...)
-}
-
-// Create returns a builder for creating a ActVersion entity.
-func (c *ActVersionClient) Create() *ActVersionCreate {
-	mutation := newActVersionMutation(c.config, OpCreate)
-	return &ActVersionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of ActVersion entities.
-func (c *ActVersionClient) CreateBulk(builders ...*ActVersionCreate) *ActVersionCreateBulk {
-	return &ActVersionCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for ActVersion.
-func (c *ActVersionClient) Update() *ActVersionUpdate {
-	mutation := newActVersionMutation(c.config, OpUpdate)
-	return &ActVersionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for DayRoutine.
+func (c *DayRoutineClient) Update() *DayRoutineUpdate {
+	mutation := newDayRoutineMutation(c.config, OpUpdate)
+	return &DayRoutineUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *ActVersionClient) UpdateOne(av *ActVersion) *ActVersionUpdateOne {
-	mutation := newActVersionMutation(c.config, OpUpdateOne, withActVersion(av))
-	return &ActVersionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *DayRoutineClient) UpdateOne(dr *DayRoutine) *DayRoutineUpdateOne {
+	mutation := newDayRoutineMutation(c.config, OpUpdateOne, withDayRoutine(dr))
+	return &DayRoutineUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ActVersionClient) UpdateOneID(id uint64) *ActVersionUpdateOne {
-	mutation := newActVersionMutation(c.config, OpUpdateOne, withActVersionID(id))
-	return &ActVersionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *DayRoutineClient) UpdateOneID(id int64) *DayRoutineUpdateOne {
+	mutation := newDayRoutineMutation(c.config, OpUpdateOne, withDayRoutineID(id))
+	return &DayRoutineUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for ActVersion.
-func (c *ActVersionClient) Delete() *ActVersionDelete {
-	mutation := newActVersionMutation(c.config, OpDelete)
-	return &ActVersionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *ActVersionClient) DeleteOne(av *ActVersion) *ActVersionDeleteOne {
-	return c.DeleteOneID(av.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ActVersionClient) DeleteOneID(id uint64) *ActVersionDeleteOne {
-	builder := c.Delete().Where(actversion.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &ActVersionDeleteOne{builder}
-}
-
-// Query returns a query builder for ActVersion.
-func (c *ActVersionClient) Query() *ActVersionQuery {
-	return &ActVersionQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeActVersion},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a ActVersion entity by its id.
-func (c *ActVersionClient) Get(ctx context.Context, id uint64) (*ActVersion, error) {
-	return c.Query().Where(actversion.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *ActVersionClient) GetX(ctx context.Context, id uint64) *ActVersion {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryAct queries the act edge of a ActVersion.
-func (c *ActVersionClient) QueryAct(av *ActVersion) *ActQuery {
-	query := (&ActClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := av.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(actversion.Table, actversion.FieldID, id),
-			sqlgraph.To(act.Table, act.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, actversion.ActTable, actversion.ActColumn),
-		)
-		fromV = sqlgraph.Neighbors(av.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryImages queries the images edge of a ActVersion.
-func (c *ActVersionClient) QueryImages(av *ActVersion) *ImageQuery {
-	query := (&ImageClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := av.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(actversion.Table, actversion.FieldID, id),
-			sqlgraph.To(image.Table, image.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, actversion.ImagesTable, actversion.ImagesPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(av.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRoutineActs queries the routine_acts edge of a ActVersion.
-func (c *ActVersionClient) QueryRoutineActs(av *ActVersion) *RoutineActQuery {
-	query := (&RoutineActClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := av.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(actversion.Table, actversion.FieldID, id),
-			sqlgraph.To(routineact.Table, routineact.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, actversion.RoutineActsTable, actversion.RoutineActsColumn),
-		)
-		fromV = sqlgraph.Neighbors(av.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryActImages queries the act_images edge of a ActVersion.
-func (c *ActVersionClient) QueryActImages(av *ActVersion) *ActImageQuery {
-	query := (&ActImageClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := av.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(actversion.Table, actversion.FieldID, id),
-			sqlgraph.To(actimage.Table, actimage.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, actversion.ActImagesTable, actversion.ActImagesColumn),
-		)
-		fromV = sqlgraph.Neighbors(av.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *ActVersionClient) Hooks() []Hook {
-	return c.hooks.ActVersion
-}
-
-// Interceptors returns the client interceptors.
-func (c *ActVersionClient) Interceptors() []Interceptor {
-	return c.inters.ActVersion
-}
-
-func (c *ActVersionClient) mutate(ctx context.Context, m *ActVersionMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&ActVersionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&ActVersionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&ActVersionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&ActVersionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown ActVersion mutation op: %q", m.Op())
-	}
-}
-
-// DailyRoutineClient is a client for the DailyRoutine schema.
-type DailyRoutineClient struct {
-	config
-}
-
-// NewDailyRoutineClient returns a client for the DailyRoutine from the given config.
-func NewDailyRoutineClient(c config) *DailyRoutineClient {
-	return &DailyRoutineClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `dailyroutine.Hooks(f(g(h())))`.
-func (c *DailyRoutineClient) Use(hooks ...Hook) {
-	c.hooks.DailyRoutine = append(c.hooks.DailyRoutine, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `dailyroutine.Intercept(f(g(h())))`.
-func (c *DailyRoutineClient) Intercept(interceptors ...Interceptor) {
-	c.inters.DailyRoutine = append(c.inters.DailyRoutine, interceptors...)
-}
-
-// Create returns a builder for creating a DailyRoutine entity.
-func (c *DailyRoutineClient) Create() *DailyRoutineCreate {
-	mutation := newDailyRoutineMutation(c.config, OpCreate)
-	return &DailyRoutineCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of DailyRoutine entities.
-func (c *DailyRoutineClient) CreateBulk(builders ...*DailyRoutineCreate) *DailyRoutineCreateBulk {
-	return &DailyRoutineCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for DailyRoutine.
-func (c *DailyRoutineClient) Update() *DailyRoutineUpdate {
-	mutation := newDailyRoutineMutation(c.config, OpUpdate)
-	return &DailyRoutineUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *DailyRoutineClient) UpdateOne(dr *DailyRoutine) *DailyRoutineUpdateOne {
-	mutation := newDailyRoutineMutation(c.config, OpUpdateOne, withDailyRoutine(dr))
-	return &DailyRoutineUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *DailyRoutineClient) UpdateOneID(id uint64) *DailyRoutineUpdateOne {
-	mutation := newDailyRoutineMutation(c.config, OpUpdateOne, withDailyRoutineID(id))
-	return &DailyRoutineUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for DailyRoutine.
-func (c *DailyRoutineClient) Delete() *DailyRoutineDelete {
-	mutation := newDailyRoutineMutation(c.config, OpDelete)
-	return &DailyRoutineDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for DayRoutine.
+func (c *DayRoutineClient) Delete() *DayRoutineDelete {
+	mutation := newDayRoutineMutation(c.config, OpDelete)
+	return &DayRoutineDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *DailyRoutineClient) DeleteOne(dr *DailyRoutine) *DailyRoutineDeleteOne {
+func (c *DayRoutineClient) DeleteOne(dr *DayRoutine) *DayRoutineDeleteOne {
 	return c.DeleteOneID(dr.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *DailyRoutineClient) DeleteOneID(id uint64) *DailyRoutineDeleteOne {
-	builder := c.Delete().Where(dailyroutine.ID(id))
+func (c *DayRoutineClient) DeleteOneID(id int64) *DayRoutineDeleteOne {
+	builder := c.Delete().Where(dayroutine.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &DailyRoutineDeleteOne{builder}
+	return &DayRoutineDeleteOne{builder}
 }
 
-// Query returns a query builder for DailyRoutine.
-func (c *DailyRoutineClient) Query() *DailyRoutineQuery {
-	return &DailyRoutineQuery{
+// Query returns a query builder for DayRoutine.
+func (c *DayRoutineClient) Query() *DayRoutineQuery {
+	return &DayRoutineQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeDailyRoutine},
+		ctx:    &QueryContext{Type: TypeDayRoutine},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a DailyRoutine entity by its id.
-func (c *DailyRoutineClient) Get(ctx context.Context, id uint64) (*DailyRoutine, error) {
-	return c.Query().Where(dailyroutine.ID(id)).Only(ctx)
+// Get returns a DayRoutine entity by its id.
+func (c *DayRoutineClient) Get(ctx context.Context, id int64) (*DayRoutine, error) {
+	return c.Query().Where(dayroutine.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *DailyRoutineClient) GetX(ctx context.Context, id uint64) *DailyRoutine {
+func (c *DayRoutineClient) GetX(ctx context.Context, id int64) *DayRoutine {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -822,31 +498,15 @@ func (c *DailyRoutineClient) GetX(ctx context.Context, id uint64) *DailyRoutine 
 	return obj
 }
 
-// QueryProgramVersion queries the program_version edge of a DailyRoutine.
-func (c *DailyRoutineClient) QueryProgramVersion(dr *DailyRoutine) *ProgramVersionQuery {
-	query := (&ProgramVersionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := dr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(dailyroutine.Table, dailyroutine.FieldID, id),
-			sqlgraph.To(programversion.Table, programversion.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, dailyroutine.ProgramVersionTable, dailyroutine.ProgramVersionColumn),
-		)
-		fromV = sqlgraph.Neighbors(dr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRoutineActs queries the routine_acts edge of a DailyRoutine.
-func (c *DailyRoutineClient) QueryRoutineActs(dr *DailyRoutine) *RoutineActQuery {
+// QueryRoutineActs queries the routine_acts edge of a DayRoutine.
+func (c *DayRoutineClient) QueryRoutineActs(dr *DayRoutine) *RoutineActQuery {
 	query := (&RoutineActClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := dr.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(dailyroutine.Table, dailyroutine.FieldID, id),
+			sqlgraph.From(dayroutine.Table, dayroutine.FieldID, id),
 			sqlgraph.To(routineact.Table, routineact.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, dailyroutine.RoutineActsTable, dailyroutine.RoutineActsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, dayroutine.RoutineActsTable, dayroutine.RoutineActsColumn),
 		)
 		fromV = sqlgraph.Neighbors(dr.driver.Dialect(), step)
 		return fromV, nil
@@ -855,209 +515,27 @@ func (c *DailyRoutineClient) QueryRoutineActs(dr *DailyRoutine) *RoutineActQuery
 }
 
 // Hooks returns the client hooks.
-func (c *DailyRoutineClient) Hooks() []Hook {
-	return c.hooks.DailyRoutine
+func (c *DayRoutineClient) Hooks() []Hook {
+	return c.hooks.DayRoutine
 }
 
 // Interceptors returns the client interceptors.
-func (c *DailyRoutineClient) Interceptors() []Interceptor {
-	return c.inters.DailyRoutine
+func (c *DayRoutineClient) Interceptors() []Interceptor {
+	return c.inters.DayRoutine
 }
 
-func (c *DailyRoutineClient) mutate(ctx context.Context, m *DailyRoutineMutation) (Value, error) {
+func (c *DayRoutineClient) mutate(ctx context.Context, m *DayRoutineMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&DailyRoutineCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&DayRoutineCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&DailyRoutineUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&DayRoutineUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&DailyRoutineUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&DayRoutineUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&DailyRoutineDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&DayRoutineDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown DailyRoutine mutation op: %q", m.Op())
-	}
-}
-
-// ImageClient is a client for the Image schema.
-type ImageClient struct {
-	config
-}
-
-// NewImageClient returns a client for the Image from the given config.
-func NewImageClient(c config) *ImageClient {
-	return &ImageClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `image.Hooks(f(g(h())))`.
-func (c *ImageClient) Use(hooks ...Hook) {
-	c.hooks.Image = append(c.hooks.Image, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `image.Intercept(f(g(h())))`.
-func (c *ImageClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Image = append(c.inters.Image, interceptors...)
-}
-
-// Create returns a builder for creating a Image entity.
-func (c *ImageClient) Create() *ImageCreate {
-	mutation := newImageMutation(c.config, OpCreate)
-	return &ImageCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Image entities.
-func (c *ImageClient) CreateBulk(builders ...*ImageCreate) *ImageCreateBulk {
-	return &ImageCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Image.
-func (c *ImageClient) Update() *ImageUpdate {
-	mutation := newImageMutation(c.config, OpUpdate)
-	return &ImageUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *ImageClient) UpdateOne(i *Image) *ImageUpdateOne {
-	mutation := newImageMutation(c.config, OpUpdateOne, withImage(i))
-	return &ImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *ImageClient) UpdateOneID(id uint64) *ImageUpdateOne {
-	mutation := newImageMutation(c.config, OpUpdateOne, withImageID(id))
-	return &ImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Image.
-func (c *ImageClient) Delete() *ImageDelete {
-	mutation := newImageMutation(c.config, OpDelete)
-	return &ImageDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *ImageClient) DeleteOne(i *Image) *ImageDeleteOne {
-	return c.DeleteOneID(i.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ImageClient) DeleteOneID(id uint64) *ImageDeleteOne {
-	builder := c.Delete().Where(image.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &ImageDeleteOne{builder}
-}
-
-// Query returns a query builder for Image.
-func (c *ImageClient) Query() *ImageQuery {
-	return &ImageQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeImage},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a Image entity by its id.
-func (c *ImageClient) Get(ctx context.Context, id uint64) (*Image, error) {
-	return c.Query().Where(image.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *ImageClient) GetX(ctx context.Context, id uint64) *Image {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryActVersions queries the act_versions edge of a Image.
-func (c *ImageClient) QueryActVersions(i *Image) *ActVersionQuery {
-	query := (&ActVersionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(image.Table, image.FieldID, id),
-			sqlgraph.To(actversion.Table, actversion.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, image.ActVersionsTable, image.ActVersionsPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryProgramVersions queries the program_versions edge of a Image.
-func (c *ImageClient) QueryProgramVersions(i *Image) *ProgramVersionQuery {
-	query := (&ProgramVersionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(image.Table, image.FieldID, id),
-			sqlgraph.To(programversion.Table, programversion.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, image.ProgramVersionsTable, image.ProgramVersionsPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryActImages queries the act_images edge of a Image.
-func (c *ImageClient) QueryActImages(i *Image) *ActImageQuery {
-	query := (&ActImageClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(image.Table, image.FieldID, id),
-			sqlgraph.To(actimage.Table, actimage.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, image.ActImagesTable, image.ActImagesColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryProgramImages queries the program_images edge of a Image.
-func (c *ImageClient) QueryProgramImages(i *Image) *ProgramImageQuery {
-	query := (&ProgramImageClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(image.Table, image.FieldID, id),
-			sqlgraph.To(programimage.Table, programimage.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, image.ProgramImagesTable, image.ProgramImagesColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *ImageClient) Hooks() []Hook {
-	return c.hooks.Image
-}
-
-// Interceptors returns the client interceptors.
-func (c *ImageClient) Interceptors() []Interceptor {
-	return c.inters.Image
-}
-
-func (c *ImageClient) mutate(ctx context.Context, m *ImageMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&ImageCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&ImageUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&ImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&ImageDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown Image mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown DayRoutine mutation op: %q", m.Op())
 	}
 }
 
@@ -1107,7 +585,7 @@ func (c *ProgramClient) UpdateOne(pr *Program) *ProgramUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ProgramClient) UpdateOneID(id uint64) *ProgramUpdateOne {
+func (c *ProgramClient) UpdateOneID(id int64) *ProgramUpdateOne {
 	mutation := newProgramMutation(c.config, OpUpdateOne, withProgramID(id))
 	return &ProgramUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -1124,7 +602,7 @@ func (c *ProgramClient) DeleteOne(pr *Program) *ProgramDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ProgramClient) DeleteOneID(id uint64) *ProgramDeleteOne {
+func (c *ProgramClient) DeleteOneID(id int64) *ProgramDeleteOne {
 	builder := c.Delete().Where(program.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -1141,12 +619,12 @@ func (c *ProgramClient) Query() *ProgramQuery {
 }
 
 // Get returns a Program entity by its id.
-func (c *ProgramClient) Get(ctx context.Context, id uint64) (*Program, error) {
+func (c *ProgramClient) Get(ctx context.Context, id int64) (*Program, error) {
 	return c.Query().Where(program.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ProgramClient) GetX(ctx context.Context, id uint64) *Program {
+func (c *ProgramClient) GetX(ctx context.Context, id int64) *Program {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1154,15 +632,15 @@ func (c *ProgramClient) GetX(ctx context.Context, id uint64) *Program {
 	return obj
 }
 
-// QueryProgramVersions queries the program_versions edge of a Program.
-func (c *ProgramClient) QueryProgramVersions(pr *Program) *ProgramVersionQuery {
-	query := (&ProgramVersionClient{config: c.config}).Query()
+// QueryProgramReleases queries the program_releases edge of a Program.
+func (c *ProgramClient) QueryProgramReleases(pr *Program) *ProgramReleaseQuery {
+	query := (&ProgramReleaseClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := pr.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(program.Table, program.FieldID, id),
-			sqlgraph.To(programversion.Table, programversion.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, program.ProgramVersionsTable, program.ProgramVersionsColumn),
+			sqlgraph.To(programrelease.Table, programrelease.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, program.ProgramReleasesTable, program.ProgramReleasesColumn),
 		)
 		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
 		return fromV, nil
@@ -1195,92 +673,92 @@ func (c *ProgramClient) mutate(ctx context.Context, m *ProgramMutation) (Value, 
 	}
 }
 
-// ProgramImageClient is a client for the ProgramImage schema.
-type ProgramImageClient struct {
+// ProgramReleaseClient is a client for the ProgramRelease schema.
+type ProgramReleaseClient struct {
 	config
 }
 
-// NewProgramImageClient returns a client for the ProgramImage from the given config.
-func NewProgramImageClient(c config) *ProgramImageClient {
-	return &ProgramImageClient{config: c}
+// NewProgramReleaseClient returns a client for the ProgramRelease from the given config.
+func NewProgramReleaseClient(c config) *ProgramReleaseClient {
+	return &ProgramReleaseClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `programimage.Hooks(f(g(h())))`.
-func (c *ProgramImageClient) Use(hooks ...Hook) {
-	c.hooks.ProgramImage = append(c.hooks.ProgramImage, hooks...)
+// A call to `Use(f, g, h)` equals to `programrelease.Hooks(f(g(h())))`.
+func (c *ProgramReleaseClient) Use(hooks ...Hook) {
+	c.hooks.ProgramRelease = append(c.hooks.ProgramRelease, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `programimage.Intercept(f(g(h())))`.
-func (c *ProgramImageClient) Intercept(interceptors ...Interceptor) {
-	c.inters.ProgramImage = append(c.inters.ProgramImage, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `programrelease.Intercept(f(g(h())))`.
+func (c *ProgramReleaseClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ProgramRelease = append(c.inters.ProgramRelease, interceptors...)
 }
 
-// Create returns a builder for creating a ProgramImage entity.
-func (c *ProgramImageClient) Create() *ProgramImageCreate {
-	mutation := newProgramImageMutation(c.config, OpCreate)
-	return &ProgramImageCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a ProgramRelease entity.
+func (c *ProgramReleaseClient) Create() *ProgramReleaseCreate {
+	mutation := newProgramReleaseMutation(c.config, OpCreate)
+	return &ProgramReleaseCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of ProgramImage entities.
-func (c *ProgramImageClient) CreateBulk(builders ...*ProgramImageCreate) *ProgramImageCreateBulk {
-	return &ProgramImageCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of ProgramRelease entities.
+func (c *ProgramReleaseClient) CreateBulk(builders ...*ProgramReleaseCreate) *ProgramReleaseCreateBulk {
+	return &ProgramReleaseCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for ProgramImage.
-func (c *ProgramImageClient) Update() *ProgramImageUpdate {
-	mutation := newProgramImageMutation(c.config, OpUpdate)
-	return &ProgramImageUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for ProgramRelease.
+func (c *ProgramReleaseClient) Update() *ProgramReleaseUpdate {
+	mutation := newProgramReleaseMutation(c.config, OpUpdate)
+	return &ProgramReleaseUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *ProgramImageClient) UpdateOne(pi *ProgramImage) *ProgramImageUpdateOne {
-	mutation := newProgramImageMutation(c.config, OpUpdateOne, withProgramImage(pi))
-	return &ProgramImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *ProgramReleaseClient) UpdateOne(pr *ProgramRelease) *ProgramReleaseUpdateOne {
+	mutation := newProgramReleaseMutation(c.config, OpUpdateOne, withProgramRelease(pr))
+	return &ProgramReleaseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ProgramImageClient) UpdateOneID(id uint64) *ProgramImageUpdateOne {
-	mutation := newProgramImageMutation(c.config, OpUpdateOne, withProgramImageID(id))
-	return &ProgramImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *ProgramReleaseClient) UpdateOneID(id int64) *ProgramReleaseUpdateOne {
+	mutation := newProgramReleaseMutation(c.config, OpUpdateOne, withProgramReleaseID(id))
+	return &ProgramReleaseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for ProgramImage.
-func (c *ProgramImageClient) Delete() *ProgramImageDelete {
-	mutation := newProgramImageMutation(c.config, OpDelete)
-	return &ProgramImageDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for ProgramRelease.
+func (c *ProgramReleaseClient) Delete() *ProgramReleaseDelete {
+	mutation := newProgramReleaseMutation(c.config, OpDelete)
+	return &ProgramReleaseDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *ProgramImageClient) DeleteOne(pi *ProgramImage) *ProgramImageDeleteOne {
-	return c.DeleteOneID(pi.ID)
+func (c *ProgramReleaseClient) DeleteOne(pr *ProgramRelease) *ProgramReleaseDeleteOne {
+	return c.DeleteOneID(pr.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ProgramImageClient) DeleteOneID(id uint64) *ProgramImageDeleteOne {
-	builder := c.Delete().Where(programimage.ID(id))
+func (c *ProgramReleaseClient) DeleteOneID(id int64) *ProgramReleaseDeleteOne {
+	builder := c.Delete().Where(programrelease.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &ProgramImageDeleteOne{builder}
+	return &ProgramReleaseDeleteOne{builder}
 }
 
-// Query returns a query builder for ProgramImage.
-func (c *ProgramImageClient) Query() *ProgramImageQuery {
-	return &ProgramImageQuery{
+// Query returns a query builder for ProgramRelease.
+func (c *ProgramReleaseClient) Query() *ProgramReleaseQuery {
+	return &ProgramReleaseQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeProgramImage},
+		ctx:    &QueryContext{Type: TypeProgramRelease},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a ProgramImage entity by its id.
-func (c *ProgramImageClient) Get(ctx context.Context, id uint64) (*ProgramImage, error) {
-	return c.Query().Where(programimage.ID(id)).Only(ctx)
+// Get returns a ProgramRelease entity by its id.
+func (c *ProgramReleaseClient) Get(ctx context.Context, id int64) (*ProgramRelease, error) {
+	return c.Query().Where(programrelease.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ProgramImageClient) GetX(ctx context.Context, id uint64) *ProgramImage {
+func (c *ProgramReleaseClient) GetX(ctx context.Context, id int64) *ProgramRelease {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1288,242 +766,76 @@ func (c *ProgramImageClient) GetX(ctx context.Context, id uint64) *ProgramImage 
 	return obj
 }
 
-// QueryProgramVersion queries the program_version edge of a ProgramImage.
-func (c *ProgramImageClient) QueryProgramVersion(pi *ProgramImage) *ProgramVersionQuery {
-	query := (&ProgramVersionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := pi.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(programimage.Table, programimage.FieldID, id),
-			sqlgraph.To(programversion.Table, programversion.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, programimage.ProgramVersionTable, programimage.ProgramVersionColumn),
-		)
-		fromV = sqlgraph.Neighbors(pi.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryImage queries the image edge of a ProgramImage.
-func (c *ProgramImageClient) QueryImage(pi *ProgramImage) *ImageQuery {
-	query := (&ImageClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := pi.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(programimage.Table, programimage.FieldID, id),
-			sqlgraph.To(image.Table, image.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, programimage.ImageTable, programimage.ImageColumn),
-		)
-		fromV = sqlgraph.Neighbors(pi.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *ProgramImageClient) Hooks() []Hook {
-	return c.hooks.ProgramImage
-}
-
-// Interceptors returns the client interceptors.
-func (c *ProgramImageClient) Interceptors() []Interceptor {
-	return c.inters.ProgramImage
-}
-
-func (c *ProgramImageClient) mutate(ctx context.Context, m *ProgramImageMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&ProgramImageCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&ProgramImageUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&ProgramImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&ProgramImageDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown ProgramImage mutation op: %q", m.Op())
-	}
-}
-
-// ProgramVersionClient is a client for the ProgramVersion schema.
-type ProgramVersionClient struct {
-	config
-}
-
-// NewProgramVersionClient returns a client for the ProgramVersion from the given config.
-func NewProgramVersionClient(c config) *ProgramVersionClient {
-	return &ProgramVersionClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `programversion.Hooks(f(g(h())))`.
-func (c *ProgramVersionClient) Use(hooks ...Hook) {
-	c.hooks.ProgramVersion = append(c.hooks.ProgramVersion, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `programversion.Intercept(f(g(h())))`.
-func (c *ProgramVersionClient) Intercept(interceptors ...Interceptor) {
-	c.inters.ProgramVersion = append(c.inters.ProgramVersion, interceptors...)
-}
-
-// Create returns a builder for creating a ProgramVersion entity.
-func (c *ProgramVersionClient) Create() *ProgramVersionCreate {
-	mutation := newProgramVersionMutation(c.config, OpCreate)
-	return &ProgramVersionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of ProgramVersion entities.
-func (c *ProgramVersionClient) CreateBulk(builders ...*ProgramVersionCreate) *ProgramVersionCreateBulk {
-	return &ProgramVersionCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for ProgramVersion.
-func (c *ProgramVersionClient) Update() *ProgramVersionUpdate {
-	mutation := newProgramVersionMutation(c.config, OpUpdate)
-	return &ProgramVersionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *ProgramVersionClient) UpdateOne(pv *ProgramVersion) *ProgramVersionUpdateOne {
-	mutation := newProgramVersionMutation(c.config, OpUpdateOne, withProgramVersion(pv))
-	return &ProgramVersionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *ProgramVersionClient) UpdateOneID(id uint64) *ProgramVersionUpdateOne {
-	mutation := newProgramVersionMutation(c.config, OpUpdateOne, withProgramVersionID(id))
-	return &ProgramVersionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for ProgramVersion.
-func (c *ProgramVersionClient) Delete() *ProgramVersionDelete {
-	mutation := newProgramVersionMutation(c.config, OpDelete)
-	return &ProgramVersionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *ProgramVersionClient) DeleteOne(pv *ProgramVersion) *ProgramVersionDeleteOne {
-	return c.DeleteOneID(pv.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ProgramVersionClient) DeleteOneID(id uint64) *ProgramVersionDeleteOne {
-	builder := c.Delete().Where(programversion.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &ProgramVersionDeleteOne{builder}
-}
-
-// Query returns a query builder for ProgramVersion.
-func (c *ProgramVersionClient) Query() *ProgramVersionQuery {
-	return &ProgramVersionQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeProgramVersion},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a ProgramVersion entity by its id.
-func (c *ProgramVersionClient) Get(ctx context.Context, id uint64) (*ProgramVersion, error) {
-	return c.Query().Where(programversion.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *ProgramVersionClient) GetX(ctx context.Context, id uint64) *ProgramVersion {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryProgram queries the program edge of a ProgramVersion.
-func (c *ProgramVersionClient) QueryProgram(pv *ProgramVersion) *ProgramQuery {
+// QueryProgram queries the program edge of a ProgramRelease.
+func (c *ProgramReleaseClient) QueryProgram(pr *ProgramRelease) *ProgramQuery {
 	query := (&ProgramClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := pv.ID
+		id := pr.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(programversion.Table, programversion.FieldID, id),
+			sqlgraph.From(programrelease.Table, programrelease.FieldID, id),
 			sqlgraph.To(program.Table, program.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, programversion.ProgramTable, programversion.ProgramColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, programrelease.ProgramTable, programrelease.ProgramColumn),
 		)
-		fromV = sqlgraph.Neighbors(pv.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryImages queries the images edge of a ProgramVersion.
-func (c *ProgramVersionClient) QueryImages(pv *ProgramVersion) *ImageQuery {
-	query := (&ImageClient{config: c.config}).Query()
+// QueryS3ProgramImages queries the s3_program_images edge of a ProgramRelease.
+func (c *ProgramReleaseClient) QueryS3ProgramImages(pr *ProgramRelease) *S3ProgramImageQuery {
+	query := (&S3ProgramImageClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := pv.ID
+		id := pr.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(programversion.Table, programversion.FieldID, id),
-			sqlgraph.To(image.Table, image.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, programversion.ImagesTable, programversion.ImagesPrimaryKey...),
+			sqlgraph.From(programrelease.Table, programrelease.FieldID, id),
+			sqlgraph.To(s3programimage.Table, s3programimage.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, programrelease.S3ProgramImagesTable, programrelease.S3ProgramImagesColumn),
 		)
-		fromV = sqlgraph.Neighbors(pv.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryDailyRoutines queries the daily_routines edge of a ProgramVersion.
-func (c *ProgramVersionClient) QueryDailyRoutines(pv *ProgramVersion) *DailyRoutineQuery {
-	query := (&DailyRoutineClient{config: c.config}).Query()
+// QueryDayRoutines queries the day_routines edge of a ProgramRelease.
+func (c *ProgramReleaseClient) QueryDayRoutines(pr *ProgramRelease) *DayRoutineQuery {
+	query := (&DayRoutineClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := pv.ID
+		id := pr.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(programversion.Table, programversion.FieldID, id),
-			sqlgraph.To(dailyroutine.Table, dailyroutine.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, programversion.DailyRoutinesTable, programversion.DailyRoutinesColumn),
+			sqlgraph.From(programrelease.Table, programrelease.FieldID, id),
+			sqlgraph.To(dayroutine.Table, dayroutine.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, programrelease.DayRoutinesTable, programrelease.DayRoutinesColumn),
 		)
-		fromV = sqlgraph.Neighbors(pv.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryProgramImages queries the program_images edge of a ProgramVersion.
-func (c *ProgramVersionClient) QueryProgramImages(pv *ProgramVersion) *ProgramImageQuery {
-	query := (&ProgramImageClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := pv.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(programversion.Table, programversion.FieldID, id),
-			sqlgraph.To(programimage.Table, programimage.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, programversion.ProgramImagesTable, programversion.ProgramImagesColumn),
-		)
-		fromV = sqlgraph.Neighbors(pv.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
 // Hooks returns the client hooks.
-func (c *ProgramVersionClient) Hooks() []Hook {
-	return c.hooks.ProgramVersion
+func (c *ProgramReleaseClient) Hooks() []Hook {
+	return c.hooks.ProgramRelease
 }
 
 // Interceptors returns the client interceptors.
-func (c *ProgramVersionClient) Interceptors() []Interceptor {
-	return c.inters.ProgramVersion
+func (c *ProgramReleaseClient) Interceptors() []Interceptor {
+	return c.inters.ProgramRelease
 }
 
-func (c *ProgramVersionClient) mutate(ctx context.Context, m *ProgramVersionMutation) (Value, error) {
+func (c *ProgramReleaseClient) mutate(ctx context.Context, m *ProgramReleaseMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&ProgramVersionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&ProgramReleaseCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&ProgramVersionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&ProgramReleaseUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&ProgramVersionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&ProgramReleaseUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&ProgramVersionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&ProgramReleaseDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown ProgramVersion mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown ProgramRelease mutation op: %q", m.Op())
 	}
 }
 
@@ -1573,7 +885,7 @@ func (c *RoutineActClient) UpdateOne(ra *RoutineAct) *RoutineActUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *RoutineActClient) UpdateOneID(id uint64) *RoutineActUpdateOne {
+func (c *RoutineActClient) UpdateOneID(id int64) *RoutineActUpdateOne {
 	mutation := newRoutineActMutation(c.config, OpUpdateOne, withRoutineActID(id))
 	return &RoutineActUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -1590,7 +902,7 @@ func (c *RoutineActClient) DeleteOne(ra *RoutineAct) *RoutineActDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *RoutineActClient) DeleteOneID(id uint64) *RoutineActDeleteOne {
+func (c *RoutineActClient) DeleteOneID(id int64) *RoutineActDeleteOne {
 	builder := c.Delete().Where(routineact.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -1607,12 +919,12 @@ func (c *RoutineActClient) Query() *RoutineActQuery {
 }
 
 // Get returns a RoutineAct entity by its id.
-func (c *RoutineActClient) Get(ctx context.Context, id uint64) (*RoutineAct, error) {
+func (c *RoutineActClient) Get(ctx context.Context, id int64) (*RoutineAct, error) {
 	return c.Query().Where(routineact.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *RoutineActClient) GetX(ctx context.Context, id uint64) *RoutineAct {
+func (c *RoutineActClient) GetX(ctx context.Context, id int64) *RoutineAct {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1620,15 +932,15 @@ func (c *RoutineActClient) GetX(ctx context.Context, id uint64) *RoutineAct {
 	return obj
 }
 
-// QueryActVersion queries the act_version edge of a RoutineAct.
-func (c *RoutineActClient) QueryActVersion(ra *RoutineAct) *ActVersionQuery {
-	query := (&ActVersionClient{config: c.config}).Query()
+// QueryAct queries the act edge of a RoutineAct.
+func (c *RoutineActClient) QueryAct(ra *RoutineAct) *ActQuery {
+	query := (&ActClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := ra.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(routineact.Table, routineact.FieldID, id),
-			sqlgraph.To(actversion.Table, actversion.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, routineact.ActVersionTable, routineact.ActVersionColumn),
+			sqlgraph.To(act.Table, act.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, routineact.ActTable, routineact.ActColumn),
 		)
 		fromV = sqlgraph.Neighbors(ra.driver.Dialect(), step)
 		return fromV, nil
@@ -1636,15 +948,15 @@ func (c *RoutineActClient) QueryActVersion(ra *RoutineAct) *ActVersionQuery {
 	return query
 }
 
-// QueryDailyRoutine queries the daily_routine edge of a RoutineAct.
-func (c *RoutineActClient) QueryDailyRoutine(ra *RoutineAct) *DailyRoutineQuery {
-	query := (&DailyRoutineClient{config: c.config}).Query()
+// QueryDayRoutine queries the day_routine edge of a RoutineAct.
+func (c *RoutineActClient) QueryDayRoutine(ra *RoutineAct) *DayRoutineQuery {
+	query := (&DayRoutineClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := ra.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(routineact.Table, routineact.FieldID, id),
-			sqlgraph.To(dailyroutine.Table, dailyroutine.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, routineact.DailyRoutineTable, routineact.DailyRoutineColumn),
+			sqlgraph.To(dayroutine.Table, dayroutine.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, routineact.DayRoutineTable, routineact.DayRoutineColumn),
 		)
 		fromV = sqlgraph.Neighbors(ra.driver.Dialect(), step)
 		return fromV, nil
@@ -1677,14 +989,448 @@ func (c *RoutineActClient) mutate(ctx context.Context, m *RoutineActMutation) (V
 	}
 }
 
+// S3ActImageClient is a client for the S3ActImage schema.
+type S3ActImageClient struct {
+	config
+}
+
+// NewS3ActImageClient returns a client for the S3ActImage from the given config.
+func NewS3ActImageClient(c config) *S3ActImageClient {
+	return &S3ActImageClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `s3actimage.Hooks(f(g(h())))`.
+func (c *S3ActImageClient) Use(hooks ...Hook) {
+	c.hooks.S3ActImage = append(c.hooks.S3ActImage, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `s3actimage.Intercept(f(g(h())))`.
+func (c *S3ActImageClient) Intercept(interceptors ...Interceptor) {
+	c.inters.S3ActImage = append(c.inters.S3ActImage, interceptors...)
+}
+
+// Create returns a builder for creating a S3ActImage entity.
+func (c *S3ActImageClient) Create() *S3ActImageCreate {
+	mutation := newS3ActImageMutation(c.config, OpCreate)
+	return &S3ActImageCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of S3ActImage entities.
+func (c *S3ActImageClient) CreateBulk(builders ...*S3ActImageCreate) *S3ActImageCreateBulk {
+	return &S3ActImageCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for S3ActImage.
+func (c *S3ActImageClient) Update() *S3ActImageUpdate {
+	mutation := newS3ActImageMutation(c.config, OpUpdate)
+	return &S3ActImageUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *S3ActImageClient) UpdateOne(si *S3ActImage) *S3ActImageUpdateOne {
+	mutation := newS3ActImageMutation(c.config, OpUpdateOne, withS3ActImage(si))
+	return &S3ActImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *S3ActImageClient) UpdateOneID(id int64) *S3ActImageUpdateOne {
+	mutation := newS3ActImageMutation(c.config, OpUpdateOne, withS3ActImageID(id))
+	return &S3ActImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for S3ActImage.
+func (c *S3ActImageClient) Delete() *S3ActImageDelete {
+	mutation := newS3ActImageMutation(c.config, OpDelete)
+	return &S3ActImageDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *S3ActImageClient) DeleteOne(si *S3ActImage) *S3ActImageDeleteOne {
+	return c.DeleteOneID(si.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *S3ActImageClient) DeleteOneID(id int64) *S3ActImageDeleteOne {
+	builder := c.Delete().Where(s3actimage.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &S3ActImageDeleteOne{builder}
+}
+
+// Query returns a query builder for S3ActImage.
+func (c *S3ActImageClient) Query() *S3ActImageQuery {
+	return &S3ActImageQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeS3ActImage},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a S3ActImage entity by its id.
+func (c *S3ActImageClient) Get(ctx context.Context, id int64) (*S3ActImage, error) {
+	return c.Query().Where(s3actimage.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *S3ActImageClient) GetX(ctx context.Context, id int64) *S3ActImage {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryAct queries the act edge of a S3ActImage.
+func (c *S3ActImageClient) QueryAct(si *S3ActImage) *ActQuery {
+	query := (&ActClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := si.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(s3actimage.Table, s3actimage.FieldID, id),
+			sqlgraph.To(act.Table, act.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, s3actimage.ActTable, s3actimage.ActColumn),
+		)
+		fromV = sqlgraph.Neighbors(si.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryS3Image queries the s3_image edge of a S3ActImage.
+func (c *S3ActImageClient) QueryS3Image(si *S3ActImage) *S3ImageQuery {
+	query := (&S3ImageClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := si.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(s3actimage.Table, s3actimage.FieldID, id),
+			sqlgraph.To(s3image.Table, s3image.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, s3actimage.S3ImageTable, s3actimage.S3ImageColumn),
+		)
+		fromV = sqlgraph.Neighbors(si.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *S3ActImageClient) Hooks() []Hook {
+	return c.hooks.S3ActImage
+}
+
+// Interceptors returns the client interceptors.
+func (c *S3ActImageClient) Interceptors() []Interceptor {
+	return c.inters.S3ActImage
+}
+
+func (c *S3ActImageClient) mutate(ctx context.Context, m *S3ActImageMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&S3ActImageCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&S3ActImageUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&S3ActImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&S3ActImageDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown S3ActImage mutation op: %q", m.Op())
+	}
+}
+
+// S3ImageClient is a client for the S3Image schema.
+type S3ImageClient struct {
+	config
+}
+
+// NewS3ImageClient returns a client for the S3Image from the given config.
+func NewS3ImageClient(c config) *S3ImageClient {
+	return &S3ImageClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `s3image.Hooks(f(g(h())))`.
+func (c *S3ImageClient) Use(hooks ...Hook) {
+	c.hooks.S3Image = append(c.hooks.S3Image, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `s3image.Intercept(f(g(h())))`.
+func (c *S3ImageClient) Intercept(interceptors ...Interceptor) {
+	c.inters.S3Image = append(c.inters.S3Image, interceptors...)
+}
+
+// Create returns a builder for creating a S3Image entity.
+func (c *S3ImageClient) Create() *S3ImageCreate {
+	mutation := newS3ImageMutation(c.config, OpCreate)
+	return &S3ImageCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of S3Image entities.
+func (c *S3ImageClient) CreateBulk(builders ...*S3ImageCreate) *S3ImageCreateBulk {
+	return &S3ImageCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for S3Image.
+func (c *S3ImageClient) Update() *S3ImageUpdate {
+	mutation := newS3ImageMutation(c.config, OpUpdate)
+	return &S3ImageUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *S3ImageClient) UpdateOne(s *S3Image) *S3ImageUpdateOne {
+	mutation := newS3ImageMutation(c.config, OpUpdateOne, withS3Image(s))
+	return &S3ImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *S3ImageClient) UpdateOneID(id int64) *S3ImageUpdateOne {
+	mutation := newS3ImageMutation(c.config, OpUpdateOne, withS3ImageID(id))
+	return &S3ImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for S3Image.
+func (c *S3ImageClient) Delete() *S3ImageDelete {
+	mutation := newS3ImageMutation(c.config, OpDelete)
+	return &S3ImageDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *S3ImageClient) DeleteOne(s *S3Image) *S3ImageDeleteOne {
+	return c.DeleteOneID(s.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *S3ImageClient) DeleteOneID(id int64) *S3ImageDeleteOne {
+	builder := c.Delete().Where(s3image.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &S3ImageDeleteOne{builder}
+}
+
+// Query returns a query builder for S3Image.
+func (c *S3ImageClient) Query() *S3ImageQuery {
+	return &S3ImageQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeS3Image},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a S3Image entity by its id.
+func (c *S3ImageClient) Get(ctx context.Context, id int64) (*S3Image, error) {
+	return c.Query().Where(s3image.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *S3ImageClient) GetX(ctx context.Context, id int64) *S3Image {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryS3ActImages queries the s3_act_images edge of a S3Image.
+func (c *S3ImageClient) QueryS3ActImages(s *S3Image) *S3ActImageQuery {
+	query := (&S3ActImageClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(s3image.Table, s3image.FieldID, id),
+			sqlgraph.To(s3actimage.Table, s3actimage.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, s3image.S3ActImagesTable, s3image.S3ActImagesColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *S3ImageClient) Hooks() []Hook {
+	return c.hooks.S3Image
+}
+
+// Interceptors returns the client interceptors.
+func (c *S3ImageClient) Interceptors() []Interceptor {
+	return c.inters.S3Image
+}
+
+func (c *S3ImageClient) mutate(ctx context.Context, m *S3ImageMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&S3ImageCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&S3ImageUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&S3ImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&S3ImageDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown S3Image mutation op: %q", m.Op())
+	}
+}
+
+// S3ProgramImageClient is a client for the S3ProgramImage schema.
+type S3ProgramImageClient struct {
+	config
+}
+
+// NewS3ProgramImageClient returns a client for the S3ProgramImage from the given config.
+func NewS3ProgramImageClient(c config) *S3ProgramImageClient {
+	return &S3ProgramImageClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `s3programimage.Hooks(f(g(h())))`.
+func (c *S3ProgramImageClient) Use(hooks ...Hook) {
+	c.hooks.S3ProgramImage = append(c.hooks.S3ProgramImage, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `s3programimage.Intercept(f(g(h())))`.
+func (c *S3ProgramImageClient) Intercept(interceptors ...Interceptor) {
+	c.inters.S3ProgramImage = append(c.inters.S3ProgramImage, interceptors...)
+}
+
+// Create returns a builder for creating a S3ProgramImage entity.
+func (c *S3ProgramImageClient) Create() *S3ProgramImageCreate {
+	mutation := newS3ProgramImageMutation(c.config, OpCreate)
+	return &S3ProgramImageCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of S3ProgramImage entities.
+func (c *S3ProgramImageClient) CreateBulk(builders ...*S3ProgramImageCreate) *S3ProgramImageCreateBulk {
+	return &S3ProgramImageCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for S3ProgramImage.
+func (c *S3ProgramImageClient) Update() *S3ProgramImageUpdate {
+	mutation := newS3ProgramImageMutation(c.config, OpUpdate)
+	return &S3ProgramImageUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *S3ProgramImageClient) UpdateOne(si *S3ProgramImage) *S3ProgramImageUpdateOne {
+	mutation := newS3ProgramImageMutation(c.config, OpUpdateOne, withS3ProgramImage(si))
+	return &S3ProgramImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *S3ProgramImageClient) UpdateOneID(id int64) *S3ProgramImageUpdateOne {
+	mutation := newS3ProgramImageMutation(c.config, OpUpdateOne, withS3ProgramImageID(id))
+	return &S3ProgramImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for S3ProgramImage.
+func (c *S3ProgramImageClient) Delete() *S3ProgramImageDelete {
+	mutation := newS3ProgramImageMutation(c.config, OpDelete)
+	return &S3ProgramImageDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *S3ProgramImageClient) DeleteOne(si *S3ProgramImage) *S3ProgramImageDeleteOne {
+	return c.DeleteOneID(si.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *S3ProgramImageClient) DeleteOneID(id int64) *S3ProgramImageDeleteOne {
+	builder := c.Delete().Where(s3programimage.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &S3ProgramImageDeleteOne{builder}
+}
+
+// Query returns a query builder for S3ProgramImage.
+func (c *S3ProgramImageClient) Query() *S3ProgramImageQuery {
+	return &S3ProgramImageQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeS3ProgramImage},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a S3ProgramImage entity by its id.
+func (c *S3ProgramImageClient) Get(ctx context.Context, id int64) (*S3ProgramImage, error) {
+	return c.Query().Where(s3programimage.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *S3ProgramImageClient) GetX(ctx context.Context, id int64) *S3ProgramImage {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryProgramRelease queries the program_release edge of a S3ProgramImage.
+func (c *S3ProgramImageClient) QueryProgramRelease(si *S3ProgramImage) *ProgramReleaseQuery {
+	query := (&ProgramReleaseClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := si.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(s3programimage.Table, s3programimage.FieldID, id),
+			sqlgraph.To(programrelease.Table, programrelease.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, s3programimage.ProgramReleaseTable, s3programimage.ProgramReleaseColumn),
+		)
+		fromV = sqlgraph.Neighbors(si.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryS3Image queries the s3_image edge of a S3ProgramImage.
+func (c *S3ProgramImageClient) QueryS3Image(si *S3ProgramImage) *S3ImageQuery {
+	query := (&S3ImageClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := si.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(s3programimage.Table, s3programimage.FieldID, id),
+			sqlgraph.To(s3image.Table, s3image.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, s3programimage.S3ImageTable, s3programimage.S3ImageColumn),
+		)
+		fromV = sqlgraph.Neighbors(si.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *S3ProgramImageClient) Hooks() []Hook {
+	return c.hooks.S3ProgramImage
+}
+
+// Interceptors returns the client interceptors.
+func (c *S3ProgramImageClient) Interceptors() []Interceptor {
+	return c.inters.S3ProgramImage
+}
+
+func (c *S3ProgramImageClient) mutate(ctx context.Context, m *S3ProgramImageMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&S3ProgramImageCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&S3ProgramImageUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&S3ProgramImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&S3ProgramImageDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown S3ProgramImage mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Act, ActImage, ActVersion, DailyRoutine, Image, Program, ProgramImage,
-		ProgramVersion, RoutineAct []ent.Hook
+		Act, DayRoutine, Program, ProgramRelease, RoutineAct, S3ActImage, S3Image,
+		S3ProgramImage []ent.Hook
 	}
 	inters struct {
-		Act, ActImage, ActVersion, DailyRoutine, Image, Program, ProgramImage,
-		ProgramVersion, RoutineAct []ent.Interceptor
+		Act, DayRoutine, Program, ProgramRelease, RoutineAct, S3ActImage, S3Image,
+		S3ProgramImage []ent.Interceptor
 	}
 )

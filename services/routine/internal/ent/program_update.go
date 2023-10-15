@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"routine/internal/ent/predicate"
 	"routine/internal/ent/program"
-	"routine/internal/ent/programversion"
+	"routine/internal/ent/programrelease"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -28,19 +28,19 @@ func (pu *ProgramUpdate) Where(ps ...predicate.Program) *ProgramUpdate {
 	return pu
 }
 
-// AddProgramVersionIDs adds the "program_versions" edge to the ProgramVersion entity by IDs.
-func (pu *ProgramUpdate) AddProgramVersionIDs(ids ...uint64) *ProgramUpdate {
-	pu.mutation.AddProgramVersionIDs(ids...)
+// AddProgramReleaseIDs adds the "program_releases" edge to the ProgramRelease entity by IDs.
+func (pu *ProgramUpdate) AddProgramReleaseIDs(ids ...int64) *ProgramUpdate {
+	pu.mutation.AddProgramReleaseIDs(ids...)
 	return pu
 }
 
-// AddProgramVersions adds the "program_versions" edges to the ProgramVersion entity.
-func (pu *ProgramUpdate) AddProgramVersions(p ...*ProgramVersion) *ProgramUpdate {
-	ids := make([]uint64, len(p))
+// AddProgramReleases adds the "program_releases" edges to the ProgramRelease entity.
+func (pu *ProgramUpdate) AddProgramReleases(p ...*ProgramRelease) *ProgramUpdate {
+	ids := make([]int64, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return pu.AddProgramVersionIDs(ids...)
+	return pu.AddProgramReleaseIDs(ids...)
 }
 
 // Mutation returns the ProgramMutation object of the builder.
@@ -48,25 +48,25 @@ func (pu *ProgramUpdate) Mutation() *ProgramMutation {
 	return pu.mutation
 }
 
-// ClearProgramVersions clears all "program_versions" edges to the ProgramVersion entity.
-func (pu *ProgramUpdate) ClearProgramVersions() *ProgramUpdate {
-	pu.mutation.ClearProgramVersions()
+// ClearProgramReleases clears all "program_releases" edges to the ProgramRelease entity.
+func (pu *ProgramUpdate) ClearProgramReleases() *ProgramUpdate {
+	pu.mutation.ClearProgramReleases()
 	return pu
 }
 
-// RemoveProgramVersionIDs removes the "program_versions" edge to ProgramVersion entities by IDs.
-func (pu *ProgramUpdate) RemoveProgramVersionIDs(ids ...uint64) *ProgramUpdate {
-	pu.mutation.RemoveProgramVersionIDs(ids...)
+// RemoveProgramReleaseIDs removes the "program_releases" edge to ProgramRelease entities by IDs.
+func (pu *ProgramUpdate) RemoveProgramReleaseIDs(ids ...int64) *ProgramUpdate {
+	pu.mutation.RemoveProgramReleaseIDs(ids...)
 	return pu
 }
 
-// RemoveProgramVersions removes "program_versions" edges to ProgramVersion entities.
-func (pu *ProgramUpdate) RemoveProgramVersions(p ...*ProgramVersion) *ProgramUpdate {
-	ids := make([]uint64, len(p))
+// RemoveProgramReleases removes "program_releases" edges to ProgramRelease entities.
+func (pu *ProgramUpdate) RemoveProgramReleases(p ...*ProgramRelease) *ProgramUpdate {
+	ids := make([]int64, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return pu.RemoveProgramVersionIDs(ids...)
+	return pu.RemoveProgramReleaseIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -97,7 +97,7 @@ func (pu *ProgramUpdate) ExecX(ctx context.Context) {
 }
 
 func (pu *ProgramUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := sqlgraph.NewUpdateSpec(program.Table, program.Columns, sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64))
+	_spec := sqlgraph.NewUpdateSpec(program.Table, program.Columns, sqlgraph.NewFieldSpec(program.FieldID, field.TypeInt64))
 	if ps := pu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -105,31 +105,31 @@ func (pu *ProgramUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if pu.mutation.VersionDerivedFromCleared() {
-		_spec.ClearField(program.FieldVersionDerivedFrom, field.TypeString)
+	if pu.mutation.ParentProgramCleared() {
+		_spec.ClearField(program.FieldParentProgram, field.TypeString)
 	}
-	if pu.mutation.ProgramVersionsCleared() {
+	if pu.mutation.ProgramReleasesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   program.ProgramVersionsTable,
-			Columns: []string{program.ProgramVersionsColumn},
+			Table:   program.ProgramReleasesTable,
+			Columns: []string{program.ProgramReleasesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(programversion.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(programrelease.FieldID, field.TypeInt64),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pu.mutation.RemovedProgramVersionsIDs(); len(nodes) > 0 && !pu.mutation.ProgramVersionsCleared() {
+	if nodes := pu.mutation.RemovedProgramReleasesIDs(); len(nodes) > 0 && !pu.mutation.ProgramReleasesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   program.ProgramVersionsTable,
-			Columns: []string{program.ProgramVersionsColumn},
+			Table:   program.ProgramReleasesTable,
+			Columns: []string{program.ProgramReleasesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(programversion.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(programrelease.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -137,15 +137,15 @@ func (pu *ProgramUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pu.mutation.ProgramVersionsIDs(); len(nodes) > 0 {
+	if nodes := pu.mutation.ProgramReleasesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   program.ProgramVersionsTable,
-			Columns: []string{program.ProgramVersionsColumn},
+			Table:   program.ProgramReleasesTable,
+			Columns: []string{program.ProgramReleasesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(programversion.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(programrelease.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -173,19 +173,19 @@ type ProgramUpdateOne struct {
 	mutation *ProgramMutation
 }
 
-// AddProgramVersionIDs adds the "program_versions" edge to the ProgramVersion entity by IDs.
-func (puo *ProgramUpdateOne) AddProgramVersionIDs(ids ...uint64) *ProgramUpdateOne {
-	puo.mutation.AddProgramVersionIDs(ids...)
+// AddProgramReleaseIDs adds the "program_releases" edge to the ProgramRelease entity by IDs.
+func (puo *ProgramUpdateOne) AddProgramReleaseIDs(ids ...int64) *ProgramUpdateOne {
+	puo.mutation.AddProgramReleaseIDs(ids...)
 	return puo
 }
 
-// AddProgramVersions adds the "program_versions" edges to the ProgramVersion entity.
-func (puo *ProgramUpdateOne) AddProgramVersions(p ...*ProgramVersion) *ProgramUpdateOne {
-	ids := make([]uint64, len(p))
+// AddProgramReleases adds the "program_releases" edges to the ProgramRelease entity.
+func (puo *ProgramUpdateOne) AddProgramReleases(p ...*ProgramRelease) *ProgramUpdateOne {
+	ids := make([]int64, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return puo.AddProgramVersionIDs(ids...)
+	return puo.AddProgramReleaseIDs(ids...)
 }
 
 // Mutation returns the ProgramMutation object of the builder.
@@ -193,25 +193,25 @@ func (puo *ProgramUpdateOne) Mutation() *ProgramMutation {
 	return puo.mutation
 }
 
-// ClearProgramVersions clears all "program_versions" edges to the ProgramVersion entity.
-func (puo *ProgramUpdateOne) ClearProgramVersions() *ProgramUpdateOne {
-	puo.mutation.ClearProgramVersions()
+// ClearProgramReleases clears all "program_releases" edges to the ProgramRelease entity.
+func (puo *ProgramUpdateOne) ClearProgramReleases() *ProgramUpdateOne {
+	puo.mutation.ClearProgramReleases()
 	return puo
 }
 
-// RemoveProgramVersionIDs removes the "program_versions" edge to ProgramVersion entities by IDs.
-func (puo *ProgramUpdateOne) RemoveProgramVersionIDs(ids ...uint64) *ProgramUpdateOne {
-	puo.mutation.RemoveProgramVersionIDs(ids...)
+// RemoveProgramReleaseIDs removes the "program_releases" edge to ProgramRelease entities by IDs.
+func (puo *ProgramUpdateOne) RemoveProgramReleaseIDs(ids ...int64) *ProgramUpdateOne {
+	puo.mutation.RemoveProgramReleaseIDs(ids...)
 	return puo
 }
 
-// RemoveProgramVersions removes "program_versions" edges to ProgramVersion entities.
-func (puo *ProgramUpdateOne) RemoveProgramVersions(p ...*ProgramVersion) *ProgramUpdateOne {
-	ids := make([]uint64, len(p))
+// RemoveProgramReleases removes "program_releases" edges to ProgramRelease entities.
+func (puo *ProgramUpdateOne) RemoveProgramReleases(p ...*ProgramRelease) *ProgramUpdateOne {
+	ids := make([]int64, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return puo.RemoveProgramVersionIDs(ids...)
+	return puo.RemoveProgramReleaseIDs(ids...)
 }
 
 // Where appends a list predicates to the ProgramUpdate builder.
@@ -255,7 +255,7 @@ func (puo *ProgramUpdateOne) ExecX(ctx context.Context) {
 }
 
 func (puo *ProgramUpdateOne) sqlSave(ctx context.Context) (_node *Program, err error) {
-	_spec := sqlgraph.NewUpdateSpec(program.Table, program.Columns, sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64))
+	_spec := sqlgraph.NewUpdateSpec(program.Table, program.Columns, sqlgraph.NewFieldSpec(program.FieldID, field.TypeInt64))
 	id, ok := puo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Program.id" for update`)}
@@ -280,31 +280,31 @@ func (puo *ProgramUpdateOne) sqlSave(ctx context.Context) (_node *Program, err e
 			}
 		}
 	}
-	if puo.mutation.VersionDerivedFromCleared() {
-		_spec.ClearField(program.FieldVersionDerivedFrom, field.TypeString)
+	if puo.mutation.ParentProgramCleared() {
+		_spec.ClearField(program.FieldParentProgram, field.TypeString)
 	}
-	if puo.mutation.ProgramVersionsCleared() {
+	if puo.mutation.ProgramReleasesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   program.ProgramVersionsTable,
-			Columns: []string{program.ProgramVersionsColumn},
+			Table:   program.ProgramReleasesTable,
+			Columns: []string{program.ProgramReleasesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(programversion.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(programrelease.FieldID, field.TypeInt64),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := puo.mutation.RemovedProgramVersionsIDs(); len(nodes) > 0 && !puo.mutation.ProgramVersionsCleared() {
+	if nodes := puo.mutation.RemovedProgramReleasesIDs(); len(nodes) > 0 && !puo.mutation.ProgramReleasesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   program.ProgramVersionsTable,
-			Columns: []string{program.ProgramVersionsColumn},
+			Table:   program.ProgramReleasesTable,
+			Columns: []string{program.ProgramReleasesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(programversion.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(programrelease.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -312,15 +312,15 @@ func (puo *ProgramUpdateOne) sqlSave(ctx context.Context) (_node *Program, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := puo.mutation.ProgramVersionsIDs(); len(nodes) > 0 {
+	if nodes := puo.mutation.ProgramReleasesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   program.ProgramVersionsTable,
-			Columns: []string{program.ProgramVersionsColumn},
+			Table:   program.ProgramReleasesTable,
+			Columns: []string{program.ProgramReleasesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(programversion.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(programrelease.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

@@ -55,8 +55,14 @@ func getTooLongActText() ActText {
 }
 
 func getValidActWithAuthor(author user.User) *Act {
-	code, _ := domain.RandomHexCode()
-	av := ActVersionFrom("ABCDEF12", 1, getValidActImages(), getValidActText(), domain.CreatedAt(time.Now()))
-	act, _ := ActFrom(ActCode(code), WeightType, getValidActName(), author.Id(), domain.CreatedAt(time.Now()), ActVersions{av})
-	return act
+	return &Act{
+		code:      "ABCDEF12",
+		author:    author.Id(),
+		actType:   SimpleType,
+		name:      getValidActName(),
+		text:      getValidActText(),
+		imageSrcs: getValidActImages(),
+		createdAt: domain.CreatedAt(time.Now()),
+		standard:  false,
+	}
 }

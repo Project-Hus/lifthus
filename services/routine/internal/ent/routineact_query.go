@@ -6,8 +6,8 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"routine/internal/ent/actversion"
-	"routine/internal/ent/dailyroutine"
+	"routine/internal/ent/act"
+	"routine/internal/ent/dayroutine"
 	"routine/internal/ent/predicate"
 	"routine/internal/ent/routineact"
 
@@ -19,13 +19,13 @@ import (
 // RoutineActQuery is the builder for querying RoutineAct entities.
 type RoutineActQuery struct {
 	config
-	ctx              *QueryContext
-	order            []routineact.OrderOption
-	inters           []Interceptor
-	predicates       []predicate.RoutineAct
-	withActVersion   *ActVersionQuery
-	withDailyRoutine *DailyRoutineQuery
-	withFKs          bool
+	ctx            *QueryContext
+	order          []routineact.OrderOption
+	inters         []Interceptor
+	predicates     []predicate.RoutineAct
+	withAct        *ActQuery
+	withDayRoutine *DayRoutineQuery
+	withFKs        bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -62,9 +62,9 @@ func (raq *RoutineActQuery) Order(o ...routineact.OrderOption) *RoutineActQuery 
 	return raq
 }
 
-// QueryActVersion chains the current query on the "act_version" edge.
-func (raq *RoutineActQuery) QueryActVersion() *ActVersionQuery {
-	query := (&ActVersionClient{config: raq.config}).Query()
+// QueryAct chains the current query on the "act" edge.
+func (raq *RoutineActQuery) QueryAct() *ActQuery {
+	query := (&ActClient{config: raq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := raq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -75,8 +75,8 @@ func (raq *RoutineActQuery) QueryActVersion() *ActVersionQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(routineact.Table, routineact.FieldID, selector),
-			sqlgraph.To(actversion.Table, actversion.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, routineact.ActVersionTable, routineact.ActVersionColumn),
+			sqlgraph.To(act.Table, act.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, routineact.ActTable, routineact.ActColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(raq.driver.Dialect(), step)
 		return fromU, nil
@@ -84,9 +84,9 @@ func (raq *RoutineActQuery) QueryActVersion() *ActVersionQuery {
 	return query
 }
 
-// QueryDailyRoutine chains the current query on the "daily_routine" edge.
-func (raq *RoutineActQuery) QueryDailyRoutine() *DailyRoutineQuery {
-	query := (&DailyRoutineClient{config: raq.config}).Query()
+// QueryDayRoutine chains the current query on the "day_routine" edge.
+func (raq *RoutineActQuery) QueryDayRoutine() *DayRoutineQuery {
+	query := (&DayRoutineClient{config: raq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := raq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -97,8 +97,8 @@ func (raq *RoutineActQuery) QueryDailyRoutine() *DailyRoutineQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(routineact.Table, routineact.FieldID, selector),
-			sqlgraph.To(dailyroutine.Table, dailyroutine.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, routineact.DailyRoutineTable, routineact.DailyRoutineColumn),
+			sqlgraph.To(dayroutine.Table, dayroutine.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, routineact.DayRoutineTable, routineact.DayRoutineColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(raq.driver.Dialect(), step)
 		return fromU, nil
@@ -130,8 +130,8 @@ func (raq *RoutineActQuery) FirstX(ctx context.Context) *RoutineAct {
 
 // FirstID returns the first RoutineAct ID from the query.
 // Returns a *NotFoundError when no RoutineAct ID was found.
-func (raq *RoutineActQuery) FirstID(ctx context.Context) (id uint64, err error) {
-	var ids []uint64
+func (raq *RoutineActQuery) FirstID(ctx context.Context) (id int64, err error) {
+	var ids []int64
 	if ids, err = raq.Limit(1).IDs(setContextOp(ctx, raq.ctx, "FirstID")); err != nil {
 		return
 	}
@@ -143,7 +143,7 @@ func (raq *RoutineActQuery) FirstID(ctx context.Context) (id uint64, err error) 
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (raq *RoutineActQuery) FirstIDX(ctx context.Context) uint64 {
+func (raq *RoutineActQuery) FirstIDX(ctx context.Context) int64 {
 	id, err := raq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -181,8 +181,8 @@ func (raq *RoutineActQuery) OnlyX(ctx context.Context) *RoutineAct {
 // OnlyID is like Only, but returns the only RoutineAct ID in the query.
 // Returns a *NotSingularError when more than one RoutineAct ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (raq *RoutineActQuery) OnlyID(ctx context.Context) (id uint64, err error) {
-	var ids []uint64
+func (raq *RoutineActQuery) OnlyID(ctx context.Context) (id int64, err error) {
+	var ids []int64
 	if ids, err = raq.Limit(2).IDs(setContextOp(ctx, raq.ctx, "OnlyID")); err != nil {
 		return
 	}
@@ -198,7 +198,7 @@ func (raq *RoutineActQuery) OnlyID(ctx context.Context) (id uint64, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (raq *RoutineActQuery) OnlyIDX(ctx context.Context) uint64 {
+func (raq *RoutineActQuery) OnlyIDX(ctx context.Context) int64 {
 	id, err := raq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -226,7 +226,7 @@ func (raq *RoutineActQuery) AllX(ctx context.Context) []*RoutineAct {
 }
 
 // IDs executes the query and returns a list of RoutineAct IDs.
-func (raq *RoutineActQuery) IDs(ctx context.Context) (ids []uint64, err error) {
+func (raq *RoutineActQuery) IDs(ctx context.Context) (ids []int64, err error) {
 	if raq.ctx.Unique == nil && raq.path != nil {
 		raq.Unique(true)
 	}
@@ -238,7 +238,7 @@ func (raq *RoutineActQuery) IDs(ctx context.Context) (ids []uint64, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (raq *RoutineActQuery) IDsX(ctx context.Context) []uint64 {
+func (raq *RoutineActQuery) IDsX(ctx context.Context) []int64 {
 	ids, err := raq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -293,38 +293,38 @@ func (raq *RoutineActQuery) Clone() *RoutineActQuery {
 		return nil
 	}
 	return &RoutineActQuery{
-		config:           raq.config,
-		ctx:              raq.ctx.Clone(),
-		order:            append([]routineact.OrderOption{}, raq.order...),
-		inters:           append([]Interceptor{}, raq.inters...),
-		predicates:       append([]predicate.RoutineAct{}, raq.predicates...),
-		withActVersion:   raq.withActVersion.Clone(),
-		withDailyRoutine: raq.withDailyRoutine.Clone(),
+		config:         raq.config,
+		ctx:            raq.ctx.Clone(),
+		order:          append([]routineact.OrderOption{}, raq.order...),
+		inters:         append([]Interceptor{}, raq.inters...),
+		predicates:     append([]predicate.RoutineAct{}, raq.predicates...),
+		withAct:        raq.withAct.Clone(),
+		withDayRoutine: raq.withDayRoutine.Clone(),
 		// clone intermediate query.
 		sql:  raq.sql.Clone(),
 		path: raq.path,
 	}
 }
 
-// WithActVersion tells the query-builder to eager-load the nodes that are connected to
-// the "act_version" edge. The optional arguments are used to configure the query builder of the edge.
-func (raq *RoutineActQuery) WithActVersion(opts ...func(*ActVersionQuery)) *RoutineActQuery {
-	query := (&ActVersionClient{config: raq.config}).Query()
+// WithAct tells the query-builder to eager-load the nodes that are connected to
+// the "act" edge. The optional arguments are used to configure the query builder of the edge.
+func (raq *RoutineActQuery) WithAct(opts ...func(*ActQuery)) *RoutineActQuery {
+	query := (&ActClient{config: raq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	raq.withActVersion = query
+	raq.withAct = query
 	return raq
 }
 
-// WithDailyRoutine tells the query-builder to eager-load the nodes that are connected to
-// the "daily_routine" edge. The optional arguments are used to configure the query builder of the edge.
-func (raq *RoutineActQuery) WithDailyRoutine(opts ...func(*DailyRoutineQuery)) *RoutineActQuery {
-	query := (&DailyRoutineClient{config: raq.config}).Query()
+// WithDayRoutine tells the query-builder to eager-load the nodes that are connected to
+// the "day_routine" edge. The optional arguments are used to configure the query builder of the edge.
+func (raq *RoutineActQuery) WithDayRoutine(opts ...func(*DayRoutineQuery)) *RoutineActQuery {
+	query := (&DayRoutineClient{config: raq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	raq.withDailyRoutine = query
+	raq.withDayRoutine = query
 	return raq
 }
 
@@ -334,12 +334,12 @@ func (raq *RoutineActQuery) WithDailyRoutine(opts ...func(*DailyRoutineQuery)) *
 // Example:
 //
 //	var v []struct {
-//		DailyRoutineCode string `json:"daily_routine_code,omitempty"`
+//		Order int `json:"order,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.RoutineAct.Query().
-//		GroupBy(routineact.FieldDailyRoutineCode).
+//		GroupBy(routineact.FieldOrder).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (raq *RoutineActQuery) GroupBy(field string, fields ...string) *RoutineActGroupBy {
@@ -357,11 +357,11 @@ func (raq *RoutineActQuery) GroupBy(field string, fields ...string) *RoutineActG
 // Example:
 //
 //	var v []struct {
-//		DailyRoutineCode string `json:"daily_routine_code,omitempty"`
+//		Order int `json:"order,omitempty"`
 //	}
 //
 //	client.RoutineAct.Query().
-//		Select(routineact.FieldDailyRoutineCode).
+//		Select(routineact.FieldOrder).
 //		Scan(ctx, &v)
 func (raq *RoutineActQuery) Select(fields ...string) *RoutineActSelect {
 	raq.ctx.Fields = append(raq.ctx.Fields, fields...)
@@ -408,11 +408,11 @@ func (raq *RoutineActQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 		withFKs     = raq.withFKs
 		_spec       = raq.querySpec()
 		loadedTypes = [2]bool{
-			raq.withActVersion != nil,
-			raq.withDailyRoutine != nil,
+			raq.withAct != nil,
+			raq.withDayRoutine != nil,
 		}
 	)
-	if raq.withActVersion != nil || raq.withDailyRoutine != nil {
+	if raq.withAct != nil || raq.withDayRoutine != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -436,29 +436,29 @@ func (raq *RoutineActQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := raq.withActVersion; query != nil {
-		if err := raq.loadActVersion(ctx, query, nodes, nil,
-			func(n *RoutineAct, e *ActVersion) { n.Edges.ActVersion = e }); err != nil {
+	if query := raq.withAct; query != nil {
+		if err := raq.loadAct(ctx, query, nodes, nil,
+			func(n *RoutineAct, e *Act) { n.Edges.Act = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := raq.withDailyRoutine; query != nil {
-		if err := raq.loadDailyRoutine(ctx, query, nodes, nil,
-			func(n *RoutineAct, e *DailyRoutine) { n.Edges.DailyRoutine = e }); err != nil {
+	if query := raq.withDayRoutine; query != nil {
+		if err := raq.loadDayRoutine(ctx, query, nodes, nil,
+			func(n *RoutineAct, e *DayRoutine) { n.Edges.DayRoutine = e }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (raq *RoutineActQuery) loadActVersion(ctx context.Context, query *ActVersionQuery, nodes []*RoutineAct, init func(*RoutineAct), assign func(*RoutineAct, *ActVersion)) error {
-	ids := make([]uint64, 0, len(nodes))
-	nodeids := make(map[uint64][]*RoutineAct)
+func (raq *RoutineActQuery) loadAct(ctx context.Context, query *ActQuery, nodes []*RoutineAct, init func(*RoutineAct), assign func(*RoutineAct, *Act)) error {
+	ids := make([]int64, 0, len(nodes))
+	nodeids := make(map[int64][]*RoutineAct)
 	for i := range nodes {
-		if nodes[i].act_version_routine_acts == nil {
+		if nodes[i].act_routine_acts == nil {
 			continue
 		}
-		fk := *nodes[i].act_version_routine_acts
+		fk := *nodes[i].act_routine_acts
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -467,7 +467,7 @@ func (raq *RoutineActQuery) loadActVersion(ctx context.Context, query *ActVersio
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(actversion.IDIn(ids...))
+	query.Where(act.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -475,7 +475,7 @@ func (raq *RoutineActQuery) loadActVersion(ctx context.Context, query *ActVersio
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "act_version_routine_acts" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "act_routine_acts" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -483,14 +483,14 @@ func (raq *RoutineActQuery) loadActVersion(ctx context.Context, query *ActVersio
 	}
 	return nil
 }
-func (raq *RoutineActQuery) loadDailyRoutine(ctx context.Context, query *DailyRoutineQuery, nodes []*RoutineAct, init func(*RoutineAct), assign func(*RoutineAct, *DailyRoutine)) error {
-	ids := make([]uint64, 0, len(nodes))
-	nodeids := make(map[uint64][]*RoutineAct)
+func (raq *RoutineActQuery) loadDayRoutine(ctx context.Context, query *DayRoutineQuery, nodes []*RoutineAct, init func(*RoutineAct), assign func(*RoutineAct, *DayRoutine)) error {
+	ids := make([]int64, 0, len(nodes))
+	nodeids := make(map[int64][]*RoutineAct)
 	for i := range nodes {
-		if nodes[i].daily_routine_routine_acts == nil {
+		if nodes[i].day_routine_routine_acts == nil {
 			continue
 		}
-		fk := *nodes[i].daily_routine_routine_acts
+		fk := *nodes[i].day_routine_routine_acts
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -499,7 +499,7 @@ func (raq *RoutineActQuery) loadDailyRoutine(ctx context.Context, query *DailyRo
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(dailyroutine.IDIn(ids...))
+	query.Where(dayroutine.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -507,7 +507,7 @@ func (raq *RoutineActQuery) loadDailyRoutine(ctx context.Context, query *DailyRo
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "daily_routine_routine_acts" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "day_routine_routine_acts" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -526,7 +526,7 @@ func (raq *RoutineActQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (raq *RoutineActQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(routineact.Table, routineact.Columns, sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64))
+	_spec := sqlgraph.NewQuerySpec(routineact.Table, routineact.Columns, sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeInt64))
 	_spec.From = raq.sql
 	if unique := raq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

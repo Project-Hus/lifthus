@@ -7,15 +7,14 @@ import (
 	"errors"
 	"fmt"
 	"routine/internal/ent/act"
-	"routine/internal/ent/actimage"
-	"routine/internal/ent/actversion"
-	"routine/internal/ent/dailyroutine"
-	"routine/internal/ent/image"
+	"routine/internal/ent/dayroutine"
 	"routine/internal/ent/predicate"
 	"routine/internal/ent/program"
-	"routine/internal/ent/programimage"
-	"routine/internal/ent/programversion"
+	"routine/internal/ent/programrelease"
 	"routine/internal/ent/routineact"
+	"routine/internal/ent/s3actimage"
+	"routine/internal/ent/s3image"
+	"routine/internal/ent/s3programimage"
 	"sync"
 	"time"
 
@@ -33,35 +32,39 @@ const (
 
 	// Node types.
 	TypeAct            = "Act"
-	TypeActImage       = "ActImage"
-	TypeActVersion     = "ActVersion"
-	TypeDailyRoutine   = "DailyRoutine"
-	TypeImage          = "Image"
+	TypeDayRoutine     = "DayRoutine"
 	TypeProgram        = "Program"
-	TypeProgramImage   = "ProgramImage"
-	TypeProgramVersion = "ProgramVersion"
+	TypeProgramRelease = "ProgramRelease"
 	TypeRoutineAct     = "RoutineAct"
+	TypeS3ActImage     = "S3ActImage"
+	TypeS3Image        = "S3Image"
+	TypeS3ProgramImage = "S3ProgramImage"
 )
 
 // ActMutation represents an operation that mutates the Act nodes in the graph.
 type ActMutation struct {
 	config
-	op                  Op
-	typ                 string
-	id                  *uint64
-	code                *string
-	act_type            *act.ActType
-	name                *string
-	author              *uint64
-	addauthor           *int64
-	created_at          *time.Time
-	clearedFields       map[string]struct{}
-	act_versions        map[uint64]struct{}
-	removedact_versions map[uint64]struct{}
-	clearedact_versions bool
-	done                bool
-	oldValue            func(context.Context) (*Act, error)
-	predicates          []predicate.Act
+	op                   Op
+	typ                  string
+	id                   *int64
+	code                 *string
+	author               *int64
+	addauthor            *int64
+	act_type             *act.ActType
+	name                 *string
+	text                 *string
+	standard             *bool
+	created_at           *time.Time
+	clearedFields        map[string]struct{}
+	s3_act_images        map[int64]struct{}
+	removeds3_act_images map[int64]struct{}
+	cleareds3_act_images bool
+	routine_acts         map[int64]struct{}
+	removedroutine_acts  map[int64]struct{}
+	clearedroutine_acts  bool
+	done                 bool
+	oldValue             func(context.Context) (*Act, error)
+	predicates           []predicate.Act
 }
 
 var _ ent.Mutation = (*ActMutation)(nil)
@@ -84,7 +87,7 @@ func newActMutation(c config, op Op, opts ...actOption) *ActMutation {
 }
 
 // withActID sets the ID field of the mutation.
-func withActID(id uint64) actOption {
+func withActID(id int64) actOption {
 	return func(m *ActMutation) {
 		var (
 			err   error
@@ -136,13 +139,13 @@ func (m ActMutation) Tx() (*Tx, error) {
 
 // SetID sets the value of the id field. Note that this
 // operation is only accepted on creation of Act entities.
-func (m *ActMutation) SetID(id uint64) {
+func (m *ActMutation) SetID(id int64) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *ActMutation) ID() (id uint64, exists bool) {
+func (m *ActMutation) ID() (id int64, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -153,12 +156,12 @@ func (m *ActMutation) ID() (id uint64, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *ActMutation) IDs(ctx context.Context) ([]uint64, error) {
+func (m *ActMutation) IDs(ctx context.Context) ([]int64, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []uint64{id}, nil
+			return []int64{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -202,6 +205,62 @@ func (m *ActMutation) OldCode(ctx context.Context) (v string, err error) {
 // ResetCode resets all changes to the "code" field.
 func (m *ActMutation) ResetCode() {
 	m.code = nil
+}
+
+// SetAuthor sets the "author" field.
+func (m *ActMutation) SetAuthor(i int64) {
+	m.author = &i
+	m.addauthor = nil
+}
+
+// Author returns the value of the "author" field in the mutation.
+func (m *ActMutation) Author() (r int64, exists bool) {
+	v := m.author
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAuthor returns the old "author" field's value of the Act entity.
+// If the Act object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActMutation) OldAuthor(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAuthor is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAuthor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAuthor: %w", err)
+	}
+	return oldValue.Author, nil
+}
+
+// AddAuthor adds i to the "author" field.
+func (m *ActMutation) AddAuthor(i int64) {
+	if m.addauthor != nil {
+		*m.addauthor += i
+	} else {
+		m.addauthor = &i
+	}
+}
+
+// AddedAuthor returns the value that was added to the "author" field in this mutation.
+func (m *ActMutation) AddedAuthor() (r int64, exists bool) {
+	v := m.addauthor
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetAuthor resets all changes to the "author" field.
+func (m *ActMutation) ResetAuthor() {
+	m.author = nil
+	m.addauthor = nil
 }
 
 // SetActType sets the "act_type" field.
@@ -276,60 +335,76 @@ func (m *ActMutation) ResetName() {
 	m.name = nil
 }
 
-// SetAuthor sets the "author" field.
-func (m *ActMutation) SetAuthor(u uint64) {
-	m.author = &u
-	m.addauthor = nil
+// SetText sets the "text" field.
+func (m *ActMutation) SetText(s string) {
+	m.text = &s
 }
 
-// Author returns the value of the "author" field in the mutation.
-func (m *ActMutation) Author() (r uint64, exists bool) {
-	v := m.author
+// Text returns the value of the "text" field in the mutation.
+func (m *ActMutation) Text() (r string, exists bool) {
+	v := m.text
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldAuthor returns the old "author" field's value of the Act entity.
+// OldText returns the old "text" field's value of the Act entity.
 // If the Act object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ActMutation) OldAuthor(ctx context.Context) (v uint64, err error) {
+func (m *ActMutation) OldText(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAuthor is only allowed on UpdateOne operations")
+		return v, errors.New("OldText is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAuthor requires an ID field in the mutation")
+		return v, errors.New("OldText requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAuthor: %w", err)
+		return v, fmt.Errorf("querying old value for OldText: %w", err)
 	}
-	return oldValue.Author, nil
+	return oldValue.Text, nil
 }
 
-// AddAuthor adds u to the "author" field.
-func (m *ActMutation) AddAuthor(u int64) {
-	if m.addauthor != nil {
-		*m.addauthor += u
-	} else {
-		m.addauthor = &u
-	}
+// ResetText resets all changes to the "text" field.
+func (m *ActMutation) ResetText() {
+	m.text = nil
 }
 
-// AddedAuthor returns the value that was added to the "author" field in this mutation.
-func (m *ActMutation) AddedAuthor() (r int64, exists bool) {
-	v := m.addauthor
+// SetStandard sets the "standard" field.
+func (m *ActMutation) SetStandard(b bool) {
+	m.standard = &b
+}
+
+// Standard returns the value of the "standard" field in the mutation.
+func (m *ActMutation) Standard() (r bool, exists bool) {
+	v := m.standard
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// ResetAuthor resets all changes to the "author" field.
-func (m *ActMutation) ResetAuthor() {
-	m.author = nil
-	m.addauthor = nil
+// OldStandard returns the old "standard" field's value of the Act entity.
+// If the Act object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ActMutation) OldStandard(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStandard is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStandard requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStandard: %w", err)
+	}
+	return oldValue.Standard, nil
+}
+
+// ResetStandard resets all changes to the "standard" field.
+func (m *ActMutation) ResetStandard() {
+	m.standard = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -368,58 +443,112 @@ func (m *ActMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
-// AddActVersionIDs adds the "act_versions" edge to the ActVersion entity by ids.
-func (m *ActMutation) AddActVersionIDs(ids ...uint64) {
-	if m.act_versions == nil {
-		m.act_versions = make(map[uint64]struct{})
+// AddS3ActImageIDs adds the "s3_act_images" edge to the S3ActImage entity by ids.
+func (m *ActMutation) AddS3ActImageIDs(ids ...int64) {
+	if m.s3_act_images == nil {
+		m.s3_act_images = make(map[int64]struct{})
 	}
 	for i := range ids {
-		m.act_versions[ids[i]] = struct{}{}
+		m.s3_act_images[ids[i]] = struct{}{}
 	}
 }
 
-// ClearActVersions clears the "act_versions" edge to the ActVersion entity.
-func (m *ActMutation) ClearActVersions() {
-	m.clearedact_versions = true
+// ClearS3ActImages clears the "s3_act_images" edge to the S3ActImage entity.
+func (m *ActMutation) ClearS3ActImages() {
+	m.cleareds3_act_images = true
 }
 
-// ActVersionsCleared reports if the "act_versions" edge to the ActVersion entity was cleared.
-func (m *ActMutation) ActVersionsCleared() bool {
-	return m.clearedact_versions
+// S3ActImagesCleared reports if the "s3_act_images" edge to the S3ActImage entity was cleared.
+func (m *ActMutation) S3ActImagesCleared() bool {
+	return m.cleareds3_act_images
 }
 
-// RemoveActVersionIDs removes the "act_versions" edge to the ActVersion entity by IDs.
-func (m *ActMutation) RemoveActVersionIDs(ids ...uint64) {
-	if m.removedact_versions == nil {
-		m.removedact_versions = make(map[uint64]struct{})
+// RemoveS3ActImageIDs removes the "s3_act_images" edge to the S3ActImage entity by IDs.
+func (m *ActMutation) RemoveS3ActImageIDs(ids ...int64) {
+	if m.removeds3_act_images == nil {
+		m.removeds3_act_images = make(map[int64]struct{})
 	}
 	for i := range ids {
-		delete(m.act_versions, ids[i])
-		m.removedact_versions[ids[i]] = struct{}{}
+		delete(m.s3_act_images, ids[i])
+		m.removeds3_act_images[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedActVersions returns the removed IDs of the "act_versions" edge to the ActVersion entity.
-func (m *ActMutation) RemovedActVersionsIDs() (ids []uint64) {
-	for id := range m.removedact_versions {
+// RemovedS3ActImages returns the removed IDs of the "s3_act_images" edge to the S3ActImage entity.
+func (m *ActMutation) RemovedS3ActImagesIDs() (ids []int64) {
+	for id := range m.removeds3_act_images {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ActVersionsIDs returns the "act_versions" edge IDs in the mutation.
-func (m *ActMutation) ActVersionsIDs() (ids []uint64) {
-	for id := range m.act_versions {
+// S3ActImagesIDs returns the "s3_act_images" edge IDs in the mutation.
+func (m *ActMutation) S3ActImagesIDs() (ids []int64) {
+	for id := range m.s3_act_images {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetActVersions resets all changes to the "act_versions" edge.
-func (m *ActMutation) ResetActVersions() {
-	m.act_versions = nil
-	m.clearedact_versions = false
-	m.removedact_versions = nil
+// ResetS3ActImages resets all changes to the "s3_act_images" edge.
+func (m *ActMutation) ResetS3ActImages() {
+	m.s3_act_images = nil
+	m.cleareds3_act_images = false
+	m.removeds3_act_images = nil
+}
+
+// AddRoutineActIDs adds the "routine_acts" edge to the RoutineAct entity by ids.
+func (m *ActMutation) AddRoutineActIDs(ids ...int64) {
+	if m.routine_acts == nil {
+		m.routine_acts = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.routine_acts[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRoutineActs clears the "routine_acts" edge to the RoutineAct entity.
+func (m *ActMutation) ClearRoutineActs() {
+	m.clearedroutine_acts = true
+}
+
+// RoutineActsCleared reports if the "routine_acts" edge to the RoutineAct entity was cleared.
+func (m *ActMutation) RoutineActsCleared() bool {
+	return m.clearedroutine_acts
+}
+
+// RemoveRoutineActIDs removes the "routine_acts" edge to the RoutineAct entity by IDs.
+func (m *ActMutation) RemoveRoutineActIDs(ids ...int64) {
+	if m.removedroutine_acts == nil {
+		m.removedroutine_acts = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.routine_acts, ids[i])
+		m.removedroutine_acts[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRoutineActs returns the removed IDs of the "routine_acts" edge to the RoutineAct entity.
+func (m *ActMutation) RemovedRoutineActsIDs() (ids []int64) {
+	for id := range m.removedroutine_acts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RoutineActsIDs returns the "routine_acts" edge IDs in the mutation.
+func (m *ActMutation) RoutineActsIDs() (ids []int64) {
+	for id := range m.routine_acts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRoutineActs resets all changes to the "routine_acts" edge.
+func (m *ActMutation) ResetRoutineActs() {
+	m.routine_acts = nil
+	m.clearedroutine_acts = false
+	m.removedroutine_acts = nil
 }
 
 // Where appends a list predicates to the ActMutation builder.
@@ -456,9 +585,12 @@ func (m *ActMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ActMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 7)
 	if m.code != nil {
 		fields = append(fields, act.FieldCode)
+	}
+	if m.author != nil {
+		fields = append(fields, act.FieldAuthor)
 	}
 	if m.act_type != nil {
 		fields = append(fields, act.FieldActType)
@@ -466,8 +598,11 @@ func (m *ActMutation) Fields() []string {
 	if m.name != nil {
 		fields = append(fields, act.FieldName)
 	}
-	if m.author != nil {
-		fields = append(fields, act.FieldAuthor)
+	if m.text != nil {
+		fields = append(fields, act.FieldText)
+	}
+	if m.standard != nil {
+		fields = append(fields, act.FieldStandard)
 	}
 	if m.created_at != nil {
 		fields = append(fields, act.FieldCreatedAt)
@@ -482,12 +617,16 @@ func (m *ActMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case act.FieldCode:
 		return m.Code()
+	case act.FieldAuthor:
+		return m.Author()
 	case act.FieldActType:
 		return m.ActType()
 	case act.FieldName:
 		return m.Name()
-	case act.FieldAuthor:
-		return m.Author()
+	case act.FieldText:
+		return m.Text()
+	case act.FieldStandard:
+		return m.Standard()
 	case act.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -501,12 +640,16 @@ func (m *ActMutation) OldField(ctx context.Context, name string) (ent.Value, err
 	switch name {
 	case act.FieldCode:
 		return m.OldCode(ctx)
+	case act.FieldAuthor:
+		return m.OldAuthor(ctx)
 	case act.FieldActType:
 		return m.OldActType(ctx)
 	case act.FieldName:
 		return m.OldName(ctx)
-	case act.FieldAuthor:
-		return m.OldAuthor(ctx)
+	case act.FieldText:
+		return m.OldText(ctx)
+	case act.FieldStandard:
+		return m.OldStandard(ctx)
 	case act.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -525,6 +668,13 @@ func (m *ActMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCode(v)
 		return nil
+	case act.FieldAuthor:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAuthor(v)
+		return nil
 	case act.FieldActType:
 		v, ok := value.(act.ActType)
 		if !ok {
@@ -539,12 +689,19 @@ func (m *ActMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetName(v)
 		return nil
-	case act.FieldAuthor:
-		v, ok := value.(uint64)
+	case act.FieldText:
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetAuthor(v)
+		m.SetText(v)
+		return nil
+	case act.FieldStandard:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStandard(v)
 		return nil
 	case act.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -620,14 +777,20 @@ func (m *ActMutation) ResetField(name string) error {
 	case act.FieldCode:
 		m.ResetCode()
 		return nil
+	case act.FieldAuthor:
+		m.ResetAuthor()
+		return nil
 	case act.FieldActType:
 		m.ResetActType()
 		return nil
 	case act.FieldName:
 		m.ResetName()
 		return nil
-	case act.FieldAuthor:
-		m.ResetAuthor()
+	case act.FieldText:
+		m.ResetText()
+		return nil
+	case act.FieldStandard:
+		m.ResetStandard()
 		return nil
 	case act.FieldCreatedAt:
 		m.ResetCreatedAt()
@@ -638,9 +801,12 @@ func (m *ActMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ActMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.act_versions != nil {
-		edges = append(edges, act.EdgeActVersions)
+	edges := make([]string, 0, 2)
+	if m.s3_act_images != nil {
+		edges = append(edges, act.EdgeS3ActImages)
+	}
+	if m.routine_acts != nil {
+		edges = append(edges, act.EdgeRoutineActs)
 	}
 	return edges
 }
@@ -649,9 +815,15 @@ func (m *ActMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *ActMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case act.EdgeActVersions:
-		ids := make([]ent.Value, 0, len(m.act_versions))
-		for id := range m.act_versions {
+	case act.EdgeS3ActImages:
+		ids := make([]ent.Value, 0, len(m.s3_act_images))
+		for id := range m.s3_act_images {
+			ids = append(ids, id)
+		}
+		return ids
+	case act.EdgeRoutineActs:
+		ids := make([]ent.Value, 0, len(m.routine_acts))
+		for id := range m.routine_acts {
 			ids = append(ids, id)
 		}
 		return ids
@@ -661,9 +833,12 @@ func (m *ActMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ActMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.removedact_versions != nil {
-		edges = append(edges, act.EdgeActVersions)
+	edges := make([]string, 0, 2)
+	if m.removeds3_act_images != nil {
+		edges = append(edges, act.EdgeS3ActImages)
+	}
+	if m.removedroutine_acts != nil {
+		edges = append(edges, act.EdgeRoutineActs)
 	}
 	return edges
 }
@@ -672,9 +847,15 @@ func (m *ActMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *ActMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case act.EdgeActVersions:
-		ids := make([]ent.Value, 0, len(m.removedact_versions))
-		for id := range m.removedact_versions {
+	case act.EdgeS3ActImages:
+		ids := make([]ent.Value, 0, len(m.removeds3_act_images))
+		for id := range m.removeds3_act_images {
+			ids = append(ids, id)
+		}
+		return ids
+	case act.EdgeRoutineActs:
+		ids := make([]ent.Value, 0, len(m.removedroutine_acts))
+		for id := range m.removedroutine_acts {
 			ids = append(ids, id)
 		}
 		return ids
@@ -684,9 +865,12 @@ func (m *ActMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ActMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.clearedact_versions {
-		edges = append(edges, act.EdgeActVersions)
+	edges := make([]string, 0, 2)
+	if m.cleareds3_act_images {
+		edges = append(edges, act.EdgeS3ActImages)
+	}
+	if m.clearedroutine_acts {
+		edges = append(edges, act.EdgeRoutineActs)
 	}
 	return edges
 }
@@ -695,8 +879,10 @@ func (m *ActMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *ActMutation) EdgeCleared(name string) bool {
 	switch name {
-	case act.EdgeActVersions:
-		return m.clearedact_versions
+	case act.EdgeS3ActImages:
+		return m.cleareds3_act_images
+	case act.EdgeRoutineActs:
+		return m.clearedroutine_acts
 	}
 	return false
 }
@@ -713,627 +899,44 @@ func (m *ActMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ActMutation) ResetEdge(name string) error {
 	switch name {
-	case act.EdgeActVersions:
-		m.ResetActVersions()
+	case act.EdgeS3ActImages:
+		m.ResetS3ActImages()
+		return nil
+	case act.EdgeRoutineActs:
+		m.ResetRoutineActs()
 		return nil
 	}
 	return fmt.Errorf("unknown Act edge %s", name)
 }
 
-// ActImageMutation represents an operation that mutates the ActImage nodes in the graph.
-type ActImageMutation struct {
-	config
-	op                 Op
-	typ                string
-	id                 *uint64
-	_order             *uint
-	add_order          *int
-	clearedFields      map[string]struct{}
-	act_version        *uint64
-	clearedact_version bool
-	image              *uint64
-	clearedimage       bool
-	done               bool
-	oldValue           func(context.Context) (*ActImage, error)
-	predicates         []predicate.ActImage
-}
-
-var _ ent.Mutation = (*ActImageMutation)(nil)
-
-// actimageOption allows management of the mutation configuration using functional options.
-type actimageOption func(*ActImageMutation)
-
-// newActImageMutation creates new mutation for the ActImage entity.
-func newActImageMutation(c config, op Op, opts ...actimageOption) *ActImageMutation {
-	m := &ActImageMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeActImage,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withActImageID sets the ID field of the mutation.
-func withActImageID(id uint64) actimageOption {
-	return func(m *ActImageMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *ActImage
-		)
-		m.oldValue = func(ctx context.Context) (*ActImage, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().ActImage.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withActImage sets the old ActImage of the mutation.
-func withActImage(node *ActImage) actimageOption {
-	return func(m *ActImageMutation) {
-		m.oldValue = func(context.Context) (*ActImage, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m ActImageMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m ActImageMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of ActImage entities.
-func (m *ActImageMutation) SetID(id uint64) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *ActImageMutation) ID() (id uint64, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *ActImageMutation) IDs(ctx context.Context) ([]uint64, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uint64{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().ActImage.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetOrder sets the "order" field.
-func (m *ActImageMutation) SetOrder(u uint) {
-	m._order = &u
-	m.add_order = nil
-}
-
-// Order returns the value of the "order" field in the mutation.
-func (m *ActImageMutation) Order() (r uint, exists bool) {
-	v := m._order
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldOrder returns the old "order" field's value of the ActImage entity.
-// If the ActImage object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ActImageMutation) OldOrder(ctx context.Context) (v uint, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldOrder is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldOrder requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldOrder: %w", err)
-	}
-	return oldValue.Order, nil
-}
-
-// AddOrder adds u to the "order" field.
-func (m *ActImageMutation) AddOrder(u int) {
-	if m.add_order != nil {
-		*m.add_order += u
-	} else {
-		m.add_order = &u
-	}
-}
-
-// AddedOrder returns the value that was added to the "order" field in this mutation.
-func (m *ActImageMutation) AddedOrder() (r int, exists bool) {
-	v := m.add_order
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetOrder resets all changes to the "order" field.
-func (m *ActImageMutation) ResetOrder() {
-	m._order = nil
-	m.add_order = nil
-}
-
-// SetActVersionID sets the "act_version_id" field.
-func (m *ActImageMutation) SetActVersionID(u uint64) {
-	m.act_version = &u
-}
-
-// ActVersionID returns the value of the "act_version_id" field in the mutation.
-func (m *ActImageMutation) ActVersionID() (r uint64, exists bool) {
-	v := m.act_version
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldActVersionID returns the old "act_version_id" field's value of the ActImage entity.
-// If the ActImage object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ActImageMutation) OldActVersionID(ctx context.Context) (v uint64, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldActVersionID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldActVersionID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldActVersionID: %w", err)
-	}
-	return oldValue.ActVersionID, nil
-}
-
-// ResetActVersionID resets all changes to the "act_version_id" field.
-func (m *ActImageMutation) ResetActVersionID() {
-	m.act_version = nil
-}
-
-// SetImageID sets the "image_id" field.
-func (m *ActImageMutation) SetImageID(u uint64) {
-	m.image = &u
-}
-
-// ImageID returns the value of the "image_id" field in the mutation.
-func (m *ActImageMutation) ImageID() (r uint64, exists bool) {
-	v := m.image
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldImageID returns the old "image_id" field's value of the ActImage entity.
-// If the ActImage object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ActImageMutation) OldImageID(ctx context.Context) (v uint64, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldImageID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldImageID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldImageID: %w", err)
-	}
-	return oldValue.ImageID, nil
-}
-
-// ResetImageID resets all changes to the "image_id" field.
-func (m *ActImageMutation) ResetImageID() {
-	m.image = nil
-}
-
-// ClearActVersion clears the "act_version" edge to the ActVersion entity.
-func (m *ActImageMutation) ClearActVersion() {
-	m.clearedact_version = true
-}
-
-// ActVersionCleared reports if the "act_version" edge to the ActVersion entity was cleared.
-func (m *ActImageMutation) ActVersionCleared() bool {
-	return m.clearedact_version
-}
-
-// ActVersionIDs returns the "act_version" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ActVersionID instead. It exists only for internal usage by the builders.
-func (m *ActImageMutation) ActVersionIDs() (ids []uint64) {
-	if id := m.act_version; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetActVersion resets all changes to the "act_version" edge.
-func (m *ActImageMutation) ResetActVersion() {
-	m.act_version = nil
-	m.clearedact_version = false
-}
-
-// ClearImage clears the "image" edge to the Image entity.
-func (m *ActImageMutation) ClearImage() {
-	m.clearedimage = true
-}
-
-// ImageCleared reports if the "image" edge to the Image entity was cleared.
-func (m *ActImageMutation) ImageCleared() bool {
-	return m.clearedimage
-}
-
-// ImageIDs returns the "image" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ImageID instead. It exists only for internal usage by the builders.
-func (m *ActImageMutation) ImageIDs() (ids []uint64) {
-	if id := m.image; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetImage resets all changes to the "image" edge.
-func (m *ActImageMutation) ResetImage() {
-	m.image = nil
-	m.clearedimage = false
-}
-
-// Where appends a list predicates to the ActImageMutation builder.
-func (m *ActImageMutation) Where(ps ...predicate.ActImage) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the ActImageMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *ActImageMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.ActImage, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *ActImageMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *ActImageMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (ActImage).
-func (m *ActImageMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *ActImageMutation) Fields() []string {
-	fields := make([]string, 0, 3)
-	if m._order != nil {
-		fields = append(fields, actimage.FieldOrder)
-	}
-	if m.act_version != nil {
-		fields = append(fields, actimage.FieldActVersionID)
-	}
-	if m.image != nil {
-		fields = append(fields, actimage.FieldImageID)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *ActImageMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case actimage.FieldOrder:
-		return m.Order()
-	case actimage.FieldActVersionID:
-		return m.ActVersionID()
-	case actimage.FieldImageID:
-		return m.ImageID()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *ActImageMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case actimage.FieldOrder:
-		return m.OldOrder(ctx)
-	case actimage.FieldActVersionID:
-		return m.OldActVersionID(ctx)
-	case actimage.FieldImageID:
-		return m.OldImageID(ctx)
-	}
-	return nil, fmt.Errorf("unknown ActImage field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *ActImageMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case actimage.FieldOrder:
-		v, ok := value.(uint)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetOrder(v)
-		return nil
-	case actimage.FieldActVersionID:
-		v, ok := value.(uint64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetActVersionID(v)
-		return nil
-	case actimage.FieldImageID:
-		v, ok := value.(uint64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetImageID(v)
-		return nil
-	}
-	return fmt.Errorf("unknown ActImage field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *ActImageMutation) AddedFields() []string {
-	var fields []string
-	if m.add_order != nil {
-		fields = append(fields, actimage.FieldOrder)
-	}
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *ActImageMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case actimage.FieldOrder:
-		return m.AddedOrder()
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *ActImageMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	case actimage.FieldOrder:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddOrder(v)
-		return nil
-	}
-	return fmt.Errorf("unknown ActImage numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *ActImageMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *ActImageMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *ActImageMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown ActImage nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *ActImageMutation) ResetField(name string) error {
-	switch name {
-	case actimage.FieldOrder:
-		m.ResetOrder()
-		return nil
-	case actimage.FieldActVersionID:
-		m.ResetActVersionID()
-		return nil
-	case actimage.FieldImageID:
-		m.ResetImageID()
-		return nil
-	}
-	return fmt.Errorf("unknown ActImage field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *ActImageMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.act_version != nil {
-		edges = append(edges, actimage.EdgeActVersion)
-	}
-	if m.image != nil {
-		edges = append(edges, actimage.EdgeImage)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *ActImageMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case actimage.EdgeActVersion:
-		if id := m.act_version; id != nil {
-			return []ent.Value{*id}
-		}
-	case actimage.EdgeImage:
-		if id := m.image; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *ActImageMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *ActImageMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *ActImageMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedact_version {
-		edges = append(edges, actimage.EdgeActVersion)
-	}
-	if m.clearedimage {
-		edges = append(edges, actimage.EdgeImage)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *ActImageMutation) EdgeCleared(name string) bool {
-	switch name {
-	case actimage.EdgeActVersion:
-		return m.clearedact_version
-	case actimage.EdgeImage:
-		return m.clearedimage
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *ActImageMutation) ClearEdge(name string) error {
-	switch name {
-	case actimage.EdgeActVersion:
-		m.ClearActVersion()
-		return nil
-	case actimage.EdgeImage:
-		m.ClearImage()
-		return nil
-	}
-	return fmt.Errorf("unknown ActImage unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *ActImageMutation) ResetEdge(name string) error {
-	switch name {
-	case actimage.EdgeActVersion:
-		m.ResetActVersion()
-		return nil
-	case actimage.EdgeImage:
-		m.ResetImage()
-		return nil
-	}
-	return fmt.Errorf("unknown ActImage edge %s", name)
-}
-
-// ActVersionMutation represents an operation that mutates the ActVersion nodes in the graph.
-type ActVersionMutation struct {
+// DayRoutineMutation represents an operation that mutates the DayRoutine nodes in the graph.
+type DayRoutineMutation struct {
 	config
 	op                  Op
 	typ                 string
-	id                  *uint64
-	code                *string
-	act_code            *string
-	version             *uint
-	addversion          *int
-	created_at          *time.Time
-	text                *string
+	id                  *int64
+	day                 *int
+	addday              *int
 	clearedFields       map[string]struct{}
-	act                 *uint64
-	clearedact          bool
-	images              map[uint64]struct{}
-	removedimages       map[uint64]struct{}
-	clearedimages       bool
-	routine_acts        map[uint64]struct{}
-	removedroutine_acts map[uint64]struct{}
+	routine_acts        map[int64]struct{}
+	removedroutine_acts map[int64]struct{}
 	clearedroutine_acts bool
-	act_images          map[uint64]struct{}
-	removedact_images   map[uint64]struct{}
-	clearedact_images   bool
 	done                bool
-	oldValue            func(context.Context) (*ActVersion, error)
-	predicates          []predicate.ActVersion
+	oldValue            func(context.Context) (*DayRoutine, error)
+	predicates          []predicate.DayRoutine
 }
 
-var _ ent.Mutation = (*ActVersionMutation)(nil)
+var _ ent.Mutation = (*DayRoutineMutation)(nil)
 
-// actversionOption allows management of the mutation configuration using functional options.
-type actversionOption func(*ActVersionMutation)
+// dayroutineOption allows management of the mutation configuration using functional options.
+type dayroutineOption func(*DayRoutineMutation)
 
-// newActVersionMutation creates new mutation for the ActVersion entity.
-func newActVersionMutation(c config, op Op, opts ...actversionOption) *ActVersionMutation {
-	m := &ActVersionMutation{
+// newDayRoutineMutation creates new mutation for the DayRoutine entity.
+func newDayRoutineMutation(c config, op Op, opts ...dayroutineOption) *DayRoutineMutation {
+	m := &DayRoutineMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeActVersion,
+		typ:           TypeDayRoutine,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -1342,20 +945,20 @@ func newActVersionMutation(c config, op Op, opts ...actversionOption) *ActVersio
 	return m
 }
 
-// withActVersionID sets the ID field of the mutation.
-func withActVersionID(id uint64) actversionOption {
-	return func(m *ActVersionMutation) {
+// withDayRoutineID sets the ID field of the mutation.
+func withDayRoutineID(id int64) dayroutineOption {
+	return func(m *DayRoutineMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *ActVersion
+			value *DayRoutine
 		)
-		m.oldValue = func(ctx context.Context) (*ActVersion, error) {
+		m.oldValue = func(ctx context.Context) (*DayRoutine, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().ActVersion.Get(ctx, id)
+					value, err = m.Client().DayRoutine.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -1364,10 +967,10 @@ func withActVersionID(id uint64) actversionOption {
 	}
 }
 
-// withActVersion sets the old ActVersion of the mutation.
-func withActVersion(node *ActVersion) actversionOption {
-	return func(m *ActVersionMutation) {
-		m.oldValue = func(context.Context) (*ActVersion, error) {
+// withDayRoutine sets the old DayRoutine of the mutation.
+func withDayRoutine(node *DayRoutine) dayroutineOption {
+	return func(m *DayRoutineMutation) {
+		m.oldValue = func(context.Context) (*DayRoutine, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -1376,7 +979,7 @@ func withActVersion(node *ActVersion) actversionOption {
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m ActVersionMutation) Client() *Client {
+func (m DayRoutineMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -1384,7 +987,7 @@ func (m ActVersionMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m ActVersionMutation) Tx() (*Tx, error) {
+func (m DayRoutineMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -1394,14 +997,14 @@ func (m ActVersionMutation) Tx() (*Tx, error) {
 }
 
 // SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of ActVersion entities.
-func (m *ActVersionMutation) SetID(id uint64) {
+// operation is only accepted on creation of DayRoutine entities.
+func (m *DayRoutineMutation) SetID(id int64) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *ActVersionMutation) ID() (id uint64, exists bool) {
+func (m *DayRoutineMutation) ID() (id int64, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -1412,995 +1015,29 @@ func (m *ActVersionMutation) ID() (id uint64, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *ActVersionMutation) IDs(ctx context.Context) ([]uint64, error) {
+func (m *DayRoutineMutation) IDs(ctx context.Context) ([]int64, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []uint64{id}, nil
+			return []int64{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().ActVersion.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().DayRoutine.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
-}
-
-// SetCode sets the "code" field.
-func (m *ActVersionMutation) SetCode(s string) {
-	m.code = &s
-}
-
-// Code returns the value of the "code" field in the mutation.
-func (m *ActVersionMutation) Code() (r string, exists bool) {
-	v := m.code
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCode returns the old "code" field's value of the ActVersion entity.
-// If the ActVersion object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ActVersionMutation) OldCode(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCode is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCode requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCode: %w", err)
-	}
-	return oldValue.Code, nil
-}
-
-// ResetCode resets all changes to the "code" field.
-func (m *ActVersionMutation) ResetCode() {
-	m.code = nil
-}
-
-// SetActCode sets the "act_code" field.
-func (m *ActVersionMutation) SetActCode(s string) {
-	m.act_code = &s
-}
-
-// ActCode returns the value of the "act_code" field in the mutation.
-func (m *ActVersionMutation) ActCode() (r string, exists bool) {
-	v := m.act_code
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldActCode returns the old "act_code" field's value of the ActVersion entity.
-// If the ActVersion object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ActVersionMutation) OldActCode(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldActCode is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldActCode requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldActCode: %w", err)
-	}
-	return oldValue.ActCode, nil
-}
-
-// ResetActCode resets all changes to the "act_code" field.
-func (m *ActVersionMutation) ResetActCode() {
-	m.act_code = nil
-}
-
-// SetVersion sets the "version" field.
-func (m *ActVersionMutation) SetVersion(u uint) {
-	m.version = &u
-	m.addversion = nil
-}
-
-// Version returns the value of the "version" field in the mutation.
-func (m *ActVersionMutation) Version() (r uint, exists bool) {
-	v := m.version
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldVersion returns the old "version" field's value of the ActVersion entity.
-// If the ActVersion object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ActVersionMutation) OldVersion(ctx context.Context) (v uint, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldVersion is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldVersion requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldVersion: %w", err)
-	}
-	return oldValue.Version, nil
-}
-
-// AddVersion adds u to the "version" field.
-func (m *ActVersionMutation) AddVersion(u int) {
-	if m.addversion != nil {
-		*m.addversion += u
-	} else {
-		m.addversion = &u
-	}
-}
-
-// AddedVersion returns the value that was added to the "version" field in this mutation.
-func (m *ActVersionMutation) AddedVersion() (r int, exists bool) {
-	v := m.addversion
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetVersion resets all changes to the "version" field.
-func (m *ActVersionMutation) ResetVersion() {
-	m.version = nil
-	m.addversion = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *ActVersionMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *ActVersionMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the ActVersion entity.
-// If the ActVersion object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ActVersionMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *ActVersionMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetText sets the "text" field.
-func (m *ActVersionMutation) SetText(s string) {
-	m.text = &s
-}
-
-// Text returns the value of the "text" field in the mutation.
-func (m *ActVersionMutation) Text() (r string, exists bool) {
-	v := m.text
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldText returns the old "text" field's value of the ActVersion entity.
-// If the ActVersion object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ActVersionMutation) OldText(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldText is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldText requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldText: %w", err)
-	}
-	return oldValue.Text, nil
-}
-
-// ResetText resets all changes to the "text" field.
-func (m *ActVersionMutation) ResetText() {
-	m.text = nil
-}
-
-// SetActID sets the "act" edge to the Act entity by id.
-func (m *ActVersionMutation) SetActID(id uint64) {
-	m.act = &id
-}
-
-// ClearAct clears the "act" edge to the Act entity.
-func (m *ActVersionMutation) ClearAct() {
-	m.clearedact = true
-}
-
-// ActCleared reports if the "act" edge to the Act entity was cleared.
-func (m *ActVersionMutation) ActCleared() bool {
-	return m.clearedact
-}
-
-// ActID returns the "act" edge ID in the mutation.
-func (m *ActVersionMutation) ActID() (id uint64, exists bool) {
-	if m.act != nil {
-		return *m.act, true
-	}
-	return
-}
-
-// ActIDs returns the "act" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ActID instead. It exists only for internal usage by the builders.
-func (m *ActVersionMutation) ActIDs() (ids []uint64) {
-	if id := m.act; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetAct resets all changes to the "act" edge.
-func (m *ActVersionMutation) ResetAct() {
-	m.act = nil
-	m.clearedact = false
-}
-
-// AddImageIDs adds the "images" edge to the Image entity by ids.
-func (m *ActVersionMutation) AddImageIDs(ids ...uint64) {
-	if m.images == nil {
-		m.images = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		m.images[ids[i]] = struct{}{}
-	}
-}
-
-// ClearImages clears the "images" edge to the Image entity.
-func (m *ActVersionMutation) ClearImages() {
-	m.clearedimages = true
-}
-
-// ImagesCleared reports if the "images" edge to the Image entity was cleared.
-func (m *ActVersionMutation) ImagesCleared() bool {
-	return m.clearedimages
-}
-
-// RemoveImageIDs removes the "images" edge to the Image entity by IDs.
-func (m *ActVersionMutation) RemoveImageIDs(ids ...uint64) {
-	if m.removedimages == nil {
-		m.removedimages = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		delete(m.images, ids[i])
-		m.removedimages[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedImages returns the removed IDs of the "images" edge to the Image entity.
-func (m *ActVersionMutation) RemovedImagesIDs() (ids []uint64) {
-	for id := range m.removedimages {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ImagesIDs returns the "images" edge IDs in the mutation.
-func (m *ActVersionMutation) ImagesIDs() (ids []uint64) {
-	for id := range m.images {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetImages resets all changes to the "images" edge.
-func (m *ActVersionMutation) ResetImages() {
-	m.images = nil
-	m.clearedimages = false
-	m.removedimages = nil
-}
-
-// AddRoutineActIDs adds the "routine_acts" edge to the RoutineAct entity by ids.
-func (m *ActVersionMutation) AddRoutineActIDs(ids ...uint64) {
-	if m.routine_acts == nil {
-		m.routine_acts = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		m.routine_acts[ids[i]] = struct{}{}
-	}
-}
-
-// ClearRoutineActs clears the "routine_acts" edge to the RoutineAct entity.
-func (m *ActVersionMutation) ClearRoutineActs() {
-	m.clearedroutine_acts = true
-}
-
-// RoutineActsCleared reports if the "routine_acts" edge to the RoutineAct entity was cleared.
-func (m *ActVersionMutation) RoutineActsCleared() bool {
-	return m.clearedroutine_acts
-}
-
-// RemoveRoutineActIDs removes the "routine_acts" edge to the RoutineAct entity by IDs.
-func (m *ActVersionMutation) RemoveRoutineActIDs(ids ...uint64) {
-	if m.removedroutine_acts == nil {
-		m.removedroutine_acts = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		delete(m.routine_acts, ids[i])
-		m.removedroutine_acts[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedRoutineActs returns the removed IDs of the "routine_acts" edge to the RoutineAct entity.
-func (m *ActVersionMutation) RemovedRoutineActsIDs() (ids []uint64) {
-	for id := range m.removedroutine_acts {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// RoutineActsIDs returns the "routine_acts" edge IDs in the mutation.
-func (m *ActVersionMutation) RoutineActsIDs() (ids []uint64) {
-	for id := range m.routine_acts {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetRoutineActs resets all changes to the "routine_acts" edge.
-func (m *ActVersionMutation) ResetRoutineActs() {
-	m.routine_acts = nil
-	m.clearedroutine_acts = false
-	m.removedroutine_acts = nil
-}
-
-// AddActImageIDs adds the "act_images" edge to the ActImage entity by ids.
-func (m *ActVersionMutation) AddActImageIDs(ids ...uint64) {
-	if m.act_images == nil {
-		m.act_images = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		m.act_images[ids[i]] = struct{}{}
-	}
-}
-
-// ClearActImages clears the "act_images" edge to the ActImage entity.
-func (m *ActVersionMutation) ClearActImages() {
-	m.clearedact_images = true
-}
-
-// ActImagesCleared reports if the "act_images" edge to the ActImage entity was cleared.
-func (m *ActVersionMutation) ActImagesCleared() bool {
-	return m.clearedact_images
-}
-
-// RemoveActImageIDs removes the "act_images" edge to the ActImage entity by IDs.
-func (m *ActVersionMutation) RemoveActImageIDs(ids ...uint64) {
-	if m.removedact_images == nil {
-		m.removedact_images = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		delete(m.act_images, ids[i])
-		m.removedact_images[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedActImages returns the removed IDs of the "act_images" edge to the ActImage entity.
-func (m *ActVersionMutation) RemovedActImagesIDs() (ids []uint64) {
-	for id := range m.removedact_images {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ActImagesIDs returns the "act_images" edge IDs in the mutation.
-func (m *ActVersionMutation) ActImagesIDs() (ids []uint64) {
-	for id := range m.act_images {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetActImages resets all changes to the "act_images" edge.
-func (m *ActVersionMutation) ResetActImages() {
-	m.act_images = nil
-	m.clearedact_images = false
-	m.removedact_images = nil
-}
-
-// Where appends a list predicates to the ActVersionMutation builder.
-func (m *ActVersionMutation) Where(ps ...predicate.ActVersion) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the ActVersionMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *ActVersionMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.ActVersion, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *ActVersionMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *ActVersionMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (ActVersion).
-func (m *ActVersionMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *ActVersionMutation) Fields() []string {
-	fields := make([]string, 0, 5)
-	if m.code != nil {
-		fields = append(fields, actversion.FieldCode)
-	}
-	if m.act_code != nil {
-		fields = append(fields, actversion.FieldActCode)
-	}
-	if m.version != nil {
-		fields = append(fields, actversion.FieldVersion)
-	}
-	if m.created_at != nil {
-		fields = append(fields, actversion.FieldCreatedAt)
-	}
-	if m.text != nil {
-		fields = append(fields, actversion.FieldText)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *ActVersionMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case actversion.FieldCode:
-		return m.Code()
-	case actversion.FieldActCode:
-		return m.ActCode()
-	case actversion.FieldVersion:
-		return m.Version()
-	case actversion.FieldCreatedAt:
-		return m.CreatedAt()
-	case actversion.FieldText:
-		return m.Text()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *ActVersionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case actversion.FieldCode:
-		return m.OldCode(ctx)
-	case actversion.FieldActCode:
-		return m.OldActCode(ctx)
-	case actversion.FieldVersion:
-		return m.OldVersion(ctx)
-	case actversion.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case actversion.FieldText:
-		return m.OldText(ctx)
-	}
-	return nil, fmt.Errorf("unknown ActVersion field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *ActVersionMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case actversion.FieldCode:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCode(v)
-		return nil
-	case actversion.FieldActCode:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetActCode(v)
-		return nil
-	case actversion.FieldVersion:
-		v, ok := value.(uint)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetVersion(v)
-		return nil
-	case actversion.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case actversion.FieldText:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetText(v)
-		return nil
-	}
-	return fmt.Errorf("unknown ActVersion field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *ActVersionMutation) AddedFields() []string {
-	var fields []string
-	if m.addversion != nil {
-		fields = append(fields, actversion.FieldVersion)
-	}
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *ActVersionMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case actversion.FieldVersion:
-		return m.AddedVersion()
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *ActVersionMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	case actversion.FieldVersion:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddVersion(v)
-		return nil
-	}
-	return fmt.Errorf("unknown ActVersion numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *ActVersionMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *ActVersionMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *ActVersionMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown ActVersion nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *ActVersionMutation) ResetField(name string) error {
-	switch name {
-	case actversion.FieldCode:
-		m.ResetCode()
-		return nil
-	case actversion.FieldActCode:
-		m.ResetActCode()
-		return nil
-	case actversion.FieldVersion:
-		m.ResetVersion()
-		return nil
-	case actversion.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case actversion.FieldText:
-		m.ResetText()
-		return nil
-	}
-	return fmt.Errorf("unknown ActVersion field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *ActVersionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.act != nil {
-		edges = append(edges, actversion.EdgeAct)
-	}
-	if m.images != nil {
-		edges = append(edges, actversion.EdgeImages)
-	}
-	if m.routine_acts != nil {
-		edges = append(edges, actversion.EdgeRoutineActs)
-	}
-	if m.act_images != nil {
-		edges = append(edges, actversion.EdgeActImages)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *ActVersionMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case actversion.EdgeAct:
-		if id := m.act; id != nil {
-			return []ent.Value{*id}
-		}
-	case actversion.EdgeImages:
-		ids := make([]ent.Value, 0, len(m.images))
-		for id := range m.images {
-			ids = append(ids, id)
-		}
-		return ids
-	case actversion.EdgeRoutineActs:
-		ids := make([]ent.Value, 0, len(m.routine_acts))
-		for id := range m.routine_acts {
-			ids = append(ids, id)
-		}
-		return ids
-	case actversion.EdgeActImages:
-		ids := make([]ent.Value, 0, len(m.act_images))
-		for id := range m.act_images {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *ActVersionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.removedimages != nil {
-		edges = append(edges, actversion.EdgeImages)
-	}
-	if m.removedroutine_acts != nil {
-		edges = append(edges, actversion.EdgeRoutineActs)
-	}
-	if m.removedact_images != nil {
-		edges = append(edges, actversion.EdgeActImages)
-	}
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *ActVersionMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case actversion.EdgeImages:
-		ids := make([]ent.Value, 0, len(m.removedimages))
-		for id := range m.removedimages {
-			ids = append(ids, id)
-		}
-		return ids
-	case actversion.EdgeRoutineActs:
-		ids := make([]ent.Value, 0, len(m.removedroutine_acts))
-		for id := range m.removedroutine_acts {
-			ids = append(ids, id)
-		}
-		return ids
-	case actversion.EdgeActImages:
-		ids := make([]ent.Value, 0, len(m.removedact_images))
-		for id := range m.removedact_images {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *ActVersionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.clearedact {
-		edges = append(edges, actversion.EdgeAct)
-	}
-	if m.clearedimages {
-		edges = append(edges, actversion.EdgeImages)
-	}
-	if m.clearedroutine_acts {
-		edges = append(edges, actversion.EdgeRoutineActs)
-	}
-	if m.clearedact_images {
-		edges = append(edges, actversion.EdgeActImages)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *ActVersionMutation) EdgeCleared(name string) bool {
-	switch name {
-	case actversion.EdgeAct:
-		return m.clearedact
-	case actversion.EdgeImages:
-		return m.clearedimages
-	case actversion.EdgeRoutineActs:
-		return m.clearedroutine_acts
-	case actversion.EdgeActImages:
-		return m.clearedact_images
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *ActVersionMutation) ClearEdge(name string) error {
-	switch name {
-	case actversion.EdgeAct:
-		m.ClearAct()
-		return nil
-	}
-	return fmt.Errorf("unknown ActVersion unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *ActVersionMutation) ResetEdge(name string) error {
-	switch name {
-	case actversion.EdgeAct:
-		m.ResetAct()
-		return nil
-	case actversion.EdgeImages:
-		m.ResetImages()
-		return nil
-	case actversion.EdgeRoutineActs:
-		m.ResetRoutineActs()
-		return nil
-	case actversion.EdgeActImages:
-		m.ResetActImages()
-		return nil
-	}
-	return fmt.Errorf("unknown ActVersion edge %s", name)
-}
-
-// DailyRoutineMutation represents an operation that mutates the DailyRoutine nodes in the graph.
-type DailyRoutineMutation struct {
-	config
-	op                     Op
-	typ                    string
-	id                     *uint64
-	code                   *string
-	program_version_code   *string
-	day                    *uint
-	addday                 *int
-	clearedFields          map[string]struct{}
-	program_version        *uint64
-	clearedprogram_version bool
-	routine_acts           map[uint64]struct{}
-	removedroutine_acts    map[uint64]struct{}
-	clearedroutine_acts    bool
-	done                   bool
-	oldValue               func(context.Context) (*DailyRoutine, error)
-	predicates             []predicate.DailyRoutine
-}
-
-var _ ent.Mutation = (*DailyRoutineMutation)(nil)
-
-// dailyroutineOption allows management of the mutation configuration using functional options.
-type dailyroutineOption func(*DailyRoutineMutation)
-
-// newDailyRoutineMutation creates new mutation for the DailyRoutine entity.
-func newDailyRoutineMutation(c config, op Op, opts ...dailyroutineOption) *DailyRoutineMutation {
-	m := &DailyRoutineMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeDailyRoutine,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withDailyRoutineID sets the ID field of the mutation.
-func withDailyRoutineID(id uint64) dailyroutineOption {
-	return func(m *DailyRoutineMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *DailyRoutine
-		)
-		m.oldValue = func(ctx context.Context) (*DailyRoutine, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().DailyRoutine.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withDailyRoutine sets the old DailyRoutine of the mutation.
-func withDailyRoutine(node *DailyRoutine) dailyroutineOption {
-	return func(m *DailyRoutineMutation) {
-		m.oldValue = func(context.Context) (*DailyRoutine, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m DailyRoutineMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m DailyRoutineMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of DailyRoutine entities.
-func (m *DailyRoutineMutation) SetID(id uint64) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *DailyRoutineMutation) ID() (id uint64, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *DailyRoutineMutation) IDs(ctx context.Context) ([]uint64, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uint64{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().DailyRoutine.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetCode sets the "code" field.
-func (m *DailyRoutineMutation) SetCode(s string) {
-	m.code = &s
-}
-
-// Code returns the value of the "code" field in the mutation.
-func (m *DailyRoutineMutation) Code() (r string, exists bool) {
-	v := m.code
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCode returns the old "code" field's value of the DailyRoutine entity.
-// If the DailyRoutine object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DailyRoutineMutation) OldCode(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCode is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCode requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCode: %w", err)
-	}
-	return oldValue.Code, nil
-}
-
-// ResetCode resets all changes to the "code" field.
-func (m *DailyRoutineMutation) ResetCode() {
-	m.code = nil
-}
-
-// SetProgramVersionCode sets the "program_version_code" field.
-func (m *DailyRoutineMutation) SetProgramVersionCode(s string) {
-	m.program_version_code = &s
-}
-
-// ProgramVersionCode returns the value of the "program_version_code" field in the mutation.
-func (m *DailyRoutineMutation) ProgramVersionCode() (r string, exists bool) {
-	v := m.program_version_code
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProgramVersionCode returns the old "program_version_code" field's value of the DailyRoutine entity.
-// If the DailyRoutine object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DailyRoutineMutation) OldProgramVersionCode(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProgramVersionCode is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProgramVersionCode requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProgramVersionCode: %w", err)
-	}
-	return oldValue.ProgramVersionCode, nil
-}
-
-// ResetProgramVersionCode resets all changes to the "program_version_code" field.
-func (m *DailyRoutineMutation) ResetProgramVersionCode() {
-	m.program_version_code = nil
 }
 
 // SetDay sets the "day" field.
-func (m *DailyRoutineMutation) SetDay(u uint) {
-	m.day = &u
+func (m *DayRoutineMutation) SetDay(i int) {
+	m.day = &i
 	m.addday = nil
 }
 
 // Day returns the value of the "day" field in the mutation.
-func (m *DailyRoutineMutation) Day() (r uint, exists bool) {
+func (m *DayRoutineMutation) Day() (r int, exists bool) {
 	v := m.day
 	if v == nil {
 		return
@@ -2408,10 +1045,10 @@ func (m *DailyRoutineMutation) Day() (r uint, exists bool) {
 	return *v, true
 }
 
-// OldDay returns the old "day" field's value of the DailyRoutine entity.
-// If the DailyRoutine object wasn't provided to the builder, the object is fetched from the database.
+// OldDay returns the old "day" field's value of the DayRoutine entity.
+// If the DayRoutine object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DailyRoutineMutation) OldDay(ctx context.Context) (v uint, err error) {
+func (m *DayRoutineMutation) OldDay(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDay is only allowed on UpdateOne operations")
 	}
@@ -2425,17 +1062,17 @@ func (m *DailyRoutineMutation) OldDay(ctx context.Context) (v uint, err error) {
 	return oldValue.Day, nil
 }
 
-// AddDay adds u to the "day" field.
-func (m *DailyRoutineMutation) AddDay(u int) {
+// AddDay adds i to the "day" field.
+func (m *DayRoutineMutation) AddDay(i int) {
 	if m.addday != nil {
-		*m.addday += u
+		*m.addday += i
 	} else {
-		m.addday = &u
+		m.addday = &i
 	}
 }
 
 // AddedDay returns the value that was added to the "day" field in this mutation.
-func (m *DailyRoutineMutation) AddedDay() (r int, exists bool) {
+func (m *DayRoutineMutation) AddedDay() (r int, exists bool) {
 	v := m.addday
 	if v == nil {
 		return
@@ -2444,54 +1081,15 @@ func (m *DailyRoutineMutation) AddedDay() (r int, exists bool) {
 }
 
 // ResetDay resets all changes to the "day" field.
-func (m *DailyRoutineMutation) ResetDay() {
+func (m *DayRoutineMutation) ResetDay() {
 	m.day = nil
 	m.addday = nil
 }
 
-// SetProgramVersionID sets the "program_version" edge to the ProgramVersion entity by id.
-func (m *DailyRoutineMutation) SetProgramVersionID(id uint64) {
-	m.program_version = &id
-}
-
-// ClearProgramVersion clears the "program_version" edge to the ProgramVersion entity.
-func (m *DailyRoutineMutation) ClearProgramVersion() {
-	m.clearedprogram_version = true
-}
-
-// ProgramVersionCleared reports if the "program_version" edge to the ProgramVersion entity was cleared.
-func (m *DailyRoutineMutation) ProgramVersionCleared() bool {
-	return m.clearedprogram_version
-}
-
-// ProgramVersionID returns the "program_version" edge ID in the mutation.
-func (m *DailyRoutineMutation) ProgramVersionID() (id uint64, exists bool) {
-	if m.program_version != nil {
-		return *m.program_version, true
-	}
-	return
-}
-
-// ProgramVersionIDs returns the "program_version" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ProgramVersionID instead. It exists only for internal usage by the builders.
-func (m *DailyRoutineMutation) ProgramVersionIDs() (ids []uint64) {
-	if id := m.program_version; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetProgramVersion resets all changes to the "program_version" edge.
-func (m *DailyRoutineMutation) ResetProgramVersion() {
-	m.program_version = nil
-	m.clearedprogram_version = false
-}
-
 // AddRoutineActIDs adds the "routine_acts" edge to the RoutineAct entity by ids.
-func (m *DailyRoutineMutation) AddRoutineActIDs(ids ...uint64) {
+func (m *DayRoutineMutation) AddRoutineActIDs(ids ...int64) {
 	if m.routine_acts == nil {
-		m.routine_acts = make(map[uint64]struct{})
+		m.routine_acts = make(map[int64]struct{})
 	}
 	for i := range ids {
 		m.routine_acts[ids[i]] = struct{}{}
@@ -2499,19 +1097,19 @@ func (m *DailyRoutineMutation) AddRoutineActIDs(ids ...uint64) {
 }
 
 // ClearRoutineActs clears the "routine_acts" edge to the RoutineAct entity.
-func (m *DailyRoutineMutation) ClearRoutineActs() {
+func (m *DayRoutineMutation) ClearRoutineActs() {
 	m.clearedroutine_acts = true
 }
 
 // RoutineActsCleared reports if the "routine_acts" edge to the RoutineAct entity was cleared.
-func (m *DailyRoutineMutation) RoutineActsCleared() bool {
+func (m *DayRoutineMutation) RoutineActsCleared() bool {
 	return m.clearedroutine_acts
 }
 
 // RemoveRoutineActIDs removes the "routine_acts" edge to the RoutineAct entity by IDs.
-func (m *DailyRoutineMutation) RemoveRoutineActIDs(ids ...uint64) {
+func (m *DayRoutineMutation) RemoveRoutineActIDs(ids ...int64) {
 	if m.removedroutine_acts == nil {
-		m.removedroutine_acts = make(map[uint64]struct{})
+		m.removedroutine_acts = make(map[int64]struct{})
 	}
 	for i := range ids {
 		delete(m.routine_acts, ids[i])
@@ -2520,7 +1118,7 @@ func (m *DailyRoutineMutation) RemoveRoutineActIDs(ids ...uint64) {
 }
 
 // RemovedRoutineActs returns the removed IDs of the "routine_acts" edge to the RoutineAct entity.
-func (m *DailyRoutineMutation) RemovedRoutineActsIDs() (ids []uint64) {
+func (m *DayRoutineMutation) RemovedRoutineActsIDs() (ids []int64) {
 	for id := range m.removedroutine_acts {
 		ids = append(ids, id)
 	}
@@ -2528,7 +1126,7 @@ func (m *DailyRoutineMutation) RemovedRoutineActsIDs() (ids []uint64) {
 }
 
 // RoutineActsIDs returns the "routine_acts" edge IDs in the mutation.
-func (m *DailyRoutineMutation) RoutineActsIDs() (ids []uint64) {
+func (m *DayRoutineMutation) RoutineActsIDs() (ids []int64) {
 	for id := range m.routine_acts {
 		ids = append(ids, id)
 	}
@@ -2536,21 +1134,21 @@ func (m *DailyRoutineMutation) RoutineActsIDs() (ids []uint64) {
 }
 
 // ResetRoutineActs resets all changes to the "routine_acts" edge.
-func (m *DailyRoutineMutation) ResetRoutineActs() {
+func (m *DayRoutineMutation) ResetRoutineActs() {
 	m.routine_acts = nil
 	m.clearedroutine_acts = false
 	m.removedroutine_acts = nil
 }
 
-// Where appends a list predicates to the DailyRoutineMutation builder.
-func (m *DailyRoutineMutation) Where(ps ...predicate.DailyRoutine) {
+// Where appends a list predicates to the DayRoutineMutation builder.
+func (m *DayRoutineMutation) Where(ps ...predicate.DayRoutine) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the DailyRoutineMutation builder. Using this method,
+// WhereP appends storage-level predicates to the DayRoutineMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *DailyRoutineMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.DailyRoutine, len(ps))
+func (m *DayRoutineMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.DayRoutine, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -2558,33 +1156,27 @@ func (m *DailyRoutineMutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *DailyRoutineMutation) Op() Op {
+func (m *DayRoutineMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *DailyRoutineMutation) SetOp(op Op) {
+func (m *DayRoutineMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (DailyRoutine).
-func (m *DailyRoutineMutation) Type() string {
+// Type returns the node type of this mutation (DayRoutine).
+func (m *DayRoutineMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *DailyRoutineMutation) Fields() []string {
-	fields := make([]string, 0, 3)
-	if m.code != nil {
-		fields = append(fields, dailyroutine.FieldCode)
-	}
-	if m.program_version_code != nil {
-		fields = append(fields, dailyroutine.FieldProgramVersionCode)
-	}
+func (m *DayRoutineMutation) Fields() []string {
+	fields := make([]string, 0, 1)
 	if m.day != nil {
-		fields = append(fields, dailyroutine.FieldDay)
+		fields = append(fields, dayroutine.FieldDay)
 	}
 	return fields
 }
@@ -2592,13 +1184,9 @@ func (m *DailyRoutineMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *DailyRoutineMutation) Field(name string) (ent.Value, bool) {
+func (m *DayRoutineMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case dailyroutine.FieldCode:
-		return m.Code()
-	case dailyroutine.FieldProgramVersionCode:
-		return m.ProgramVersionCode()
-	case dailyroutine.FieldDay:
+	case dayroutine.FieldDay:
 		return m.Day()
 	}
 	return nil, false
@@ -2607,54 +1195,36 @@ func (m *DailyRoutineMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *DailyRoutineMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *DayRoutineMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case dailyroutine.FieldCode:
-		return m.OldCode(ctx)
-	case dailyroutine.FieldProgramVersionCode:
-		return m.OldProgramVersionCode(ctx)
-	case dailyroutine.FieldDay:
+	case dayroutine.FieldDay:
 		return m.OldDay(ctx)
 	}
-	return nil, fmt.Errorf("unknown DailyRoutine field %s", name)
+	return nil, fmt.Errorf("unknown DayRoutine field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *DailyRoutineMutation) SetField(name string, value ent.Value) error {
+func (m *DayRoutineMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case dailyroutine.FieldCode:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCode(v)
-		return nil
-	case dailyroutine.FieldProgramVersionCode:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProgramVersionCode(v)
-		return nil
-	case dailyroutine.FieldDay:
-		v, ok := value.(uint)
+	case dayroutine.FieldDay:
+		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDay(v)
 		return nil
 	}
-	return fmt.Errorf("unknown DailyRoutine field %s", name)
+	return fmt.Errorf("unknown DayRoutine field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *DailyRoutineMutation) AddedFields() []string {
+func (m *DayRoutineMutation) AddedFields() []string {
 	var fields []string
 	if m.addday != nil {
-		fields = append(fields, dailyroutine.FieldDay)
+		fields = append(fields, dayroutine.FieldDay)
 	}
 	return fields
 }
@@ -2662,9 +1232,9 @@ func (m *DailyRoutineMutation) AddedFields() []string {
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *DailyRoutineMutation) AddedField(name string) (ent.Value, bool) {
+func (m *DayRoutineMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case dailyroutine.FieldDay:
+	case dayroutine.FieldDay:
 		return m.AddedDay()
 	}
 	return nil, false
@@ -2673,9 +1243,9 @@ func (m *DailyRoutineMutation) AddedField(name string) (ent.Value, bool) {
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *DailyRoutineMutation) AddField(name string, value ent.Value) error {
+func (m *DayRoutineMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case dailyroutine.FieldDay:
+	case dayroutine.FieldDay:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -2683,66 +1253,53 @@ func (m *DailyRoutineMutation) AddField(name string, value ent.Value) error {
 		m.AddDay(v)
 		return nil
 	}
-	return fmt.Errorf("unknown DailyRoutine numeric field %s", name)
+	return fmt.Errorf("unknown DayRoutine numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *DailyRoutineMutation) ClearedFields() []string {
+func (m *DayRoutineMutation) ClearedFields() []string {
 	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *DailyRoutineMutation) FieldCleared(name string) bool {
+func (m *DayRoutineMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *DailyRoutineMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown DailyRoutine nullable field %s", name)
+func (m *DayRoutineMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown DayRoutine nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *DailyRoutineMutation) ResetField(name string) error {
+func (m *DayRoutineMutation) ResetField(name string) error {
 	switch name {
-	case dailyroutine.FieldCode:
-		m.ResetCode()
-		return nil
-	case dailyroutine.FieldProgramVersionCode:
-		m.ResetProgramVersionCode()
-		return nil
-	case dailyroutine.FieldDay:
+	case dayroutine.FieldDay:
 		m.ResetDay()
 		return nil
 	}
-	return fmt.Errorf("unknown DailyRoutine field %s", name)
+	return fmt.Errorf("unknown DayRoutine field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *DailyRoutineMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.program_version != nil {
-		edges = append(edges, dailyroutine.EdgeProgramVersion)
-	}
+func (m *DayRoutineMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
 	if m.routine_acts != nil {
-		edges = append(edges, dailyroutine.EdgeRoutineActs)
+		edges = append(edges, dayroutine.EdgeRoutineActs)
 	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *DailyRoutineMutation) AddedIDs(name string) []ent.Value {
+func (m *DayRoutineMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case dailyroutine.EdgeProgramVersion:
-		if id := m.program_version; id != nil {
-			return []ent.Value{*id}
-		}
-	case dailyroutine.EdgeRoutineActs:
+	case dayroutine.EdgeRoutineActs:
 		ids := make([]ent.Value, 0, len(m.routine_acts))
 		for id := range m.routine_acts {
 			ids = append(ids, id)
@@ -2753,19 +1310,19 @@ func (m *DailyRoutineMutation) AddedIDs(name string) []ent.Value {
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *DailyRoutineMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+func (m *DayRoutineMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
 	if m.removedroutine_acts != nil {
-		edges = append(edges, dailyroutine.EdgeRoutineActs)
+		edges = append(edges, dayroutine.EdgeRoutineActs)
 	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *DailyRoutineMutation) RemovedIDs(name string) []ent.Value {
+func (m *DayRoutineMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case dailyroutine.EdgeRoutineActs:
+	case dayroutine.EdgeRoutineActs:
 		ids := make([]ent.Value, 0, len(m.removedroutine_acts))
 		for id := range m.removedroutine_acts {
 			ids = append(ids, id)
@@ -2776,24 +1333,19 @@ func (m *DailyRoutineMutation) RemovedIDs(name string) []ent.Value {
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *DailyRoutineMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedprogram_version {
-		edges = append(edges, dailyroutine.EdgeProgramVersion)
-	}
+func (m *DayRoutineMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
 	if m.clearedroutine_acts {
-		edges = append(edges, dailyroutine.EdgeRoutineActs)
+		edges = append(edges, dayroutine.EdgeRoutineActs)
 	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *DailyRoutineMutation) EdgeCleared(name string) bool {
+func (m *DayRoutineMutation) EdgeCleared(name string) bool {
 	switch name {
-	case dailyroutine.EdgeProgramVersion:
-		return m.clearedprogram_version
-	case dailyroutine.EdgeRoutineActs:
+	case dayroutine.EdgeRoutineActs:
 		return m.clearedroutine_acts
 	}
 	return false
@@ -2801,755 +1353,21 @@ func (m *DailyRoutineMutation) EdgeCleared(name string) bool {
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *DailyRoutineMutation) ClearEdge(name string) error {
+func (m *DayRoutineMutation) ClearEdge(name string) error {
 	switch name {
-	case dailyroutine.EdgeProgramVersion:
-		m.ClearProgramVersion()
-		return nil
 	}
-	return fmt.Errorf("unknown DailyRoutine unique edge %s", name)
+	return fmt.Errorf("unknown DayRoutine unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *DailyRoutineMutation) ResetEdge(name string) error {
+func (m *DayRoutineMutation) ResetEdge(name string) error {
 	switch name {
-	case dailyroutine.EdgeProgramVersion:
-		m.ResetProgramVersion()
-		return nil
-	case dailyroutine.EdgeRoutineActs:
+	case dayroutine.EdgeRoutineActs:
 		m.ResetRoutineActs()
 		return nil
 	}
-	return fmt.Errorf("unknown DailyRoutine edge %s", name)
-}
-
-// ImageMutation represents an operation that mutates the Image nodes in the graph.
-type ImageMutation struct {
-	config
-	op                      Op
-	typ                     string
-	id                      *uint64
-	key                     *string
-	src                     *string
-	clearedFields           map[string]struct{}
-	act_versions            map[uint64]struct{}
-	removedact_versions     map[uint64]struct{}
-	clearedact_versions     bool
-	program_versions        map[uint64]struct{}
-	removedprogram_versions map[uint64]struct{}
-	clearedprogram_versions bool
-	act_images              map[uint64]struct{}
-	removedact_images       map[uint64]struct{}
-	clearedact_images       bool
-	program_images          map[uint64]struct{}
-	removedprogram_images   map[uint64]struct{}
-	clearedprogram_images   bool
-	done                    bool
-	oldValue                func(context.Context) (*Image, error)
-	predicates              []predicate.Image
-}
-
-var _ ent.Mutation = (*ImageMutation)(nil)
-
-// imageOption allows management of the mutation configuration using functional options.
-type imageOption func(*ImageMutation)
-
-// newImageMutation creates new mutation for the Image entity.
-func newImageMutation(c config, op Op, opts ...imageOption) *ImageMutation {
-	m := &ImageMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeImage,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withImageID sets the ID field of the mutation.
-func withImageID(id uint64) imageOption {
-	return func(m *ImageMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *Image
-		)
-		m.oldValue = func(ctx context.Context) (*Image, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().Image.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withImage sets the old Image of the mutation.
-func withImage(node *Image) imageOption {
-	return func(m *ImageMutation) {
-		m.oldValue = func(context.Context) (*Image, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m ImageMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m ImageMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of Image entities.
-func (m *ImageMutation) SetID(id uint64) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *ImageMutation) ID() (id uint64, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *ImageMutation) IDs(ctx context.Context) ([]uint64, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uint64{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().Image.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetKey sets the "key" field.
-func (m *ImageMutation) SetKey(s string) {
-	m.key = &s
-}
-
-// Key returns the value of the "key" field in the mutation.
-func (m *ImageMutation) Key() (r string, exists bool) {
-	v := m.key
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldKey returns the old "key" field's value of the Image entity.
-// If the Image object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ImageMutation) OldKey(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldKey is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldKey requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldKey: %w", err)
-	}
-	return oldValue.Key, nil
-}
-
-// ResetKey resets all changes to the "key" field.
-func (m *ImageMutation) ResetKey() {
-	m.key = nil
-}
-
-// SetSrc sets the "src" field.
-func (m *ImageMutation) SetSrc(s string) {
-	m.src = &s
-}
-
-// Src returns the value of the "src" field in the mutation.
-func (m *ImageMutation) Src() (r string, exists bool) {
-	v := m.src
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSrc returns the old "src" field's value of the Image entity.
-// If the Image object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ImageMutation) OldSrc(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSrc is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSrc requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSrc: %w", err)
-	}
-	return oldValue.Src, nil
-}
-
-// ResetSrc resets all changes to the "src" field.
-func (m *ImageMutation) ResetSrc() {
-	m.src = nil
-}
-
-// AddActVersionIDs adds the "act_versions" edge to the ActVersion entity by ids.
-func (m *ImageMutation) AddActVersionIDs(ids ...uint64) {
-	if m.act_versions == nil {
-		m.act_versions = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		m.act_versions[ids[i]] = struct{}{}
-	}
-}
-
-// ClearActVersions clears the "act_versions" edge to the ActVersion entity.
-func (m *ImageMutation) ClearActVersions() {
-	m.clearedact_versions = true
-}
-
-// ActVersionsCleared reports if the "act_versions" edge to the ActVersion entity was cleared.
-func (m *ImageMutation) ActVersionsCleared() bool {
-	return m.clearedact_versions
-}
-
-// RemoveActVersionIDs removes the "act_versions" edge to the ActVersion entity by IDs.
-func (m *ImageMutation) RemoveActVersionIDs(ids ...uint64) {
-	if m.removedact_versions == nil {
-		m.removedact_versions = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		delete(m.act_versions, ids[i])
-		m.removedact_versions[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedActVersions returns the removed IDs of the "act_versions" edge to the ActVersion entity.
-func (m *ImageMutation) RemovedActVersionsIDs() (ids []uint64) {
-	for id := range m.removedact_versions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ActVersionsIDs returns the "act_versions" edge IDs in the mutation.
-func (m *ImageMutation) ActVersionsIDs() (ids []uint64) {
-	for id := range m.act_versions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetActVersions resets all changes to the "act_versions" edge.
-func (m *ImageMutation) ResetActVersions() {
-	m.act_versions = nil
-	m.clearedact_versions = false
-	m.removedact_versions = nil
-}
-
-// AddProgramVersionIDs adds the "program_versions" edge to the ProgramVersion entity by ids.
-func (m *ImageMutation) AddProgramVersionIDs(ids ...uint64) {
-	if m.program_versions == nil {
-		m.program_versions = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		m.program_versions[ids[i]] = struct{}{}
-	}
-}
-
-// ClearProgramVersions clears the "program_versions" edge to the ProgramVersion entity.
-func (m *ImageMutation) ClearProgramVersions() {
-	m.clearedprogram_versions = true
-}
-
-// ProgramVersionsCleared reports if the "program_versions" edge to the ProgramVersion entity was cleared.
-func (m *ImageMutation) ProgramVersionsCleared() bool {
-	return m.clearedprogram_versions
-}
-
-// RemoveProgramVersionIDs removes the "program_versions" edge to the ProgramVersion entity by IDs.
-func (m *ImageMutation) RemoveProgramVersionIDs(ids ...uint64) {
-	if m.removedprogram_versions == nil {
-		m.removedprogram_versions = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		delete(m.program_versions, ids[i])
-		m.removedprogram_versions[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProgramVersions returns the removed IDs of the "program_versions" edge to the ProgramVersion entity.
-func (m *ImageMutation) RemovedProgramVersionsIDs() (ids []uint64) {
-	for id := range m.removedprogram_versions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ProgramVersionsIDs returns the "program_versions" edge IDs in the mutation.
-func (m *ImageMutation) ProgramVersionsIDs() (ids []uint64) {
-	for id := range m.program_versions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetProgramVersions resets all changes to the "program_versions" edge.
-func (m *ImageMutation) ResetProgramVersions() {
-	m.program_versions = nil
-	m.clearedprogram_versions = false
-	m.removedprogram_versions = nil
-}
-
-// AddActImageIDs adds the "act_images" edge to the ActImage entity by ids.
-func (m *ImageMutation) AddActImageIDs(ids ...uint64) {
-	if m.act_images == nil {
-		m.act_images = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		m.act_images[ids[i]] = struct{}{}
-	}
-}
-
-// ClearActImages clears the "act_images" edge to the ActImage entity.
-func (m *ImageMutation) ClearActImages() {
-	m.clearedact_images = true
-}
-
-// ActImagesCleared reports if the "act_images" edge to the ActImage entity was cleared.
-func (m *ImageMutation) ActImagesCleared() bool {
-	return m.clearedact_images
-}
-
-// RemoveActImageIDs removes the "act_images" edge to the ActImage entity by IDs.
-func (m *ImageMutation) RemoveActImageIDs(ids ...uint64) {
-	if m.removedact_images == nil {
-		m.removedact_images = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		delete(m.act_images, ids[i])
-		m.removedact_images[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedActImages returns the removed IDs of the "act_images" edge to the ActImage entity.
-func (m *ImageMutation) RemovedActImagesIDs() (ids []uint64) {
-	for id := range m.removedact_images {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ActImagesIDs returns the "act_images" edge IDs in the mutation.
-func (m *ImageMutation) ActImagesIDs() (ids []uint64) {
-	for id := range m.act_images {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetActImages resets all changes to the "act_images" edge.
-func (m *ImageMutation) ResetActImages() {
-	m.act_images = nil
-	m.clearedact_images = false
-	m.removedact_images = nil
-}
-
-// AddProgramImageIDs adds the "program_images" edge to the ProgramImage entity by ids.
-func (m *ImageMutation) AddProgramImageIDs(ids ...uint64) {
-	if m.program_images == nil {
-		m.program_images = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		m.program_images[ids[i]] = struct{}{}
-	}
-}
-
-// ClearProgramImages clears the "program_images" edge to the ProgramImage entity.
-func (m *ImageMutation) ClearProgramImages() {
-	m.clearedprogram_images = true
-}
-
-// ProgramImagesCleared reports if the "program_images" edge to the ProgramImage entity was cleared.
-func (m *ImageMutation) ProgramImagesCleared() bool {
-	return m.clearedprogram_images
-}
-
-// RemoveProgramImageIDs removes the "program_images" edge to the ProgramImage entity by IDs.
-func (m *ImageMutation) RemoveProgramImageIDs(ids ...uint64) {
-	if m.removedprogram_images == nil {
-		m.removedprogram_images = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		delete(m.program_images, ids[i])
-		m.removedprogram_images[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProgramImages returns the removed IDs of the "program_images" edge to the ProgramImage entity.
-func (m *ImageMutation) RemovedProgramImagesIDs() (ids []uint64) {
-	for id := range m.removedprogram_images {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ProgramImagesIDs returns the "program_images" edge IDs in the mutation.
-func (m *ImageMutation) ProgramImagesIDs() (ids []uint64) {
-	for id := range m.program_images {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetProgramImages resets all changes to the "program_images" edge.
-func (m *ImageMutation) ResetProgramImages() {
-	m.program_images = nil
-	m.clearedprogram_images = false
-	m.removedprogram_images = nil
-}
-
-// Where appends a list predicates to the ImageMutation builder.
-func (m *ImageMutation) Where(ps ...predicate.Image) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the ImageMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *ImageMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.Image, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *ImageMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *ImageMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (Image).
-func (m *ImageMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *ImageMutation) Fields() []string {
-	fields := make([]string, 0, 2)
-	if m.key != nil {
-		fields = append(fields, image.FieldKey)
-	}
-	if m.src != nil {
-		fields = append(fields, image.FieldSrc)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *ImageMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case image.FieldKey:
-		return m.Key()
-	case image.FieldSrc:
-		return m.Src()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *ImageMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case image.FieldKey:
-		return m.OldKey(ctx)
-	case image.FieldSrc:
-		return m.OldSrc(ctx)
-	}
-	return nil, fmt.Errorf("unknown Image field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *ImageMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case image.FieldKey:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetKey(v)
-		return nil
-	case image.FieldSrc:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSrc(v)
-		return nil
-	}
-	return fmt.Errorf("unknown Image field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *ImageMutation) AddedFields() []string {
-	return nil
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *ImageMutation) AddedField(name string) (ent.Value, bool) {
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *ImageMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown Image numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *ImageMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *ImageMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *ImageMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown Image nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *ImageMutation) ResetField(name string) error {
-	switch name {
-	case image.FieldKey:
-		m.ResetKey()
-		return nil
-	case image.FieldSrc:
-		m.ResetSrc()
-		return nil
-	}
-	return fmt.Errorf("unknown Image field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *ImageMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.act_versions != nil {
-		edges = append(edges, image.EdgeActVersions)
-	}
-	if m.program_versions != nil {
-		edges = append(edges, image.EdgeProgramVersions)
-	}
-	if m.act_images != nil {
-		edges = append(edges, image.EdgeActImages)
-	}
-	if m.program_images != nil {
-		edges = append(edges, image.EdgeProgramImages)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *ImageMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case image.EdgeActVersions:
-		ids := make([]ent.Value, 0, len(m.act_versions))
-		for id := range m.act_versions {
-			ids = append(ids, id)
-		}
-		return ids
-	case image.EdgeProgramVersions:
-		ids := make([]ent.Value, 0, len(m.program_versions))
-		for id := range m.program_versions {
-			ids = append(ids, id)
-		}
-		return ids
-	case image.EdgeActImages:
-		ids := make([]ent.Value, 0, len(m.act_images))
-		for id := range m.act_images {
-			ids = append(ids, id)
-		}
-		return ids
-	case image.EdgeProgramImages:
-		ids := make([]ent.Value, 0, len(m.program_images))
-		for id := range m.program_images {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *ImageMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.removedact_versions != nil {
-		edges = append(edges, image.EdgeActVersions)
-	}
-	if m.removedprogram_versions != nil {
-		edges = append(edges, image.EdgeProgramVersions)
-	}
-	if m.removedact_images != nil {
-		edges = append(edges, image.EdgeActImages)
-	}
-	if m.removedprogram_images != nil {
-		edges = append(edges, image.EdgeProgramImages)
-	}
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *ImageMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case image.EdgeActVersions:
-		ids := make([]ent.Value, 0, len(m.removedact_versions))
-		for id := range m.removedact_versions {
-			ids = append(ids, id)
-		}
-		return ids
-	case image.EdgeProgramVersions:
-		ids := make([]ent.Value, 0, len(m.removedprogram_versions))
-		for id := range m.removedprogram_versions {
-			ids = append(ids, id)
-		}
-		return ids
-	case image.EdgeActImages:
-		ids := make([]ent.Value, 0, len(m.removedact_images))
-		for id := range m.removedact_images {
-			ids = append(ids, id)
-		}
-		return ids
-	case image.EdgeProgramImages:
-		ids := make([]ent.Value, 0, len(m.removedprogram_images))
-		for id := range m.removedprogram_images {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *ImageMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.clearedact_versions {
-		edges = append(edges, image.EdgeActVersions)
-	}
-	if m.clearedprogram_versions {
-		edges = append(edges, image.EdgeProgramVersions)
-	}
-	if m.clearedact_images {
-		edges = append(edges, image.EdgeActImages)
-	}
-	if m.clearedprogram_images {
-		edges = append(edges, image.EdgeProgramImages)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *ImageMutation) EdgeCleared(name string) bool {
-	switch name {
-	case image.EdgeActVersions:
-		return m.clearedact_versions
-	case image.EdgeProgramVersions:
-		return m.clearedprogram_versions
-	case image.EdgeActImages:
-		return m.clearedact_images
-	case image.EdgeProgramImages:
-		return m.clearedprogram_images
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *ImageMutation) ClearEdge(name string) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown Image unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *ImageMutation) ResetEdge(name string) error {
-	switch name {
-	case image.EdgeActVersions:
-		m.ResetActVersions()
-		return nil
-	case image.EdgeProgramVersions:
-		m.ResetProgramVersions()
-		return nil
-	case image.EdgeActImages:
-		m.ResetActImages()
-		return nil
-	case image.EdgeProgramImages:
-		m.ResetProgramImages()
-		return nil
-	}
-	return fmt.Errorf("unknown Image edge %s", name)
+	return fmt.Errorf("unknown DayRoutine edge %s", name)
 }
 
 // ProgramMutation represents an operation that mutates the Program nodes in the graph.
@@ -3557,18 +1375,20 @@ type ProgramMutation struct {
 	config
 	op                      Op
 	typ                     string
-	id                      *uint64
+	id                      *int64
 	code                    *string
 	program_type            *program.ProgramType
 	title                   *string
-	author                  *uint64
+	author                  *int64
 	addauthor               *int64
 	created_at              *time.Time
-	version_derived_from    *string
+	parent_program          *string
+	parent_version          *int
+	addparent_version       *int
 	clearedFields           map[string]struct{}
-	program_versions        map[uint64]struct{}
-	removedprogram_versions map[uint64]struct{}
-	clearedprogram_versions bool
+	program_releases        map[int64]struct{}
+	removedprogram_releases map[int64]struct{}
+	clearedprogram_releases bool
 	done                    bool
 	oldValue                func(context.Context) (*Program, error)
 	predicates              []predicate.Program
@@ -3594,7 +1414,7 @@ func newProgramMutation(c config, op Op, opts ...programOption) *ProgramMutation
 }
 
 // withProgramID sets the ID field of the mutation.
-func withProgramID(id uint64) programOption {
+func withProgramID(id int64) programOption {
 	return func(m *ProgramMutation) {
 		var (
 			err   error
@@ -3646,13 +1466,13 @@ func (m ProgramMutation) Tx() (*Tx, error) {
 
 // SetID sets the value of the id field. Note that this
 // operation is only accepted on creation of Program entities.
-func (m *ProgramMutation) SetID(id uint64) {
+func (m *ProgramMutation) SetID(id int64) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *ProgramMutation) ID() (id uint64, exists bool) {
+func (m *ProgramMutation) ID() (id int64, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -3663,12 +1483,12 @@ func (m *ProgramMutation) ID() (id uint64, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *ProgramMutation) IDs(ctx context.Context) ([]uint64, error) {
+func (m *ProgramMutation) IDs(ctx context.Context) ([]int64, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []uint64{id}, nil
+			return []int64{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -3787,13 +1607,13 @@ func (m *ProgramMutation) ResetTitle() {
 }
 
 // SetAuthor sets the "author" field.
-func (m *ProgramMutation) SetAuthor(u uint64) {
-	m.author = &u
+func (m *ProgramMutation) SetAuthor(i int64) {
+	m.author = &i
 	m.addauthor = nil
 }
 
 // Author returns the value of the "author" field in the mutation.
-func (m *ProgramMutation) Author() (r uint64, exists bool) {
+func (m *ProgramMutation) Author() (r int64, exists bool) {
 	v := m.author
 	if v == nil {
 		return
@@ -3804,7 +1624,7 @@ func (m *ProgramMutation) Author() (r uint64, exists bool) {
 // OldAuthor returns the old "author" field's value of the Program entity.
 // If the Program object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProgramMutation) OldAuthor(ctx context.Context) (v uint64, err error) {
+func (m *ProgramMutation) OldAuthor(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldAuthor is only allowed on UpdateOne operations")
 	}
@@ -3818,12 +1638,12 @@ func (m *ProgramMutation) OldAuthor(ctx context.Context) (v uint64, err error) {
 	return oldValue.Author, nil
 }
 
-// AddAuthor adds u to the "author" field.
-func (m *ProgramMutation) AddAuthor(u int64) {
+// AddAuthor adds i to the "author" field.
+func (m *ProgramMutation) AddAuthor(i int64) {
 	if m.addauthor != nil {
-		*m.addauthor += u
+		*m.addauthor += i
 	} else {
-		m.addauthor = &u
+		m.addauthor = &i
 	}
 }
 
@@ -3878,107 +1698,163 @@ func (m *ProgramMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
-// SetVersionDerivedFrom sets the "version_derived_from" field.
-func (m *ProgramMutation) SetVersionDerivedFrom(s string) {
-	m.version_derived_from = &s
+// SetParentProgram sets the "parent_program" field.
+func (m *ProgramMutation) SetParentProgram(s string) {
+	m.parent_program = &s
 }
 
-// VersionDerivedFrom returns the value of the "version_derived_from" field in the mutation.
-func (m *ProgramMutation) VersionDerivedFrom() (r string, exists bool) {
-	v := m.version_derived_from
+// ParentProgram returns the value of the "parent_program" field in the mutation.
+func (m *ProgramMutation) ParentProgram() (r string, exists bool) {
+	v := m.parent_program
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldVersionDerivedFrom returns the old "version_derived_from" field's value of the Program entity.
+// OldParentProgram returns the old "parent_program" field's value of the Program entity.
 // If the Program object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProgramMutation) OldVersionDerivedFrom(ctx context.Context) (v *string, err error) {
+func (m *ProgramMutation) OldParentProgram(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldVersionDerivedFrom is only allowed on UpdateOne operations")
+		return v, errors.New("OldParentProgram is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldVersionDerivedFrom requires an ID field in the mutation")
+		return v, errors.New("OldParentProgram requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldVersionDerivedFrom: %w", err)
+		return v, fmt.Errorf("querying old value for OldParentProgram: %w", err)
 	}
-	return oldValue.VersionDerivedFrom, nil
+	return oldValue.ParentProgram, nil
 }
 
-// ClearVersionDerivedFrom clears the value of the "version_derived_from" field.
-func (m *ProgramMutation) ClearVersionDerivedFrom() {
-	m.version_derived_from = nil
-	m.clearedFields[program.FieldVersionDerivedFrom] = struct{}{}
+// ClearParentProgram clears the value of the "parent_program" field.
+func (m *ProgramMutation) ClearParentProgram() {
+	m.parent_program = nil
+	m.clearedFields[program.FieldParentProgram] = struct{}{}
 }
 
-// VersionDerivedFromCleared returns if the "version_derived_from" field was cleared in this mutation.
-func (m *ProgramMutation) VersionDerivedFromCleared() bool {
-	_, ok := m.clearedFields[program.FieldVersionDerivedFrom]
+// ParentProgramCleared returns if the "parent_program" field was cleared in this mutation.
+func (m *ProgramMutation) ParentProgramCleared() bool {
+	_, ok := m.clearedFields[program.FieldParentProgram]
 	return ok
 }
 
-// ResetVersionDerivedFrom resets all changes to the "version_derived_from" field.
-func (m *ProgramMutation) ResetVersionDerivedFrom() {
-	m.version_derived_from = nil
-	delete(m.clearedFields, program.FieldVersionDerivedFrom)
+// ResetParentProgram resets all changes to the "parent_program" field.
+func (m *ProgramMutation) ResetParentProgram() {
+	m.parent_program = nil
+	delete(m.clearedFields, program.FieldParentProgram)
 }
 
-// AddProgramVersionIDs adds the "program_versions" edge to the ProgramVersion entity by ids.
-func (m *ProgramMutation) AddProgramVersionIDs(ids ...uint64) {
-	if m.program_versions == nil {
-		m.program_versions = make(map[uint64]struct{})
+// SetParentVersion sets the "parent_version" field.
+func (m *ProgramMutation) SetParentVersion(i int) {
+	m.parent_version = &i
+	m.addparent_version = nil
+}
+
+// ParentVersion returns the value of the "parent_version" field in the mutation.
+func (m *ProgramMutation) ParentVersion() (r int, exists bool) {
+	v := m.parent_version
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldParentVersion returns the old "parent_version" field's value of the Program entity.
+// If the Program object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProgramMutation) OldParentVersion(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldParentVersion is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldParentVersion requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldParentVersion: %w", err)
+	}
+	return oldValue.ParentVersion, nil
+}
+
+// AddParentVersion adds i to the "parent_version" field.
+func (m *ProgramMutation) AddParentVersion(i int) {
+	if m.addparent_version != nil {
+		*m.addparent_version += i
+	} else {
+		m.addparent_version = &i
+	}
+}
+
+// AddedParentVersion returns the value that was added to the "parent_version" field in this mutation.
+func (m *ProgramMutation) AddedParentVersion() (r int, exists bool) {
+	v := m.addparent_version
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetParentVersion resets all changes to the "parent_version" field.
+func (m *ProgramMutation) ResetParentVersion() {
+	m.parent_version = nil
+	m.addparent_version = nil
+}
+
+// AddProgramReleaseIDs adds the "program_releases" edge to the ProgramRelease entity by ids.
+func (m *ProgramMutation) AddProgramReleaseIDs(ids ...int64) {
+	if m.program_releases == nil {
+		m.program_releases = make(map[int64]struct{})
 	}
 	for i := range ids {
-		m.program_versions[ids[i]] = struct{}{}
+		m.program_releases[ids[i]] = struct{}{}
 	}
 }
 
-// ClearProgramVersions clears the "program_versions" edge to the ProgramVersion entity.
-func (m *ProgramMutation) ClearProgramVersions() {
-	m.clearedprogram_versions = true
+// ClearProgramReleases clears the "program_releases" edge to the ProgramRelease entity.
+func (m *ProgramMutation) ClearProgramReleases() {
+	m.clearedprogram_releases = true
 }
 
-// ProgramVersionsCleared reports if the "program_versions" edge to the ProgramVersion entity was cleared.
-func (m *ProgramMutation) ProgramVersionsCleared() bool {
-	return m.clearedprogram_versions
+// ProgramReleasesCleared reports if the "program_releases" edge to the ProgramRelease entity was cleared.
+func (m *ProgramMutation) ProgramReleasesCleared() bool {
+	return m.clearedprogram_releases
 }
 
-// RemoveProgramVersionIDs removes the "program_versions" edge to the ProgramVersion entity by IDs.
-func (m *ProgramMutation) RemoveProgramVersionIDs(ids ...uint64) {
-	if m.removedprogram_versions == nil {
-		m.removedprogram_versions = make(map[uint64]struct{})
+// RemoveProgramReleaseIDs removes the "program_releases" edge to the ProgramRelease entity by IDs.
+func (m *ProgramMutation) RemoveProgramReleaseIDs(ids ...int64) {
+	if m.removedprogram_releases == nil {
+		m.removedprogram_releases = make(map[int64]struct{})
 	}
 	for i := range ids {
-		delete(m.program_versions, ids[i])
-		m.removedprogram_versions[ids[i]] = struct{}{}
+		delete(m.program_releases, ids[i])
+		m.removedprogram_releases[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedProgramVersions returns the removed IDs of the "program_versions" edge to the ProgramVersion entity.
-func (m *ProgramMutation) RemovedProgramVersionsIDs() (ids []uint64) {
-	for id := range m.removedprogram_versions {
+// RemovedProgramReleases returns the removed IDs of the "program_releases" edge to the ProgramRelease entity.
+func (m *ProgramMutation) RemovedProgramReleasesIDs() (ids []int64) {
+	for id := range m.removedprogram_releases {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ProgramVersionsIDs returns the "program_versions" edge IDs in the mutation.
-func (m *ProgramMutation) ProgramVersionsIDs() (ids []uint64) {
-	for id := range m.program_versions {
+// ProgramReleasesIDs returns the "program_releases" edge IDs in the mutation.
+func (m *ProgramMutation) ProgramReleasesIDs() (ids []int64) {
+	for id := range m.program_releases {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetProgramVersions resets all changes to the "program_versions" edge.
-func (m *ProgramMutation) ResetProgramVersions() {
-	m.program_versions = nil
-	m.clearedprogram_versions = false
-	m.removedprogram_versions = nil
+// ResetProgramReleases resets all changes to the "program_releases" edge.
+func (m *ProgramMutation) ResetProgramReleases() {
+	m.program_releases = nil
+	m.clearedprogram_releases = false
+	m.removedprogram_releases = nil
 }
 
 // Where appends a list predicates to the ProgramMutation builder.
@@ -4015,7 +1891,7 @@ func (m *ProgramMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ProgramMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.code != nil {
 		fields = append(fields, program.FieldCode)
 	}
@@ -4031,8 +1907,11 @@ func (m *ProgramMutation) Fields() []string {
 	if m.created_at != nil {
 		fields = append(fields, program.FieldCreatedAt)
 	}
-	if m.version_derived_from != nil {
-		fields = append(fields, program.FieldVersionDerivedFrom)
+	if m.parent_program != nil {
+		fields = append(fields, program.FieldParentProgram)
+	}
+	if m.parent_version != nil {
+		fields = append(fields, program.FieldParentVersion)
 	}
 	return fields
 }
@@ -4052,8 +1931,10 @@ func (m *ProgramMutation) Field(name string) (ent.Value, bool) {
 		return m.Author()
 	case program.FieldCreatedAt:
 		return m.CreatedAt()
-	case program.FieldVersionDerivedFrom:
-		return m.VersionDerivedFrom()
+	case program.FieldParentProgram:
+		return m.ParentProgram()
+	case program.FieldParentVersion:
+		return m.ParentVersion()
 	}
 	return nil, false
 }
@@ -4073,8 +1954,10 @@ func (m *ProgramMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldAuthor(ctx)
 	case program.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
-	case program.FieldVersionDerivedFrom:
-		return m.OldVersionDerivedFrom(ctx)
+	case program.FieldParentProgram:
+		return m.OldParentProgram(ctx)
+	case program.FieldParentVersion:
+		return m.OldParentVersion(ctx)
 	}
 	return nil, fmt.Errorf("unknown Program field %s", name)
 }
@@ -4106,7 +1989,7 @@ func (m *ProgramMutation) SetField(name string, value ent.Value) error {
 		m.SetTitle(v)
 		return nil
 	case program.FieldAuthor:
-		v, ok := value.(uint64)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -4119,12 +2002,19 @@ func (m *ProgramMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCreatedAt(v)
 		return nil
-	case program.FieldVersionDerivedFrom:
+	case program.FieldParentProgram:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetVersionDerivedFrom(v)
+		m.SetParentProgram(v)
+		return nil
+	case program.FieldParentVersion:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetParentVersion(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Program field %s", name)
@@ -4137,6 +2027,9 @@ func (m *ProgramMutation) AddedFields() []string {
 	if m.addauthor != nil {
 		fields = append(fields, program.FieldAuthor)
 	}
+	if m.addparent_version != nil {
+		fields = append(fields, program.FieldParentVersion)
+	}
 	return fields
 }
 
@@ -4147,6 +2040,8 @@ func (m *ProgramMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case program.FieldAuthor:
 		return m.AddedAuthor()
+	case program.FieldParentVersion:
+		return m.AddedParentVersion()
 	}
 	return nil, false
 }
@@ -4163,6 +2058,13 @@ func (m *ProgramMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddAuthor(v)
 		return nil
+	case program.FieldParentVersion:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddParentVersion(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Program numeric field %s", name)
 }
@@ -4171,8 +2073,8 @@ func (m *ProgramMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *ProgramMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(program.FieldVersionDerivedFrom) {
-		fields = append(fields, program.FieldVersionDerivedFrom)
+	if m.FieldCleared(program.FieldParentProgram) {
+		fields = append(fields, program.FieldParentProgram)
 	}
 	return fields
 }
@@ -4188,8 +2090,8 @@ func (m *ProgramMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *ProgramMutation) ClearField(name string) error {
 	switch name {
-	case program.FieldVersionDerivedFrom:
-		m.ClearVersionDerivedFrom()
+	case program.FieldParentProgram:
+		m.ClearParentProgram()
 		return nil
 	}
 	return fmt.Errorf("unknown Program nullable field %s", name)
@@ -4214,8 +2116,11 @@ func (m *ProgramMutation) ResetField(name string) error {
 	case program.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
-	case program.FieldVersionDerivedFrom:
-		m.ResetVersionDerivedFrom()
+	case program.FieldParentProgram:
+		m.ResetParentProgram()
+		return nil
+	case program.FieldParentVersion:
+		m.ResetParentVersion()
 		return nil
 	}
 	return fmt.Errorf("unknown Program field %s", name)
@@ -4224,8 +2129,8 @@ func (m *ProgramMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProgramMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.program_versions != nil {
-		edges = append(edges, program.EdgeProgramVersions)
+	if m.program_releases != nil {
+		edges = append(edges, program.EdgeProgramReleases)
 	}
 	return edges
 }
@@ -4234,9 +2139,9 @@ func (m *ProgramMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *ProgramMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case program.EdgeProgramVersions:
-		ids := make([]ent.Value, 0, len(m.program_versions))
-		for id := range m.program_versions {
+	case program.EdgeProgramReleases:
+		ids := make([]ent.Value, 0, len(m.program_releases))
+		for id := range m.program_releases {
 			ids = append(ids, id)
 		}
 		return ids
@@ -4247,8 +2152,8 @@ func (m *ProgramMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProgramMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.removedprogram_versions != nil {
-		edges = append(edges, program.EdgeProgramVersions)
+	if m.removedprogram_releases != nil {
+		edges = append(edges, program.EdgeProgramReleases)
 	}
 	return edges
 }
@@ -4257,9 +2162,9 @@ func (m *ProgramMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *ProgramMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case program.EdgeProgramVersions:
-		ids := make([]ent.Value, 0, len(m.removedprogram_versions))
-		for id := range m.removedprogram_versions {
+	case program.EdgeProgramReleases:
+		ids := make([]ent.Value, 0, len(m.removedprogram_releases))
+		for id := range m.removedprogram_releases {
 			ids = append(ids, id)
 		}
 		return ids
@@ -4270,8 +2175,8 @@ func (m *ProgramMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProgramMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.clearedprogram_versions {
-		edges = append(edges, program.EdgeProgramVersions)
+	if m.clearedprogram_releases {
+		edges = append(edges, program.EdgeProgramReleases)
 	}
 	return edges
 }
@@ -4280,8 +2185,8 @@ func (m *ProgramMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *ProgramMutation) EdgeCleared(name string) bool {
 	switch name {
-	case program.EdgeProgramVersions:
-		return m.clearedprogram_versions
+	case program.EdgeProgramReleases:
+		return m.clearedprogram_releases
 	}
 	return false
 }
@@ -4298,42 +2203,48 @@ func (m *ProgramMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ProgramMutation) ResetEdge(name string) error {
 	switch name {
-	case program.EdgeProgramVersions:
-		m.ResetProgramVersions()
+	case program.EdgeProgramReleases:
+		m.ResetProgramReleases()
 		return nil
 	}
 	return fmt.Errorf("unknown Program edge %s", name)
 }
 
-// ProgramImageMutation represents an operation that mutates the ProgramImage nodes in the graph.
-type ProgramImageMutation struct {
+// ProgramReleaseMutation represents an operation that mutates the ProgramRelease nodes in the graph.
+type ProgramReleaseMutation struct {
 	config
-	op                     Op
-	typ                    string
-	id                     *uint64
-	_order                 *uint
-	add_order              *int
-	clearedFields          map[string]struct{}
-	program_version        *uint64
-	clearedprogram_version bool
-	image                  *uint64
-	clearedimage           bool
-	done                   bool
-	oldValue               func(context.Context) (*ProgramImage, error)
-	predicates             []predicate.ProgramImage
+	op                       Op
+	typ                      string
+	id                       *int64
+	version                  *int
+	addversion               *int
+	created_at               *time.Time
+	text                     *string
+	clearedFields            map[string]struct{}
+	program                  *int64
+	clearedprogram           bool
+	s3_program_images        map[int64]struct{}
+	removeds3_program_images map[int64]struct{}
+	cleareds3_program_images bool
+	day_routines             map[int64]struct{}
+	removedday_routines      map[int64]struct{}
+	clearedday_routines      bool
+	done                     bool
+	oldValue                 func(context.Context) (*ProgramRelease, error)
+	predicates               []predicate.ProgramRelease
 }
 
-var _ ent.Mutation = (*ProgramImageMutation)(nil)
+var _ ent.Mutation = (*ProgramReleaseMutation)(nil)
 
-// programimageOption allows management of the mutation configuration using functional options.
-type programimageOption func(*ProgramImageMutation)
+// programreleaseOption allows management of the mutation configuration using functional options.
+type programreleaseOption func(*ProgramReleaseMutation)
 
-// newProgramImageMutation creates new mutation for the ProgramImage entity.
-func newProgramImageMutation(c config, op Op, opts ...programimageOption) *ProgramImageMutation {
-	m := &ProgramImageMutation{
+// newProgramReleaseMutation creates new mutation for the ProgramRelease entity.
+func newProgramReleaseMutation(c config, op Op, opts ...programreleaseOption) *ProgramReleaseMutation {
+	m := &ProgramReleaseMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeProgramImage,
+		typ:           TypeProgramRelease,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -4342,20 +2253,20 @@ func newProgramImageMutation(c config, op Op, opts ...programimageOption) *Progr
 	return m
 }
 
-// withProgramImageID sets the ID field of the mutation.
-func withProgramImageID(id uint64) programimageOption {
-	return func(m *ProgramImageMutation) {
+// withProgramReleaseID sets the ID field of the mutation.
+func withProgramReleaseID(id int64) programreleaseOption {
+	return func(m *ProgramReleaseMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *ProgramImage
+			value *ProgramRelease
 		)
-		m.oldValue = func(ctx context.Context) (*ProgramImage, error) {
+		m.oldValue = func(ctx context.Context) (*ProgramRelease, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().ProgramImage.Get(ctx, id)
+					value, err = m.Client().ProgramRelease.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -4364,10 +2275,10 @@ func withProgramImageID(id uint64) programimageOption {
 	}
 }
 
-// withProgramImage sets the old ProgramImage of the mutation.
-func withProgramImage(node *ProgramImage) programimageOption {
-	return func(m *ProgramImageMutation) {
-		m.oldValue = func(context.Context) (*ProgramImage, error) {
+// withProgramRelease sets the old ProgramRelease of the mutation.
+func withProgramRelease(node *ProgramRelease) programreleaseOption {
+	return func(m *ProgramReleaseMutation) {
+		m.oldValue = func(context.Context) (*ProgramRelease, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -4376,7 +2287,7 @@ func withProgramImage(node *ProgramImage) programimageOption {
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m ProgramImageMutation) Client() *Client {
+func (m ProgramReleaseMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -4384,7 +2295,7 @@ func (m ProgramImageMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m ProgramImageMutation) Tx() (*Tx, error) {
+func (m ProgramReleaseMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -4394,14 +2305,14 @@ func (m ProgramImageMutation) Tx() (*Tx, error) {
 }
 
 // SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of ProgramImage entities.
-func (m *ProgramImageMutation) SetID(id uint64) {
+// operation is only accepted on creation of ProgramRelease entities.
+func (m *ProgramReleaseMutation) SetID(id int64) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *ProgramImageMutation) ID() (id uint64, exists bool) {
+func (m *ProgramReleaseMutation) ID() (id int64, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -4412,686 +2323,29 @@ func (m *ProgramImageMutation) ID() (id uint64, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *ProgramImageMutation) IDs(ctx context.Context) ([]uint64, error) {
+func (m *ProgramReleaseMutation) IDs(ctx context.Context) ([]int64, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []uint64{id}, nil
+			return []int64{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().ProgramImage.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().ProgramRelease.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
-}
-
-// SetOrder sets the "order" field.
-func (m *ProgramImageMutation) SetOrder(u uint) {
-	m._order = &u
-	m.add_order = nil
-}
-
-// Order returns the value of the "order" field in the mutation.
-func (m *ProgramImageMutation) Order() (r uint, exists bool) {
-	v := m._order
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldOrder returns the old "order" field's value of the ProgramImage entity.
-// If the ProgramImage object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProgramImageMutation) OldOrder(ctx context.Context) (v uint, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldOrder is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldOrder requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldOrder: %w", err)
-	}
-	return oldValue.Order, nil
-}
-
-// AddOrder adds u to the "order" field.
-func (m *ProgramImageMutation) AddOrder(u int) {
-	if m.add_order != nil {
-		*m.add_order += u
-	} else {
-		m.add_order = &u
-	}
-}
-
-// AddedOrder returns the value that was added to the "order" field in this mutation.
-func (m *ProgramImageMutation) AddedOrder() (r int, exists bool) {
-	v := m.add_order
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetOrder resets all changes to the "order" field.
-func (m *ProgramImageMutation) ResetOrder() {
-	m._order = nil
-	m.add_order = nil
-}
-
-// SetProgramVersionID sets the "program_version_id" field.
-func (m *ProgramImageMutation) SetProgramVersionID(u uint64) {
-	m.program_version = &u
-}
-
-// ProgramVersionID returns the value of the "program_version_id" field in the mutation.
-func (m *ProgramImageMutation) ProgramVersionID() (r uint64, exists bool) {
-	v := m.program_version
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProgramVersionID returns the old "program_version_id" field's value of the ProgramImage entity.
-// If the ProgramImage object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProgramImageMutation) OldProgramVersionID(ctx context.Context) (v uint64, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProgramVersionID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProgramVersionID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProgramVersionID: %w", err)
-	}
-	return oldValue.ProgramVersionID, nil
-}
-
-// ResetProgramVersionID resets all changes to the "program_version_id" field.
-func (m *ProgramImageMutation) ResetProgramVersionID() {
-	m.program_version = nil
-}
-
-// SetImageID sets the "image_id" field.
-func (m *ProgramImageMutation) SetImageID(u uint64) {
-	m.image = &u
-}
-
-// ImageID returns the value of the "image_id" field in the mutation.
-func (m *ProgramImageMutation) ImageID() (r uint64, exists bool) {
-	v := m.image
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldImageID returns the old "image_id" field's value of the ProgramImage entity.
-// If the ProgramImage object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProgramImageMutation) OldImageID(ctx context.Context) (v uint64, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldImageID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldImageID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldImageID: %w", err)
-	}
-	return oldValue.ImageID, nil
-}
-
-// ResetImageID resets all changes to the "image_id" field.
-func (m *ProgramImageMutation) ResetImageID() {
-	m.image = nil
-}
-
-// ClearProgramVersion clears the "program_version" edge to the ProgramVersion entity.
-func (m *ProgramImageMutation) ClearProgramVersion() {
-	m.clearedprogram_version = true
-}
-
-// ProgramVersionCleared reports if the "program_version" edge to the ProgramVersion entity was cleared.
-func (m *ProgramImageMutation) ProgramVersionCleared() bool {
-	return m.clearedprogram_version
-}
-
-// ProgramVersionIDs returns the "program_version" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ProgramVersionID instead. It exists only for internal usage by the builders.
-func (m *ProgramImageMutation) ProgramVersionIDs() (ids []uint64) {
-	if id := m.program_version; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetProgramVersion resets all changes to the "program_version" edge.
-func (m *ProgramImageMutation) ResetProgramVersion() {
-	m.program_version = nil
-	m.clearedprogram_version = false
-}
-
-// ClearImage clears the "image" edge to the Image entity.
-func (m *ProgramImageMutation) ClearImage() {
-	m.clearedimage = true
-}
-
-// ImageCleared reports if the "image" edge to the Image entity was cleared.
-func (m *ProgramImageMutation) ImageCleared() bool {
-	return m.clearedimage
-}
-
-// ImageIDs returns the "image" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ImageID instead. It exists only for internal usage by the builders.
-func (m *ProgramImageMutation) ImageIDs() (ids []uint64) {
-	if id := m.image; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetImage resets all changes to the "image" edge.
-func (m *ProgramImageMutation) ResetImage() {
-	m.image = nil
-	m.clearedimage = false
-}
-
-// Where appends a list predicates to the ProgramImageMutation builder.
-func (m *ProgramImageMutation) Where(ps ...predicate.ProgramImage) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the ProgramImageMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *ProgramImageMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.ProgramImage, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *ProgramImageMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *ProgramImageMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (ProgramImage).
-func (m *ProgramImageMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *ProgramImageMutation) Fields() []string {
-	fields := make([]string, 0, 3)
-	if m._order != nil {
-		fields = append(fields, programimage.FieldOrder)
-	}
-	if m.program_version != nil {
-		fields = append(fields, programimage.FieldProgramVersionID)
-	}
-	if m.image != nil {
-		fields = append(fields, programimage.FieldImageID)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *ProgramImageMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case programimage.FieldOrder:
-		return m.Order()
-	case programimage.FieldProgramVersionID:
-		return m.ProgramVersionID()
-	case programimage.FieldImageID:
-		return m.ImageID()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *ProgramImageMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case programimage.FieldOrder:
-		return m.OldOrder(ctx)
-	case programimage.FieldProgramVersionID:
-		return m.OldProgramVersionID(ctx)
-	case programimage.FieldImageID:
-		return m.OldImageID(ctx)
-	}
-	return nil, fmt.Errorf("unknown ProgramImage field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *ProgramImageMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case programimage.FieldOrder:
-		v, ok := value.(uint)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetOrder(v)
-		return nil
-	case programimage.FieldProgramVersionID:
-		v, ok := value.(uint64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProgramVersionID(v)
-		return nil
-	case programimage.FieldImageID:
-		v, ok := value.(uint64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetImageID(v)
-		return nil
-	}
-	return fmt.Errorf("unknown ProgramImage field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *ProgramImageMutation) AddedFields() []string {
-	var fields []string
-	if m.add_order != nil {
-		fields = append(fields, programimage.FieldOrder)
-	}
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *ProgramImageMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case programimage.FieldOrder:
-		return m.AddedOrder()
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *ProgramImageMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	case programimage.FieldOrder:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddOrder(v)
-		return nil
-	}
-	return fmt.Errorf("unknown ProgramImage numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *ProgramImageMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *ProgramImageMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *ProgramImageMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown ProgramImage nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *ProgramImageMutation) ResetField(name string) error {
-	switch name {
-	case programimage.FieldOrder:
-		m.ResetOrder()
-		return nil
-	case programimage.FieldProgramVersionID:
-		m.ResetProgramVersionID()
-		return nil
-	case programimage.FieldImageID:
-		m.ResetImageID()
-		return nil
-	}
-	return fmt.Errorf("unknown ProgramImage field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *ProgramImageMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.program_version != nil {
-		edges = append(edges, programimage.EdgeProgramVersion)
-	}
-	if m.image != nil {
-		edges = append(edges, programimage.EdgeImage)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *ProgramImageMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case programimage.EdgeProgramVersion:
-		if id := m.program_version; id != nil {
-			return []ent.Value{*id}
-		}
-	case programimage.EdgeImage:
-		if id := m.image; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *ProgramImageMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *ProgramImageMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *ProgramImageMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedprogram_version {
-		edges = append(edges, programimage.EdgeProgramVersion)
-	}
-	if m.clearedimage {
-		edges = append(edges, programimage.EdgeImage)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *ProgramImageMutation) EdgeCleared(name string) bool {
-	switch name {
-	case programimage.EdgeProgramVersion:
-		return m.clearedprogram_version
-	case programimage.EdgeImage:
-		return m.clearedimage
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *ProgramImageMutation) ClearEdge(name string) error {
-	switch name {
-	case programimage.EdgeProgramVersion:
-		m.ClearProgramVersion()
-		return nil
-	case programimage.EdgeImage:
-		m.ClearImage()
-		return nil
-	}
-	return fmt.Errorf("unknown ProgramImage unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *ProgramImageMutation) ResetEdge(name string) error {
-	switch name {
-	case programimage.EdgeProgramVersion:
-		m.ResetProgramVersion()
-		return nil
-	case programimage.EdgeImage:
-		m.ResetImage()
-		return nil
-	}
-	return fmt.Errorf("unknown ProgramImage edge %s", name)
-}
-
-// ProgramVersionMutation represents an operation that mutates the ProgramVersion nodes in the graph.
-type ProgramVersionMutation struct {
-	config
-	op                    Op
-	typ                   string
-	id                    *uint64
-	code                  *string
-	program_code          *string
-	version               *uint
-	addversion            *int
-	created_at            *time.Time
-	text                  *string
-	clearedFields         map[string]struct{}
-	program               *uint64
-	clearedprogram        bool
-	images                map[uint64]struct{}
-	removedimages         map[uint64]struct{}
-	clearedimages         bool
-	daily_routines        map[uint64]struct{}
-	removeddaily_routines map[uint64]struct{}
-	cleareddaily_routines bool
-	program_images        map[uint64]struct{}
-	removedprogram_images map[uint64]struct{}
-	clearedprogram_images bool
-	done                  bool
-	oldValue              func(context.Context) (*ProgramVersion, error)
-	predicates            []predicate.ProgramVersion
-}
-
-var _ ent.Mutation = (*ProgramVersionMutation)(nil)
-
-// programversionOption allows management of the mutation configuration using functional options.
-type programversionOption func(*ProgramVersionMutation)
-
-// newProgramVersionMutation creates new mutation for the ProgramVersion entity.
-func newProgramVersionMutation(c config, op Op, opts ...programversionOption) *ProgramVersionMutation {
-	m := &ProgramVersionMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeProgramVersion,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withProgramVersionID sets the ID field of the mutation.
-func withProgramVersionID(id uint64) programversionOption {
-	return func(m *ProgramVersionMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *ProgramVersion
-		)
-		m.oldValue = func(ctx context.Context) (*ProgramVersion, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().ProgramVersion.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withProgramVersion sets the old ProgramVersion of the mutation.
-func withProgramVersion(node *ProgramVersion) programversionOption {
-	return func(m *ProgramVersionMutation) {
-		m.oldValue = func(context.Context) (*ProgramVersion, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m ProgramVersionMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m ProgramVersionMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of ProgramVersion entities.
-func (m *ProgramVersionMutation) SetID(id uint64) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *ProgramVersionMutation) ID() (id uint64, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *ProgramVersionMutation) IDs(ctx context.Context) ([]uint64, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uint64{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().ProgramVersion.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetCode sets the "code" field.
-func (m *ProgramVersionMutation) SetCode(s string) {
-	m.code = &s
-}
-
-// Code returns the value of the "code" field in the mutation.
-func (m *ProgramVersionMutation) Code() (r string, exists bool) {
-	v := m.code
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCode returns the old "code" field's value of the ProgramVersion entity.
-// If the ProgramVersion object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProgramVersionMutation) OldCode(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCode is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCode requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCode: %w", err)
-	}
-	return oldValue.Code, nil
-}
-
-// ResetCode resets all changes to the "code" field.
-func (m *ProgramVersionMutation) ResetCode() {
-	m.code = nil
-}
-
-// SetProgramCode sets the "program_code" field.
-func (m *ProgramVersionMutation) SetProgramCode(s string) {
-	m.program_code = &s
-}
-
-// ProgramCode returns the value of the "program_code" field in the mutation.
-func (m *ProgramVersionMutation) ProgramCode() (r string, exists bool) {
-	v := m.program_code
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProgramCode returns the old "program_code" field's value of the ProgramVersion entity.
-// If the ProgramVersion object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProgramVersionMutation) OldProgramCode(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProgramCode is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProgramCode requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProgramCode: %w", err)
-	}
-	return oldValue.ProgramCode, nil
-}
-
-// ResetProgramCode resets all changes to the "program_code" field.
-func (m *ProgramVersionMutation) ResetProgramCode() {
-	m.program_code = nil
 }
 
 // SetVersion sets the "version" field.
-func (m *ProgramVersionMutation) SetVersion(u uint) {
-	m.version = &u
+func (m *ProgramReleaseMutation) SetVersion(i int) {
+	m.version = &i
 	m.addversion = nil
 }
 
 // Version returns the value of the "version" field in the mutation.
-func (m *ProgramVersionMutation) Version() (r uint, exists bool) {
+func (m *ProgramReleaseMutation) Version() (r int, exists bool) {
 	v := m.version
 	if v == nil {
 		return
@@ -5099,10 +2353,10 @@ func (m *ProgramVersionMutation) Version() (r uint, exists bool) {
 	return *v, true
 }
 
-// OldVersion returns the old "version" field's value of the ProgramVersion entity.
-// If the ProgramVersion object wasn't provided to the builder, the object is fetched from the database.
+// OldVersion returns the old "version" field's value of the ProgramRelease entity.
+// If the ProgramRelease object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProgramVersionMutation) OldVersion(ctx context.Context) (v uint, err error) {
+func (m *ProgramReleaseMutation) OldVersion(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldVersion is only allowed on UpdateOne operations")
 	}
@@ -5116,17 +2370,17 @@ func (m *ProgramVersionMutation) OldVersion(ctx context.Context) (v uint, err er
 	return oldValue.Version, nil
 }
 
-// AddVersion adds u to the "version" field.
-func (m *ProgramVersionMutation) AddVersion(u int) {
+// AddVersion adds i to the "version" field.
+func (m *ProgramReleaseMutation) AddVersion(i int) {
 	if m.addversion != nil {
-		*m.addversion += u
+		*m.addversion += i
 	} else {
-		m.addversion = &u
+		m.addversion = &i
 	}
 }
 
 // AddedVersion returns the value that was added to the "version" field in this mutation.
-func (m *ProgramVersionMutation) AddedVersion() (r int, exists bool) {
+func (m *ProgramReleaseMutation) AddedVersion() (r int, exists bool) {
 	v := m.addversion
 	if v == nil {
 		return
@@ -5135,18 +2389,18 @@ func (m *ProgramVersionMutation) AddedVersion() (r int, exists bool) {
 }
 
 // ResetVersion resets all changes to the "version" field.
-func (m *ProgramVersionMutation) ResetVersion() {
+func (m *ProgramReleaseMutation) ResetVersion() {
 	m.version = nil
 	m.addversion = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (m *ProgramVersionMutation) SetCreatedAt(t time.Time) {
+func (m *ProgramReleaseMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
 }
 
 // CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *ProgramVersionMutation) CreatedAt() (r time.Time, exists bool) {
+func (m *ProgramReleaseMutation) CreatedAt() (r time.Time, exists bool) {
 	v := m.created_at
 	if v == nil {
 		return
@@ -5154,10 +2408,10 @@ func (m *ProgramVersionMutation) CreatedAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldCreatedAt returns the old "created_at" field's value of the ProgramVersion entity.
-// If the ProgramVersion object wasn't provided to the builder, the object is fetched from the database.
+// OldCreatedAt returns the old "created_at" field's value of the ProgramRelease entity.
+// If the ProgramRelease object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProgramVersionMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *ProgramReleaseMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
 	}
@@ -5172,17 +2426,17 @@ func (m *ProgramVersionMutation) OldCreatedAt(ctx context.Context) (v time.Time,
 }
 
 // ResetCreatedAt resets all changes to the "created_at" field.
-func (m *ProgramVersionMutation) ResetCreatedAt() {
+func (m *ProgramReleaseMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
 // SetText sets the "text" field.
-func (m *ProgramVersionMutation) SetText(s string) {
+func (m *ProgramReleaseMutation) SetText(s string) {
 	m.text = &s
 }
 
 // Text returns the value of the "text" field in the mutation.
-func (m *ProgramVersionMutation) Text() (r string, exists bool) {
+func (m *ProgramReleaseMutation) Text() (r string, exists bool) {
 	v := m.text
 	if v == nil {
 		return
@@ -5190,10 +2444,10 @@ func (m *ProgramVersionMutation) Text() (r string, exists bool) {
 	return *v, true
 }
 
-// OldText returns the old "text" field's value of the ProgramVersion entity.
-// If the ProgramVersion object wasn't provided to the builder, the object is fetched from the database.
+// OldText returns the old "text" field's value of the ProgramRelease entity.
+// If the ProgramRelease object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProgramVersionMutation) OldText(ctx context.Context) (v string, err error) {
+func (m *ProgramReleaseMutation) OldText(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldText is only allowed on UpdateOne operations")
 	}
@@ -5208,27 +2462,27 @@ func (m *ProgramVersionMutation) OldText(ctx context.Context) (v string, err err
 }
 
 // ResetText resets all changes to the "text" field.
-func (m *ProgramVersionMutation) ResetText() {
+func (m *ProgramReleaseMutation) ResetText() {
 	m.text = nil
 }
 
 // SetProgramID sets the "program" edge to the Program entity by id.
-func (m *ProgramVersionMutation) SetProgramID(id uint64) {
+func (m *ProgramReleaseMutation) SetProgramID(id int64) {
 	m.program = &id
 }
 
 // ClearProgram clears the "program" edge to the Program entity.
-func (m *ProgramVersionMutation) ClearProgram() {
+func (m *ProgramReleaseMutation) ClearProgram() {
 	m.clearedprogram = true
 }
 
 // ProgramCleared reports if the "program" edge to the Program entity was cleared.
-func (m *ProgramVersionMutation) ProgramCleared() bool {
+func (m *ProgramReleaseMutation) ProgramCleared() bool {
 	return m.clearedprogram
 }
 
 // ProgramID returns the "program" edge ID in the mutation.
-func (m *ProgramVersionMutation) ProgramID() (id uint64, exists bool) {
+func (m *ProgramReleaseMutation) ProgramID() (id int64, exists bool) {
 	if m.program != nil {
 		return *m.program, true
 	}
@@ -5238,7 +2492,7 @@ func (m *ProgramVersionMutation) ProgramID() (id uint64, exists bool) {
 // ProgramIDs returns the "program" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ProgramID instead. It exists only for internal usage by the builders.
-func (m *ProgramVersionMutation) ProgramIDs() (ids []uint64) {
+func (m *ProgramReleaseMutation) ProgramIDs() (ids []int64) {
 	if id := m.program; id != nil {
 		ids = append(ids, *id)
 	}
@@ -5246,182 +2500,128 @@ func (m *ProgramVersionMutation) ProgramIDs() (ids []uint64) {
 }
 
 // ResetProgram resets all changes to the "program" edge.
-func (m *ProgramVersionMutation) ResetProgram() {
+func (m *ProgramReleaseMutation) ResetProgram() {
 	m.program = nil
 	m.clearedprogram = false
 }
 
-// AddImageIDs adds the "images" edge to the Image entity by ids.
-func (m *ProgramVersionMutation) AddImageIDs(ids ...uint64) {
-	if m.images == nil {
-		m.images = make(map[uint64]struct{})
+// AddS3ProgramImageIDs adds the "s3_program_images" edge to the S3ProgramImage entity by ids.
+func (m *ProgramReleaseMutation) AddS3ProgramImageIDs(ids ...int64) {
+	if m.s3_program_images == nil {
+		m.s3_program_images = make(map[int64]struct{})
 	}
 	for i := range ids {
-		m.images[ids[i]] = struct{}{}
+		m.s3_program_images[ids[i]] = struct{}{}
 	}
 }
 
-// ClearImages clears the "images" edge to the Image entity.
-func (m *ProgramVersionMutation) ClearImages() {
-	m.clearedimages = true
+// ClearS3ProgramImages clears the "s3_program_images" edge to the S3ProgramImage entity.
+func (m *ProgramReleaseMutation) ClearS3ProgramImages() {
+	m.cleareds3_program_images = true
 }
 
-// ImagesCleared reports if the "images" edge to the Image entity was cleared.
-func (m *ProgramVersionMutation) ImagesCleared() bool {
-	return m.clearedimages
+// S3ProgramImagesCleared reports if the "s3_program_images" edge to the S3ProgramImage entity was cleared.
+func (m *ProgramReleaseMutation) S3ProgramImagesCleared() bool {
+	return m.cleareds3_program_images
 }
 
-// RemoveImageIDs removes the "images" edge to the Image entity by IDs.
-func (m *ProgramVersionMutation) RemoveImageIDs(ids ...uint64) {
-	if m.removedimages == nil {
-		m.removedimages = make(map[uint64]struct{})
+// RemoveS3ProgramImageIDs removes the "s3_program_images" edge to the S3ProgramImage entity by IDs.
+func (m *ProgramReleaseMutation) RemoveS3ProgramImageIDs(ids ...int64) {
+	if m.removeds3_program_images == nil {
+		m.removeds3_program_images = make(map[int64]struct{})
 	}
 	for i := range ids {
-		delete(m.images, ids[i])
-		m.removedimages[ids[i]] = struct{}{}
+		delete(m.s3_program_images, ids[i])
+		m.removeds3_program_images[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedImages returns the removed IDs of the "images" edge to the Image entity.
-func (m *ProgramVersionMutation) RemovedImagesIDs() (ids []uint64) {
-	for id := range m.removedimages {
+// RemovedS3ProgramImages returns the removed IDs of the "s3_program_images" edge to the S3ProgramImage entity.
+func (m *ProgramReleaseMutation) RemovedS3ProgramImagesIDs() (ids []int64) {
+	for id := range m.removeds3_program_images {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ImagesIDs returns the "images" edge IDs in the mutation.
-func (m *ProgramVersionMutation) ImagesIDs() (ids []uint64) {
-	for id := range m.images {
+// S3ProgramImagesIDs returns the "s3_program_images" edge IDs in the mutation.
+func (m *ProgramReleaseMutation) S3ProgramImagesIDs() (ids []int64) {
+	for id := range m.s3_program_images {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetImages resets all changes to the "images" edge.
-func (m *ProgramVersionMutation) ResetImages() {
-	m.images = nil
-	m.clearedimages = false
-	m.removedimages = nil
+// ResetS3ProgramImages resets all changes to the "s3_program_images" edge.
+func (m *ProgramReleaseMutation) ResetS3ProgramImages() {
+	m.s3_program_images = nil
+	m.cleareds3_program_images = false
+	m.removeds3_program_images = nil
 }
 
-// AddDailyRoutineIDs adds the "daily_routines" edge to the DailyRoutine entity by ids.
-func (m *ProgramVersionMutation) AddDailyRoutineIDs(ids ...uint64) {
-	if m.daily_routines == nil {
-		m.daily_routines = make(map[uint64]struct{})
+// AddDayRoutineIDs adds the "day_routines" edge to the DayRoutine entity by ids.
+func (m *ProgramReleaseMutation) AddDayRoutineIDs(ids ...int64) {
+	if m.day_routines == nil {
+		m.day_routines = make(map[int64]struct{})
 	}
 	for i := range ids {
-		m.daily_routines[ids[i]] = struct{}{}
+		m.day_routines[ids[i]] = struct{}{}
 	}
 }
 
-// ClearDailyRoutines clears the "daily_routines" edge to the DailyRoutine entity.
-func (m *ProgramVersionMutation) ClearDailyRoutines() {
-	m.cleareddaily_routines = true
+// ClearDayRoutines clears the "day_routines" edge to the DayRoutine entity.
+func (m *ProgramReleaseMutation) ClearDayRoutines() {
+	m.clearedday_routines = true
 }
 
-// DailyRoutinesCleared reports if the "daily_routines" edge to the DailyRoutine entity was cleared.
-func (m *ProgramVersionMutation) DailyRoutinesCleared() bool {
-	return m.cleareddaily_routines
+// DayRoutinesCleared reports if the "day_routines" edge to the DayRoutine entity was cleared.
+func (m *ProgramReleaseMutation) DayRoutinesCleared() bool {
+	return m.clearedday_routines
 }
 
-// RemoveDailyRoutineIDs removes the "daily_routines" edge to the DailyRoutine entity by IDs.
-func (m *ProgramVersionMutation) RemoveDailyRoutineIDs(ids ...uint64) {
-	if m.removeddaily_routines == nil {
-		m.removeddaily_routines = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		delete(m.daily_routines, ids[i])
-		m.removeddaily_routines[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedDailyRoutines returns the removed IDs of the "daily_routines" edge to the DailyRoutine entity.
-func (m *ProgramVersionMutation) RemovedDailyRoutinesIDs() (ids []uint64) {
-	for id := range m.removeddaily_routines {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// DailyRoutinesIDs returns the "daily_routines" edge IDs in the mutation.
-func (m *ProgramVersionMutation) DailyRoutinesIDs() (ids []uint64) {
-	for id := range m.daily_routines {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetDailyRoutines resets all changes to the "daily_routines" edge.
-func (m *ProgramVersionMutation) ResetDailyRoutines() {
-	m.daily_routines = nil
-	m.cleareddaily_routines = false
-	m.removeddaily_routines = nil
-}
-
-// AddProgramImageIDs adds the "program_images" edge to the ProgramImage entity by ids.
-func (m *ProgramVersionMutation) AddProgramImageIDs(ids ...uint64) {
-	if m.program_images == nil {
-		m.program_images = make(map[uint64]struct{})
+// RemoveDayRoutineIDs removes the "day_routines" edge to the DayRoutine entity by IDs.
+func (m *ProgramReleaseMutation) RemoveDayRoutineIDs(ids ...int64) {
+	if m.removedday_routines == nil {
+		m.removedday_routines = make(map[int64]struct{})
 	}
 	for i := range ids {
-		m.program_images[ids[i]] = struct{}{}
+		delete(m.day_routines, ids[i])
+		m.removedday_routines[ids[i]] = struct{}{}
 	}
 }
 
-// ClearProgramImages clears the "program_images" edge to the ProgramImage entity.
-func (m *ProgramVersionMutation) ClearProgramImages() {
-	m.clearedprogram_images = true
-}
-
-// ProgramImagesCleared reports if the "program_images" edge to the ProgramImage entity was cleared.
-func (m *ProgramVersionMutation) ProgramImagesCleared() bool {
-	return m.clearedprogram_images
-}
-
-// RemoveProgramImageIDs removes the "program_images" edge to the ProgramImage entity by IDs.
-func (m *ProgramVersionMutation) RemoveProgramImageIDs(ids ...uint64) {
-	if m.removedprogram_images == nil {
-		m.removedprogram_images = make(map[uint64]struct{})
-	}
-	for i := range ids {
-		delete(m.program_images, ids[i])
-		m.removedprogram_images[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProgramImages returns the removed IDs of the "program_images" edge to the ProgramImage entity.
-func (m *ProgramVersionMutation) RemovedProgramImagesIDs() (ids []uint64) {
-	for id := range m.removedprogram_images {
+// RemovedDayRoutines returns the removed IDs of the "day_routines" edge to the DayRoutine entity.
+func (m *ProgramReleaseMutation) RemovedDayRoutinesIDs() (ids []int64) {
+	for id := range m.removedday_routines {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ProgramImagesIDs returns the "program_images" edge IDs in the mutation.
-func (m *ProgramVersionMutation) ProgramImagesIDs() (ids []uint64) {
-	for id := range m.program_images {
+// DayRoutinesIDs returns the "day_routines" edge IDs in the mutation.
+func (m *ProgramReleaseMutation) DayRoutinesIDs() (ids []int64) {
+	for id := range m.day_routines {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetProgramImages resets all changes to the "program_images" edge.
-func (m *ProgramVersionMutation) ResetProgramImages() {
-	m.program_images = nil
-	m.clearedprogram_images = false
-	m.removedprogram_images = nil
+// ResetDayRoutines resets all changes to the "day_routines" edge.
+func (m *ProgramReleaseMutation) ResetDayRoutines() {
+	m.day_routines = nil
+	m.clearedday_routines = false
+	m.removedday_routines = nil
 }
 
-// Where appends a list predicates to the ProgramVersionMutation builder.
-func (m *ProgramVersionMutation) Where(ps ...predicate.ProgramVersion) {
+// Where appends a list predicates to the ProgramReleaseMutation builder.
+func (m *ProgramReleaseMutation) Where(ps ...predicate.ProgramRelease) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the ProgramVersionMutation builder. Using this method,
+// WhereP appends storage-level predicates to the ProgramReleaseMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *ProgramVersionMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.ProgramVersion, len(ps))
+func (m *ProgramReleaseMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.ProgramRelease, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -5429,39 +2629,33 @@ func (m *ProgramVersionMutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *ProgramVersionMutation) Op() Op {
+func (m *ProgramReleaseMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *ProgramVersionMutation) SetOp(op Op) {
+func (m *ProgramReleaseMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (ProgramVersion).
-func (m *ProgramVersionMutation) Type() string {
+// Type returns the node type of this mutation (ProgramRelease).
+func (m *ProgramReleaseMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *ProgramVersionMutation) Fields() []string {
-	fields := make([]string, 0, 5)
-	if m.code != nil {
-		fields = append(fields, programversion.FieldCode)
-	}
-	if m.program_code != nil {
-		fields = append(fields, programversion.FieldProgramCode)
-	}
+func (m *ProgramReleaseMutation) Fields() []string {
+	fields := make([]string, 0, 3)
 	if m.version != nil {
-		fields = append(fields, programversion.FieldVersion)
+		fields = append(fields, programrelease.FieldVersion)
 	}
 	if m.created_at != nil {
-		fields = append(fields, programversion.FieldCreatedAt)
+		fields = append(fields, programrelease.FieldCreatedAt)
 	}
 	if m.text != nil {
-		fields = append(fields, programversion.FieldText)
+		fields = append(fields, programrelease.FieldText)
 	}
 	return fields
 }
@@ -5469,17 +2663,13 @@ func (m *ProgramVersionMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *ProgramVersionMutation) Field(name string) (ent.Value, bool) {
+func (m *ProgramReleaseMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case programversion.FieldCode:
-		return m.Code()
-	case programversion.FieldProgramCode:
-		return m.ProgramCode()
-	case programversion.FieldVersion:
+	case programrelease.FieldVersion:
 		return m.Version()
-	case programversion.FieldCreatedAt:
+	case programrelease.FieldCreatedAt:
 		return m.CreatedAt()
-	case programversion.FieldText:
+	case programrelease.FieldText:
 		return m.Text()
 	}
 	return nil, false
@@ -5488,56 +2678,38 @@ func (m *ProgramVersionMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *ProgramVersionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *ProgramReleaseMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case programversion.FieldCode:
-		return m.OldCode(ctx)
-	case programversion.FieldProgramCode:
-		return m.OldProgramCode(ctx)
-	case programversion.FieldVersion:
+	case programrelease.FieldVersion:
 		return m.OldVersion(ctx)
-	case programversion.FieldCreatedAt:
+	case programrelease.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
-	case programversion.FieldText:
+	case programrelease.FieldText:
 		return m.OldText(ctx)
 	}
-	return nil, fmt.Errorf("unknown ProgramVersion field %s", name)
+	return nil, fmt.Errorf("unknown ProgramRelease field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *ProgramVersionMutation) SetField(name string, value ent.Value) error {
+func (m *ProgramReleaseMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case programversion.FieldCode:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCode(v)
-		return nil
-	case programversion.FieldProgramCode:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProgramCode(v)
-		return nil
-	case programversion.FieldVersion:
-		v, ok := value.(uint)
+	case programrelease.FieldVersion:
+		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetVersion(v)
 		return nil
-	case programversion.FieldCreatedAt:
+	case programrelease.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatedAt(v)
 		return nil
-	case programversion.FieldText:
+	case programrelease.FieldText:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -5545,15 +2717,15 @@ func (m *ProgramVersionMutation) SetField(name string, value ent.Value) error {
 		m.SetText(v)
 		return nil
 	}
-	return fmt.Errorf("unknown ProgramVersion field %s", name)
+	return fmt.Errorf("unknown ProgramRelease field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *ProgramVersionMutation) AddedFields() []string {
+func (m *ProgramReleaseMutation) AddedFields() []string {
 	var fields []string
 	if m.addversion != nil {
-		fields = append(fields, programversion.FieldVersion)
+		fields = append(fields, programrelease.FieldVersion)
 	}
 	return fields
 }
@@ -5561,9 +2733,9 @@ func (m *ProgramVersionMutation) AddedFields() []string {
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *ProgramVersionMutation) AddedField(name string) (ent.Value, bool) {
+func (m *ProgramReleaseMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case programversion.FieldVersion:
+	case programrelease.FieldVersion:
 		return m.AddedVersion()
 	}
 	return nil, false
@@ -5572,9 +2744,9 @@ func (m *ProgramVersionMutation) AddedField(name string) (ent.Value, bool) {
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *ProgramVersionMutation) AddField(name string, value ent.Value) error {
+func (m *ProgramReleaseMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case programversion.FieldVersion:
+	case programrelease.FieldVersion:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -5582,92 +2754,77 @@ func (m *ProgramVersionMutation) AddField(name string, value ent.Value) error {
 		m.AddVersion(v)
 		return nil
 	}
-	return fmt.Errorf("unknown ProgramVersion numeric field %s", name)
+	return fmt.Errorf("unknown ProgramRelease numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *ProgramVersionMutation) ClearedFields() []string {
+func (m *ProgramReleaseMutation) ClearedFields() []string {
 	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *ProgramVersionMutation) FieldCleared(name string) bool {
+func (m *ProgramReleaseMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *ProgramVersionMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown ProgramVersion nullable field %s", name)
+func (m *ProgramReleaseMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown ProgramRelease nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *ProgramVersionMutation) ResetField(name string) error {
+func (m *ProgramReleaseMutation) ResetField(name string) error {
 	switch name {
-	case programversion.FieldCode:
-		m.ResetCode()
-		return nil
-	case programversion.FieldProgramCode:
-		m.ResetProgramCode()
-		return nil
-	case programversion.FieldVersion:
+	case programrelease.FieldVersion:
 		m.ResetVersion()
 		return nil
-	case programversion.FieldCreatedAt:
+	case programrelease.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
-	case programversion.FieldText:
+	case programrelease.FieldText:
 		m.ResetText()
 		return nil
 	}
-	return fmt.Errorf("unknown ProgramVersion field %s", name)
+	return fmt.Errorf("unknown ProgramRelease field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *ProgramVersionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+func (m *ProgramReleaseMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
 	if m.program != nil {
-		edges = append(edges, programversion.EdgeProgram)
+		edges = append(edges, programrelease.EdgeProgram)
 	}
-	if m.images != nil {
-		edges = append(edges, programversion.EdgeImages)
+	if m.s3_program_images != nil {
+		edges = append(edges, programrelease.EdgeS3ProgramImages)
 	}
-	if m.daily_routines != nil {
-		edges = append(edges, programversion.EdgeDailyRoutines)
-	}
-	if m.program_images != nil {
-		edges = append(edges, programversion.EdgeProgramImages)
+	if m.day_routines != nil {
+		edges = append(edges, programrelease.EdgeDayRoutines)
 	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *ProgramVersionMutation) AddedIDs(name string) []ent.Value {
+func (m *ProgramReleaseMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case programversion.EdgeProgram:
+	case programrelease.EdgeProgram:
 		if id := m.program; id != nil {
 			return []ent.Value{*id}
 		}
-	case programversion.EdgeImages:
-		ids := make([]ent.Value, 0, len(m.images))
-		for id := range m.images {
+	case programrelease.EdgeS3ProgramImages:
+		ids := make([]ent.Value, 0, len(m.s3_program_images))
+		for id := range m.s3_program_images {
 			ids = append(ids, id)
 		}
 		return ids
-	case programversion.EdgeDailyRoutines:
-		ids := make([]ent.Value, 0, len(m.daily_routines))
-		for id := range m.daily_routines {
-			ids = append(ids, id)
-		}
-		return ids
-	case programversion.EdgeProgramImages:
-		ids := make([]ent.Value, 0, len(m.program_images))
-		for id := range m.program_images {
+	case programrelease.EdgeDayRoutines:
+		ids := make([]ent.Value, 0, len(m.day_routines))
+		for id := range m.day_routines {
 			ids = append(ids, id)
 		}
 		return ids
@@ -5676,39 +2833,30 @@ func (m *ProgramVersionMutation) AddedIDs(name string) []ent.Value {
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *ProgramVersionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.removedimages != nil {
-		edges = append(edges, programversion.EdgeImages)
+func (m *ProgramReleaseMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.removeds3_program_images != nil {
+		edges = append(edges, programrelease.EdgeS3ProgramImages)
 	}
-	if m.removeddaily_routines != nil {
-		edges = append(edges, programversion.EdgeDailyRoutines)
-	}
-	if m.removedprogram_images != nil {
-		edges = append(edges, programversion.EdgeProgramImages)
+	if m.removedday_routines != nil {
+		edges = append(edges, programrelease.EdgeDayRoutines)
 	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *ProgramVersionMutation) RemovedIDs(name string) []ent.Value {
+func (m *ProgramReleaseMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case programversion.EdgeImages:
-		ids := make([]ent.Value, 0, len(m.removedimages))
-		for id := range m.removedimages {
+	case programrelease.EdgeS3ProgramImages:
+		ids := make([]ent.Value, 0, len(m.removeds3_program_images))
+		for id := range m.removeds3_program_images {
 			ids = append(ids, id)
 		}
 		return ids
-	case programversion.EdgeDailyRoutines:
-		ids := make([]ent.Value, 0, len(m.removeddaily_routines))
-		for id := range m.removeddaily_routines {
-			ids = append(ids, id)
-		}
-		return ids
-	case programversion.EdgeProgramImages:
-		ids := make([]ent.Value, 0, len(m.removedprogram_images))
-		for id := range m.removedprogram_images {
+	case programrelease.EdgeDayRoutines:
+		ids := make([]ent.Value, 0, len(m.removedday_routines))
+		for id := range m.removedday_routines {
 			ids = append(ids, id)
 		}
 		return ids
@@ -5717,93 +2865,84 @@ func (m *ProgramVersionMutation) RemovedIDs(name string) []ent.Value {
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *ProgramVersionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+func (m *ProgramReleaseMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
 	if m.clearedprogram {
-		edges = append(edges, programversion.EdgeProgram)
+		edges = append(edges, programrelease.EdgeProgram)
 	}
-	if m.clearedimages {
-		edges = append(edges, programversion.EdgeImages)
+	if m.cleareds3_program_images {
+		edges = append(edges, programrelease.EdgeS3ProgramImages)
 	}
-	if m.cleareddaily_routines {
-		edges = append(edges, programversion.EdgeDailyRoutines)
-	}
-	if m.clearedprogram_images {
-		edges = append(edges, programversion.EdgeProgramImages)
+	if m.clearedday_routines {
+		edges = append(edges, programrelease.EdgeDayRoutines)
 	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *ProgramVersionMutation) EdgeCleared(name string) bool {
+func (m *ProgramReleaseMutation) EdgeCleared(name string) bool {
 	switch name {
-	case programversion.EdgeProgram:
+	case programrelease.EdgeProgram:
 		return m.clearedprogram
-	case programversion.EdgeImages:
-		return m.clearedimages
-	case programversion.EdgeDailyRoutines:
-		return m.cleareddaily_routines
-	case programversion.EdgeProgramImages:
-		return m.clearedprogram_images
+	case programrelease.EdgeS3ProgramImages:
+		return m.cleareds3_program_images
+	case programrelease.EdgeDayRoutines:
+		return m.clearedday_routines
 	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *ProgramVersionMutation) ClearEdge(name string) error {
+func (m *ProgramReleaseMutation) ClearEdge(name string) error {
 	switch name {
-	case programversion.EdgeProgram:
+	case programrelease.EdgeProgram:
 		m.ClearProgram()
 		return nil
 	}
-	return fmt.Errorf("unknown ProgramVersion unique edge %s", name)
+	return fmt.Errorf("unknown ProgramRelease unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *ProgramVersionMutation) ResetEdge(name string) error {
+func (m *ProgramReleaseMutation) ResetEdge(name string) error {
 	switch name {
-	case programversion.EdgeProgram:
+	case programrelease.EdgeProgram:
 		m.ResetProgram()
 		return nil
-	case programversion.EdgeImages:
-		m.ResetImages()
+	case programrelease.EdgeS3ProgramImages:
+		m.ResetS3ProgramImages()
 		return nil
-	case programversion.EdgeDailyRoutines:
-		m.ResetDailyRoutines()
-		return nil
-	case programversion.EdgeProgramImages:
-		m.ResetProgramImages()
+	case programrelease.EdgeDayRoutines:
+		m.ResetDayRoutines()
 		return nil
 	}
-	return fmt.Errorf("unknown ProgramVersion edge %s", name)
+	return fmt.Errorf("unknown ProgramRelease edge %s", name)
 }
 
 // RoutineActMutation represents an operation that mutates the RoutineAct nodes in the graph.
 type RoutineActMutation struct {
 	config
-	op                   Op
-	typ                  string
-	id                   *uint64
-	daily_routine_code   *string
-	_order               *uint
-	add_order            *int
-	act_version_code     *string
-	stage                *routineact.Stage
-	reps_or_meters       *uint
-	addreps_or_meters    *int
-	ratio_or_secs        *float64
-	addratio_or_secs     *float64
-	clearedFields        map[string]struct{}
-	act_version          *uint64
-	clearedact_version   bool
-	daily_routine        *uint64
-	cleareddaily_routine bool
-	done                 bool
-	oldValue             func(context.Context) (*RoutineAct, error)
-	predicates           []predicate.RoutineAct
+	op                 Op
+	typ                string
+	id                 *int64
+	_order             *int
+	add_order          *int
+	act_code           *string
+	stage              *routineact.Stage
+	reps_or_meters     *uint
+	addreps_or_meters  *int
+	ratio_or_secs      *float64
+	addratio_or_secs   *float64
+	clearedFields      map[string]struct{}
+	act                *int64
+	clearedact         bool
+	day_routine        *int64
+	clearedday_routine bool
+	done               bool
+	oldValue           func(context.Context) (*RoutineAct, error)
+	predicates         []predicate.RoutineAct
 }
 
 var _ ent.Mutation = (*RoutineActMutation)(nil)
@@ -5826,7 +2965,7 @@ func newRoutineActMutation(c config, op Op, opts ...routineactOption) *RoutineAc
 }
 
 // withRoutineActID sets the ID field of the mutation.
-func withRoutineActID(id uint64) routineactOption {
+func withRoutineActID(id int64) routineactOption {
 	return func(m *RoutineActMutation) {
 		var (
 			err   error
@@ -5878,13 +3017,13 @@ func (m RoutineActMutation) Tx() (*Tx, error) {
 
 // SetID sets the value of the id field. Note that this
 // operation is only accepted on creation of RoutineAct entities.
-func (m *RoutineActMutation) SetID(id uint64) {
+func (m *RoutineActMutation) SetID(id int64) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *RoutineActMutation) ID() (id uint64, exists bool) {
+func (m *RoutineActMutation) ID() (id int64, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -5895,12 +3034,12 @@ func (m *RoutineActMutation) ID() (id uint64, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *RoutineActMutation) IDs(ctx context.Context) ([]uint64, error) {
+func (m *RoutineActMutation) IDs(ctx context.Context) ([]int64, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []uint64{id}, nil
+			return []int64{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -5910,50 +3049,14 @@ func (m *RoutineActMutation) IDs(ctx context.Context) ([]uint64, error) {
 	}
 }
 
-// SetDailyRoutineCode sets the "daily_routine_code" field.
-func (m *RoutineActMutation) SetDailyRoutineCode(s string) {
-	m.daily_routine_code = &s
-}
-
-// DailyRoutineCode returns the value of the "daily_routine_code" field in the mutation.
-func (m *RoutineActMutation) DailyRoutineCode() (r string, exists bool) {
-	v := m.daily_routine_code
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDailyRoutineCode returns the old "daily_routine_code" field's value of the RoutineAct entity.
-// If the RoutineAct object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RoutineActMutation) OldDailyRoutineCode(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDailyRoutineCode is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDailyRoutineCode requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDailyRoutineCode: %w", err)
-	}
-	return oldValue.DailyRoutineCode, nil
-}
-
-// ResetDailyRoutineCode resets all changes to the "daily_routine_code" field.
-func (m *RoutineActMutation) ResetDailyRoutineCode() {
-	m.daily_routine_code = nil
-}
-
 // SetOrder sets the "order" field.
-func (m *RoutineActMutation) SetOrder(u uint) {
-	m._order = &u
+func (m *RoutineActMutation) SetOrder(i int) {
+	m._order = &i
 	m.add_order = nil
 }
 
 // Order returns the value of the "order" field in the mutation.
-func (m *RoutineActMutation) Order() (r uint, exists bool) {
+func (m *RoutineActMutation) Order() (r int, exists bool) {
 	v := m._order
 	if v == nil {
 		return
@@ -5964,7 +3067,7 @@ func (m *RoutineActMutation) Order() (r uint, exists bool) {
 // OldOrder returns the old "order" field's value of the RoutineAct entity.
 // If the RoutineAct object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RoutineActMutation) OldOrder(ctx context.Context) (v uint, err error) {
+func (m *RoutineActMutation) OldOrder(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldOrder is only allowed on UpdateOne operations")
 	}
@@ -5978,12 +3081,12 @@ func (m *RoutineActMutation) OldOrder(ctx context.Context) (v uint, err error) {
 	return oldValue.Order, nil
 }
 
-// AddOrder adds u to the "order" field.
-func (m *RoutineActMutation) AddOrder(u int) {
+// AddOrder adds i to the "order" field.
+func (m *RoutineActMutation) AddOrder(i int) {
 	if m.add_order != nil {
-		*m.add_order += u
+		*m.add_order += i
 	} else {
-		m.add_order = &u
+		m.add_order = &i
 	}
 }
 
@@ -6002,40 +3105,40 @@ func (m *RoutineActMutation) ResetOrder() {
 	m.add_order = nil
 }
 
-// SetActVersionCode sets the "act_version_code" field.
-func (m *RoutineActMutation) SetActVersionCode(s string) {
-	m.act_version_code = &s
+// SetActCode sets the "act_code" field.
+func (m *RoutineActMutation) SetActCode(s string) {
+	m.act_code = &s
 }
 
-// ActVersionCode returns the value of the "act_version_code" field in the mutation.
-func (m *RoutineActMutation) ActVersionCode() (r string, exists bool) {
-	v := m.act_version_code
+// ActCode returns the value of the "act_code" field in the mutation.
+func (m *RoutineActMutation) ActCode() (r string, exists bool) {
+	v := m.act_code
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldActVersionCode returns the old "act_version_code" field's value of the RoutineAct entity.
+// OldActCode returns the old "act_code" field's value of the RoutineAct entity.
 // If the RoutineAct object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RoutineActMutation) OldActVersionCode(ctx context.Context) (v string, err error) {
+func (m *RoutineActMutation) OldActCode(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldActVersionCode is only allowed on UpdateOne operations")
+		return v, errors.New("OldActCode is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldActVersionCode requires an ID field in the mutation")
+		return v, errors.New("OldActCode requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldActVersionCode: %w", err)
+		return v, fmt.Errorf("querying old value for OldActCode: %w", err)
 	}
-	return oldValue.ActVersionCode, nil
+	return oldValue.ActCode, nil
 }
 
-// ResetActVersionCode resets all changes to the "act_version_code" field.
-func (m *RoutineActMutation) ResetActVersionCode() {
-	m.act_version_code = nil
+// ResetActCode resets all changes to the "act_code" field.
+func (m *RoutineActMutation) ResetActCode() {
+	m.act_code = nil
 }
 
 // SetStage sets the "stage" field.
@@ -6186,82 +3289,82 @@ func (m *RoutineActMutation) ResetRatioOrSecs() {
 	m.addratio_or_secs = nil
 }
 
-// SetActVersionID sets the "act_version" edge to the ActVersion entity by id.
-func (m *RoutineActMutation) SetActVersionID(id uint64) {
-	m.act_version = &id
+// SetActID sets the "act" edge to the Act entity by id.
+func (m *RoutineActMutation) SetActID(id int64) {
+	m.act = &id
 }
 
-// ClearActVersion clears the "act_version" edge to the ActVersion entity.
-func (m *RoutineActMutation) ClearActVersion() {
-	m.clearedact_version = true
+// ClearAct clears the "act" edge to the Act entity.
+func (m *RoutineActMutation) ClearAct() {
+	m.clearedact = true
 }
 
-// ActVersionCleared reports if the "act_version" edge to the ActVersion entity was cleared.
-func (m *RoutineActMutation) ActVersionCleared() bool {
-	return m.clearedact_version
+// ActCleared reports if the "act" edge to the Act entity was cleared.
+func (m *RoutineActMutation) ActCleared() bool {
+	return m.clearedact
 }
 
-// ActVersionID returns the "act_version" edge ID in the mutation.
-func (m *RoutineActMutation) ActVersionID() (id uint64, exists bool) {
-	if m.act_version != nil {
-		return *m.act_version, true
+// ActID returns the "act" edge ID in the mutation.
+func (m *RoutineActMutation) ActID() (id int64, exists bool) {
+	if m.act != nil {
+		return *m.act, true
 	}
 	return
 }
 
-// ActVersionIDs returns the "act_version" edge IDs in the mutation.
+// ActIDs returns the "act" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ActVersionID instead. It exists only for internal usage by the builders.
-func (m *RoutineActMutation) ActVersionIDs() (ids []uint64) {
-	if id := m.act_version; id != nil {
+// ActID instead. It exists only for internal usage by the builders.
+func (m *RoutineActMutation) ActIDs() (ids []int64) {
+	if id := m.act; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetActVersion resets all changes to the "act_version" edge.
-func (m *RoutineActMutation) ResetActVersion() {
-	m.act_version = nil
-	m.clearedact_version = false
+// ResetAct resets all changes to the "act" edge.
+func (m *RoutineActMutation) ResetAct() {
+	m.act = nil
+	m.clearedact = false
 }
 
-// SetDailyRoutineID sets the "daily_routine" edge to the DailyRoutine entity by id.
-func (m *RoutineActMutation) SetDailyRoutineID(id uint64) {
-	m.daily_routine = &id
+// SetDayRoutineID sets the "day_routine" edge to the DayRoutine entity by id.
+func (m *RoutineActMutation) SetDayRoutineID(id int64) {
+	m.day_routine = &id
 }
 
-// ClearDailyRoutine clears the "daily_routine" edge to the DailyRoutine entity.
-func (m *RoutineActMutation) ClearDailyRoutine() {
-	m.cleareddaily_routine = true
+// ClearDayRoutine clears the "day_routine" edge to the DayRoutine entity.
+func (m *RoutineActMutation) ClearDayRoutine() {
+	m.clearedday_routine = true
 }
 
-// DailyRoutineCleared reports if the "daily_routine" edge to the DailyRoutine entity was cleared.
-func (m *RoutineActMutation) DailyRoutineCleared() bool {
-	return m.cleareddaily_routine
+// DayRoutineCleared reports if the "day_routine" edge to the DayRoutine entity was cleared.
+func (m *RoutineActMutation) DayRoutineCleared() bool {
+	return m.clearedday_routine
 }
 
-// DailyRoutineID returns the "daily_routine" edge ID in the mutation.
-func (m *RoutineActMutation) DailyRoutineID() (id uint64, exists bool) {
-	if m.daily_routine != nil {
-		return *m.daily_routine, true
+// DayRoutineID returns the "day_routine" edge ID in the mutation.
+func (m *RoutineActMutation) DayRoutineID() (id int64, exists bool) {
+	if m.day_routine != nil {
+		return *m.day_routine, true
 	}
 	return
 }
 
-// DailyRoutineIDs returns the "daily_routine" edge IDs in the mutation.
+// DayRoutineIDs returns the "day_routine" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// DailyRoutineID instead. It exists only for internal usage by the builders.
-func (m *RoutineActMutation) DailyRoutineIDs() (ids []uint64) {
-	if id := m.daily_routine; id != nil {
+// DayRoutineID instead. It exists only for internal usage by the builders.
+func (m *RoutineActMutation) DayRoutineIDs() (ids []int64) {
+	if id := m.day_routine; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetDailyRoutine resets all changes to the "daily_routine" edge.
-func (m *RoutineActMutation) ResetDailyRoutine() {
-	m.daily_routine = nil
-	m.cleareddaily_routine = false
+// ResetDayRoutine resets all changes to the "day_routine" edge.
+func (m *RoutineActMutation) ResetDayRoutine() {
+	m.day_routine = nil
+	m.clearedday_routine = false
 }
 
 // Where appends a list predicates to the RoutineActMutation builder.
@@ -6298,15 +3401,12 @@ func (m *RoutineActMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RoutineActMutation) Fields() []string {
-	fields := make([]string, 0, 6)
-	if m.daily_routine_code != nil {
-		fields = append(fields, routineact.FieldDailyRoutineCode)
-	}
+	fields := make([]string, 0, 5)
 	if m._order != nil {
 		fields = append(fields, routineact.FieldOrder)
 	}
-	if m.act_version_code != nil {
-		fields = append(fields, routineact.FieldActVersionCode)
+	if m.act_code != nil {
+		fields = append(fields, routineact.FieldActCode)
 	}
 	if m.stage != nil {
 		fields = append(fields, routineact.FieldStage)
@@ -6325,12 +3425,10 @@ func (m *RoutineActMutation) Fields() []string {
 // schema.
 func (m *RoutineActMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case routineact.FieldDailyRoutineCode:
-		return m.DailyRoutineCode()
 	case routineact.FieldOrder:
 		return m.Order()
-	case routineact.FieldActVersionCode:
-		return m.ActVersionCode()
+	case routineact.FieldActCode:
+		return m.ActCode()
 	case routineact.FieldStage:
 		return m.Stage()
 	case routineact.FieldRepsOrMeters:
@@ -6346,12 +3444,10 @@ func (m *RoutineActMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *RoutineActMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case routineact.FieldDailyRoutineCode:
-		return m.OldDailyRoutineCode(ctx)
 	case routineact.FieldOrder:
 		return m.OldOrder(ctx)
-	case routineact.FieldActVersionCode:
-		return m.OldActVersionCode(ctx)
+	case routineact.FieldActCode:
+		return m.OldActCode(ctx)
 	case routineact.FieldStage:
 		return m.OldStage(ctx)
 	case routineact.FieldRepsOrMeters:
@@ -6367,26 +3463,19 @@ func (m *RoutineActMutation) OldField(ctx context.Context, name string) (ent.Val
 // type.
 func (m *RoutineActMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case routineact.FieldDailyRoutineCode:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDailyRoutineCode(v)
-		return nil
 	case routineact.FieldOrder:
-		v, ok := value.(uint)
+		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetOrder(v)
 		return nil
-	case routineact.FieldActVersionCode:
+	case routineact.FieldActCode:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetActVersionCode(v)
+		m.SetActCode(v)
 		return nil
 	case routineact.FieldStage:
 		v, ok := value.(routineact.Stage)
@@ -6497,14 +3586,11 @@ func (m *RoutineActMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *RoutineActMutation) ResetField(name string) error {
 	switch name {
-	case routineact.FieldDailyRoutineCode:
-		m.ResetDailyRoutineCode()
-		return nil
 	case routineact.FieldOrder:
 		m.ResetOrder()
 		return nil
-	case routineact.FieldActVersionCode:
-		m.ResetActVersionCode()
+	case routineact.FieldActCode:
+		m.ResetActCode()
 		return nil
 	case routineact.FieldStage:
 		m.ResetStage()
@@ -6522,11 +3608,11 @@ func (m *RoutineActMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *RoutineActMutation) AddedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.act_version != nil {
-		edges = append(edges, routineact.EdgeActVersion)
+	if m.act != nil {
+		edges = append(edges, routineact.EdgeAct)
 	}
-	if m.daily_routine != nil {
-		edges = append(edges, routineact.EdgeDailyRoutine)
+	if m.day_routine != nil {
+		edges = append(edges, routineact.EdgeDayRoutine)
 	}
 	return edges
 }
@@ -6535,12 +3621,12 @@ func (m *RoutineActMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *RoutineActMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case routineact.EdgeActVersion:
-		if id := m.act_version; id != nil {
+	case routineact.EdgeAct:
+		if id := m.act; id != nil {
 			return []ent.Value{*id}
 		}
-	case routineact.EdgeDailyRoutine:
-		if id := m.daily_routine; id != nil {
+	case routineact.EdgeDayRoutine:
+		if id := m.day_routine; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -6562,11 +3648,11 @@ func (m *RoutineActMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *RoutineActMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.clearedact_version {
-		edges = append(edges, routineact.EdgeActVersion)
+	if m.clearedact {
+		edges = append(edges, routineact.EdgeAct)
 	}
-	if m.cleareddaily_routine {
-		edges = append(edges, routineact.EdgeDailyRoutine)
+	if m.clearedday_routine {
+		edges = append(edges, routineact.EdgeDayRoutine)
 	}
 	return edges
 }
@@ -6575,10 +3661,10 @@ func (m *RoutineActMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *RoutineActMutation) EdgeCleared(name string) bool {
 	switch name {
-	case routineact.EdgeActVersion:
-		return m.clearedact_version
-	case routineact.EdgeDailyRoutine:
-		return m.cleareddaily_routine
+	case routineact.EdgeAct:
+		return m.clearedact
+	case routineact.EdgeDayRoutine:
+		return m.clearedday_routine
 	}
 	return false
 }
@@ -6587,11 +3673,11 @@ func (m *RoutineActMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *RoutineActMutation) ClearEdge(name string) error {
 	switch name {
-	case routineact.EdgeActVersion:
-		m.ClearActVersion()
+	case routineact.EdgeAct:
+		m.ClearAct()
 		return nil
-	case routineact.EdgeDailyRoutine:
-		m.ClearDailyRoutine()
+	case routineact.EdgeDayRoutine:
+		m.ClearDayRoutine()
 		return nil
 	}
 	return fmt.Errorf("unknown RoutineAct unique edge %s", name)
@@ -6601,12 +3687,1719 @@ func (m *RoutineActMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *RoutineActMutation) ResetEdge(name string) error {
 	switch name {
-	case routineact.EdgeActVersion:
-		m.ResetActVersion()
+	case routineact.EdgeAct:
+		m.ResetAct()
 		return nil
-	case routineact.EdgeDailyRoutine:
-		m.ResetDailyRoutine()
+	case routineact.EdgeDayRoutine:
+		m.ResetDayRoutine()
 		return nil
 	}
 	return fmt.Errorf("unknown RoutineAct edge %s", name)
+}
+
+// S3ActImageMutation represents an operation that mutates the S3ActImage nodes in the graph.
+type S3ActImageMutation struct {
+	config
+	op              Op
+	typ             string
+	id              *int64
+	_order          *int
+	add_order       *int
+	clearedFields   map[string]struct{}
+	act             *int64
+	clearedact      bool
+	s3_image        *int64
+	cleareds3_image bool
+	done            bool
+	oldValue        func(context.Context) (*S3ActImage, error)
+	predicates      []predicate.S3ActImage
+}
+
+var _ ent.Mutation = (*S3ActImageMutation)(nil)
+
+// s3actimageOption allows management of the mutation configuration using functional options.
+type s3actimageOption func(*S3ActImageMutation)
+
+// newS3ActImageMutation creates new mutation for the S3ActImage entity.
+func newS3ActImageMutation(c config, op Op, opts ...s3actimageOption) *S3ActImageMutation {
+	m := &S3ActImageMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeS3ActImage,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withS3ActImageID sets the ID field of the mutation.
+func withS3ActImageID(id int64) s3actimageOption {
+	return func(m *S3ActImageMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *S3ActImage
+		)
+		m.oldValue = func(ctx context.Context) (*S3ActImage, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().S3ActImage.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withS3ActImage sets the old S3ActImage of the mutation.
+func withS3ActImage(node *S3ActImage) s3actimageOption {
+	return func(m *S3ActImageMutation) {
+		m.oldValue = func(context.Context) (*S3ActImage, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m S3ActImageMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m S3ActImageMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of S3ActImage entities.
+func (m *S3ActImageMutation) SetID(id int64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *S3ActImageMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *S3ActImageMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().S3ActImage.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetOrder sets the "order" field.
+func (m *S3ActImageMutation) SetOrder(i int) {
+	m._order = &i
+	m.add_order = nil
+}
+
+// Order returns the value of the "order" field in the mutation.
+func (m *S3ActImageMutation) Order() (r int, exists bool) {
+	v := m._order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOrder returns the old "order" field's value of the S3ActImage entity.
+// If the S3ActImage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *S3ActImageMutation) OldOrder(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOrder is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOrder requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOrder: %w", err)
+	}
+	return oldValue.Order, nil
+}
+
+// AddOrder adds i to the "order" field.
+func (m *S3ActImageMutation) AddOrder(i int) {
+	if m.add_order != nil {
+		*m.add_order += i
+	} else {
+		m.add_order = &i
+	}
+}
+
+// AddedOrder returns the value that was added to the "order" field in this mutation.
+func (m *S3ActImageMutation) AddedOrder() (r int, exists bool) {
+	v := m.add_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetOrder resets all changes to the "order" field.
+func (m *S3ActImageMutation) ResetOrder() {
+	m._order = nil
+	m.add_order = nil
+}
+
+// SetActID sets the "act_id" field.
+func (m *S3ActImageMutation) SetActID(i int64) {
+	m.act = &i
+}
+
+// ActID returns the value of the "act_id" field in the mutation.
+func (m *S3ActImageMutation) ActID() (r int64, exists bool) {
+	v := m.act
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldActID returns the old "act_id" field's value of the S3ActImage entity.
+// If the S3ActImage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *S3ActImageMutation) OldActID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldActID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldActID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldActID: %w", err)
+	}
+	return oldValue.ActID, nil
+}
+
+// ResetActID resets all changes to the "act_id" field.
+func (m *S3ActImageMutation) ResetActID() {
+	m.act = nil
+}
+
+// SetImageID sets the "image_id" field.
+func (m *S3ActImageMutation) SetImageID(i int64) {
+	m.s3_image = &i
+}
+
+// ImageID returns the value of the "image_id" field in the mutation.
+func (m *S3ActImageMutation) ImageID() (r int64, exists bool) {
+	v := m.s3_image
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldImageID returns the old "image_id" field's value of the S3ActImage entity.
+// If the S3ActImage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *S3ActImageMutation) OldImageID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldImageID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldImageID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldImageID: %w", err)
+	}
+	return oldValue.ImageID, nil
+}
+
+// ResetImageID resets all changes to the "image_id" field.
+func (m *S3ActImageMutation) ResetImageID() {
+	m.s3_image = nil
+}
+
+// ClearAct clears the "act" edge to the Act entity.
+func (m *S3ActImageMutation) ClearAct() {
+	m.clearedact = true
+}
+
+// ActCleared reports if the "act" edge to the Act entity was cleared.
+func (m *S3ActImageMutation) ActCleared() bool {
+	return m.clearedact
+}
+
+// ActIDs returns the "act" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ActID instead. It exists only for internal usage by the builders.
+func (m *S3ActImageMutation) ActIDs() (ids []int64) {
+	if id := m.act; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAct resets all changes to the "act" edge.
+func (m *S3ActImageMutation) ResetAct() {
+	m.act = nil
+	m.clearedact = false
+}
+
+// SetS3ImageID sets the "s3_image" edge to the S3Image entity by id.
+func (m *S3ActImageMutation) SetS3ImageID(id int64) {
+	m.s3_image = &id
+}
+
+// ClearS3Image clears the "s3_image" edge to the S3Image entity.
+func (m *S3ActImageMutation) ClearS3Image() {
+	m.cleareds3_image = true
+}
+
+// S3ImageCleared reports if the "s3_image" edge to the S3Image entity was cleared.
+func (m *S3ActImageMutation) S3ImageCleared() bool {
+	return m.cleareds3_image
+}
+
+// S3ImageID returns the "s3_image" edge ID in the mutation.
+func (m *S3ActImageMutation) S3ImageID() (id int64, exists bool) {
+	if m.s3_image != nil {
+		return *m.s3_image, true
+	}
+	return
+}
+
+// S3ImageIDs returns the "s3_image" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// S3ImageID instead. It exists only for internal usage by the builders.
+func (m *S3ActImageMutation) S3ImageIDs() (ids []int64) {
+	if id := m.s3_image; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetS3Image resets all changes to the "s3_image" edge.
+func (m *S3ActImageMutation) ResetS3Image() {
+	m.s3_image = nil
+	m.cleareds3_image = false
+}
+
+// Where appends a list predicates to the S3ActImageMutation builder.
+func (m *S3ActImageMutation) Where(ps ...predicate.S3ActImage) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the S3ActImageMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *S3ActImageMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.S3ActImage, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *S3ActImageMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *S3ActImageMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (S3ActImage).
+func (m *S3ActImageMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *S3ActImageMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m._order != nil {
+		fields = append(fields, s3actimage.FieldOrder)
+	}
+	if m.act != nil {
+		fields = append(fields, s3actimage.FieldActID)
+	}
+	if m.s3_image != nil {
+		fields = append(fields, s3actimage.FieldImageID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *S3ActImageMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case s3actimage.FieldOrder:
+		return m.Order()
+	case s3actimage.FieldActID:
+		return m.ActID()
+	case s3actimage.FieldImageID:
+		return m.ImageID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *S3ActImageMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case s3actimage.FieldOrder:
+		return m.OldOrder(ctx)
+	case s3actimage.FieldActID:
+		return m.OldActID(ctx)
+	case s3actimage.FieldImageID:
+		return m.OldImageID(ctx)
+	}
+	return nil, fmt.Errorf("unknown S3ActImage field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *S3ActImageMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case s3actimage.FieldOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOrder(v)
+		return nil
+	case s3actimage.FieldActID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetActID(v)
+		return nil
+	case s3actimage.FieldImageID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetImageID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown S3ActImage field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *S3ActImageMutation) AddedFields() []string {
+	var fields []string
+	if m.add_order != nil {
+		fields = append(fields, s3actimage.FieldOrder)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *S3ActImageMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case s3actimage.FieldOrder:
+		return m.AddedOrder()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *S3ActImageMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case s3actimage.FieldOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOrder(v)
+		return nil
+	}
+	return fmt.Errorf("unknown S3ActImage numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *S3ActImageMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *S3ActImageMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *S3ActImageMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown S3ActImage nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *S3ActImageMutation) ResetField(name string) error {
+	switch name {
+	case s3actimage.FieldOrder:
+		m.ResetOrder()
+		return nil
+	case s3actimage.FieldActID:
+		m.ResetActID()
+		return nil
+	case s3actimage.FieldImageID:
+		m.ResetImageID()
+		return nil
+	}
+	return fmt.Errorf("unknown S3ActImage field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *S3ActImageMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.act != nil {
+		edges = append(edges, s3actimage.EdgeAct)
+	}
+	if m.s3_image != nil {
+		edges = append(edges, s3actimage.EdgeS3Image)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *S3ActImageMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case s3actimage.EdgeAct:
+		if id := m.act; id != nil {
+			return []ent.Value{*id}
+		}
+	case s3actimage.EdgeS3Image:
+		if id := m.s3_image; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *S3ActImageMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *S3ActImageMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *S3ActImageMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedact {
+		edges = append(edges, s3actimage.EdgeAct)
+	}
+	if m.cleareds3_image {
+		edges = append(edges, s3actimage.EdgeS3Image)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *S3ActImageMutation) EdgeCleared(name string) bool {
+	switch name {
+	case s3actimage.EdgeAct:
+		return m.clearedact
+	case s3actimage.EdgeS3Image:
+		return m.cleareds3_image
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *S3ActImageMutation) ClearEdge(name string) error {
+	switch name {
+	case s3actimage.EdgeAct:
+		m.ClearAct()
+		return nil
+	case s3actimage.EdgeS3Image:
+		m.ClearS3Image()
+		return nil
+	}
+	return fmt.Errorf("unknown S3ActImage unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *S3ActImageMutation) ResetEdge(name string) error {
+	switch name {
+	case s3actimage.EdgeAct:
+		m.ResetAct()
+		return nil
+	case s3actimage.EdgeS3Image:
+		m.ResetS3Image()
+		return nil
+	}
+	return fmt.Errorf("unknown S3ActImage edge %s", name)
+}
+
+// S3ImageMutation represents an operation that mutates the S3Image nodes in the graph.
+type S3ImageMutation struct {
+	config
+	op                   Op
+	typ                  string
+	id                   *int64
+	key                  *string
+	src                  *string
+	created_at           *time.Time
+	clearedFields        map[string]struct{}
+	s3_act_images        map[int64]struct{}
+	removeds3_act_images map[int64]struct{}
+	cleareds3_act_images bool
+	done                 bool
+	oldValue             func(context.Context) (*S3Image, error)
+	predicates           []predicate.S3Image
+}
+
+var _ ent.Mutation = (*S3ImageMutation)(nil)
+
+// s3imageOption allows management of the mutation configuration using functional options.
+type s3imageOption func(*S3ImageMutation)
+
+// newS3ImageMutation creates new mutation for the S3Image entity.
+func newS3ImageMutation(c config, op Op, opts ...s3imageOption) *S3ImageMutation {
+	m := &S3ImageMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeS3Image,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withS3ImageID sets the ID field of the mutation.
+func withS3ImageID(id int64) s3imageOption {
+	return func(m *S3ImageMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *S3Image
+		)
+		m.oldValue = func(ctx context.Context) (*S3Image, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().S3Image.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withS3Image sets the old S3Image of the mutation.
+func withS3Image(node *S3Image) s3imageOption {
+	return func(m *S3ImageMutation) {
+		m.oldValue = func(context.Context) (*S3Image, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m S3ImageMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m S3ImageMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of S3Image entities.
+func (m *S3ImageMutation) SetID(id int64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *S3ImageMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *S3ImageMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().S3Image.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetKey sets the "key" field.
+func (m *S3ImageMutation) SetKey(s string) {
+	m.key = &s
+}
+
+// Key returns the value of the "key" field in the mutation.
+func (m *S3ImageMutation) Key() (r string, exists bool) {
+	v := m.key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKey returns the old "key" field's value of the S3Image entity.
+// If the S3Image object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *S3ImageMutation) OldKey(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKey: %w", err)
+	}
+	return oldValue.Key, nil
+}
+
+// ResetKey resets all changes to the "key" field.
+func (m *S3ImageMutation) ResetKey() {
+	m.key = nil
+}
+
+// SetSrc sets the "src" field.
+func (m *S3ImageMutation) SetSrc(s string) {
+	m.src = &s
+}
+
+// Src returns the value of the "src" field in the mutation.
+func (m *S3ImageMutation) Src() (r string, exists bool) {
+	v := m.src
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSrc returns the old "src" field's value of the S3Image entity.
+// If the S3Image object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *S3ImageMutation) OldSrc(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSrc is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSrc requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSrc: %w", err)
+	}
+	return oldValue.Src, nil
+}
+
+// ResetSrc resets all changes to the "src" field.
+func (m *S3ImageMutation) ResetSrc() {
+	m.src = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *S3ImageMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *S3ImageMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the S3Image entity.
+// If the S3Image object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *S3ImageMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *S3ImageMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// AddS3ActImageIDs adds the "s3_act_images" edge to the S3ActImage entity by ids.
+func (m *S3ImageMutation) AddS3ActImageIDs(ids ...int64) {
+	if m.s3_act_images == nil {
+		m.s3_act_images = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.s3_act_images[ids[i]] = struct{}{}
+	}
+}
+
+// ClearS3ActImages clears the "s3_act_images" edge to the S3ActImage entity.
+func (m *S3ImageMutation) ClearS3ActImages() {
+	m.cleareds3_act_images = true
+}
+
+// S3ActImagesCleared reports if the "s3_act_images" edge to the S3ActImage entity was cleared.
+func (m *S3ImageMutation) S3ActImagesCleared() bool {
+	return m.cleareds3_act_images
+}
+
+// RemoveS3ActImageIDs removes the "s3_act_images" edge to the S3ActImage entity by IDs.
+func (m *S3ImageMutation) RemoveS3ActImageIDs(ids ...int64) {
+	if m.removeds3_act_images == nil {
+		m.removeds3_act_images = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.s3_act_images, ids[i])
+		m.removeds3_act_images[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedS3ActImages returns the removed IDs of the "s3_act_images" edge to the S3ActImage entity.
+func (m *S3ImageMutation) RemovedS3ActImagesIDs() (ids []int64) {
+	for id := range m.removeds3_act_images {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// S3ActImagesIDs returns the "s3_act_images" edge IDs in the mutation.
+func (m *S3ImageMutation) S3ActImagesIDs() (ids []int64) {
+	for id := range m.s3_act_images {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetS3ActImages resets all changes to the "s3_act_images" edge.
+func (m *S3ImageMutation) ResetS3ActImages() {
+	m.s3_act_images = nil
+	m.cleareds3_act_images = false
+	m.removeds3_act_images = nil
+}
+
+// Where appends a list predicates to the S3ImageMutation builder.
+func (m *S3ImageMutation) Where(ps ...predicate.S3Image) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the S3ImageMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *S3ImageMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.S3Image, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *S3ImageMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *S3ImageMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (S3Image).
+func (m *S3ImageMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *S3ImageMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.key != nil {
+		fields = append(fields, s3image.FieldKey)
+	}
+	if m.src != nil {
+		fields = append(fields, s3image.FieldSrc)
+	}
+	if m.created_at != nil {
+		fields = append(fields, s3image.FieldCreatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *S3ImageMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case s3image.FieldKey:
+		return m.Key()
+	case s3image.FieldSrc:
+		return m.Src()
+	case s3image.FieldCreatedAt:
+		return m.CreatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *S3ImageMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case s3image.FieldKey:
+		return m.OldKey(ctx)
+	case s3image.FieldSrc:
+		return m.OldSrc(ctx)
+	case s3image.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown S3Image field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *S3ImageMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case s3image.FieldKey:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKey(v)
+		return nil
+	case s3image.FieldSrc:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSrc(v)
+		return nil
+	case s3image.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown S3Image field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *S3ImageMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *S3ImageMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *S3ImageMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown S3Image numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *S3ImageMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *S3ImageMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *S3ImageMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown S3Image nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *S3ImageMutation) ResetField(name string) error {
+	switch name {
+	case s3image.FieldKey:
+		m.ResetKey()
+		return nil
+	case s3image.FieldSrc:
+		m.ResetSrc()
+		return nil
+	case s3image.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown S3Image field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *S3ImageMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.s3_act_images != nil {
+		edges = append(edges, s3image.EdgeS3ActImages)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *S3ImageMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case s3image.EdgeS3ActImages:
+		ids := make([]ent.Value, 0, len(m.s3_act_images))
+		for id := range m.s3_act_images {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *S3ImageMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removeds3_act_images != nil {
+		edges = append(edges, s3image.EdgeS3ActImages)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *S3ImageMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case s3image.EdgeS3ActImages:
+		ids := make([]ent.Value, 0, len(m.removeds3_act_images))
+		for id := range m.removeds3_act_images {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *S3ImageMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.cleareds3_act_images {
+		edges = append(edges, s3image.EdgeS3ActImages)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *S3ImageMutation) EdgeCleared(name string) bool {
+	switch name {
+	case s3image.EdgeS3ActImages:
+		return m.cleareds3_act_images
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *S3ImageMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown S3Image unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *S3ImageMutation) ResetEdge(name string) error {
+	switch name {
+	case s3image.EdgeS3ActImages:
+		m.ResetS3ActImages()
+		return nil
+	}
+	return fmt.Errorf("unknown S3Image edge %s", name)
+}
+
+// S3ProgramImageMutation represents an operation that mutates the S3ProgramImage nodes in the graph.
+type S3ProgramImageMutation struct {
+	config
+	op                     Op
+	typ                    string
+	id                     *int64
+	_order                 *int
+	add_order              *int
+	clearedFields          map[string]struct{}
+	program_release        *int64
+	clearedprogram_release bool
+	s3_image               *int64
+	cleareds3_image        bool
+	done                   bool
+	oldValue               func(context.Context) (*S3ProgramImage, error)
+	predicates             []predicate.S3ProgramImage
+}
+
+var _ ent.Mutation = (*S3ProgramImageMutation)(nil)
+
+// s3programimageOption allows management of the mutation configuration using functional options.
+type s3programimageOption func(*S3ProgramImageMutation)
+
+// newS3ProgramImageMutation creates new mutation for the S3ProgramImage entity.
+func newS3ProgramImageMutation(c config, op Op, opts ...s3programimageOption) *S3ProgramImageMutation {
+	m := &S3ProgramImageMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeS3ProgramImage,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withS3ProgramImageID sets the ID field of the mutation.
+func withS3ProgramImageID(id int64) s3programimageOption {
+	return func(m *S3ProgramImageMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *S3ProgramImage
+		)
+		m.oldValue = func(ctx context.Context) (*S3ProgramImage, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().S3ProgramImage.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withS3ProgramImage sets the old S3ProgramImage of the mutation.
+func withS3ProgramImage(node *S3ProgramImage) s3programimageOption {
+	return func(m *S3ProgramImageMutation) {
+		m.oldValue = func(context.Context) (*S3ProgramImage, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m S3ProgramImageMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m S3ProgramImageMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of S3ProgramImage entities.
+func (m *S3ProgramImageMutation) SetID(id int64) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *S3ProgramImageMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *S3ProgramImageMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().S3ProgramImage.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetOrder sets the "order" field.
+func (m *S3ProgramImageMutation) SetOrder(i int) {
+	m._order = &i
+	m.add_order = nil
+}
+
+// Order returns the value of the "order" field in the mutation.
+func (m *S3ProgramImageMutation) Order() (r int, exists bool) {
+	v := m._order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOrder returns the old "order" field's value of the S3ProgramImage entity.
+// If the S3ProgramImage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *S3ProgramImageMutation) OldOrder(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOrder is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOrder requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOrder: %w", err)
+	}
+	return oldValue.Order, nil
+}
+
+// AddOrder adds i to the "order" field.
+func (m *S3ProgramImageMutation) AddOrder(i int) {
+	if m.add_order != nil {
+		*m.add_order += i
+	} else {
+		m.add_order = &i
+	}
+}
+
+// AddedOrder returns the value that was added to the "order" field in this mutation.
+func (m *S3ProgramImageMutation) AddedOrder() (r int, exists bool) {
+	v := m.add_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetOrder resets all changes to the "order" field.
+func (m *S3ProgramImageMutation) ResetOrder() {
+	m._order = nil
+	m.add_order = nil
+}
+
+// SetProgramReleaseID sets the "program_release_id" field.
+func (m *S3ProgramImageMutation) SetProgramReleaseID(i int64) {
+	m.program_release = &i
+}
+
+// ProgramReleaseID returns the value of the "program_release_id" field in the mutation.
+func (m *S3ProgramImageMutation) ProgramReleaseID() (r int64, exists bool) {
+	v := m.program_release
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProgramReleaseID returns the old "program_release_id" field's value of the S3ProgramImage entity.
+// If the S3ProgramImage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *S3ProgramImageMutation) OldProgramReleaseID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProgramReleaseID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProgramReleaseID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProgramReleaseID: %w", err)
+	}
+	return oldValue.ProgramReleaseID, nil
+}
+
+// ResetProgramReleaseID resets all changes to the "program_release_id" field.
+func (m *S3ProgramImageMutation) ResetProgramReleaseID() {
+	m.program_release = nil
+}
+
+// SetImageID sets the "image_id" field.
+func (m *S3ProgramImageMutation) SetImageID(i int64) {
+	m.s3_image = &i
+}
+
+// ImageID returns the value of the "image_id" field in the mutation.
+func (m *S3ProgramImageMutation) ImageID() (r int64, exists bool) {
+	v := m.s3_image
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldImageID returns the old "image_id" field's value of the S3ProgramImage entity.
+// If the S3ProgramImage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *S3ProgramImageMutation) OldImageID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldImageID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldImageID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldImageID: %w", err)
+	}
+	return oldValue.ImageID, nil
+}
+
+// ResetImageID resets all changes to the "image_id" field.
+func (m *S3ProgramImageMutation) ResetImageID() {
+	m.s3_image = nil
+}
+
+// ClearProgramRelease clears the "program_release" edge to the ProgramRelease entity.
+func (m *S3ProgramImageMutation) ClearProgramRelease() {
+	m.clearedprogram_release = true
+}
+
+// ProgramReleaseCleared reports if the "program_release" edge to the ProgramRelease entity was cleared.
+func (m *S3ProgramImageMutation) ProgramReleaseCleared() bool {
+	return m.clearedprogram_release
+}
+
+// ProgramReleaseIDs returns the "program_release" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProgramReleaseID instead. It exists only for internal usage by the builders.
+func (m *S3ProgramImageMutation) ProgramReleaseIDs() (ids []int64) {
+	if id := m.program_release; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProgramRelease resets all changes to the "program_release" edge.
+func (m *S3ProgramImageMutation) ResetProgramRelease() {
+	m.program_release = nil
+	m.clearedprogram_release = false
+}
+
+// SetS3ImageID sets the "s3_image" edge to the S3Image entity by id.
+func (m *S3ProgramImageMutation) SetS3ImageID(id int64) {
+	m.s3_image = &id
+}
+
+// ClearS3Image clears the "s3_image" edge to the S3Image entity.
+func (m *S3ProgramImageMutation) ClearS3Image() {
+	m.cleareds3_image = true
+}
+
+// S3ImageCleared reports if the "s3_image" edge to the S3Image entity was cleared.
+func (m *S3ProgramImageMutation) S3ImageCleared() bool {
+	return m.cleareds3_image
+}
+
+// S3ImageID returns the "s3_image" edge ID in the mutation.
+func (m *S3ProgramImageMutation) S3ImageID() (id int64, exists bool) {
+	if m.s3_image != nil {
+		return *m.s3_image, true
+	}
+	return
+}
+
+// S3ImageIDs returns the "s3_image" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// S3ImageID instead. It exists only for internal usage by the builders.
+func (m *S3ProgramImageMutation) S3ImageIDs() (ids []int64) {
+	if id := m.s3_image; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetS3Image resets all changes to the "s3_image" edge.
+func (m *S3ProgramImageMutation) ResetS3Image() {
+	m.s3_image = nil
+	m.cleareds3_image = false
+}
+
+// Where appends a list predicates to the S3ProgramImageMutation builder.
+func (m *S3ProgramImageMutation) Where(ps ...predicate.S3ProgramImage) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the S3ProgramImageMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *S3ProgramImageMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.S3ProgramImage, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *S3ProgramImageMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *S3ProgramImageMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (S3ProgramImage).
+func (m *S3ProgramImageMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *S3ProgramImageMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m._order != nil {
+		fields = append(fields, s3programimage.FieldOrder)
+	}
+	if m.program_release != nil {
+		fields = append(fields, s3programimage.FieldProgramReleaseID)
+	}
+	if m.s3_image != nil {
+		fields = append(fields, s3programimage.FieldImageID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *S3ProgramImageMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case s3programimage.FieldOrder:
+		return m.Order()
+	case s3programimage.FieldProgramReleaseID:
+		return m.ProgramReleaseID()
+	case s3programimage.FieldImageID:
+		return m.ImageID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *S3ProgramImageMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case s3programimage.FieldOrder:
+		return m.OldOrder(ctx)
+	case s3programimage.FieldProgramReleaseID:
+		return m.OldProgramReleaseID(ctx)
+	case s3programimage.FieldImageID:
+		return m.OldImageID(ctx)
+	}
+	return nil, fmt.Errorf("unknown S3ProgramImage field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *S3ProgramImageMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case s3programimage.FieldOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOrder(v)
+		return nil
+	case s3programimage.FieldProgramReleaseID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProgramReleaseID(v)
+		return nil
+	case s3programimage.FieldImageID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetImageID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown S3ProgramImage field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *S3ProgramImageMutation) AddedFields() []string {
+	var fields []string
+	if m.add_order != nil {
+		fields = append(fields, s3programimage.FieldOrder)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *S3ProgramImageMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case s3programimage.FieldOrder:
+		return m.AddedOrder()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *S3ProgramImageMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case s3programimage.FieldOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOrder(v)
+		return nil
+	}
+	return fmt.Errorf("unknown S3ProgramImage numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *S3ProgramImageMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *S3ProgramImageMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *S3ProgramImageMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown S3ProgramImage nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *S3ProgramImageMutation) ResetField(name string) error {
+	switch name {
+	case s3programimage.FieldOrder:
+		m.ResetOrder()
+		return nil
+	case s3programimage.FieldProgramReleaseID:
+		m.ResetProgramReleaseID()
+		return nil
+	case s3programimage.FieldImageID:
+		m.ResetImageID()
+		return nil
+	}
+	return fmt.Errorf("unknown S3ProgramImage field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *S3ProgramImageMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.program_release != nil {
+		edges = append(edges, s3programimage.EdgeProgramRelease)
+	}
+	if m.s3_image != nil {
+		edges = append(edges, s3programimage.EdgeS3Image)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *S3ProgramImageMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case s3programimage.EdgeProgramRelease:
+		if id := m.program_release; id != nil {
+			return []ent.Value{*id}
+		}
+	case s3programimage.EdgeS3Image:
+		if id := m.s3_image; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *S3ProgramImageMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *S3ProgramImageMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *S3ProgramImageMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedprogram_release {
+		edges = append(edges, s3programimage.EdgeProgramRelease)
+	}
+	if m.cleareds3_image {
+		edges = append(edges, s3programimage.EdgeS3Image)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *S3ProgramImageMutation) EdgeCleared(name string) bool {
+	switch name {
+	case s3programimage.EdgeProgramRelease:
+		return m.clearedprogram_release
+	case s3programimage.EdgeS3Image:
+		return m.cleareds3_image
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *S3ProgramImageMutation) ClearEdge(name string) error {
+	switch name {
+	case s3programimage.EdgeProgramRelease:
+		m.ClearProgramRelease()
+		return nil
+	case s3programimage.EdgeS3Image:
+		m.ClearS3Image()
+		return nil
+	}
+	return fmt.Errorf("unknown S3ProgramImage unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *S3ProgramImageMutation) ResetEdge(name string) error {
+	switch name {
+	case s3programimage.EdgeProgramRelease:
+		m.ResetProgramRelease()
+		return nil
+	case s3programimage.EdgeS3Image:
+		m.ResetS3Image()
+		return nil
+	}
+	return fmt.Errorf("unknown S3ProgramImage edge %s", name)
 }
