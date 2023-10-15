@@ -15,7 +15,7 @@ var RoutineActStage = []string{"warmup", "main", "cooldown"}
 var RecStatus = []string{"history", "waiting", "proceeding", "completed", "failed", "canceled"}
 
 func IdField() ent.Field {
-	return field.Uint64("id").Unique().Immutable()
+	return field.Int64("id").Unique().Immutable()
 }
 
 func CodeIndex() ent.Index {

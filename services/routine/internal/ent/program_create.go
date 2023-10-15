@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"routine/internal/ent/program"
-	"routine/internal/ent/programversion"
+	"routine/internal/ent/programrelease"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -40,8 +40,8 @@ func (pc *ProgramCreate) SetTitle(s string) *ProgramCreate {
 }
 
 // SetAuthor sets the "author" field.
-func (pc *ProgramCreate) SetAuthor(u uint64) *ProgramCreate {
-	pc.mutation.SetAuthor(u)
+func (pc *ProgramCreate) SetAuthor(i int64) *ProgramCreate {
+	pc.mutation.SetAuthor(i)
 	return pc
 }
 
@@ -51,39 +51,53 @@ func (pc *ProgramCreate) SetCreatedAt(t time.Time) *ProgramCreate {
 	return pc
 }
 
-// SetVersionDerivedFrom sets the "version_derived_from" field.
-func (pc *ProgramCreate) SetVersionDerivedFrom(s string) *ProgramCreate {
-	pc.mutation.SetVersionDerivedFrom(s)
+// SetParentProgram sets the "parent_program" field.
+func (pc *ProgramCreate) SetParentProgram(s string) *ProgramCreate {
+	pc.mutation.SetParentProgram(s)
 	return pc
 }
 
-// SetNillableVersionDerivedFrom sets the "version_derived_from" field if the given value is not nil.
-func (pc *ProgramCreate) SetNillableVersionDerivedFrom(s *string) *ProgramCreate {
+// SetNillableParentProgram sets the "parent_program" field if the given value is not nil.
+func (pc *ProgramCreate) SetNillableParentProgram(s *string) *ProgramCreate {
 	if s != nil {
-		pc.SetVersionDerivedFrom(*s)
+		pc.SetParentProgram(*s)
+	}
+	return pc
+}
+
+// SetParentVersion sets the "parent_version" field.
+func (pc *ProgramCreate) SetParentVersion(i int) *ProgramCreate {
+	pc.mutation.SetParentVersion(i)
+	return pc
+}
+
+// SetNillableParentVersion sets the "parent_version" field if the given value is not nil.
+func (pc *ProgramCreate) SetNillableParentVersion(i *int) *ProgramCreate {
+	if i != nil {
+		pc.SetParentVersion(*i)
 	}
 	return pc
 }
 
 // SetID sets the "id" field.
-func (pc *ProgramCreate) SetID(u uint64) *ProgramCreate {
-	pc.mutation.SetID(u)
+func (pc *ProgramCreate) SetID(i int64) *ProgramCreate {
+	pc.mutation.SetID(i)
 	return pc
 }
 
-// AddProgramVersionIDs adds the "program_versions" edge to the ProgramVersion entity by IDs.
-func (pc *ProgramCreate) AddProgramVersionIDs(ids ...uint64) *ProgramCreate {
-	pc.mutation.AddProgramVersionIDs(ids...)
+// AddProgramReleaseIDs adds the "program_releases" edge to the ProgramRelease entity by IDs.
+func (pc *ProgramCreate) AddProgramReleaseIDs(ids ...int64) *ProgramCreate {
+	pc.mutation.AddProgramReleaseIDs(ids...)
 	return pc
 }
 
-// AddProgramVersions adds the "program_versions" edges to the ProgramVersion entity.
-func (pc *ProgramCreate) AddProgramVersions(p ...*ProgramVersion) *ProgramCreate {
-	ids := make([]uint64, len(p))
+// AddProgramReleases adds the "program_releases" edges to the ProgramRelease entity.
+func (pc *ProgramCreate) AddProgramReleases(p ...*ProgramRelease) *ProgramCreate {
+	ids := make([]int64, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return pc.AddProgramVersionIDs(ids...)
+	return pc.AddProgramReleaseIDs(ids...)
 }
 
 // Mutation returns the ProgramMutation object of the builder.
@@ -150,9 +164,9 @@ func (pc *ProgramCreate) check() error {
 	if _, ok := pc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Program.created_at"`)}
 	}
-	if v, ok := pc.mutation.VersionDerivedFrom(); ok {
-		if err := program.VersionDerivedFromValidator(v); err != nil {
-			return &ValidationError{Name: "version_derived_from", err: fmt.Errorf(`ent: validator failed for field "Program.version_derived_from": %w`, err)}
+	if v, ok := pc.mutation.ParentProgram(); ok {
+		if err := program.ParentProgramValidator(v); err != nil {
+			return &ValidationError{Name: "parent_program", err: fmt.Errorf(`ent: validator failed for field "Program.parent_program": %w`, err)}
 		}
 	}
 	return nil
@@ -171,7 +185,7 @@ func (pc *ProgramCreate) sqlSave(ctx context.Context) (*Program, error) {
 	}
 	if _spec.ID.Value != _node.ID {
 		id := _spec.ID.Value.(int64)
-		_node.ID = uint64(id)
+		_node.ID = int64(id)
 	}
 	pc.mutation.id = &_node.ID
 	pc.mutation.done = true
@@ -181,7 +195,7 @@ func (pc *ProgramCreate) sqlSave(ctx context.Context) (*Program, error) {
 func (pc *ProgramCreate) createSpec() (*Program, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Program{config: pc.config}
-		_spec = sqlgraph.NewCreateSpec(program.Table, sqlgraph.NewFieldSpec(program.FieldID, field.TypeUint64))
+		_spec = sqlgraph.NewCreateSpec(program.Table, sqlgraph.NewFieldSpec(program.FieldID, field.TypeInt64))
 	)
 	if id, ok := pc.mutation.ID(); ok {
 		_node.ID = id
@@ -200,26 +214,30 @@ func (pc *ProgramCreate) createSpec() (*Program, *sqlgraph.CreateSpec) {
 		_node.Title = value
 	}
 	if value, ok := pc.mutation.Author(); ok {
-		_spec.SetField(program.FieldAuthor, field.TypeUint64, value)
+		_spec.SetField(program.FieldAuthor, field.TypeInt64, value)
 		_node.Author = value
 	}
 	if value, ok := pc.mutation.CreatedAt(); ok {
 		_spec.SetField(program.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := pc.mutation.VersionDerivedFrom(); ok {
-		_spec.SetField(program.FieldVersionDerivedFrom, field.TypeString, value)
-		_node.VersionDerivedFrom = &value
+	if value, ok := pc.mutation.ParentProgram(); ok {
+		_spec.SetField(program.FieldParentProgram, field.TypeString, value)
+		_node.ParentProgram = &value
 	}
-	if nodes := pc.mutation.ProgramVersionsIDs(); len(nodes) > 0 {
+	if value, ok := pc.mutation.ParentVersion(); ok {
+		_spec.SetField(program.FieldParentVersion, field.TypeInt, value)
+		_node.ParentVersion = &value
+	}
+	if nodes := pc.mutation.ProgramReleasesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   program.ProgramVersionsTable,
-			Columns: []string{program.ProgramVersionsColumn},
+			Table:   program.ProgramReleasesTable,
+			Columns: []string{program.ProgramReleasesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(programversion.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(programrelease.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -272,7 +290,7 @@ func (pcb *ProgramCreateBulk) Save(ctx context.Context) ([]*Program, error) {
 				mutation.id = &nodes[i].ID
 				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
 					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = uint64(id)
+					nodes[i].ID = int64(id)
 				}
 				mutation.done = true
 				return nodes[i], nil

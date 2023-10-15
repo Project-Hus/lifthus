@@ -7,8 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"routine/internal/ent/act"
-	"routine/internal/ent/actversion"
 	"routine/internal/ent/predicate"
+	"routine/internal/ent/routineact"
+	"routine/internal/ent/s3actimage"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -29,31 +30,66 @@ func (au *ActUpdate) Where(ps ...predicate.Act) *ActUpdate {
 }
 
 // SetAuthor sets the "author" field.
-func (au *ActUpdate) SetAuthor(u uint64) *ActUpdate {
+func (au *ActUpdate) SetAuthor(i int64) *ActUpdate {
 	au.mutation.ResetAuthor()
-	au.mutation.SetAuthor(u)
+	au.mutation.SetAuthor(i)
 	return au
 }
 
-// AddAuthor adds u to the "author" field.
-func (au *ActUpdate) AddAuthor(u int64) *ActUpdate {
-	au.mutation.AddAuthor(u)
+// AddAuthor adds i to the "author" field.
+func (au *ActUpdate) AddAuthor(i int64) *ActUpdate {
+	au.mutation.AddAuthor(i)
 	return au
 }
 
-// AddActVersionIDs adds the "act_versions" edge to the ActVersion entity by IDs.
-func (au *ActUpdate) AddActVersionIDs(ids ...uint64) *ActUpdate {
-	au.mutation.AddActVersionIDs(ids...)
+// SetText sets the "text" field.
+func (au *ActUpdate) SetText(s string) *ActUpdate {
+	au.mutation.SetText(s)
 	return au
 }
 
-// AddActVersions adds the "act_versions" edges to the ActVersion entity.
-func (au *ActUpdate) AddActVersions(a ...*ActVersion) *ActUpdate {
-	ids := make([]uint64, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+// SetStandard sets the "standard" field.
+func (au *ActUpdate) SetStandard(b bool) *ActUpdate {
+	au.mutation.SetStandard(b)
+	return au
+}
+
+// SetNillableStandard sets the "standard" field if the given value is not nil.
+func (au *ActUpdate) SetNillableStandard(b *bool) *ActUpdate {
+	if b != nil {
+		au.SetStandard(*b)
 	}
-	return au.AddActVersionIDs(ids...)
+	return au
+}
+
+// AddS3ActImageIDs adds the "s3_act_images" edge to the S3ActImage entity by IDs.
+func (au *ActUpdate) AddS3ActImageIDs(ids ...int64) *ActUpdate {
+	au.mutation.AddS3ActImageIDs(ids...)
+	return au
+}
+
+// AddS3ActImages adds the "s3_act_images" edges to the S3ActImage entity.
+func (au *ActUpdate) AddS3ActImages(s ...*S3ActImage) *ActUpdate {
+	ids := make([]int64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return au.AddS3ActImageIDs(ids...)
+}
+
+// AddRoutineActIDs adds the "routine_acts" edge to the RoutineAct entity by IDs.
+func (au *ActUpdate) AddRoutineActIDs(ids ...int64) *ActUpdate {
+	au.mutation.AddRoutineActIDs(ids...)
+	return au
+}
+
+// AddRoutineActs adds the "routine_acts" edges to the RoutineAct entity.
+func (au *ActUpdate) AddRoutineActs(r ...*RoutineAct) *ActUpdate {
+	ids := make([]int64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return au.AddRoutineActIDs(ids...)
 }
 
 // Mutation returns the ActMutation object of the builder.
@@ -61,25 +97,46 @@ func (au *ActUpdate) Mutation() *ActMutation {
 	return au.mutation
 }
 
-// ClearActVersions clears all "act_versions" edges to the ActVersion entity.
-func (au *ActUpdate) ClearActVersions() *ActUpdate {
-	au.mutation.ClearActVersions()
+// ClearS3ActImages clears all "s3_act_images" edges to the S3ActImage entity.
+func (au *ActUpdate) ClearS3ActImages() *ActUpdate {
+	au.mutation.ClearS3ActImages()
 	return au
 }
 
-// RemoveActVersionIDs removes the "act_versions" edge to ActVersion entities by IDs.
-func (au *ActUpdate) RemoveActVersionIDs(ids ...uint64) *ActUpdate {
-	au.mutation.RemoveActVersionIDs(ids...)
+// RemoveS3ActImageIDs removes the "s3_act_images" edge to S3ActImage entities by IDs.
+func (au *ActUpdate) RemoveS3ActImageIDs(ids ...int64) *ActUpdate {
+	au.mutation.RemoveS3ActImageIDs(ids...)
 	return au
 }
 
-// RemoveActVersions removes "act_versions" edges to ActVersion entities.
-func (au *ActUpdate) RemoveActVersions(a ...*ActVersion) *ActUpdate {
-	ids := make([]uint64, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+// RemoveS3ActImages removes "s3_act_images" edges to S3ActImage entities.
+func (au *ActUpdate) RemoveS3ActImages(s ...*S3ActImage) *ActUpdate {
+	ids := make([]int64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
 	}
-	return au.RemoveActVersionIDs(ids...)
+	return au.RemoveS3ActImageIDs(ids...)
+}
+
+// ClearRoutineActs clears all "routine_acts" edges to the RoutineAct entity.
+func (au *ActUpdate) ClearRoutineActs() *ActUpdate {
+	au.mutation.ClearRoutineActs()
+	return au
+}
+
+// RemoveRoutineActIDs removes the "routine_acts" edge to RoutineAct entities by IDs.
+func (au *ActUpdate) RemoveRoutineActIDs(ids ...int64) *ActUpdate {
+	au.mutation.RemoveRoutineActIDs(ids...)
+	return au
+}
+
+// RemoveRoutineActs removes "routine_acts" edges to RoutineAct entities.
+func (au *ActUpdate) RemoveRoutineActs(r ...*RoutineAct) *ActUpdate {
+	ids := make([]int64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return au.RemoveRoutineActIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -110,7 +167,7 @@ func (au *ActUpdate) ExecX(ctx context.Context) {
 }
 
 func (au *ActUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := sqlgraph.NewUpdateSpec(act.Table, act.Columns, sqlgraph.NewFieldSpec(act.FieldID, field.TypeUint64))
+	_spec := sqlgraph.NewUpdateSpec(act.Table, act.Columns, sqlgraph.NewFieldSpec(act.FieldID, field.TypeInt64))
 	if ps := au.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -119,33 +176,39 @@ func (au *ActUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := au.mutation.Author(); ok {
-		_spec.SetField(act.FieldAuthor, field.TypeUint64, value)
+		_spec.SetField(act.FieldAuthor, field.TypeInt64, value)
 	}
 	if value, ok := au.mutation.AddedAuthor(); ok {
-		_spec.AddField(act.FieldAuthor, field.TypeUint64, value)
+		_spec.AddField(act.FieldAuthor, field.TypeInt64, value)
 	}
-	if au.mutation.ActVersionsCleared() {
+	if value, ok := au.mutation.Text(); ok {
+		_spec.SetField(act.FieldText, field.TypeString, value)
+	}
+	if value, ok := au.mutation.Standard(); ok {
+		_spec.SetField(act.FieldStandard, field.TypeBool, value)
+	}
+	if au.mutation.S3ActImagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   act.ActVersionsTable,
-			Columns: []string{act.ActVersionsColumn},
+			Table:   act.S3ActImagesTable,
+			Columns: []string{act.S3ActImagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(actversion.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(s3actimage.FieldID, field.TypeInt64),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := au.mutation.RemovedActVersionsIDs(); len(nodes) > 0 && !au.mutation.ActVersionsCleared() {
+	if nodes := au.mutation.RemovedS3ActImagesIDs(); len(nodes) > 0 && !au.mutation.S3ActImagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   act.ActVersionsTable,
-			Columns: []string{act.ActVersionsColumn},
+			Table:   act.S3ActImagesTable,
+			Columns: []string{act.S3ActImagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(actversion.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(s3actimage.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -153,15 +216,60 @@ func (au *ActUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := au.mutation.ActVersionsIDs(); len(nodes) > 0 {
+	if nodes := au.mutation.S3ActImagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   act.ActVersionsTable,
-			Columns: []string{act.ActVersionsColumn},
+			Table:   act.S3ActImagesTable,
+			Columns: []string{act.S3ActImagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(actversion.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(s3actimage.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if au.mutation.RoutineActsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.RoutineActsTable,
+			Columns: []string{act.RoutineActsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.RemovedRoutineActsIDs(); len(nodes) > 0 && !au.mutation.RoutineActsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.RoutineActsTable,
+			Columns: []string{act.RoutineActsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.RoutineActsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.RoutineActsTable,
+			Columns: []string{act.RoutineActsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -190,31 +298,66 @@ type ActUpdateOne struct {
 }
 
 // SetAuthor sets the "author" field.
-func (auo *ActUpdateOne) SetAuthor(u uint64) *ActUpdateOne {
+func (auo *ActUpdateOne) SetAuthor(i int64) *ActUpdateOne {
 	auo.mutation.ResetAuthor()
-	auo.mutation.SetAuthor(u)
+	auo.mutation.SetAuthor(i)
 	return auo
 }
 
-// AddAuthor adds u to the "author" field.
-func (auo *ActUpdateOne) AddAuthor(u int64) *ActUpdateOne {
-	auo.mutation.AddAuthor(u)
+// AddAuthor adds i to the "author" field.
+func (auo *ActUpdateOne) AddAuthor(i int64) *ActUpdateOne {
+	auo.mutation.AddAuthor(i)
 	return auo
 }
 
-// AddActVersionIDs adds the "act_versions" edge to the ActVersion entity by IDs.
-func (auo *ActUpdateOne) AddActVersionIDs(ids ...uint64) *ActUpdateOne {
-	auo.mutation.AddActVersionIDs(ids...)
+// SetText sets the "text" field.
+func (auo *ActUpdateOne) SetText(s string) *ActUpdateOne {
+	auo.mutation.SetText(s)
 	return auo
 }
 
-// AddActVersions adds the "act_versions" edges to the ActVersion entity.
-func (auo *ActUpdateOne) AddActVersions(a ...*ActVersion) *ActUpdateOne {
-	ids := make([]uint64, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+// SetStandard sets the "standard" field.
+func (auo *ActUpdateOne) SetStandard(b bool) *ActUpdateOne {
+	auo.mutation.SetStandard(b)
+	return auo
+}
+
+// SetNillableStandard sets the "standard" field if the given value is not nil.
+func (auo *ActUpdateOne) SetNillableStandard(b *bool) *ActUpdateOne {
+	if b != nil {
+		auo.SetStandard(*b)
 	}
-	return auo.AddActVersionIDs(ids...)
+	return auo
+}
+
+// AddS3ActImageIDs adds the "s3_act_images" edge to the S3ActImage entity by IDs.
+func (auo *ActUpdateOne) AddS3ActImageIDs(ids ...int64) *ActUpdateOne {
+	auo.mutation.AddS3ActImageIDs(ids...)
+	return auo
+}
+
+// AddS3ActImages adds the "s3_act_images" edges to the S3ActImage entity.
+func (auo *ActUpdateOne) AddS3ActImages(s ...*S3ActImage) *ActUpdateOne {
+	ids := make([]int64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return auo.AddS3ActImageIDs(ids...)
+}
+
+// AddRoutineActIDs adds the "routine_acts" edge to the RoutineAct entity by IDs.
+func (auo *ActUpdateOne) AddRoutineActIDs(ids ...int64) *ActUpdateOne {
+	auo.mutation.AddRoutineActIDs(ids...)
+	return auo
+}
+
+// AddRoutineActs adds the "routine_acts" edges to the RoutineAct entity.
+func (auo *ActUpdateOne) AddRoutineActs(r ...*RoutineAct) *ActUpdateOne {
+	ids := make([]int64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return auo.AddRoutineActIDs(ids...)
 }
 
 // Mutation returns the ActMutation object of the builder.
@@ -222,25 +365,46 @@ func (auo *ActUpdateOne) Mutation() *ActMutation {
 	return auo.mutation
 }
 
-// ClearActVersions clears all "act_versions" edges to the ActVersion entity.
-func (auo *ActUpdateOne) ClearActVersions() *ActUpdateOne {
-	auo.mutation.ClearActVersions()
+// ClearS3ActImages clears all "s3_act_images" edges to the S3ActImage entity.
+func (auo *ActUpdateOne) ClearS3ActImages() *ActUpdateOne {
+	auo.mutation.ClearS3ActImages()
 	return auo
 }
 
-// RemoveActVersionIDs removes the "act_versions" edge to ActVersion entities by IDs.
-func (auo *ActUpdateOne) RemoveActVersionIDs(ids ...uint64) *ActUpdateOne {
-	auo.mutation.RemoveActVersionIDs(ids...)
+// RemoveS3ActImageIDs removes the "s3_act_images" edge to S3ActImage entities by IDs.
+func (auo *ActUpdateOne) RemoveS3ActImageIDs(ids ...int64) *ActUpdateOne {
+	auo.mutation.RemoveS3ActImageIDs(ids...)
 	return auo
 }
 
-// RemoveActVersions removes "act_versions" edges to ActVersion entities.
-func (auo *ActUpdateOne) RemoveActVersions(a ...*ActVersion) *ActUpdateOne {
-	ids := make([]uint64, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+// RemoveS3ActImages removes "s3_act_images" edges to S3ActImage entities.
+func (auo *ActUpdateOne) RemoveS3ActImages(s ...*S3ActImage) *ActUpdateOne {
+	ids := make([]int64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
 	}
-	return auo.RemoveActVersionIDs(ids...)
+	return auo.RemoveS3ActImageIDs(ids...)
+}
+
+// ClearRoutineActs clears all "routine_acts" edges to the RoutineAct entity.
+func (auo *ActUpdateOne) ClearRoutineActs() *ActUpdateOne {
+	auo.mutation.ClearRoutineActs()
+	return auo
+}
+
+// RemoveRoutineActIDs removes the "routine_acts" edge to RoutineAct entities by IDs.
+func (auo *ActUpdateOne) RemoveRoutineActIDs(ids ...int64) *ActUpdateOne {
+	auo.mutation.RemoveRoutineActIDs(ids...)
+	return auo
+}
+
+// RemoveRoutineActs removes "routine_acts" edges to RoutineAct entities.
+func (auo *ActUpdateOne) RemoveRoutineActs(r ...*RoutineAct) *ActUpdateOne {
+	ids := make([]int64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return auo.RemoveRoutineActIDs(ids...)
 }
 
 // Where appends a list predicates to the ActUpdate builder.
@@ -284,7 +448,7 @@ func (auo *ActUpdateOne) ExecX(ctx context.Context) {
 }
 
 func (auo *ActUpdateOne) sqlSave(ctx context.Context) (_node *Act, err error) {
-	_spec := sqlgraph.NewUpdateSpec(act.Table, act.Columns, sqlgraph.NewFieldSpec(act.FieldID, field.TypeUint64))
+	_spec := sqlgraph.NewUpdateSpec(act.Table, act.Columns, sqlgraph.NewFieldSpec(act.FieldID, field.TypeInt64))
 	id, ok := auo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Act.id" for update`)}
@@ -310,33 +474,39 @@ func (auo *ActUpdateOne) sqlSave(ctx context.Context) (_node *Act, err error) {
 		}
 	}
 	if value, ok := auo.mutation.Author(); ok {
-		_spec.SetField(act.FieldAuthor, field.TypeUint64, value)
+		_spec.SetField(act.FieldAuthor, field.TypeInt64, value)
 	}
 	if value, ok := auo.mutation.AddedAuthor(); ok {
-		_spec.AddField(act.FieldAuthor, field.TypeUint64, value)
+		_spec.AddField(act.FieldAuthor, field.TypeInt64, value)
 	}
-	if auo.mutation.ActVersionsCleared() {
+	if value, ok := auo.mutation.Text(); ok {
+		_spec.SetField(act.FieldText, field.TypeString, value)
+	}
+	if value, ok := auo.mutation.Standard(); ok {
+		_spec.SetField(act.FieldStandard, field.TypeBool, value)
+	}
+	if auo.mutation.S3ActImagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   act.ActVersionsTable,
-			Columns: []string{act.ActVersionsColumn},
+			Table:   act.S3ActImagesTable,
+			Columns: []string{act.S3ActImagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(actversion.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(s3actimage.FieldID, field.TypeInt64),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := auo.mutation.RemovedActVersionsIDs(); len(nodes) > 0 && !auo.mutation.ActVersionsCleared() {
+	if nodes := auo.mutation.RemovedS3ActImagesIDs(); len(nodes) > 0 && !auo.mutation.S3ActImagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   act.ActVersionsTable,
-			Columns: []string{act.ActVersionsColumn},
+			Table:   act.S3ActImagesTable,
+			Columns: []string{act.S3ActImagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(actversion.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(s3actimage.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -344,15 +514,60 @@ func (auo *ActUpdateOne) sqlSave(ctx context.Context) (_node *Act, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := auo.mutation.ActVersionsIDs(); len(nodes) > 0 {
+	if nodes := auo.mutation.S3ActImagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   act.ActVersionsTable,
-			Columns: []string{act.ActVersionsColumn},
+			Table:   act.S3ActImagesTable,
+			Columns: []string{act.S3ActImagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(actversion.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(s3actimage.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if auo.mutation.RoutineActsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.RoutineActsTable,
+			Columns: []string{act.RoutineActsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.RemovedRoutineActsIDs(); len(nodes) > 0 && !auo.mutation.RoutineActsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.RoutineActsTable,
+			Columns: []string{act.RoutineActsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.RoutineActsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.RoutineActsTable,
+			Columns: []string{act.RoutineActsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

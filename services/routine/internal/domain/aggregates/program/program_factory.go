@@ -6,59 +6,50 @@ import (
 	"time"
 )
 
-func CreateWeeklyProgram(
+func CreateProgram(
+	programType ProgramType,
 	title ProgramTitle,
-	author user.User,
-	derivedFrom *ProgramVersionCode,
-	imageSrcs ProgramImageSrcs,
-	text ProgramText,
-	dailyRoutines DailyRoutines,
+	author user.UserId,
+	parent *ParentProgramVersion,
+	release ProgramRelease,
 ) (*Program, error) {
 	if !title.IsValid() {
 		return nil, ErrInvalidProgramTitle
 	}
-	pcode, err := domain.RandomHexCode()
+	code, err := domain.RandomHexCode()
 	if err != nil {
 		return nil, err
 	}
-	v1, err := CreateProgramVersion(
-		ProgramCode(pcode),
-		1,
-		imageSrcs,
-		text,
-		dailyRoutines,
-	)
-	if err != nil {
-		return nil, err
-	}
-	return WeeklyProgramFrom(
-		ProgramCode(pcode),
+	return ProgramFrom(
+		ProgramCode(code),
+		programType,
 		title,
 		author,
 		domain.CreatedAt(time.Now()),
-		derivedFrom,
-		ProgramVersions{v1},
+		parent,
+		[]*ProgramRelease{&release},
 	)
 }
 
-func WeeklyProgramFrom(
+func ProgramFrom(
 	code ProgramCode,
+	programType ProgramType,
 	title ProgramTitle,
-	author user.User,
+	author user.UserId,
 	createdAt domain.CreatedAt,
-	derivedFrom *ProgramVersionCode,
-	versions ProgramVersions,
+	parent *ParentProgramVersion,
+	releases ProgramReleases,
 ) (*Program, error) {
-	if !versions.IsValid() {
-		return nil, ErrInvalidProgramVersions
+	if !releases.IsValid() {
+		return nil, ErrInvalidProgramReleases
 	}
 	return &Program{
 		code:        code,
-		programType: WeeklyType,
+		programType: programType,
 		title:       title,
-		author:      author.Id(),
+		author:      author,
 		createdAt:   createdAt,
-		derivedFrom: derivedFrom,
-		versions:    versions,
+		parent:      parent,
+		releases:    releases,
 	}, nil
 }

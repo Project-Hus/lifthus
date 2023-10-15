@@ -6,8 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"routine/internal/ent/actversion"
-	"routine/internal/ent/dailyroutine"
+	"routine/internal/ent/act"
+	"routine/internal/ent/routine"
 	"routine/internal/ent/routineact"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -21,21 +21,15 @@ type RoutineActCreate struct {
 	hooks    []Hook
 }
 
-// SetDailyRoutineCode sets the "daily_routine_code" field.
-func (rac *RoutineActCreate) SetDailyRoutineCode(s string) *RoutineActCreate {
-	rac.mutation.SetDailyRoutineCode(s)
-	return rac
-}
-
 // SetOrder sets the "order" field.
-func (rac *RoutineActCreate) SetOrder(u uint) *RoutineActCreate {
-	rac.mutation.SetOrder(u)
+func (rac *RoutineActCreate) SetOrder(i int) *RoutineActCreate {
+	rac.mutation.SetOrder(i)
 	return rac
 }
 
-// SetActVersionCode sets the "act_version_code" field.
-func (rac *RoutineActCreate) SetActVersionCode(s string) *RoutineActCreate {
-	rac.mutation.SetActVersionCode(s)
+// SetActCode sets the "act_code" field.
+func (rac *RoutineActCreate) SetActCode(s string) *RoutineActCreate {
+	rac.mutation.SetActCode(s)
 	return rac
 }
 
@@ -58,31 +52,31 @@ func (rac *RoutineActCreate) SetRatioOrSecs(f float64) *RoutineActCreate {
 }
 
 // SetID sets the "id" field.
-func (rac *RoutineActCreate) SetID(u uint64) *RoutineActCreate {
-	rac.mutation.SetID(u)
+func (rac *RoutineActCreate) SetID(i int64) *RoutineActCreate {
+	rac.mutation.SetID(i)
 	return rac
 }
 
-// SetActVersionID sets the "act_version" edge to the ActVersion entity by ID.
-func (rac *RoutineActCreate) SetActVersionID(id uint64) *RoutineActCreate {
-	rac.mutation.SetActVersionID(id)
+// SetActID sets the "act" edge to the Act entity by ID.
+func (rac *RoutineActCreate) SetActID(id int64) *RoutineActCreate {
+	rac.mutation.SetActID(id)
 	return rac
 }
 
-// SetActVersion sets the "act_version" edge to the ActVersion entity.
-func (rac *RoutineActCreate) SetActVersion(a *ActVersion) *RoutineActCreate {
-	return rac.SetActVersionID(a.ID)
+// SetAct sets the "act" edge to the Act entity.
+func (rac *RoutineActCreate) SetAct(a *Act) *RoutineActCreate {
+	return rac.SetActID(a.ID)
 }
 
-// SetDailyRoutineID sets the "daily_routine" edge to the DailyRoutine entity by ID.
-func (rac *RoutineActCreate) SetDailyRoutineID(id uint64) *RoutineActCreate {
-	rac.mutation.SetDailyRoutineID(id)
+// SetRoutineID sets the "routine" edge to the Routine entity by ID.
+func (rac *RoutineActCreate) SetRoutineID(id int64) *RoutineActCreate {
+	rac.mutation.SetRoutineID(id)
 	return rac
 }
 
-// SetDailyRoutine sets the "daily_routine" edge to the DailyRoutine entity.
-func (rac *RoutineActCreate) SetDailyRoutine(d *DailyRoutine) *RoutineActCreate {
-	return rac.SetDailyRoutineID(d.ID)
+// SetRoutine sets the "routine" edge to the Routine entity.
+func (rac *RoutineActCreate) SetRoutine(r *Routine) *RoutineActCreate {
+	return rac.SetRoutineID(r.ID)
 }
 
 // Mutation returns the RoutineActMutation object of the builder.
@@ -119,23 +113,15 @@ func (rac *RoutineActCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (rac *RoutineActCreate) check() error {
-	if _, ok := rac.mutation.DailyRoutineCode(); !ok {
-		return &ValidationError{Name: "daily_routine_code", err: errors.New(`ent: missing required field "RoutineAct.daily_routine_code"`)}
-	}
-	if v, ok := rac.mutation.DailyRoutineCode(); ok {
-		if err := routineact.DailyRoutineCodeValidator(v); err != nil {
-			return &ValidationError{Name: "daily_routine_code", err: fmt.Errorf(`ent: validator failed for field "RoutineAct.daily_routine_code": %w`, err)}
-		}
-	}
 	if _, ok := rac.mutation.Order(); !ok {
 		return &ValidationError{Name: "order", err: errors.New(`ent: missing required field "RoutineAct.order"`)}
 	}
-	if _, ok := rac.mutation.ActVersionCode(); !ok {
-		return &ValidationError{Name: "act_version_code", err: errors.New(`ent: missing required field "RoutineAct.act_version_code"`)}
+	if _, ok := rac.mutation.ActCode(); !ok {
+		return &ValidationError{Name: "act_code", err: errors.New(`ent: missing required field "RoutineAct.act_code"`)}
 	}
-	if v, ok := rac.mutation.ActVersionCode(); ok {
-		if err := routineact.ActVersionCodeValidator(v); err != nil {
-			return &ValidationError{Name: "act_version_code", err: fmt.Errorf(`ent: validator failed for field "RoutineAct.act_version_code": %w`, err)}
+	if v, ok := rac.mutation.ActCode(); ok {
+		if err := routineact.ActCodeValidator(v); err != nil {
+			return &ValidationError{Name: "act_code", err: fmt.Errorf(`ent: validator failed for field "RoutineAct.act_code": %w`, err)}
 		}
 	}
 	if _, ok := rac.mutation.Stage(); !ok {
@@ -152,11 +138,11 @@ func (rac *RoutineActCreate) check() error {
 	if _, ok := rac.mutation.RatioOrSecs(); !ok {
 		return &ValidationError{Name: "ratio_or_secs", err: errors.New(`ent: missing required field "RoutineAct.ratio_or_secs"`)}
 	}
-	if _, ok := rac.mutation.ActVersionID(); !ok {
-		return &ValidationError{Name: "act_version", err: errors.New(`ent: missing required edge "RoutineAct.act_version"`)}
+	if _, ok := rac.mutation.ActID(); !ok {
+		return &ValidationError{Name: "act", err: errors.New(`ent: missing required edge "RoutineAct.act"`)}
 	}
-	if _, ok := rac.mutation.DailyRoutineID(); !ok {
-		return &ValidationError{Name: "daily_routine", err: errors.New(`ent: missing required edge "RoutineAct.daily_routine"`)}
+	if _, ok := rac.mutation.RoutineID(); !ok {
+		return &ValidationError{Name: "routine", err: errors.New(`ent: missing required edge "RoutineAct.routine"`)}
 	}
 	return nil
 }
@@ -174,7 +160,7 @@ func (rac *RoutineActCreate) sqlSave(ctx context.Context) (*RoutineAct, error) {
 	}
 	if _spec.ID.Value != _node.ID {
 		id := _spec.ID.Value.(int64)
-		_node.ID = uint64(id)
+		_node.ID = int64(id)
 	}
 	rac.mutation.id = &_node.ID
 	rac.mutation.done = true
@@ -184,23 +170,19 @@ func (rac *RoutineActCreate) sqlSave(ctx context.Context) (*RoutineAct, error) {
 func (rac *RoutineActCreate) createSpec() (*RoutineAct, *sqlgraph.CreateSpec) {
 	var (
 		_node = &RoutineAct{config: rac.config}
-		_spec = sqlgraph.NewCreateSpec(routineact.Table, sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64))
+		_spec = sqlgraph.NewCreateSpec(routineact.Table, sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeInt64))
 	)
 	if id, ok := rac.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := rac.mutation.DailyRoutineCode(); ok {
-		_spec.SetField(routineact.FieldDailyRoutineCode, field.TypeString, value)
-		_node.DailyRoutineCode = value
-	}
 	if value, ok := rac.mutation.Order(); ok {
-		_spec.SetField(routineact.FieldOrder, field.TypeUint, value)
+		_spec.SetField(routineact.FieldOrder, field.TypeInt, value)
 		_node.Order = value
 	}
-	if value, ok := rac.mutation.ActVersionCode(); ok {
-		_spec.SetField(routineact.FieldActVersionCode, field.TypeString, value)
-		_node.ActVersionCode = value
+	if value, ok := rac.mutation.ActCode(); ok {
+		_spec.SetField(routineact.FieldActCode, field.TypeString, value)
+		_node.ActCode = value
 	}
 	if value, ok := rac.mutation.Stage(); ok {
 		_spec.SetField(routineact.FieldStage, field.TypeEnum, value)
@@ -214,38 +196,38 @@ func (rac *RoutineActCreate) createSpec() (*RoutineAct, *sqlgraph.CreateSpec) {
 		_spec.SetField(routineact.FieldRatioOrSecs, field.TypeFloat64, value)
 		_node.RatioOrSecs = value
 	}
-	if nodes := rac.mutation.ActVersionIDs(); len(nodes) > 0 {
+	if nodes := rac.mutation.ActIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   routineact.ActVersionTable,
-			Columns: []string{routineact.ActVersionColumn},
+			Table:   routineact.ActTable,
+			Columns: []string{routineact.ActColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(actversion.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(act.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.act_version_routine_acts = &nodes[0]
+		_node.act_routine_acts = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := rac.mutation.DailyRoutineIDs(); len(nodes) > 0 {
+	if nodes := rac.mutation.RoutineIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   routineact.DailyRoutineTable,
-			Columns: []string{routineact.DailyRoutineColumn},
+			Table:   routineact.RoutineTable,
+			Columns: []string{routineact.RoutineColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dailyroutine.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(routine.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.daily_routine_routine_acts = &nodes[0]
+		_node.routine_routine_acts = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -293,7 +275,7 @@ func (racb *RoutineActCreateBulk) Save(ctx context.Context) ([]*RoutineAct, erro
 				mutation.id = &nodes[i].ID
 				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
 					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = uint64(id)
+					nodes[i].ID = int64(id)
 				}
 				mutation.done = true
 				return nodes[i], nil

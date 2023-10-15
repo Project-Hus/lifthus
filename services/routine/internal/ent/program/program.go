@@ -24,19 +24,21 @@ const (
 	FieldAuthor = "author"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
-	// FieldVersionDerivedFrom holds the string denoting the version_derived_from field in the database.
-	FieldVersionDerivedFrom = "version_derived_from"
-	// EdgeProgramVersions holds the string denoting the program_versions edge name in mutations.
-	EdgeProgramVersions = "program_versions"
+	// FieldParentProgram holds the string denoting the parent_program field in the database.
+	FieldParentProgram = "parent_program"
+	// FieldParentVersion holds the string denoting the parent_version field in the database.
+	FieldParentVersion = "parent_version"
+	// EdgeProgramReleases holds the string denoting the program_releases edge name in mutations.
+	EdgeProgramReleases = "program_releases"
 	// Table holds the table name of the program in the database.
 	Table = "programs"
-	// ProgramVersionsTable is the table that holds the program_versions relation/edge.
-	ProgramVersionsTable = "program_versions"
-	// ProgramVersionsInverseTable is the table name for the ProgramVersion entity.
-	// It exists in this package in order to avoid circular dependency with the "programversion" package.
-	ProgramVersionsInverseTable = "program_versions"
-	// ProgramVersionsColumn is the table column denoting the program_versions relation/edge.
-	ProgramVersionsColumn = "program_program_versions"
+	// ProgramReleasesTable is the table that holds the program_releases relation/edge.
+	ProgramReleasesTable = "program_releases"
+	// ProgramReleasesInverseTable is the table name for the ProgramRelease entity.
+	// It exists in this package in order to avoid circular dependency with the "programrelease" package.
+	ProgramReleasesInverseTable = "program_releases"
+	// ProgramReleasesColumn is the table column denoting the program_releases relation/edge.
+	ProgramReleasesColumn = "program_program_releases"
 )
 
 // Columns holds all SQL columns for program fields.
@@ -47,7 +49,8 @@ var Columns = []string{
 	FieldTitle,
 	FieldAuthor,
 	FieldCreatedAt,
-	FieldVersionDerivedFrom,
+	FieldParentProgram,
+	FieldParentVersion,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -65,8 +68,8 @@ var (
 	CodeValidator func(string) error
 	// TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	TitleValidator func(string) error
-	// VersionDerivedFromValidator is a validator for the "version_derived_from" field. It is called by the builders before save.
-	VersionDerivedFromValidator func(string) error
+	// ParentProgramValidator is a validator for the "parent_program" field. It is called by the builders before save.
+	ParentProgramValidator func(string) error
 )
 
 // ProgramType defines the type for the "program_type" enum field.
@@ -125,28 +128,33 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
-// ByVersionDerivedFrom orders the results by the version_derived_from field.
-func ByVersionDerivedFrom(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldVersionDerivedFrom, opts...).ToFunc()
+// ByParentProgram orders the results by the parent_program field.
+func ByParentProgram(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldParentProgram, opts...).ToFunc()
 }
 
-// ByProgramVersionsCount orders the results by program_versions count.
-func ByProgramVersionsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByParentVersion orders the results by the parent_version field.
+func ByParentVersion(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldParentVersion, opts...).ToFunc()
+}
+
+// ByProgramReleasesCount orders the results by program_releases count.
+func ByProgramReleasesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newProgramVersionsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newProgramReleasesStep(), opts...)
 	}
 }
 
-// ByProgramVersions orders the results by program_versions terms.
-func ByProgramVersions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByProgramReleases orders the results by program_releases terms.
+func ByProgramReleases(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newProgramVersionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newProgramReleasesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-func newProgramVersionsStep() *sqlgraph.Step {
+func newProgramReleasesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ProgramVersionsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, ProgramVersionsTable, ProgramVersionsColumn),
+		sqlgraph.To(ProgramReleasesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ProgramReleasesTable, ProgramReleasesColumn),
 	)
 }

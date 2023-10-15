@@ -8,8 +8,9 @@ import (
 	"fmt"
 	"math"
 	"routine/internal/ent/act"
-	"routine/internal/ent/actversion"
 	"routine/internal/ent/predicate"
+	"routine/internal/ent/routineact"
+	"routine/internal/ent/s3actimage"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -23,7 +24,8 @@ type ActQuery struct {
 	order           []act.OrderOption
 	inters          []Interceptor
 	predicates      []predicate.Act
-	withActVersions *ActVersionQuery
+	withS3ActImages *S3ActImageQuery
+	withRoutineActs *RoutineActQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -60,9 +62,9 @@ func (aq *ActQuery) Order(o ...act.OrderOption) *ActQuery {
 	return aq
 }
 
-// QueryActVersions chains the current query on the "act_versions" edge.
-func (aq *ActQuery) QueryActVersions() *ActVersionQuery {
-	query := (&ActVersionClient{config: aq.config}).Query()
+// QueryS3ActImages chains the current query on the "s3_act_images" edge.
+func (aq *ActQuery) QueryS3ActImages() *S3ActImageQuery {
+	query := (&S3ActImageClient{config: aq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := aq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -73,8 +75,30 @@ func (aq *ActQuery) QueryActVersions() *ActVersionQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(act.Table, act.FieldID, selector),
-			sqlgraph.To(actversion.Table, actversion.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, act.ActVersionsTable, act.ActVersionsColumn),
+			sqlgraph.To(s3actimage.Table, s3actimage.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, act.S3ActImagesTable, act.S3ActImagesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRoutineActs chains the current query on the "routine_acts" edge.
+func (aq *ActQuery) QueryRoutineActs() *RoutineActQuery {
+	query := (&RoutineActClient{config: aq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(act.Table, act.FieldID, selector),
+			sqlgraph.To(routineact.Table, routineact.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, act.RoutineActsTable, act.RoutineActsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
 		return fromU, nil
@@ -106,8 +130,8 @@ func (aq *ActQuery) FirstX(ctx context.Context) *Act {
 
 // FirstID returns the first Act ID from the query.
 // Returns a *NotFoundError when no Act ID was found.
-func (aq *ActQuery) FirstID(ctx context.Context) (id uint64, err error) {
-	var ids []uint64
+func (aq *ActQuery) FirstID(ctx context.Context) (id int64, err error) {
+	var ids []int64
 	if ids, err = aq.Limit(1).IDs(setContextOp(ctx, aq.ctx, "FirstID")); err != nil {
 		return
 	}
@@ -119,7 +143,7 @@ func (aq *ActQuery) FirstID(ctx context.Context) (id uint64, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (aq *ActQuery) FirstIDX(ctx context.Context) uint64 {
+func (aq *ActQuery) FirstIDX(ctx context.Context) int64 {
 	id, err := aq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -157,8 +181,8 @@ func (aq *ActQuery) OnlyX(ctx context.Context) *Act {
 // OnlyID is like Only, but returns the only Act ID in the query.
 // Returns a *NotSingularError when more than one Act ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (aq *ActQuery) OnlyID(ctx context.Context) (id uint64, err error) {
-	var ids []uint64
+func (aq *ActQuery) OnlyID(ctx context.Context) (id int64, err error) {
+	var ids []int64
 	if ids, err = aq.Limit(2).IDs(setContextOp(ctx, aq.ctx, "OnlyID")); err != nil {
 		return
 	}
@@ -174,7 +198,7 @@ func (aq *ActQuery) OnlyID(ctx context.Context) (id uint64, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (aq *ActQuery) OnlyIDX(ctx context.Context) uint64 {
+func (aq *ActQuery) OnlyIDX(ctx context.Context) int64 {
 	id, err := aq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -202,7 +226,7 @@ func (aq *ActQuery) AllX(ctx context.Context) []*Act {
 }
 
 // IDs executes the query and returns a list of Act IDs.
-func (aq *ActQuery) IDs(ctx context.Context) (ids []uint64, err error) {
+func (aq *ActQuery) IDs(ctx context.Context) (ids []int64, err error) {
 	if aq.ctx.Unique == nil && aq.path != nil {
 		aq.Unique(true)
 	}
@@ -214,7 +238,7 @@ func (aq *ActQuery) IDs(ctx context.Context) (ids []uint64, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (aq *ActQuery) IDsX(ctx context.Context) []uint64 {
+func (aq *ActQuery) IDsX(ctx context.Context) []int64 {
 	ids, err := aq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -274,21 +298,33 @@ func (aq *ActQuery) Clone() *ActQuery {
 		order:           append([]act.OrderOption{}, aq.order...),
 		inters:          append([]Interceptor{}, aq.inters...),
 		predicates:      append([]predicate.Act{}, aq.predicates...),
-		withActVersions: aq.withActVersions.Clone(),
+		withS3ActImages: aq.withS3ActImages.Clone(),
+		withRoutineActs: aq.withRoutineActs.Clone(),
 		// clone intermediate query.
 		sql:  aq.sql.Clone(),
 		path: aq.path,
 	}
 }
 
-// WithActVersions tells the query-builder to eager-load the nodes that are connected to
-// the "act_versions" edge. The optional arguments are used to configure the query builder of the edge.
-func (aq *ActQuery) WithActVersions(opts ...func(*ActVersionQuery)) *ActQuery {
-	query := (&ActVersionClient{config: aq.config}).Query()
+// WithS3ActImages tells the query-builder to eager-load the nodes that are connected to
+// the "s3_act_images" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *ActQuery) WithS3ActImages(opts ...func(*S3ActImageQuery)) *ActQuery {
+	query := (&S3ActImageClient{config: aq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	aq.withActVersions = query
+	aq.withS3ActImages = query
+	return aq
+}
+
+// WithRoutineActs tells the query-builder to eager-load the nodes that are connected to
+// the "routine_acts" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *ActQuery) WithRoutineActs(opts ...func(*RoutineActQuery)) *ActQuery {
+	query := (&RoutineActClient{config: aq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withRoutineActs = query
 	return aq
 }
 
@@ -370,8 +406,9 @@ func (aq *ActQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Act, err
 	var (
 		nodes       = []*Act{}
 		_spec       = aq.querySpec()
-		loadedTypes = [1]bool{
-			aq.withActVersions != nil,
+		loadedTypes = [2]bool{
+			aq.withS3ActImages != nil,
+			aq.withRoutineActs != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -392,19 +429,56 @@ func (aq *ActQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Act, err
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := aq.withActVersions; query != nil {
-		if err := aq.loadActVersions(ctx, query, nodes,
-			func(n *Act) { n.Edges.ActVersions = []*ActVersion{} },
-			func(n *Act, e *ActVersion) { n.Edges.ActVersions = append(n.Edges.ActVersions, e) }); err != nil {
+	if query := aq.withS3ActImages; query != nil {
+		if err := aq.loadS3ActImages(ctx, query, nodes,
+			func(n *Act) { n.Edges.S3ActImages = []*S3ActImage{} },
+			func(n *Act, e *S3ActImage) { n.Edges.S3ActImages = append(n.Edges.S3ActImages, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := aq.withRoutineActs; query != nil {
+		if err := aq.loadRoutineActs(ctx, query, nodes,
+			func(n *Act) { n.Edges.RoutineActs = []*RoutineAct{} },
+			func(n *Act, e *RoutineAct) { n.Edges.RoutineActs = append(n.Edges.RoutineActs, e) }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (aq *ActQuery) loadActVersions(ctx context.Context, query *ActVersionQuery, nodes []*Act, init func(*Act), assign func(*Act, *ActVersion)) error {
+func (aq *ActQuery) loadS3ActImages(ctx context.Context, query *S3ActImageQuery, nodes []*Act, init func(*Act), assign func(*Act, *S3ActImage)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uint64]*Act)
+	nodeids := make(map[int64]*Act)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(s3actimage.FieldActID)
+	}
+	query.Where(predicate.S3ActImage(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(act.S3ActImagesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ActID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "act_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (aq *ActQuery) loadRoutineActs(ctx context.Context, query *RoutineActQuery, nodes []*Act, init func(*Act), assign func(*Act, *RoutineAct)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int64]*Act)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
@@ -413,21 +487,21 @@ func (aq *ActQuery) loadActVersions(ctx context.Context, query *ActVersionQuery,
 		}
 	}
 	query.withFKs = true
-	query.Where(predicate.ActVersion(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(act.ActVersionsColumn), fks...))
+	query.Where(predicate.RoutineAct(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(act.RoutineActsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.act_act_versions
+		fk := n.act_routine_acts
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "act_act_versions" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "act_routine_acts" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "act_act_versions" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "act_routine_acts" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -444,7 +518,7 @@ func (aq *ActQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (aq *ActQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(act.Table, act.Columns, sqlgraph.NewFieldSpec(act.FieldID, field.TypeUint64))
+	_spec := sqlgraph.NewQuerySpec(act.Table, act.Columns, sqlgraph.NewFieldSpec(act.FieldID, field.TypeInt64))
 	_spec.From = aq.sql
 	if unique := aq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

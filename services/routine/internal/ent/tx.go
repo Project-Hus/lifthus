@@ -14,22 +14,20 @@ type Tx struct {
 	config
 	// Act is the client for interacting with the Act builders.
 	Act *ActClient
-	// ActImage is the client for interacting with the ActImage builders.
-	ActImage *ActImageClient
-	// ActVersion is the client for interacting with the ActVersion builders.
-	ActVersion *ActVersionClient
-	// DailyRoutine is the client for interacting with the DailyRoutine builders.
-	DailyRoutine *DailyRoutineClient
-	// Image is the client for interacting with the Image builders.
-	Image *ImageClient
 	// Program is the client for interacting with the Program builders.
 	Program *ProgramClient
-	// ProgramImage is the client for interacting with the ProgramImage builders.
-	ProgramImage *ProgramImageClient
-	// ProgramVersion is the client for interacting with the ProgramVersion builders.
-	ProgramVersion *ProgramVersionClient
+	// ProgramRelease is the client for interacting with the ProgramRelease builders.
+	ProgramRelease *ProgramReleaseClient
+	// Routine is the client for interacting with the Routine builders.
+	Routine *RoutineClient
 	// RoutineAct is the client for interacting with the RoutineAct builders.
 	RoutineAct *RoutineActClient
+	// S3ActImage is the client for interacting with the S3ActImage builders.
+	S3ActImage *S3ActImageClient
+	// S3Image is the client for interacting with the S3Image builders.
+	S3Image *S3ImageClient
+	// S3ProgramImage is the client for interacting with the S3ProgramImage builders.
+	S3ProgramImage *S3ProgramImageClient
 
 	// lazily loaded.
 	client     *Client
@@ -162,14 +160,13 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Act = NewActClient(tx.config)
-	tx.ActImage = NewActImageClient(tx.config)
-	tx.ActVersion = NewActVersionClient(tx.config)
-	tx.DailyRoutine = NewDailyRoutineClient(tx.config)
-	tx.Image = NewImageClient(tx.config)
 	tx.Program = NewProgramClient(tx.config)
-	tx.ProgramImage = NewProgramImageClient(tx.config)
-	tx.ProgramVersion = NewProgramVersionClient(tx.config)
+	tx.ProgramRelease = NewProgramReleaseClient(tx.config)
+	tx.Routine = NewRoutineClient(tx.config)
 	tx.RoutineAct = NewRoutineActClient(tx.config)
+	tx.S3ActImage = NewS3ActImageClient(tx.config)
+	tx.S3Image = NewS3ImageClient(tx.config)
+	tx.S3ProgramImage = NewS3ProgramImageClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

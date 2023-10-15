@@ -10,63 +10,58 @@ import (
 )
 
 // ID filters vertices based on their ID field.
-func ID(id uint64) predicate.RoutineAct {
+func ID(id int64) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id uint64) predicate.RoutineAct {
+func IDEQ(id int64) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id uint64) predicate.RoutineAct {
+func IDNEQ(id int64) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...uint64) predicate.RoutineAct {
+func IDIn(ids ...int64) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...uint64) predicate.RoutineAct {
+func IDNotIn(ids ...int64) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id uint64) predicate.RoutineAct {
+func IDGT(id int64) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id uint64) predicate.RoutineAct {
+func IDGTE(id int64) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id uint64) predicate.RoutineAct {
+func IDLT(id int64) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id uint64) predicate.RoutineAct {
+func IDLTE(id int64) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldLTE(FieldID, id))
 }
 
-// DailyRoutineCode applies equality check predicate on the "daily_routine_code" field. It's identical to DailyRoutineCodeEQ.
-func DailyRoutineCode(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldEQ(FieldDailyRoutineCode, v))
-}
-
 // Order applies equality check predicate on the "order" field. It's identical to OrderEQ.
-func Order(v uint) predicate.RoutineAct {
+func Order(v int) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldEQ(FieldOrder, v))
 }
 
-// ActVersionCode applies equality check predicate on the "act_version_code" field. It's identical to ActVersionCodeEQ.
-func ActVersionCode(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldEQ(FieldActVersionCode, v))
+// ActCode applies equality check predicate on the "act_code" field. It's identical to ActCodeEQ.
+func ActCode(v string) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldEQ(FieldActCode, v))
 }
 
 // RepsOrMeters applies equality check predicate on the "reps_or_meters" field. It's identical to RepsOrMetersEQ.
@@ -79,174 +74,109 @@ func RatioOrSecs(v float64) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldEQ(FieldRatioOrSecs, v))
 }
 
-// DailyRoutineCodeEQ applies the EQ predicate on the "daily_routine_code" field.
-func DailyRoutineCodeEQ(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldEQ(FieldDailyRoutineCode, v))
-}
-
-// DailyRoutineCodeNEQ applies the NEQ predicate on the "daily_routine_code" field.
-func DailyRoutineCodeNEQ(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldNEQ(FieldDailyRoutineCode, v))
-}
-
-// DailyRoutineCodeIn applies the In predicate on the "daily_routine_code" field.
-func DailyRoutineCodeIn(vs ...string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldIn(FieldDailyRoutineCode, vs...))
-}
-
-// DailyRoutineCodeNotIn applies the NotIn predicate on the "daily_routine_code" field.
-func DailyRoutineCodeNotIn(vs ...string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldNotIn(FieldDailyRoutineCode, vs...))
-}
-
-// DailyRoutineCodeGT applies the GT predicate on the "daily_routine_code" field.
-func DailyRoutineCodeGT(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldGT(FieldDailyRoutineCode, v))
-}
-
-// DailyRoutineCodeGTE applies the GTE predicate on the "daily_routine_code" field.
-func DailyRoutineCodeGTE(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldGTE(FieldDailyRoutineCode, v))
-}
-
-// DailyRoutineCodeLT applies the LT predicate on the "daily_routine_code" field.
-func DailyRoutineCodeLT(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldLT(FieldDailyRoutineCode, v))
-}
-
-// DailyRoutineCodeLTE applies the LTE predicate on the "daily_routine_code" field.
-func DailyRoutineCodeLTE(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldLTE(FieldDailyRoutineCode, v))
-}
-
-// DailyRoutineCodeContains applies the Contains predicate on the "daily_routine_code" field.
-func DailyRoutineCodeContains(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldContains(FieldDailyRoutineCode, v))
-}
-
-// DailyRoutineCodeHasPrefix applies the HasPrefix predicate on the "daily_routine_code" field.
-func DailyRoutineCodeHasPrefix(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldHasPrefix(FieldDailyRoutineCode, v))
-}
-
-// DailyRoutineCodeHasSuffix applies the HasSuffix predicate on the "daily_routine_code" field.
-func DailyRoutineCodeHasSuffix(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldHasSuffix(FieldDailyRoutineCode, v))
-}
-
-// DailyRoutineCodeEqualFold applies the EqualFold predicate on the "daily_routine_code" field.
-func DailyRoutineCodeEqualFold(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldEqualFold(FieldDailyRoutineCode, v))
-}
-
-// DailyRoutineCodeContainsFold applies the ContainsFold predicate on the "daily_routine_code" field.
-func DailyRoutineCodeContainsFold(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldContainsFold(FieldDailyRoutineCode, v))
-}
-
 // OrderEQ applies the EQ predicate on the "order" field.
-func OrderEQ(v uint) predicate.RoutineAct {
+func OrderEQ(v int) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldEQ(FieldOrder, v))
 }
 
 // OrderNEQ applies the NEQ predicate on the "order" field.
-func OrderNEQ(v uint) predicate.RoutineAct {
+func OrderNEQ(v int) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldNEQ(FieldOrder, v))
 }
 
 // OrderIn applies the In predicate on the "order" field.
-func OrderIn(vs ...uint) predicate.RoutineAct {
+func OrderIn(vs ...int) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldIn(FieldOrder, vs...))
 }
 
 // OrderNotIn applies the NotIn predicate on the "order" field.
-func OrderNotIn(vs ...uint) predicate.RoutineAct {
+func OrderNotIn(vs ...int) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldNotIn(FieldOrder, vs...))
 }
 
 // OrderGT applies the GT predicate on the "order" field.
-func OrderGT(v uint) predicate.RoutineAct {
+func OrderGT(v int) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldGT(FieldOrder, v))
 }
 
 // OrderGTE applies the GTE predicate on the "order" field.
-func OrderGTE(v uint) predicate.RoutineAct {
+func OrderGTE(v int) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldGTE(FieldOrder, v))
 }
 
 // OrderLT applies the LT predicate on the "order" field.
-func OrderLT(v uint) predicate.RoutineAct {
+func OrderLT(v int) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldLT(FieldOrder, v))
 }
 
 // OrderLTE applies the LTE predicate on the "order" field.
-func OrderLTE(v uint) predicate.RoutineAct {
+func OrderLTE(v int) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldLTE(FieldOrder, v))
 }
 
-// ActVersionCodeEQ applies the EQ predicate on the "act_version_code" field.
-func ActVersionCodeEQ(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldEQ(FieldActVersionCode, v))
+// ActCodeEQ applies the EQ predicate on the "act_code" field.
+func ActCodeEQ(v string) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldEQ(FieldActCode, v))
 }
 
-// ActVersionCodeNEQ applies the NEQ predicate on the "act_version_code" field.
-func ActVersionCodeNEQ(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldNEQ(FieldActVersionCode, v))
+// ActCodeNEQ applies the NEQ predicate on the "act_code" field.
+func ActCodeNEQ(v string) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldNEQ(FieldActCode, v))
 }
 
-// ActVersionCodeIn applies the In predicate on the "act_version_code" field.
-func ActVersionCodeIn(vs ...string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldIn(FieldActVersionCode, vs...))
+// ActCodeIn applies the In predicate on the "act_code" field.
+func ActCodeIn(vs ...string) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldIn(FieldActCode, vs...))
 }
 
-// ActVersionCodeNotIn applies the NotIn predicate on the "act_version_code" field.
-func ActVersionCodeNotIn(vs ...string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldNotIn(FieldActVersionCode, vs...))
+// ActCodeNotIn applies the NotIn predicate on the "act_code" field.
+func ActCodeNotIn(vs ...string) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldNotIn(FieldActCode, vs...))
 }
 
-// ActVersionCodeGT applies the GT predicate on the "act_version_code" field.
-func ActVersionCodeGT(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldGT(FieldActVersionCode, v))
+// ActCodeGT applies the GT predicate on the "act_code" field.
+func ActCodeGT(v string) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldGT(FieldActCode, v))
 }
 
-// ActVersionCodeGTE applies the GTE predicate on the "act_version_code" field.
-func ActVersionCodeGTE(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldGTE(FieldActVersionCode, v))
+// ActCodeGTE applies the GTE predicate on the "act_code" field.
+func ActCodeGTE(v string) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldGTE(FieldActCode, v))
 }
 
-// ActVersionCodeLT applies the LT predicate on the "act_version_code" field.
-func ActVersionCodeLT(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldLT(FieldActVersionCode, v))
+// ActCodeLT applies the LT predicate on the "act_code" field.
+func ActCodeLT(v string) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldLT(FieldActCode, v))
 }
 
-// ActVersionCodeLTE applies the LTE predicate on the "act_version_code" field.
-func ActVersionCodeLTE(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldLTE(FieldActVersionCode, v))
+// ActCodeLTE applies the LTE predicate on the "act_code" field.
+func ActCodeLTE(v string) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldLTE(FieldActCode, v))
 }
 
-// ActVersionCodeContains applies the Contains predicate on the "act_version_code" field.
-func ActVersionCodeContains(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldContains(FieldActVersionCode, v))
+// ActCodeContains applies the Contains predicate on the "act_code" field.
+func ActCodeContains(v string) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldContains(FieldActCode, v))
 }
 
-// ActVersionCodeHasPrefix applies the HasPrefix predicate on the "act_version_code" field.
-func ActVersionCodeHasPrefix(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldHasPrefix(FieldActVersionCode, v))
+// ActCodeHasPrefix applies the HasPrefix predicate on the "act_code" field.
+func ActCodeHasPrefix(v string) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldHasPrefix(FieldActCode, v))
 }
 
-// ActVersionCodeHasSuffix applies the HasSuffix predicate on the "act_version_code" field.
-func ActVersionCodeHasSuffix(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldHasSuffix(FieldActVersionCode, v))
+// ActCodeHasSuffix applies the HasSuffix predicate on the "act_code" field.
+func ActCodeHasSuffix(v string) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldHasSuffix(FieldActCode, v))
 }
 
-// ActVersionCodeEqualFold applies the EqualFold predicate on the "act_version_code" field.
-func ActVersionCodeEqualFold(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldEqualFold(FieldActVersionCode, v))
+// ActCodeEqualFold applies the EqualFold predicate on the "act_code" field.
+func ActCodeEqualFold(v string) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldEqualFold(FieldActCode, v))
 }
 
-// ActVersionCodeContainsFold applies the ContainsFold predicate on the "act_version_code" field.
-func ActVersionCodeContainsFold(v string) predicate.RoutineAct {
-	return predicate.RoutineAct(sql.FieldContainsFold(FieldActVersionCode, v))
+// ActCodeContainsFold applies the ContainsFold predicate on the "act_code" field.
+func ActCodeContainsFold(v string) predicate.RoutineAct {
+	return predicate.RoutineAct(sql.FieldContainsFold(FieldActCode, v))
 }
 
 // StageEQ applies the EQ predicate on the "stage" field.
@@ -349,21 +279,21 @@ func RatioOrSecsLTE(v float64) predicate.RoutineAct {
 	return predicate.RoutineAct(sql.FieldLTE(FieldRatioOrSecs, v))
 }
 
-// HasActVersion applies the HasEdge predicate on the "act_version" edge.
-func HasActVersion() predicate.RoutineAct {
+// HasAct applies the HasEdge predicate on the "act" edge.
+func HasAct() predicate.RoutineAct {
 	return predicate.RoutineAct(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, ActVersionTable, ActVersionColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, ActTable, ActColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasActVersionWith applies the HasEdge predicate on the "act_version" edge with a given conditions (other predicates).
-func HasActVersionWith(preds ...predicate.ActVersion) predicate.RoutineAct {
+// HasActWith applies the HasEdge predicate on the "act" edge with a given conditions (other predicates).
+func HasActWith(preds ...predicate.Act) predicate.RoutineAct {
 	return predicate.RoutineAct(func(s *sql.Selector) {
-		step := newActVersionStep()
+		step := newActStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -372,21 +302,21 @@ func HasActVersionWith(preds ...predicate.ActVersion) predicate.RoutineAct {
 	})
 }
 
-// HasDailyRoutine applies the HasEdge predicate on the "daily_routine" edge.
-func HasDailyRoutine() predicate.RoutineAct {
+// HasRoutine applies the HasEdge predicate on the "routine" edge.
+func HasRoutine() predicate.RoutineAct {
 	return predicate.RoutineAct(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, DailyRoutineTable, DailyRoutineColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, RoutineTable, RoutineColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasDailyRoutineWith applies the HasEdge predicate on the "daily_routine" edge with a given conditions (other predicates).
-func HasDailyRoutineWith(preds ...predicate.DailyRoutine) predicate.RoutineAct {
+// HasRoutineWith applies the HasEdge predicate on the "routine" edge with a given conditions (other predicates).
+func HasRoutineWith(preds ...predicate.Routine) predicate.RoutineAct {
 	return predicate.RoutineAct(func(s *sql.Selector) {
-		step := newDailyRoutineStep()
+		step := newRoutineStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
