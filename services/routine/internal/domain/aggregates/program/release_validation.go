@@ -9,7 +9,7 @@ const (
 	TEXT_MAX_LENGTH   = domain.PROGRAM_TEXT_MAX_LENGTH
 )
 
-func (pvs ProgramVersions) IsValid() bool {
+func (pvs ProgramReleases) IsValid() bool {
 	if len(pvs) == 0 {
 		return false
 	}

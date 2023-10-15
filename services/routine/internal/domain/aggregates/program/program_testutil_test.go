@@ -4,16 +4,20 @@ import (
 	"fmt"
 	"routine/internal/domain"
 	"routine/internal/domain/aggregates/user"
+	"time"
 )
 
 func getValidWeeklyProgramWithAuthor(author user.User) *Program {
-	newProgram, err := CreateWeeklyProgram(
+	r, err := getValidFirstRelease()
+	if err != nil {
+		panic(err)
+	}
+	newProgram, err := CreateProgram(
+		WeeklyType,
 		getValidProgramTitle(),
-		author,
+		author.Id(),
 		nil,
-		getValidProgramImageSrcs(),
-		getValidProgramText(),
-		getValidDailyRoutines(),
+		*r,
 	)
 	if err != nil {
 		panic(err)
@@ -27,6 +31,16 @@ func getValidProgramTitle() ProgramTitle {
 		title += "a"
 	}
 	return title
+}
+
+func getValidFirstRelease() (*ProgramRelease, error) {
+	return ProgramReleaseFrom(
+		ProgramVersionNumber(1),
+		domain.CreatedAt(time.Now()),
+		getValidProgramImageSrcs(),
+		getValidProgramText(),
+		getValidRoutines(),
+	)
 }
 
 func getInvalidProgramTitleSet() []ProgramTitle {

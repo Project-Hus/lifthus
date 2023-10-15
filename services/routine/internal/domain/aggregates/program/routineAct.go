@@ -4,14 +4,14 @@ import "routine/internal/domain/aggregates/act"
 
 func CreateRoutineActWithoutDailyRoutine(
 	order RoutineActOrder,
-	actVersion act.ActVersionCode,
+	actCode act.ActCode,
 	stage RoutineActStage,
 	repsOrMeters RepsOrMeters,
 	ratioOrSecs RatioOrSecs,
 ) *RoutineAct {
 	return &RoutineAct{
 		order:        order,
-		actVersion:   actVersion,
+		actCode:      actCode,
 		stage:        stage,
 		repsOrMeters: repsOrMeters,
 		ratioOrSecs:  ratioOrSecs,
@@ -19,17 +19,15 @@ func CreateRoutineActWithoutDailyRoutine(
 }
 
 func RoutineActFrom(
-	dailyRoutine DailyRoutineCode,
 	order RoutineActOrder,
-	actVersion act.ActVersionCode,
+	actCode act.ActCode,
 	stage RoutineActStage,
 	repsOrMeters RepsOrMeters,
 	ratioOrSecs RatioOrSecs,
 ) *RoutineAct {
 	return &RoutineAct{
-		dailyRoutine: dailyRoutine,
 		order:        order,
-		actVersion:   actVersion,
+		actCode:      actCode,
 		stage:        stage,
 		repsOrMeters: repsOrMeters,
 		ratioOrSecs:  ratioOrSecs,
@@ -55,24 +53,19 @@ func (ras RoutineActs) IsValid() bool {
 }
 
 type RoutineAct struct {
-	dailyRoutine DailyRoutineCode
 	order        RoutineActOrder
-	actVersion   act.ActVersionCode
+	actCode      act.ActCode
 	stage        RoutineActStage
 	repsOrMeters RepsOrMeters
 	ratioOrSecs  RatioOrSecs
-}
-
-func (ra RoutineAct) DailyRoutine() DailyRoutineCode {
-	return ra.dailyRoutine
 }
 
 func (ra RoutineAct) Order() RoutineActOrder {
 	return ra.order
 }
 
-func (ra RoutineAct) ActVersion() act.ActVersionCode {
-	return ra.actVersion
+func (ra RoutineAct) Act() act.ActCode {
+	return ra.actCode
 }
 
 func (ra RoutineAct) Stage() RoutineActStage {
@@ -85,8 +78,4 @@ func (ra RoutineAct) RepsOrMeters() RepsOrMeters {
 
 func (ra RoutineAct) RatioOrSecs() RatioOrSecs {
 	return ra.ratioOrSecs
-}
-
-func (ra *RoutineAct) setDailyRoutine(drcode DailyRoutineCode) {
-	ra.dailyRoutine = drcode
 }
