@@ -38,7 +38,7 @@ func (ac *actQueryController) queryAct(c echo.Context) error {
 		log.Printf("failed to query act: %v", err)
 		return c.String(http.StatusInternalServerError, "failed to query act")
 	}
-	return c.JSON(http.StatusCreated, qaDto)
+	return c.JSON(http.StatusOK, qaDto)
 }
 
 // queryActs godoc
