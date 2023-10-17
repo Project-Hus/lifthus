@@ -58,6 +58,47 @@ func (repo *EntProgramRepository) FindProgramByCode(ctx context.Context, code pr
 	return ProgramFromEntProgram(ep)
 }
 
+func (repo *EntProgramRepository) FindProgramsByTitle(ctx context.Context, title program.ProgramTitle) ([]*program.Program, error) {
+	tx, finally, err := repo.Tx(ctx)
+	defer finally(&err)
+	if err != nil {
+		return nil, err
+	}
+	eps, err := tx.Program.Query().Where(eprogram.TitleContains(string(title))).
+		WithProgramReleases(
+			func(q *ent.ProgramReleaseQuery) {
+				q.Order(ent.Asc(programrelease.FieldVersion))
+				q.WithS3ProgramImages(
+					func(q *ent.S3ProgramImageQuery) {
+						q.Order(ent.Asc(s3programimage.FieldOrder))
+						q.WithS3Image()
+					},
+				)
+				q.WithRoutines(
+					func(q *ent.RoutineQuery) {
+						q.Order(ent.Asc(routine.FieldDay))
+						q.WithRoutineActs(
+							func(q *ent.RoutineActQuery) {
+								q.Order(ent.Asc(routineact.FieldOrder))
+							},
+						)
+					},
+				)
+			},
+		).All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	dps := make([]*program.Program, len(eps))
+	for i, ep := range eps {
+		dps[i], err = ProgramFromEntProgram(ep)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return dps, nil
+}
+
 func (repo *EntProgramRepository) Save(ctx context.Context, target *program.Program) (saved *program.Program, err error) {
 	finally, err := repo.BeginOrContinueTx(ctx)
 	defer finally(&err)

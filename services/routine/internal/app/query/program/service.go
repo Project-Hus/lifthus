@@ -23,3 +23,15 @@ func (ps *programQueryService) findProgramByCode(ctx context.Context, code strin
 	}
 	return dto.QueryProgramDtoFrom(qp), nil
 }
+
+func (ps *programQueryService) findProgramsByTitle(ctx context.Context, title string) ([]*dto.QueryProgramDto, error) {
+	qps, err := ps.programRepo.FindProgramsByTitle(ctx, program.ProgramTitle(title))
+	if err != nil {
+		return nil, err
+	}
+	qpdtos := make([]*dto.QueryProgramDto, len(qps))
+	for i, qp := range qps {
+		qpdtos[i] = dto.QueryProgramDtoFrom(qp)
+	}
+	return qpdtos, nil
+}

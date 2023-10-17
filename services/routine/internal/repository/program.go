@@ -12,6 +12,7 @@ func NewProgramRepository(programRepo programRepository) *ProgramRepository {
 type programRepository interface {
 	Save(ctx context.Context, p *program.Program) (*program.Program, error)
 	FindProgramByCode(ctx context.Context, code program.ProgramCode) (*program.Program, error)
+	FindProgramsByTitle(ctx context.Context, title program.ProgramTitle) ([]*program.Program, error)
 
 	BeginOrContinueTx(ctx context.Context) (func(*error), error)
 	Commit() error
@@ -32,4 +33,8 @@ func (pr *ProgramRepository) Save(ctx context.Context, p *program.Program) (*pro
 
 func (pr *ProgramRepository) FindProgramByCode(ctx context.Context, code program.ProgramCode) (*program.Program, error) {
 	return pr.repo.FindProgramByCode(ctx, code)
+}
+
+func (pr *ProgramRepository) FindProgramsByTitle(ctx context.Context, title program.ProgramTitle) ([]*program.Program, error) {
+	return pr.repo.FindProgramsByTitle(ctx, title)
 }
