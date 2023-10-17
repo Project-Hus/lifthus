@@ -182,6 +182,22 @@ const docTemplate = `{
                 ],
                 "responses": {}
             }
+        },
+        "/programs": {
+            "get": {
+                "tags": [
+                    "program"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "program title",
+                        "name": "title",
+                        "in": "query"
+                    }
+                ],
+                "responses": {}
+            }
         }
     },
     "definitions": {
@@ -214,12 +230,6 @@ const docTemplate = `{
                 "author": {
                     "type": "string"
                 },
-                "dailyRoutines": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.CreateProgramRequestRoutineDto"
-                    }
-                },
                 "imageSrcs": {
                     "type": "array",
                     "items": {
@@ -234,6 +244,12 @@ const docTemplate = `{
                 },
                 "programType": {
                     "type": "string"
+                },
+                "routines": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CreateProgramRequestRoutineDto"
+                    }
                 },
                 "text": {
                     "type": "string"
