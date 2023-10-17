@@ -36,7 +36,7 @@ type QueryProgramDto struct {
 	CreatedAt         string                    `json:"createdAt"`
 	ParentProgramCode *string                   `json:"parentProgramCode,omitempty"`
 	ParentVersion     *int                      `json:"parentVersion,omitempty"`
-	Releases          []*QueryProgramReleaseDto `json:"versions"`
+	Releases          []*QueryProgramReleaseDto `json:"releases"`
 }
 
 func QueryProgramReleasesDtoFrom(pvs []*program.ProgramRelease) []*QueryProgramReleaseDto {
