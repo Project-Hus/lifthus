@@ -15,7 +15,7 @@ type CreateProgramRequestDto struct {
 	ImageSrcs []string `json:"imageSrcs"`
 	Text      string   `json:"text"`
 
-	Routines []CreateProgramRequestRoutineDto `json:"dailyRoutines"`
+	Routines []CreateProgramRequestRoutineDto `json:"routines"`
 }
 
 type CreateProgramRequestRoutineDto struct {

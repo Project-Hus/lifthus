@@ -17,7 +17,6 @@ func CreateProgramRelease(
 	if !text.IsValid() {
 		return nil, ErrInvalidProgramText
 	}
-
 	return ProgramReleaseFrom(
 		version,
 		domain.CreatedAt(time.Now()),

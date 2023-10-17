@@ -41,7 +41,7 @@ func (pc *programCommandController) createWeeklyProgram(c echo.Context) error {
 		log.Printf("failed to convert createProgramReqDto to service dto: %v", err)
 		return c.String(http.StatusBadRequest, "invalid request body")
 	}
-	clientId := c.Get("uid").(int64)
+	clientId := int64(c.Get("uid").(uint64))
 	if cpSvcDto.Author != clientId {
 		log.Printf("User %d attempted to create Program illegally", clientId)
 		return c.String(http.StatusForbidden, "illegal access")

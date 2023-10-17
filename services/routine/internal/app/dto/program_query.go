@@ -9,14 +9,21 @@ import (
 func QueryProgramDtoFrom(p *program.Program) *QueryProgramDto {
 	author := strconv.FormatInt(int64(p.Author()), 10)
 	versions := QueryProgramReleasesDtoFrom(p.Releases())
+	ppv := p.ParentProgramVersion()
+	var ppc *string
+	var pv *int
+	if ppv != nil {
+		ppc = (*string)(&ppv.ProgramCode)
+		pv = (*int)(&ppv.ProgramVersionNumber)
+	}
 	return &QueryProgramDto{
 		Code:              string(p.Code()),
 		ProgramType:       string(p.ProgramType().Type()),
 		Title:             string(p.Title()),
 		Author:            author,
 		CreatedAt:         time.Time(p.CreatedAt()).String(),
-		ParentProgramCode: (*string)(&p.ParentProgramVersion().ProgramCode),
-		ParentVersion:     (*int)(&p.ParentProgramVersion().ProgramVersionNumber),
+		ParentProgramCode: ppc,
+		ParentVersion:     pv,
 		Releases:          versions,
 	}
 }
