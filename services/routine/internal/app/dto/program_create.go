@@ -5,43 +5,45 @@ import (
 )
 
 type CreateProgramRequestDto struct {
-	ProgramType string  `json:"programType"`
-	Title       string  `json:"title"`
-	Author      string  `json:"author"`
-	DerivedFrom *string `json:"derivedFrom"`
+	ProgramType string `json:"programType"`
+	Title       string `json:"title"`
+	Author      string `json:"author"`
+
+	ParentProgram *string `json:"parentProgram"`
+	ParentVersion *int    `json:"parentVersion"`
 
 	ImageSrcs []string `json:"imageSrcs"`
 	Text      string   `json:"text"`
 
-	DailyRoutines []CreateProgramRequestDailyRoutineDto
+	Routines []CreateProgramRequestRoutineDto `json:"routines"`
 }
 
-type CreateProgramRequestDailyRoutineDto struct {
-	Day         uint                                `json:"day"`
+type CreateProgramRequestRoutineDto struct {
+	Day         int                                 `json:"day"`
 	RoutineActs []CreateProgramRequestRoutineActDto `json:"routineActs"`
 }
 
 type CreateProgramRequestRoutineActDto struct {
-	Order        uint    `json:"order"`
-	ActVersion   string  `json:"actVersion"`
+	Order        int     `json:"order"`
+	ActCode      string  `json:"actCode"`
 	Stage        string  `json:"stage"`
-	RepsOrMeters uint    `json:"repsOrMeters"`
+	RepsOrMeters int     `json:"repsOrMeters"`
 	RatioOrSecs  float64 `json:"ratioOrSecs"`
 }
 
 func (cpr CreateProgramRequestDto) ToServiceDto() (*CreateProgramServiceDto, error) {
-	author, err := strconv.ParseUint(cpr.Author, 10, 64)
+	author, err := strconv.ParseInt(cpr.Author, 10, 64)
 	if err != nil {
 		return nil, err
 	}
 
-	svcDRs := make([]CreateProgramServiceDailyRoutineDto, len(cpr.DailyRoutines))
-	for i, rdr := range cpr.DailyRoutines {
+	svcDRs := make([]CreateProgramServiceRoutineDto, len(cpr.Routines))
+	for i, rdr := range cpr.Routines {
 		svcRAs := make([]CreateProgramServiceRoutineActDto, len(rdr.RoutineActs))
 		for j, rra := range rdr.RoutineActs {
 			svcRAs[j] = CreateProgramServiceRoutineActDto(rra)
 		}
-		svcDRs[i] = CreateProgramServiceDailyRoutineDto{
+		svcDRs[i] = CreateProgramServiceRoutineDto{
 			Day:         rdr.Day,
 			RoutineActs: svcRAs,
 		}
@@ -51,10 +53,11 @@ func (cpr CreateProgramRequestDto) ToServiceDto() (*CreateProgramServiceDto, err
 		ProgramType:   cpr.ProgramType,
 		Title:         cpr.Title,
 		Author:        author,
-		DerivedFrom:   cpr.DerivedFrom,
+		ParentProgram: cpr.ParentProgram,
+		ParentVersion: cpr.ParentVersion,
 		ImageSrcs:     cpr.ImageSrcs,
 		Text:          cpr.Text,
-		DailyRoutines: svcDRs,
+		Routines:      svcDRs,
 	}, nil
 }
 
@@ -62,24 +65,26 @@ type CreateProgramServiceDto struct {
 	ProgramType string
 	Title       string
 
-	Author      uint64
-	DerivedFrom *string
+	Author int64
+
+	ParentProgram *string
+	ParentVersion *int
 
 	ImageSrcs []string
 	Text      string
 
-	DailyRoutines []CreateProgramServiceDailyRoutineDto
+	Routines []CreateProgramServiceRoutineDto
 }
 
-type CreateProgramServiceDailyRoutineDto struct {
-	Day         uint
+type CreateProgramServiceRoutineDto struct {
+	Day         int
 	RoutineActs []CreateProgramServiceRoutineActDto
 }
 
 type CreateProgramServiceRoutineActDto struct {
-	Order        uint
-	ActVersion   string
+	Order        int
+	ActCode      string
 	Stage        string
-	RepsOrMeters uint
+	RepsOrMeters int
 	RatioOrSecs  float64
 }

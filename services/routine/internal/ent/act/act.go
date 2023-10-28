@@ -16,34 +16,49 @@ const (
 	FieldID = "id"
 	// FieldCode holds the string denoting the code field in the database.
 	FieldCode = "code"
+	// FieldAuthor holds the string denoting the author field in the database.
+	FieldAuthor = "author"
 	// FieldActType holds the string denoting the act_type field in the database.
 	FieldActType = "act_type"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
-	// FieldAuthor holds the string denoting the author field in the database.
-	FieldAuthor = "author"
+	// FieldText holds the string denoting the text field in the database.
+	FieldText = "text"
+	// FieldStandard holds the string denoting the standard field in the database.
+	FieldStandard = "standard"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
-	// EdgeActVersions holds the string denoting the act_versions edge name in mutations.
-	EdgeActVersions = "act_versions"
+	// EdgeS3ActImages holds the string denoting the s3_act_images edge name in mutations.
+	EdgeS3ActImages = "s3_act_images"
+	// EdgeRoutineActs holds the string denoting the routine_acts edge name in mutations.
+	EdgeRoutineActs = "routine_acts"
 	// Table holds the table name of the act in the database.
 	Table = "acts"
-	// ActVersionsTable is the table that holds the act_versions relation/edge.
-	ActVersionsTable = "act_versions"
-	// ActVersionsInverseTable is the table name for the ActVersion entity.
-	// It exists in this package in order to avoid circular dependency with the "actversion" package.
-	ActVersionsInverseTable = "act_versions"
-	// ActVersionsColumn is the table column denoting the act_versions relation/edge.
-	ActVersionsColumn = "act_act_versions"
+	// S3ActImagesTable is the table that holds the s3_act_images relation/edge.
+	S3ActImagesTable = "s3act_images"
+	// S3ActImagesInverseTable is the table name for the S3ActImage entity.
+	// It exists in this package in order to avoid circular dependency with the "s3actimage" package.
+	S3ActImagesInverseTable = "s3act_images"
+	// S3ActImagesColumn is the table column denoting the s3_act_images relation/edge.
+	S3ActImagesColumn = "act_id"
+	// RoutineActsTable is the table that holds the routine_acts relation/edge.
+	RoutineActsTable = "routine_acts"
+	// RoutineActsInverseTable is the table name for the RoutineAct entity.
+	// It exists in this package in order to avoid circular dependency with the "routineact" package.
+	RoutineActsInverseTable = "routine_acts"
+	// RoutineActsColumn is the table column denoting the routine_acts relation/edge.
+	RoutineActsColumn = "act_routine_acts"
 )
 
 // Columns holds all SQL columns for act fields.
 var Columns = []string{
 	FieldID,
 	FieldCode,
+	FieldAuthor,
 	FieldActType,
 	FieldName,
-	FieldAuthor,
+	FieldText,
+	FieldStandard,
 	FieldCreatedAt,
 }
 
@@ -62,6 +77,8 @@ var (
 	CodeValidator func(string) error
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
+	// DefaultStandard holds the default value on creation for the "standard" field.
+	DefaultStandard bool
 )
 
 // ActType defines the type for the "act_type" enum field.
@@ -101,6 +118,11 @@ func ByCode(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCode, opts...).ToFunc()
 }
 
+// ByAuthor orders the results by the author field.
+func ByAuthor(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAuthor, opts...).ToFunc()
+}
+
 // ByActType orders the results by the act_type field.
 func ByActType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldActType, opts...).ToFunc()
@@ -111,9 +133,14 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
-// ByAuthor orders the results by the author field.
-func ByAuthor(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAuthor, opts...).ToFunc()
+// ByText orders the results by the text field.
+func ByText(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldText, opts...).ToFunc()
+}
+
+// ByStandard orders the results by the standard field.
+func ByStandard(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStandard, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
@@ -121,23 +148,44 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
-// ByActVersionsCount orders the results by act_versions count.
-func ByActVersionsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByS3ActImagesCount orders the results by s3_act_images count.
+func ByS3ActImagesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newActVersionsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newS3ActImagesStep(), opts...)
 	}
 }
 
-// ByActVersions orders the results by act_versions terms.
-func ByActVersions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByS3ActImages orders the results by s3_act_images terms.
+func ByS3ActImages(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newActVersionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newS3ActImagesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-func newActVersionsStep() *sqlgraph.Step {
+
+// ByRoutineActsCount orders the results by routine_acts count.
+func ByRoutineActsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newRoutineActsStep(), opts...)
+	}
+}
+
+// ByRoutineActs orders the results by routine_acts terms.
+func ByRoutineActs(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRoutineActsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newS3ActImagesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ActVersionsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, ActVersionsTable, ActVersionsColumn),
+		sqlgraph.To(S3ActImagesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, S3ActImagesTable, S3ActImagesColumn),
+	)
+}
+func newRoutineActsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RoutineActsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, RoutineActsTable, RoutineActsColumn),
 	)
 }

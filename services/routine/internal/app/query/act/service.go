@@ -17,9 +17,21 @@ type actQueryService struct {
 }
 
 func (as *actQueryService) queryActByCode(ctx context.Context, code string) (qaDto *dto.QueryActDto, err error) {
-	eact, err := as.actRepo.FindActByCode(ctx, act.ActCode(code))
+	dact, err := as.actRepo.FindActByCode(ctx, act.ActCode(code))
 	if err != nil {
 		return nil, err
 	}
-	return dto.QueryActDtoFrom(eact), nil
+	return dto.QueryActDtoFrom(dact), nil
+}
+
+func (as *actQueryService) queryActsByName(ctx context.Context, actName string) (qaDtos []*dto.QueryActDto, err error) {
+	dacts, err := as.actRepo.FindActsByName(ctx, actName)
+	if err != nil {
+		return nil, err
+	}
+	qaDtos = make([]*dto.QueryActDto, len(dacts))
+	for i, dact := range dacts {
+		qaDtos[i] = dto.QueryActDtoFrom(dact)
+	}
+	return qaDtos, nil
 }

@@ -13,6 +13,6 @@ var ErrInvalidProgramTitle = ProgramError{"invalid program title"}
 var ErrInvalidProgramImageSrcs = ProgramError{"invalid program image sources"}
 var ErrInvalidProgramText = ProgramError{"invalid program text"}
 
-var ErrInvalidProgramVersions = ProgramError{"invalid program versions"}
-var ErrInvalidDailyRoutines = ProgramError{"invalid daily routines"}
+var ErrInvalidProgramReleases = ProgramError{"invalid program releases"}
+var ErrInvalidRoutines = ProgramError{"invalid routines"}
 var ErrInvalidRoutineActs = ProgramError{"invalid routine acts"}

@@ -20,50 +20,39 @@ func CreateAct(
 	if err != nil {
 		return nil, err
 	}
-	vCode, err := domain.RandomHexCode()
-	if err != nil {
-		return nil, err
-	}
 
 	currentTime := domain.CreatedAt(time.Now())
 
-	newVersion := ActVersionFrom(
-		ActVersionCode(vCode),
-		1,
-		imageSrcs,
-		text,
-		currentTime,
-	)
-
 	return &Act{
 		code:      ActCode(code),
+		author:    author.Id(),
 		actType:   actType,
 		name:      name,
-		author:    author.Id(),
+		text:      text,
+		imageSrcs: imageSrcs,
 		createdAt: currentTime,
-		versions:  []*ActVersion{newVersion},
+		standard:  false,
 	}, nil
 }
 
 func ActFrom(
 	code ActCode,
+	authorId user.UserId,
 	actType ActType,
 	name ActName,
-	authorId user.UserId,
-	createAt domain.CreatedAt,
-	versions ActVersions,
-) (*Act, error) {
-	if !versions.IsValid() {
-		return nil, ErrInvalidActVersions
-	}
+	text ActText,
+	imageSrcs ActImageSrcs,
+	createdAt domain.CreatedAt,
+	standard bool,
+) *Act {
 	return &Act{
-		code: code,
-
+		code:      code,
+		author:    authorId,
 		actType:   actType,
 		name:      name,
-		author:    authorId,
-		createdAt: createAt,
-
-		versions: versions,
-	}, nil
+		text:      text,
+		imageSrcs: imageSrcs,
+		createdAt: createdAt,
+		standard:  standard,
+	}
 }

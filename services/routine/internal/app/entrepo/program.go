@@ -4,11 +4,11 @@ import (
 	"context"
 	"routine/internal/domain/aggregates/program"
 	"routine/internal/ent"
-	"routine/internal/ent/dailyroutine"
 	eprogram "routine/internal/ent/program"
-	"routine/internal/ent/programimage"
-	eprogramversion "routine/internal/ent/programversion"
+	"routine/internal/ent/programrelease"
+	"routine/internal/ent/routine"
 	"routine/internal/ent/routineact"
+	"routine/internal/ent/s3programimage"
 	"routine/internal/repository"
 )
 
@@ -27,18 +27,18 @@ func (repo *EntProgramRepository) FindProgramByCode(ctx context.Context, code pr
 		return nil, err
 	}
 	ep, err := tx.Program.Query().Where(eprogram.Code(string(code))).
-		WithProgramVersions(
-			func(q *ent.ProgramVersionQuery) {
-				q.Order(ent.Asc(eprogramversion.FieldVersion))
-				q.WithProgramImages(
-					func(q *ent.ProgramImageQuery) {
-						q.Order(ent.Asc(programimage.FieldOrder))
-						q.WithImage()
+		WithProgramReleases(
+			func(q *ent.ProgramReleaseQuery) {
+				q.Order(ent.Asc(programrelease.FieldVersion))
+				q.WithS3ProgramImages(
+					func(q *ent.S3ProgramImageQuery) {
+						q.Order(ent.Asc(s3programimage.FieldOrder))
+						q.WithS3Image()
 					},
 				)
-				q.WithDailyRoutines(
-					func(q *ent.DailyRoutineQuery) {
-						q.Order(ent.Asc(dailyroutine.FieldDay))
+				q.WithRoutines(
+					func(q *ent.RoutineQuery) {
+						q.Order(ent.Asc(routine.FieldDay))
 						q.WithRoutineActs(
 							func(q *ent.RoutineActQuery) {
 								q.Order(ent.Asc(routineact.FieldOrder))
@@ -56,6 +56,47 @@ func (repo *EntProgramRepository) FindProgramByCode(ctx context.Context, code pr
 		return nil, err
 	}
 	return ProgramFromEntProgram(ep)
+}
+
+func (repo *EntProgramRepository) FindProgramsByTitle(ctx context.Context, title program.ProgramTitle) ([]*program.Program, error) {
+	tx, finally, err := repo.Tx(ctx)
+	defer finally(&err)
+	if err != nil {
+		return nil, err
+	}
+	eps, err := tx.Program.Query().Where(eprogram.TitleContains(string(title))).
+		WithProgramReleases(
+			func(q *ent.ProgramReleaseQuery) {
+				q.Order(ent.Asc(programrelease.FieldVersion))
+				q.WithS3ProgramImages(
+					func(q *ent.S3ProgramImageQuery) {
+						q.Order(ent.Asc(s3programimage.FieldOrder))
+						q.WithS3Image()
+					},
+				)
+				q.WithRoutines(
+					func(q *ent.RoutineQuery) {
+						q.Order(ent.Asc(routine.FieldDay))
+						q.WithRoutineActs(
+							func(q *ent.RoutineActQuery) {
+								q.Order(ent.Asc(routineact.FieldOrder))
+							},
+						)
+					},
+				)
+			},
+		).All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	dps := make([]*program.Program, len(eps))
+	for i, ep := range eps {
+		dps[i], err = ProgramFromEntProgram(ep)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return dps, nil
 }
 
 func (repo *EntProgramRepository) Save(ctx context.Context, target *program.Program) (saved *program.Program, err error) {

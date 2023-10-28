@@ -7,7 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"routine/internal/ent/act"
-	"routine/internal/ent/actversion"
+	"routine/internal/ent/routineact"
+	"routine/internal/ent/s3actimage"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -27,6 +28,12 @@ func (ac *ActCreate) SetCode(s string) *ActCreate {
 	return ac
 }
 
+// SetAuthor sets the "author" field.
+func (ac *ActCreate) SetAuthor(i int64) *ActCreate {
+	ac.mutation.SetAuthor(i)
+	return ac
+}
+
 // SetActType sets the "act_type" field.
 func (ac *ActCreate) SetActType(at act.ActType) *ActCreate {
 	ac.mutation.SetActType(at)
@@ -39,9 +46,23 @@ func (ac *ActCreate) SetName(s string) *ActCreate {
 	return ac
 }
 
-// SetAuthor sets the "author" field.
-func (ac *ActCreate) SetAuthor(u uint64) *ActCreate {
-	ac.mutation.SetAuthor(u)
+// SetText sets the "text" field.
+func (ac *ActCreate) SetText(s string) *ActCreate {
+	ac.mutation.SetText(s)
+	return ac
+}
+
+// SetStandard sets the "standard" field.
+func (ac *ActCreate) SetStandard(b bool) *ActCreate {
+	ac.mutation.SetStandard(b)
+	return ac
+}
+
+// SetNillableStandard sets the "standard" field if the given value is not nil.
+func (ac *ActCreate) SetNillableStandard(b *bool) *ActCreate {
+	if b != nil {
+		ac.SetStandard(*b)
+	}
 	return ac
 }
 
@@ -52,24 +73,39 @@ func (ac *ActCreate) SetCreatedAt(t time.Time) *ActCreate {
 }
 
 // SetID sets the "id" field.
-func (ac *ActCreate) SetID(u uint64) *ActCreate {
-	ac.mutation.SetID(u)
+func (ac *ActCreate) SetID(i int64) *ActCreate {
+	ac.mutation.SetID(i)
 	return ac
 }
 
-// AddActVersionIDs adds the "act_versions" edge to the ActVersion entity by IDs.
-func (ac *ActCreate) AddActVersionIDs(ids ...uint64) *ActCreate {
-	ac.mutation.AddActVersionIDs(ids...)
+// AddS3ActImageIDs adds the "s3_act_images" edge to the S3ActImage entity by IDs.
+func (ac *ActCreate) AddS3ActImageIDs(ids ...int64) *ActCreate {
+	ac.mutation.AddS3ActImageIDs(ids...)
 	return ac
 }
 
-// AddActVersions adds the "act_versions" edges to the ActVersion entity.
-func (ac *ActCreate) AddActVersions(a ...*ActVersion) *ActCreate {
-	ids := make([]uint64, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+// AddS3ActImages adds the "s3_act_images" edges to the S3ActImage entity.
+func (ac *ActCreate) AddS3ActImages(s ...*S3ActImage) *ActCreate {
+	ids := make([]int64, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
 	}
-	return ac.AddActVersionIDs(ids...)
+	return ac.AddS3ActImageIDs(ids...)
+}
+
+// AddRoutineActIDs adds the "routine_acts" edge to the RoutineAct entity by IDs.
+func (ac *ActCreate) AddRoutineActIDs(ids ...int64) *ActCreate {
+	ac.mutation.AddRoutineActIDs(ids...)
+	return ac
+}
+
+// AddRoutineActs adds the "routine_acts" edges to the RoutineAct entity.
+func (ac *ActCreate) AddRoutineActs(r ...*RoutineAct) *ActCreate {
+	ids := make([]int64, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return ac.AddRoutineActIDs(ids...)
 }
 
 // Mutation returns the ActMutation object of the builder.
@@ -79,6 +115,7 @@ func (ac *ActCreate) Mutation() *ActMutation {
 
 // Save creates the Act in the database.
 func (ac *ActCreate) Save(ctx context.Context) (*Act, error) {
+	ac.defaults()
 	return withHooks(ctx, ac.sqlSave, ac.mutation, ac.hooks)
 }
 
@@ -104,6 +141,14 @@ func (ac *ActCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (ac *ActCreate) defaults() {
+	if _, ok := ac.mutation.Standard(); !ok {
+		v := act.DefaultStandard
+		ac.mutation.SetStandard(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (ac *ActCreate) check() error {
 	if _, ok := ac.mutation.Code(); !ok {
@@ -113,6 +158,9 @@ func (ac *ActCreate) check() error {
 		if err := act.CodeValidator(v); err != nil {
 			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "Act.code": %w`, err)}
 		}
+	}
+	if _, ok := ac.mutation.Author(); !ok {
+		return &ValidationError{Name: "author", err: errors.New(`ent: missing required field "Act.author"`)}
 	}
 	if _, ok := ac.mutation.ActType(); !ok {
 		return &ValidationError{Name: "act_type", err: errors.New(`ent: missing required field "Act.act_type"`)}
@@ -130,8 +178,11 @@ func (ac *ActCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Act.name": %w`, err)}
 		}
 	}
-	if _, ok := ac.mutation.Author(); !ok {
-		return &ValidationError{Name: "author", err: errors.New(`ent: missing required field "Act.author"`)}
+	if _, ok := ac.mutation.Text(); !ok {
+		return &ValidationError{Name: "text", err: errors.New(`ent: missing required field "Act.text"`)}
+	}
+	if _, ok := ac.mutation.Standard(); !ok {
+		return &ValidationError{Name: "standard", err: errors.New(`ent: missing required field "Act.standard"`)}
 	}
 	if _, ok := ac.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Act.created_at"`)}
@@ -152,7 +203,7 @@ func (ac *ActCreate) sqlSave(ctx context.Context) (*Act, error) {
 	}
 	if _spec.ID.Value != _node.ID {
 		id := _spec.ID.Value.(int64)
-		_node.ID = uint64(id)
+		_node.ID = int64(id)
 	}
 	ac.mutation.id = &_node.ID
 	ac.mutation.done = true
@@ -162,7 +213,7 @@ func (ac *ActCreate) sqlSave(ctx context.Context) (*Act, error) {
 func (ac *ActCreate) createSpec() (*Act, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Act{config: ac.config}
-		_spec = sqlgraph.NewCreateSpec(act.Table, sqlgraph.NewFieldSpec(act.FieldID, field.TypeUint64))
+		_spec = sqlgraph.NewCreateSpec(act.Table, sqlgraph.NewFieldSpec(act.FieldID, field.TypeInt64))
 	)
 	if id, ok := ac.mutation.ID(); ok {
 		_node.ID = id
@@ -172,6 +223,10 @@ func (ac *ActCreate) createSpec() (*Act, *sqlgraph.CreateSpec) {
 		_spec.SetField(act.FieldCode, field.TypeString, value)
 		_node.Code = value
 	}
+	if value, ok := ac.mutation.Author(); ok {
+		_spec.SetField(act.FieldAuthor, field.TypeInt64, value)
+		_node.Author = value
+	}
 	if value, ok := ac.mutation.ActType(); ok {
 		_spec.SetField(act.FieldActType, field.TypeEnum, value)
 		_node.ActType = value
@@ -180,23 +235,43 @@ func (ac *ActCreate) createSpec() (*Act, *sqlgraph.CreateSpec) {
 		_spec.SetField(act.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := ac.mutation.Author(); ok {
-		_spec.SetField(act.FieldAuthor, field.TypeUint64, value)
-		_node.Author = value
+	if value, ok := ac.mutation.Text(); ok {
+		_spec.SetField(act.FieldText, field.TypeString, value)
+		_node.Text = value
+	}
+	if value, ok := ac.mutation.Standard(); ok {
+		_spec.SetField(act.FieldStandard, field.TypeBool, value)
+		_node.Standard = value
 	}
 	if value, ok := ac.mutation.CreatedAt(); ok {
 		_spec.SetField(act.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if nodes := ac.mutation.ActVersionsIDs(); len(nodes) > 0 {
+	if nodes := ac.mutation.S3ActImagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   act.ActVersionsTable,
-			Columns: []string{act.ActVersionsColumn},
+			Table:   act.S3ActImagesTable,
+			Columns: []string{act.S3ActImagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(actversion.FieldID, field.TypeUint64),
+				IDSpec: sqlgraph.NewFieldSpec(s3actimage.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ac.mutation.RoutineActsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   act.RoutineActsTable,
+			Columns: []string{act.RoutineActsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {
@@ -221,6 +296,7 @@ func (acb *ActCreateBulk) Save(ctx context.Context) ([]*Act, error) {
 	for i := range acb.builders {
 		func(i int, root context.Context) {
 			builder := acb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ActMutation)
 				if !ok {
@@ -249,7 +325,7 @@ func (acb *ActCreateBulk) Save(ctx context.Context) ([]*Act, error) {
 				mutation.id = &nodes[i].ID
 				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
 					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = uint64(id)
+					nodes[i].ID = int64(id)
 				}
 				mutation.done = true
 				return nodes[i], nil

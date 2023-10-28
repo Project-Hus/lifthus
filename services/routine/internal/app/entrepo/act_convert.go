@@ -15,32 +15,22 @@ func (repo *EntActRepository) actFromEntAct(ctx context.Context, ea *ent.Act) (*
 	if err != nil {
 		return nil, err
 	}
-	versions := ea.Edges.ActVersions
-	vs := repo.actVersionsFromEntVersions(ctx, versions)
-	return act.ActFrom(act.ActCode(ea.Code), *actType, act.ActName(ea.Name), user.UserId(ea.Author), domain.CreatedAt(ea.CreatedAt), vs)
+	return act.ActFrom(
+		act.ActCode(ea.Code),
+		user.UserId(ea.Author),
+		*actType,
+		act.ActName(ea.Name),
+		act.ActText(ea.Text),
+		imgSrcsFromEntImgs(ea.Edges.S3ActImages),
+		domain.CreatedAt(ea.CreatedAt),
+		ea.Standard,
+	), nil
 }
 
-func (repo *EntActRepository) actVersionsFromEntVersions(ctx context.Context, evs []*ent.ActVersion) []*act.ActVersion {
-	versions := make([]*act.ActVersion, len(evs))
-	for i, ev := range evs {
-		imgs := ev.Edges.ActImages
-		imgSrcs := imgSrcsFromEntImgs(imgs)
-		v := act.ActVersionFrom(
-			act.ActVersionCode(ev.Code),
-			act.ActVersionNumber(ev.Version),
-			imgSrcs,
-			act.ActText(ev.Text),
-			domain.CreatedAt(ev.CreatedAt),
-		)
-		versions[i] = v
-	}
-	return versions
-}
-
-func imgSrcsFromEntImgs(eis []*ent.ActImage) act.ActImageSrcs {
+func imgSrcsFromEntImgs(eis []*ent.S3ActImage) act.ActImageSrcs {
 	imgSrcs := make(act.ActImageSrcs, len(eis))
 	for i, ei := range eis {
-		imgSrcs[i] = ei.Edges.Image.Src
+		imgSrcs[i] = ei.Edges.S3Image.Src
 	}
 	return imgSrcs
 }

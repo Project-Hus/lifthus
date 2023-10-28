@@ -16,15 +16,19 @@ import (
 type Act struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID uint64 `json:"id,omitempty"`
+	ID int64 `json:"id,omitempty"`
 	// Code holds the value of the "code" field.
 	Code string `json:"code,omitempty"`
+	// Author holds the value of the "author" field.
+	Author int64 `json:"author,omitempty"`
 	// ActType holds the value of the "act_type" field.
 	ActType act.ActType `json:"act_type,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
-	// Author holds the value of the "author" field.
-	Author uint64 `json:"author,omitempty"`
+	// Text holds the value of the "text" field.
+	Text string `json:"text,omitempty"`
+	// Standard holds the value of the "standard" field.
+	Standard bool `json:"standard,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -35,20 +39,31 @@ type Act struct {
 
 // ActEdges holds the relations/edges for other nodes in the graph.
 type ActEdges struct {
-	// ActVersions holds the value of the act_versions edge.
-	ActVersions []*ActVersion `json:"act_versions,omitempty"`
+	// S3ActImages holds the value of the s3_act_images edge.
+	S3ActImages []*S3ActImage `json:"s3_act_images,omitempty"`
+	// RoutineActs holds the value of the routine_acts edge.
+	RoutineActs []*RoutineAct `json:"routine_acts,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
-// ActVersionsOrErr returns the ActVersions value or an error if the edge
+// S3ActImagesOrErr returns the S3ActImages value or an error if the edge
 // was not loaded in eager-loading.
-func (e ActEdges) ActVersionsOrErr() ([]*ActVersion, error) {
+func (e ActEdges) S3ActImagesOrErr() ([]*S3ActImage, error) {
 	if e.loadedTypes[0] {
-		return e.ActVersions, nil
+		return e.S3ActImages, nil
 	}
-	return nil, &NotLoadedError{edge: "act_versions"}
+	return nil, &NotLoadedError{edge: "s3_act_images"}
+}
+
+// RoutineActsOrErr returns the RoutineActs value or an error if the edge
+// was not loaded in eager-loading.
+func (e ActEdges) RoutineActsOrErr() ([]*RoutineAct, error) {
+	if e.loadedTypes[1] {
+		return e.RoutineActs, nil
+	}
+	return nil, &NotLoadedError{edge: "routine_acts"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -56,9 +71,11 @@ func (*Act) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case act.FieldStandard:
+			values[i] = new(sql.NullBool)
 		case act.FieldID, act.FieldAuthor:
 			values[i] = new(sql.NullInt64)
-		case act.FieldCode, act.FieldActType, act.FieldName:
+		case act.FieldCode, act.FieldActType, act.FieldName, act.FieldText:
 			values[i] = new(sql.NullString)
 		case act.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -82,12 +99,18 @@ func (a *Act) assignValues(columns []string, values []any) error {
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			a.ID = uint64(value.Int64)
+			a.ID = int64(value.Int64)
 		case act.FieldCode:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field code", values[i])
 			} else if value.Valid {
 				a.Code = value.String
+			}
+		case act.FieldAuthor:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field author", values[i])
+			} else if value.Valid {
+				a.Author = value.Int64
 			}
 		case act.FieldActType:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -101,11 +124,17 @@ func (a *Act) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.Name = value.String
 			}
-		case act.FieldAuthor:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field author", values[i])
+		case act.FieldText:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field text", values[i])
 			} else if value.Valid {
-				a.Author = uint64(value.Int64)
+				a.Text = value.String
+			}
+		case act.FieldStandard:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field standard", values[i])
+			} else if value.Valid {
+				a.Standard = value.Bool
 			}
 		case act.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -126,9 +155,14 @@ func (a *Act) Value(name string) (ent.Value, error) {
 	return a.selectValues.Get(name)
 }
 
-// QueryActVersions queries the "act_versions" edge of the Act entity.
-func (a *Act) QueryActVersions() *ActVersionQuery {
-	return NewActClient(a.config).QueryActVersions(a)
+// QueryS3ActImages queries the "s3_act_images" edge of the Act entity.
+func (a *Act) QueryS3ActImages() *S3ActImageQuery {
+	return NewActClient(a.config).QueryS3ActImages(a)
+}
+
+// QueryRoutineActs queries the "routine_acts" edge of the Act entity.
+func (a *Act) QueryRoutineActs() *RoutineActQuery {
+	return NewActClient(a.config).QueryRoutineActs(a)
 }
 
 // Update returns a builder for updating this Act.
@@ -157,14 +191,20 @@ func (a *Act) String() string {
 	builder.WriteString("code=")
 	builder.WriteString(a.Code)
 	builder.WriteString(", ")
+	builder.WriteString("author=")
+	builder.WriteString(fmt.Sprintf("%v", a.Author))
+	builder.WriteString(", ")
 	builder.WriteString("act_type=")
 	builder.WriteString(fmt.Sprintf("%v", a.ActType))
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(a.Name)
 	builder.WriteString(", ")
-	builder.WriteString("author=")
-	builder.WriteString(fmt.Sprintf("%v", a.Author))
+	builder.WriteString("text=")
+	builder.WriteString(a.Text)
+	builder.WriteString(", ")
+	builder.WriteString("standard=")
+	builder.WriteString(fmt.Sprintf("%v", a.Standard))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(a.CreatedAt.Format(time.ANSIC))

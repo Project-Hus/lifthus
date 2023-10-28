@@ -40,7 +40,7 @@ func (rad *RoutineActDelete) ExecX(ctx context.Context) int {
 }
 
 func (rad *RoutineActDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(routineact.Table, sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeUint64))
+	_spec := sqlgraph.NewDeleteSpec(routineact.Table, sqlgraph.NewFieldSpec(routineact.FieldID, field.TypeInt64))
 	if ps := rad.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
