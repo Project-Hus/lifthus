@@ -17,19 +17,38 @@ type programCommandService struct {
 	programRepo *repository.ProgramRepository
 }
 
-func (ps *programCommandService) createWeeklyProgram(ctx context.Context, cpDto dto.CreateProgramServiceDto) (qpDto *dto.QueryProgramDto, err error) {
-	author := user.UserFrom(user.UserId(cpDto.Author))
-	drs, err := dailyRoutinesFrom(cpDto.DailyRoutines)
+func (ps *programCommandService) createProgram(ctx context.Context, cpDto dto.CreateProgramServiceDto) (qpDto *dto.QueryProgramDto, err error) {
+	ptype, err := program.MapProgramType(cpDto.ProgramType)
 	if err != nil {
 		return nil, err
 	}
-	program, err := program.CreateWeeklyProgram(
-		program.ProgramTitle(cpDto.Title),
-		*author,
-		(*program.ProgramVersionCode)(cpDto.DerivedFrom),
+	author := user.UserFrom(user.UserId(cpDto.Author))
+	rs, err := routinesFrom(cpDto.Routines)
+	if err != nil {
+		return nil, err
+	}
+	v1, err := program.CreateProgramRelease(
+		1,
 		cpDto.ImageSrcs,
 		program.ProgramText(cpDto.Text),
-		drs,
+		rs,
+	)
+	if err != nil {
+		return nil, err
+	}
+	var pv *program.ParentProgramVersion
+	if cpDto.ParentProgram != nil {
+		pv = &program.ParentProgramVersion{
+			ProgramCode:          program.ProgramCode(*cpDto.ParentProgram),
+			ProgramVersionNumber: program.ProgramVersionNumber(*cpDto.ParentVersion),
+		}
+	}
+	program, err := program.CreateProgram(
+		*ptype,
+		program.ProgramTitle(cpDto.Title),
+		author.Id(),
+		pv,
+		*v1,
 	)
 	if err != nil {
 		return nil, err

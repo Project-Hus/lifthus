@@ -26,6 +26,34 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/act": {
+            "get": {
+                "tags": [
+                    "act"
+                ],
+                "summary": "get specific act",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "act code",
+                        "name": "code",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "returns act info as json"
+                    },
+                    "400": {
+                        "description": "invalid request"
+                    },
+                    "404": {
+                        "description": "act not found"
+                    },
+                    "500": {
+                        "description": "internal server error"
+                    }
+                }
+            },
             "post": {
                 "tags": [
                     "act"
@@ -51,50 +79,23 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/act/upgrade": {
-            "post": {
-                "tags": [
-                    "act"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "lifthus_st",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "upgrade act dto",
-                        "name": "upgradeActDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpgradeActRequestDto"
-                        }
-                    }
-                ],
-                "responses": {}
-            }
-        },
-        "/act/{code}": {
+        "/acts": {
             "get": {
                 "tags": [
                     "act"
                 ],
-                "summary": "get act by code",
+                "summary": "get acts that match the query",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "act code",
-                        "name": "code",
-                        "in": "path",
-                        "required": true
+                        "description": "act name",
+                        "name": "name",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "returns act info as json"
+                        "description": "returns acts info as json array"
                     },
                     "400": {
                         "description": "invalid request"
@@ -181,6 +182,22 @@ const docTemplate = `{
                 ],
                 "responses": {}
             }
+        },
+        "/programs": {
+            "get": {
+                "tags": [
+                    "program"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "program title",
+                        "name": "title",
+                        "in": "query"
+                    }
+                ],
+                "responses": {}
+            }
         }
     },
     "definitions": {
@@ -207,33 +224,10 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CreateProgramRequestDailyRoutineDto": {
-            "type": "object",
-            "properties": {
-                "day": {
-                    "type": "integer"
-                },
-                "routineActs": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.CreateProgramRequestRoutineActDto"
-                    }
-                }
-            }
-        },
         "dto.CreateProgramRequestDto": {
             "type": "object",
             "properties": {
                 "author": {
-                    "type": "string"
-                },
-                "dailyRoutines": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.CreateProgramRequestDailyRoutineDto"
-                    }
-                },
-                "derivedFrom": {
                     "type": "string"
                 },
                 "imageSrcs": {
@@ -242,8 +236,20 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "parentProgram": {
+                    "type": "string"
+                },
+                "parentVersion": {
+                    "type": "integer"
+                },
                 "programType": {
                     "type": "string"
+                },
+                "routines": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CreateProgramRequestRoutineDto"
+                    }
                 },
                 "text": {
                     "type": "string"
@@ -256,7 +262,7 @@ const docTemplate = `{
         "dto.CreateProgramRequestRoutineActDto": {
             "type": "object",
             "properties": {
-                "actVersion": {
+                "actCode": {
                     "type": "string"
                 },
                 "order": {
@@ -273,20 +279,17 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UpgradeActRequestDto": {
+        "dto.CreateProgramRequestRoutineDto": {
             "type": "object",
             "properties": {
-                "actCode": {
-                    "type": "string"
+                "day": {
+                    "type": "integer"
                 },
-                "imageSrcs": {
+                "routineActs": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/dto.CreateProgramRequestRoutineActDto"
                     }
-                },
-                "text": {
-                    "type": "string"
                 }
             }
         }

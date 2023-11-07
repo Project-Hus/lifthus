@@ -18,30 +18,18 @@ type Program struct {
 
 	createdAt domain.CreatedAt
 
-	derivedFrom *ProgramVersionCode
+	parent *ParentProgramVersion
 
-	versions ProgramVersions
+	releases ProgramReleases
 }
 
-func (p *Program) Upgrade(author user.User, imageSrcs ProgramImageSrcs, text ProgramText, dailyRoutines DailyRoutines) (*Program, error) {
-	curV := p.LatestVersion().Version()
-	newV := curV + 1
-	newPv, err := CreateProgramVersion(
-		p.Code(),
-		newV,
-		imageSrcs,
-		text,
-		dailyRoutines,
-	)
-	if err != nil {
-		return nil, err
-	}
-	p.versions = append(p.versions, newPv)
-	return p, nil
+type ParentProgramVersion struct {
+	ProgramCode
+	ProgramVersionNumber
 }
 
-func (p Program) LatestVersion() *ProgramVersion {
-	return p.versions[len(p.versions)-1]
+func (p Program) LatestRelease() *ProgramRelease {
+	return p.releases[len(p.releases)-1]
 }
 
 func (p Program) Code() ProgramCode {
@@ -64,10 +52,10 @@ func (p Program) CreatedAt() domain.CreatedAt {
 	return p.createdAt
 }
 
-func (p Program) DerivedFrom() *ProgramVersionCode {
-	return p.derivedFrom
+func (p Program) ParentProgramVersion() *ParentProgramVersion {
+	return p.parent
 }
 
-func (p Program) Versions() ProgramVersions {
-	return p.versions
+func (p Program) Releases() ProgramReleases {
+	return p.releases
 }

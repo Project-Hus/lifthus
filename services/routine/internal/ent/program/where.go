@@ -11,47 +11,47 @@ import (
 )
 
 // ID filters vertices based on their ID field.
-func ID(id uint64) predicate.Program {
+func ID(id int64) predicate.Program {
 	return predicate.Program(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id uint64) predicate.Program {
+func IDEQ(id int64) predicate.Program {
 	return predicate.Program(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id uint64) predicate.Program {
+func IDNEQ(id int64) predicate.Program {
 	return predicate.Program(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...uint64) predicate.Program {
+func IDIn(ids ...int64) predicate.Program {
 	return predicate.Program(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...uint64) predicate.Program {
+func IDNotIn(ids ...int64) predicate.Program {
 	return predicate.Program(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id uint64) predicate.Program {
+func IDGT(id int64) predicate.Program {
 	return predicate.Program(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id uint64) predicate.Program {
+func IDGTE(id int64) predicate.Program {
 	return predicate.Program(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id uint64) predicate.Program {
+func IDLT(id int64) predicate.Program {
 	return predicate.Program(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id uint64) predicate.Program {
+func IDLTE(id int64) predicate.Program {
 	return predicate.Program(sql.FieldLTE(FieldID, id))
 }
 
@@ -66,7 +66,7 @@ func Title(v string) predicate.Program {
 }
 
 // Author applies equality check predicate on the "author" field. It's identical to AuthorEQ.
-func Author(v uint64) predicate.Program {
+func Author(v int64) predicate.Program {
 	return predicate.Program(sql.FieldEQ(FieldAuthor, v))
 }
 
@@ -75,9 +75,14 @@ func CreatedAt(v time.Time) predicate.Program {
 	return predicate.Program(sql.FieldEQ(FieldCreatedAt, v))
 }
 
-// VersionDerivedFrom applies equality check predicate on the "version_derived_from" field. It's identical to VersionDerivedFromEQ.
-func VersionDerivedFrom(v string) predicate.Program {
-	return predicate.Program(sql.FieldEQ(FieldVersionDerivedFrom, v))
+// ParentProgram applies equality check predicate on the "parent_program" field. It's identical to ParentProgramEQ.
+func ParentProgram(v string) predicate.Program {
+	return predicate.Program(sql.FieldEQ(FieldParentProgram, v))
+}
+
+// ParentVersion applies equality check predicate on the "parent_version" field. It's identical to ParentVersionEQ.
+func ParentVersion(v int) predicate.Program {
+	return predicate.Program(sql.FieldEQ(FieldParentVersion, v))
 }
 
 // CodeEQ applies the EQ predicate on the "code" field.
@@ -231,42 +236,42 @@ func TitleContainsFold(v string) predicate.Program {
 }
 
 // AuthorEQ applies the EQ predicate on the "author" field.
-func AuthorEQ(v uint64) predicate.Program {
+func AuthorEQ(v int64) predicate.Program {
 	return predicate.Program(sql.FieldEQ(FieldAuthor, v))
 }
 
 // AuthorNEQ applies the NEQ predicate on the "author" field.
-func AuthorNEQ(v uint64) predicate.Program {
+func AuthorNEQ(v int64) predicate.Program {
 	return predicate.Program(sql.FieldNEQ(FieldAuthor, v))
 }
 
 // AuthorIn applies the In predicate on the "author" field.
-func AuthorIn(vs ...uint64) predicate.Program {
+func AuthorIn(vs ...int64) predicate.Program {
 	return predicate.Program(sql.FieldIn(FieldAuthor, vs...))
 }
 
 // AuthorNotIn applies the NotIn predicate on the "author" field.
-func AuthorNotIn(vs ...uint64) predicate.Program {
+func AuthorNotIn(vs ...int64) predicate.Program {
 	return predicate.Program(sql.FieldNotIn(FieldAuthor, vs...))
 }
 
 // AuthorGT applies the GT predicate on the "author" field.
-func AuthorGT(v uint64) predicate.Program {
+func AuthorGT(v int64) predicate.Program {
 	return predicate.Program(sql.FieldGT(FieldAuthor, v))
 }
 
 // AuthorGTE applies the GTE predicate on the "author" field.
-func AuthorGTE(v uint64) predicate.Program {
+func AuthorGTE(v int64) predicate.Program {
 	return predicate.Program(sql.FieldGTE(FieldAuthor, v))
 }
 
 // AuthorLT applies the LT predicate on the "author" field.
-func AuthorLT(v uint64) predicate.Program {
+func AuthorLT(v int64) predicate.Program {
 	return predicate.Program(sql.FieldLT(FieldAuthor, v))
 }
 
 // AuthorLTE applies the LTE predicate on the "author" field.
-func AuthorLTE(v uint64) predicate.Program {
+func AuthorLTE(v int64) predicate.Program {
 	return predicate.Program(sql.FieldLTE(FieldAuthor, v))
 }
 
@@ -310,96 +315,146 @@ func CreatedAtLTE(v time.Time) predicate.Program {
 	return predicate.Program(sql.FieldLTE(FieldCreatedAt, v))
 }
 
-// VersionDerivedFromEQ applies the EQ predicate on the "version_derived_from" field.
-func VersionDerivedFromEQ(v string) predicate.Program {
-	return predicate.Program(sql.FieldEQ(FieldVersionDerivedFrom, v))
+// ParentProgramEQ applies the EQ predicate on the "parent_program" field.
+func ParentProgramEQ(v string) predicate.Program {
+	return predicate.Program(sql.FieldEQ(FieldParentProgram, v))
 }
 
-// VersionDerivedFromNEQ applies the NEQ predicate on the "version_derived_from" field.
-func VersionDerivedFromNEQ(v string) predicate.Program {
-	return predicate.Program(sql.FieldNEQ(FieldVersionDerivedFrom, v))
+// ParentProgramNEQ applies the NEQ predicate on the "parent_program" field.
+func ParentProgramNEQ(v string) predicate.Program {
+	return predicate.Program(sql.FieldNEQ(FieldParentProgram, v))
 }
 
-// VersionDerivedFromIn applies the In predicate on the "version_derived_from" field.
-func VersionDerivedFromIn(vs ...string) predicate.Program {
-	return predicate.Program(sql.FieldIn(FieldVersionDerivedFrom, vs...))
+// ParentProgramIn applies the In predicate on the "parent_program" field.
+func ParentProgramIn(vs ...string) predicate.Program {
+	return predicate.Program(sql.FieldIn(FieldParentProgram, vs...))
 }
 
-// VersionDerivedFromNotIn applies the NotIn predicate on the "version_derived_from" field.
-func VersionDerivedFromNotIn(vs ...string) predicate.Program {
-	return predicate.Program(sql.FieldNotIn(FieldVersionDerivedFrom, vs...))
+// ParentProgramNotIn applies the NotIn predicate on the "parent_program" field.
+func ParentProgramNotIn(vs ...string) predicate.Program {
+	return predicate.Program(sql.FieldNotIn(FieldParentProgram, vs...))
 }
 
-// VersionDerivedFromGT applies the GT predicate on the "version_derived_from" field.
-func VersionDerivedFromGT(v string) predicate.Program {
-	return predicate.Program(sql.FieldGT(FieldVersionDerivedFrom, v))
+// ParentProgramGT applies the GT predicate on the "parent_program" field.
+func ParentProgramGT(v string) predicate.Program {
+	return predicate.Program(sql.FieldGT(FieldParentProgram, v))
 }
 
-// VersionDerivedFromGTE applies the GTE predicate on the "version_derived_from" field.
-func VersionDerivedFromGTE(v string) predicate.Program {
-	return predicate.Program(sql.FieldGTE(FieldVersionDerivedFrom, v))
+// ParentProgramGTE applies the GTE predicate on the "parent_program" field.
+func ParentProgramGTE(v string) predicate.Program {
+	return predicate.Program(sql.FieldGTE(FieldParentProgram, v))
 }
 
-// VersionDerivedFromLT applies the LT predicate on the "version_derived_from" field.
-func VersionDerivedFromLT(v string) predicate.Program {
-	return predicate.Program(sql.FieldLT(FieldVersionDerivedFrom, v))
+// ParentProgramLT applies the LT predicate on the "parent_program" field.
+func ParentProgramLT(v string) predicate.Program {
+	return predicate.Program(sql.FieldLT(FieldParentProgram, v))
 }
 
-// VersionDerivedFromLTE applies the LTE predicate on the "version_derived_from" field.
-func VersionDerivedFromLTE(v string) predicate.Program {
-	return predicate.Program(sql.FieldLTE(FieldVersionDerivedFrom, v))
+// ParentProgramLTE applies the LTE predicate on the "parent_program" field.
+func ParentProgramLTE(v string) predicate.Program {
+	return predicate.Program(sql.FieldLTE(FieldParentProgram, v))
 }
 
-// VersionDerivedFromContains applies the Contains predicate on the "version_derived_from" field.
-func VersionDerivedFromContains(v string) predicate.Program {
-	return predicate.Program(sql.FieldContains(FieldVersionDerivedFrom, v))
+// ParentProgramContains applies the Contains predicate on the "parent_program" field.
+func ParentProgramContains(v string) predicate.Program {
+	return predicate.Program(sql.FieldContains(FieldParentProgram, v))
 }
 
-// VersionDerivedFromHasPrefix applies the HasPrefix predicate on the "version_derived_from" field.
-func VersionDerivedFromHasPrefix(v string) predicate.Program {
-	return predicate.Program(sql.FieldHasPrefix(FieldVersionDerivedFrom, v))
+// ParentProgramHasPrefix applies the HasPrefix predicate on the "parent_program" field.
+func ParentProgramHasPrefix(v string) predicate.Program {
+	return predicate.Program(sql.FieldHasPrefix(FieldParentProgram, v))
 }
 
-// VersionDerivedFromHasSuffix applies the HasSuffix predicate on the "version_derived_from" field.
-func VersionDerivedFromHasSuffix(v string) predicate.Program {
-	return predicate.Program(sql.FieldHasSuffix(FieldVersionDerivedFrom, v))
+// ParentProgramHasSuffix applies the HasSuffix predicate on the "parent_program" field.
+func ParentProgramHasSuffix(v string) predicate.Program {
+	return predicate.Program(sql.FieldHasSuffix(FieldParentProgram, v))
 }
 
-// VersionDerivedFromIsNil applies the IsNil predicate on the "version_derived_from" field.
-func VersionDerivedFromIsNil() predicate.Program {
-	return predicate.Program(sql.FieldIsNull(FieldVersionDerivedFrom))
+// ParentProgramIsNil applies the IsNil predicate on the "parent_program" field.
+func ParentProgramIsNil() predicate.Program {
+	return predicate.Program(sql.FieldIsNull(FieldParentProgram))
 }
 
-// VersionDerivedFromNotNil applies the NotNil predicate on the "version_derived_from" field.
-func VersionDerivedFromNotNil() predicate.Program {
-	return predicate.Program(sql.FieldNotNull(FieldVersionDerivedFrom))
+// ParentProgramNotNil applies the NotNil predicate on the "parent_program" field.
+func ParentProgramNotNil() predicate.Program {
+	return predicate.Program(sql.FieldNotNull(FieldParentProgram))
 }
 
-// VersionDerivedFromEqualFold applies the EqualFold predicate on the "version_derived_from" field.
-func VersionDerivedFromEqualFold(v string) predicate.Program {
-	return predicate.Program(sql.FieldEqualFold(FieldVersionDerivedFrom, v))
+// ParentProgramEqualFold applies the EqualFold predicate on the "parent_program" field.
+func ParentProgramEqualFold(v string) predicate.Program {
+	return predicate.Program(sql.FieldEqualFold(FieldParentProgram, v))
 }
 
-// VersionDerivedFromContainsFold applies the ContainsFold predicate on the "version_derived_from" field.
-func VersionDerivedFromContainsFold(v string) predicate.Program {
-	return predicate.Program(sql.FieldContainsFold(FieldVersionDerivedFrom, v))
+// ParentProgramContainsFold applies the ContainsFold predicate on the "parent_program" field.
+func ParentProgramContainsFold(v string) predicate.Program {
+	return predicate.Program(sql.FieldContainsFold(FieldParentProgram, v))
 }
 
-// HasProgramVersions applies the HasEdge predicate on the "program_versions" edge.
-func HasProgramVersions() predicate.Program {
+// ParentVersionEQ applies the EQ predicate on the "parent_version" field.
+func ParentVersionEQ(v int) predicate.Program {
+	return predicate.Program(sql.FieldEQ(FieldParentVersion, v))
+}
+
+// ParentVersionNEQ applies the NEQ predicate on the "parent_version" field.
+func ParentVersionNEQ(v int) predicate.Program {
+	return predicate.Program(sql.FieldNEQ(FieldParentVersion, v))
+}
+
+// ParentVersionIn applies the In predicate on the "parent_version" field.
+func ParentVersionIn(vs ...int) predicate.Program {
+	return predicate.Program(sql.FieldIn(FieldParentVersion, vs...))
+}
+
+// ParentVersionNotIn applies the NotIn predicate on the "parent_version" field.
+func ParentVersionNotIn(vs ...int) predicate.Program {
+	return predicate.Program(sql.FieldNotIn(FieldParentVersion, vs...))
+}
+
+// ParentVersionGT applies the GT predicate on the "parent_version" field.
+func ParentVersionGT(v int) predicate.Program {
+	return predicate.Program(sql.FieldGT(FieldParentVersion, v))
+}
+
+// ParentVersionGTE applies the GTE predicate on the "parent_version" field.
+func ParentVersionGTE(v int) predicate.Program {
+	return predicate.Program(sql.FieldGTE(FieldParentVersion, v))
+}
+
+// ParentVersionLT applies the LT predicate on the "parent_version" field.
+func ParentVersionLT(v int) predicate.Program {
+	return predicate.Program(sql.FieldLT(FieldParentVersion, v))
+}
+
+// ParentVersionLTE applies the LTE predicate on the "parent_version" field.
+func ParentVersionLTE(v int) predicate.Program {
+	return predicate.Program(sql.FieldLTE(FieldParentVersion, v))
+}
+
+// ParentVersionIsNil applies the IsNil predicate on the "parent_version" field.
+func ParentVersionIsNil() predicate.Program {
+	return predicate.Program(sql.FieldIsNull(FieldParentVersion))
+}
+
+// ParentVersionNotNil applies the NotNil predicate on the "parent_version" field.
+func ParentVersionNotNil() predicate.Program {
+	return predicate.Program(sql.FieldNotNull(FieldParentVersion))
+}
+
+// HasProgramReleases applies the HasEdge predicate on the "program_releases" edge.
+func HasProgramReleases() predicate.Program {
 	return predicate.Program(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ProgramVersionsTable, ProgramVersionsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, ProgramReleasesTable, ProgramReleasesColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasProgramVersionsWith applies the HasEdge predicate on the "program_versions" edge with a given conditions (other predicates).
-func HasProgramVersionsWith(preds ...predicate.ProgramVersion) predicate.Program {
+// HasProgramReleasesWith applies the HasEdge predicate on the "program_releases" edge with a given conditions (other predicates).
+func HasProgramReleasesWith(preds ...predicate.ProgramRelease) predicate.Program {
 	return predicate.Program(func(s *sql.Selector) {
-		step := newProgramVersionsStep()
+		step := newProgramReleasesStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

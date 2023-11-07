@@ -18,24 +18,6 @@ type EntRepository struct {
 	tx *ent.Tx
 }
 
-func (repo *EntRepository) Tx(ctx context.Context) (tx *ent.Tx, finally func(*error), err error) {
-	finally, err = repo.BeginOrContinueTx(ctx)
-	tx = repo.tx
-	return
-}
-
-func (repo *EntRepository) BeginOrContinueTx(ctx context.Context) (finally func(*error), err error) {
-	if repo.tx != nil {
-		return repo.txFinallyContinue(), nil
-	}
-	tx, err := repo.c.Tx(ctx)
-	if err != nil {
-		return repo.txFinallyContinue(), err
-	}
-	repo.tx = tx
-	return repo.txFinallyCommit(), nil
-}
-
 func (repo *EntRepository) Commit() error {
 	if repo.tx == nil {
 		return repository.ErrNoTransaction
@@ -57,6 +39,24 @@ func (repo *EntRepository) Rollback(err error) error {
 	}
 	repo.tx = nil
 	return err
+}
+
+func (repo *EntRepository) Tx(ctx context.Context) (tx *ent.Tx, finally func(*error), err error) {
+	finally, err = repo.BeginOrContinueTx(ctx)
+	tx = repo.tx
+	return
+}
+
+func (repo *EntRepository) BeginOrContinueTx(ctx context.Context) (finally func(*error), err error) {
+	if repo.tx != nil {
+		return repo.txFinallyContinue(), nil
+	}
+	tx, err := repo.c.Tx(ctx)
+	if err != nil {
+		return repo.txFinallyContinue(), err
+	}
+	repo.tx = tx
+	return repo.txFinallyCommit(), nil
 }
 
 func (repo *EntRepository) txFinallyCommit() func(*error) {

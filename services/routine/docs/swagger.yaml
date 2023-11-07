@@ -15,31 +15,24 @@ definitions:
       text:
         type: string
     type: object
-  dto.CreateProgramRequestDailyRoutineDto:
-    properties:
-      day:
-        type: integer
-      routineActs:
-        items:
-          $ref: '#/definitions/dto.CreateProgramRequestRoutineActDto'
-        type: array
-    type: object
   dto.CreateProgramRequestDto:
     properties:
       author:
-        type: string
-      dailyRoutines:
-        items:
-          $ref: '#/definitions/dto.CreateProgramRequestDailyRoutineDto'
-        type: array
-      derivedFrom:
         type: string
       imageSrcs:
         items:
           type: string
         type: array
+      parentProgram:
+        type: string
+      parentVersion:
+        type: integer
       programType:
         type: string
+      routines:
+        items:
+          $ref: '#/definitions/dto.CreateProgramRequestRoutineDto'
+        type: array
       text:
         type: string
       title:
@@ -47,7 +40,7 @@ definitions:
     type: object
   dto.CreateProgramRequestRoutineActDto:
     properties:
-      actVersion:
+      actCode:
         type: string
       order:
         type: integer
@@ -58,16 +51,14 @@ definitions:
       stage:
         type: string
     type: object
-  dto.UpgradeActRequestDto:
+  dto.CreateProgramRequestRoutineDto:
     properties:
-      actCode:
-        type: string
-      imageSrcs:
+      day:
+        type: integer
+      routineActs:
         items:
-          type: string
+          $ref: '#/definitions/dto.CreateProgramRequestRoutineActDto'
         type: array
-      text:
-        type: string
     type: object
 host: api.dev.lifthus.com
 info:
@@ -84,6 +75,24 @@ info:
   version: 0.0.0
 paths:
   /act:
+    get:
+      parameters:
+      - description: act code
+        in: query
+        name: code
+        type: string
+      responses:
+        "200":
+          description: returns act info as json
+        "400":
+          description: invalid request
+        "404":
+          description: act not found
+        "500":
+          description: internal server error
+      summary: get specific act
+      tags:
+      - act
     post:
       parameters:
       - description: lifthus_st
@@ -100,41 +109,23 @@ paths:
       responses: {}
       tags:
       - act
-  /act/{code}:
+  /acts:
     get:
       parameters:
-      - description: act code
-        in: path
-        name: code
-        required: true
+      - description: act name
+        in: query
+        name: name
         type: string
       responses:
         "200":
-          description: returns act info as json
+          description: returns acts info as json array
         "400":
           description: invalid request
         "404":
           description: act not found
         "500":
           description: internal server error
-      summary: get act by code
-      tags:
-      - act
-  /act/upgrade:
-    post:
-      parameters:
-      - description: lifthus_st
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: upgrade act dto
-        in: body
-        name: upgradeActDto
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpgradeActRequestDto'
-      responses: {}
+      summary: get acts that match the query
       tags:
       - act
   /images/{target}:
@@ -183,6 +174,16 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/dto.CreateProgramRequestDto'
+      responses: {}
+      tags:
+      - program
+  /programs:
+    get:
+      parameters:
+      - description: program title
+        in: query
+        name: title
+        type: string
       responses: {}
       tags:
       - program

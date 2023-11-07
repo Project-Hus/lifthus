@@ -3,30 +3,30 @@ package act
 import (
 	"routine/internal/domain"
 	"routine/internal/domain/aggregates/user"
-	"time"
 )
 
 type ActCode domain.Code
 type ActName string
-type ActVersions []*ActVersion
+type ActText string
+type ActImageSrcs []string
 
 type Act struct {
-	code ActCode
-
+	code      ActCode
+	author    user.UserId
 	actType   ActType
 	name      ActName
-	author    user.UserId
+	text      ActText
+	imageSrcs ActImageSrcs
 	createdAt domain.CreatedAt
-
-	versions ActVersions
+	standard  bool
 }
 
-type ActUpgradeTargets struct {
+type ActUpdateTargets struct {
 	ImageSrcs *ActImageSrcs
 	Text      *ActText
 }
 
-func (a *Act) Upgrade(author user.User, targets ActUpgradeTargets) (*Act, error) {
+func (a *Act) Update(author user.User, targets ActUpdateTargets) (*Act, error) {
 	if a.Author() != author.Id() {
 		return nil, domain.ErrUnauthorized
 	}
@@ -34,53 +34,21 @@ func (a *Act) Upgrade(author user.User, targets ActUpgradeTargets) (*Act, error)
 		return nil, ErrInvalidActInfo
 	}
 
-	newVer, err := upgradeActVersion(a, targets)
-	if err != nil {
-		return nil, err
-	}
-
-	a.versions = append(a.versions, newVer)
-	return a, nil
-}
-
-func upgradeActVersion(a *Act, targets ActUpgradeTargets) (*ActVersion, error) {
-	prevVer := a.LatestVersion()
-	newImageSrcs := prevVer.ImageSrcs()
-	newText := prevVer.Text()
 	if targets.ImageSrcs != nil {
-		newImageSrcs = *targets.ImageSrcs
+		a.imageSrcs = *targets.ImageSrcs
 	}
 	if targets.Text != nil {
-		newText = *targets.Text
-	}
-
-	code, err := domain.RandomHexCode()
-	if err != nil {
-		return nil, err
-	}
-
-	newVer := ActVersionFrom(ActVersionCode(code), prevVer.Version()+1, newImageSrcs, newText, domain.CreatedAt(time.Now()))
-	return newVer, nil
-}
-
-func (a *Act) Delete(deleter user.User) (*Act, error) {
-	if a.Author() != deleter.Id() {
-		return nil, domain.ErrUnauthorized
+		a.text = *targets.Text
 	}
 	return a, nil
-}
-
-func (a *Act) LatestVersion() *ActVersion {
-	versions := a.Versions()
-	vlen := len(versions)
-	if vlen == 0 {
-		return nil
-	}
-	return versions[vlen-1]
 }
 
 func (a Act) Code() ActCode {
 	return a.code
+}
+
+func (a Act) Author() user.UserId {
+	return a.author
 }
 
 func (a Act) Type() ActType {
@@ -91,22 +59,18 @@ func (a Act) Name() ActName {
 	return a.name
 }
 
-func (a Act) Author() user.UserId {
-	return a.author
+func (a Act) Text() ActText {
+	return a.text
+}
+
+func (a Act) ImageSrcs() ActImageSrcs {
+	return a.imageSrcs
 }
 
 func (a Act) CreatedAt() domain.CreatedAt {
 	return a.createdAt
 }
 
-func (a Act) Versions() []*ActVersion {
-	return a.versions
-}
-
-func (a Act) VersionsMap() map[ActVersionNumber]*ActVersion {
-	m := make(map[ActVersionNumber]*ActVersion)
-	for _, v := range a.Versions() {
-		m[v.Version()] = v
-	}
-	return m
+func (a Act) IsStandard() bool {
+	return a.standard
 }

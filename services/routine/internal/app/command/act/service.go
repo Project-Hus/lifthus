@@ -38,29 +38,3 @@ func (as *actCommandService) createAct(ctx context.Context, caDto dto.CreateActS
 	}
 	return dto.QueryActDtoFrom(act), nil
 }
-
-func (as *actCommandService) upgradeAct(ctx context.Context, clientId uint64, ugDto dto.UpgradeActServiceDto) (qaDto *dto.QueryActDto, err error) {
-	finally, err := as.actRepo.BeginOrContinueTx(ctx)
-	defer finally(&err)
-	if err != nil {
-		return nil, err
-	}
-	targetAct, err := as.actRepo.FindActByCode(ctx, act.ActCode(ugDto.ActCode))
-	if err != nil {
-		return nil, err
-	}
-	client := user.UserFrom(user.UserId(clientId))
-	ugTg := act.ActUpgradeTargets{
-		ImageSrcs: (*act.ActImageSrcs)(ugDto.ImageSrcs),
-		Text:      (*act.ActText)(ugDto.Text),
-	}
-	targetAct, err = targetAct.Upgrade(*client, ugTg)
-	if err != nil {
-		return nil, err
-	}
-	act, err := as.actRepo.Save(ctx, targetAct)
-	if err != nil {
-		return nil, err
-	}
-	return dto.QueryActDtoFrom(act), nil
-}

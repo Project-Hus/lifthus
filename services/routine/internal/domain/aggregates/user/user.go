@@ -4,7 +4,7 @@ func UserFrom(id UserId) *User {
 	return &User{id: id}
 }
 
-type UserId uint64
+type UserId int64
 
 type User struct {
 	id UserId
